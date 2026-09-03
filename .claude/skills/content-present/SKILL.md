@@ -1,6 +1,6 @@
 ---
 name: content-present
-description: 把一篇 NoteCraft MDX 筆記轉成一份 16:9 多頁簡報（deck）。當作者在 Claude Code 說「生成簡報」「把這篇筆記轉成簡報」「重新生成 xxx 的簡報」，或把筆記功能列「生成簡報」按鈕複製的提示詞貼進來時使用。產物為 src/components/generated/<slug>.deck.tsx 模組，內容頁一律從 29 個預先設計好的原子中選一個填資料、沿用筆記中既有的 @ai-visualize 互動元件、版面遵循 trendlink-design。Also triggers on English like "generate a presentation / slide deck from this note".
+description: 把一篇 NoteCraft MDX 筆記轉成一份 16:9 多頁簡報（deck）。當作者在 Claude Code 說「生成簡報」「把這篇筆記轉成簡報」「重新生成 xxx 的簡報」，或把筆記功能列「生成簡報」按鈕複製的提示詞貼進來時使用。產物為 src/components/generated/<slug>.deck.tsx 模組，內容頁一律從 29 個預先設計好的原子中選一個填資料、沿用筆記中既有的 @ai-visualize 互動元件、版面遵循 notecraft-design。Also triggers on English like "generate a presentation / slide deck from this note".
 ---
 
 # Content Present Skill

@@ -9,7 +9,7 @@ model: sonnet
 
 ## 工作流程
 
-1. **載入規範**：若本對話尚未讀過，讀取 `.claude/skills/content-visualize/SKILL.md`（生成規範）與 `trendlink-design` Skill（樣式 token）
+1. **載入規範**：若本對話尚未讀過，讀取 `.claude/skills/content-visualize/SKILL.md`（生成規範）與 `notecraft-design` Skill（樣式 token）
 2. **建立元件檔**：依規劃書，用 Write 建立 `src/components/generated/<id>.tsx`
 3. **lint imports**（產出前把關，跑 tsc/astro build 前必做）：Read 剛寫的檔案、逐條掃 `import ... from '<specifier>'`（含 `import type`、`import()` 動態 import），對每個 `<specifier>` 取 **root package**（`motion/react` → `motion`、`d3/utils` → `d3`；`@notes/...`、`@/...`、`./`、`../` 屬 alias/相對路徑）：
    - **允許**：白名單套件（見「元件寫作守則」的 whitelist 標記段落）、`@/*`、`@notes/*`、相對路徑
@@ -34,7 +34,7 @@ model: sonnet
 - 不接受 required props
 - import 僅限 SKILL.md 列舉的白名單（<!-- BEGIN:whitelist -->`react`、`react-dom`、`motion`、`recharts`、`d3`、`lucide-react`、`clsx`、`tailwind-merge`<!-- END:whitelist -->）+ 專案相對路徑。**由工作流程 step 3 的 import lint 把關**——這條白名單同時是 `astro.config.mjs` 的 `vite.resolve.dedupe` 清單，違反會在 rollup 端 build fail
 - **禁止使用任何 emoji 字元**（🚀 ✅ ⚠️ 等 Unicode emoji）。需要圖示時一律 `import { Check, TriangleAlert, ArrowRight, ... } from 'lucide-react'`；icon 大小用 `size` prop、顏色透過 Tailwind class 與 `currentColor` 控制。若在程式碼中偵測到 emoji，視為驗證失敗的一種，須立即替換為對應的 lucide icon
-- 樣式採 Tailwind utility class；色彩、間距、圓角等優先使用 `trendlink-design` 提供的 token 或 class
+- 樣式採 Tailwind utility class；色彩、間距、圓角等優先使用 `notecraft-design` 提供的 token 或 class
 - SVG 設定 `viewBox` 與 `width="100%"`
 - motion 元件套用 `useReducedMotion()`，預設動畫 200–400ms ease-out
 - **元件本體不得自帶外框卡片**：根（最外層）元素禁止加上 `border`／`shadow-*`／大圓角 `rounded-*` 卡片／白底（`bg-white`）等卡片化樣式，也不要自畫左上類型標籤、右上 `generated/<id>.tsx` 來源標頭、或外層 padding。這些外框、陰影、來源標頭、底部 caption 一律由系統元件 `GeneratedFrame` 在寫回時統一提供（mdx-writer 負責），元件自帶會造成**雙層外框**。根元素只應是透明版型容器（`flex`／`grid`／`space-y-*`）加必要的 `max-w-*`／`mx-auto`／`not-prose`。**禁止 import 任何自製 `Figure` 之類的外框包裝元件**——外框唯一來源是 `GeneratedFrame`。（內部子卡片、面板、表格圓角屬內容結構，不在此限。）

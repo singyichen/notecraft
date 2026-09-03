@@ -82,7 +82,7 @@ status: pending | generated | locked | failed
 
 ### 樣式規範
 
-色票、字級、間距、圓角、陰影一律遵循外部 **`trendlink-design` Skill**。生成元件前先讀取其 SKILL.md，優先使用其 token / class，**不要硬編碼色碼**。僅在 prompt 明確要求跳脫設計系統時例外，並在對話中說明。
+色票、字級、間距、圓角、陰影一律遵循 **`notecraft-design` Skill**（改編自 label-suite 的 indigo/emerald 配色系統，見 `.claude/skills/notecraft-design/SKILL.md`）。生成元件前先讀取其 SKILL.md 與 `src/styles/tokens.css`，優先使用既有 token / CSS 變數，**不要硬編碼色碼**。僅在 prompt 明確要求跳脫設計系統時例外，並在對話中說明。
 
 ## dev-only API（僅 `astro dev` 期間存在，build 時不輸出）
 

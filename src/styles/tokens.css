@@ -1,33 +1,40 @@
-/* TrendLink Design System tokens (excerpted for NoteCraft).
-   Source: .claude/skills/tokens/*.css — keep in sync if DS updates. */
+/* Design tokens — repainted to the label-suite palette (indigo primary / emerald CTA,
+   Crimson Pro + Inter type, softer radius, indigo-tinted card shadow).
+   Variable *names* are kept as-is (--blue-*, --orange-*, --neutral-*) so every consumer
+   across components/, islands/, deck/ and generated/ re-themes without further edits —
+   --blue-* now carries the indigo ramp and --orange-* now carries the emerald ramp.
+   See .claude/skills/notecraft-design/SKILL.md for the full spec AI-generated components read. */
 
 :root {
   /* ── colors ── */
-  --blue-50:#eef4fb; --blue-100:#d6e4f5; --blue-200:#adc8e8; --blue-300:#7ba6da;
-  --blue-400:#4d84cb; --blue-500:#2c6ebb; --blue-600:#1f5aa6; --blue-700:#1b4f9c;
-  --blue-800:#163f7d; --blue-900:#112f5d; --blue-950:#0b1f3e;
-  --sky-400:#4aa3d6; --sky-500:#348bc9; --sky-600:#2a76ad;
-  --orange-50:#fdf4e6; --orange-100:#fbe7c6; --orange-200:#f6cd86; --orange-300:#f2b955;
-  --orange-400:#ed9b26; --orange-500:#e37b24; --orange-600:#c7641a; --orange-700:#a04f15;
-  --neutral-0:#ffffff; --neutral-50:#f6f8fb; --neutral-100:#eef1f6; --neutral-200:#e1e6ee;
-  --neutral-300:#cbd3df; --neutral-400:#9aa6b8; --neutral-500:#6c798e; --neutral-600:#4f5b6e;
-  --neutral-700:#3a4456; --neutral-800:#262e3d; --neutral-900:#161c28;
-  --success-500:#2e9e6b; --success-50:#e7f6ee;
-  --warning-500:#e3a008; --warning-50:#fcf3da;
-  --danger-500:#d64545; --danger-50:#fbeaea;
-  /* 300 階 = 深底（暗色投影片 #262e3d）上的狀態色。500 階在深底上不可讀：
-     danger-500 僅 3.11:1。下列值實測 vs #262e3d：5c→6.35 / f2→8.12 / ef→5.67。 */
-  --success-300:#5cc494; --warning-300:#f2c14e; --danger-300:#ef8b8b;
-  /* warning 的 500 階在白底僅 2.26:1（琥珀色的老問題），當文字色不可讀。
-     700 階供淺底文字 / icon 使用，實測 vs #ffffff 為 4.91:1。 */
-  --warning-700:#9a6600;
-  --info-500:#2c6ebb; --info-50:#eef4fb;
+  /* indigo ramp (label-suite primary #6366F1 = 500, secondary #818CF8 = 400, ink #1E1B4B = 950) */
+  --blue-50:#eef2ff; --blue-100:#e0e7ff; --blue-200:#c7d2fe; --blue-300:#a5b4fc;
+  --blue-400:#818cf8; --blue-500:#6366f1; --blue-600:#4f46e5; --blue-700:#4338ca;
+  --blue-800:#3730a3; --blue-900:#312e81; --blue-950:#1e1b4b;
+  --sky-400:#a5b4fc; --sky-500:#818cf8; --sky-600:#6366f1;
+  /* emerald ramp (label-suite CTA #10B981 = 500, hover #059669 = 600, dark CTA #34D399 = 400) */
+  --orange-50:#ecfdf5; --orange-100:#d1fae5; --orange-200:#a7f3d0; --orange-300:#6ee7b7;
+  --orange-400:#34d399; --orange-500:#10b981; --orange-600:#059669; --orange-700:#047857;
+  --neutral-0:#ffffff; --neutral-50:#f8fafc; --neutral-100:#f1f5f9; --neutral-200:#e2e8f0;
+  --neutral-300:#cbd5e1; --neutral-400:#94a3b8; --neutral-500:#64748b; --neutral-600:#475569;
+  --neutral-700:#334155; --neutral-800:#1e293b; --neutral-900:#0f172a;
+  /* semantic state colors — ported directly from label-suite's own WCAG AA-checked pairs
+     (design/system/MASTER.md §Semantic State Colors / §Dark Mode Tokens), not re-derived here. */
+  --success-500:#15803d; --success-50:#f0fdf4;
+  --warning-500:#a16207; --warning-50:#fefce8;
+  --danger-500:#b91c1c; --danger-50:#fef2f2;
+  /* 300 階 = 深底（暗色投影片 #1e293b）上的狀態色，取 label-suite dark-mode 對應值。 */
+  --success-300:#4ade80; --warning-300:#facc15; --danger-300:#f87171;
+  /* warning 在白底僅有這組（#A16207）是 label-suite 驗證過 AA 的版本；
+     700 階維持同值，供既有引用 --warning-700 的地方（白底文字 / icon）不必改名。 */
+  --warning-700:#a16207;
+  --info-500:#1d4ed8; --info-50:#eff6ff;
 
-  --text-strong:var(--neutral-900); --text-body:var(--neutral-700);
-  --text-muted:var(--neutral-500); --text-on-brand:#ffffff;
-  --text-brand:var(--blue-700); --text-accent:var(--orange-500);
+  --text-strong:var(--blue-950); --text-body:var(--neutral-700);
+  --text-muted:var(--neutral-400); --text-on-brand:#ffffff;
+  --text-brand:var(--blue-600); --text-accent:var(--orange-600);
 
-  --surface-page:var(--neutral-50); --surface-card:var(--neutral-0);
+  --surface-page:#f5f3ff; --surface-card:var(--neutral-0);
   --surface-sunken:var(--neutral-100); --surface-brand:var(--blue-700);
   --surface-brand-soft:var(--blue-50); --surface-accent-soft:var(--orange-50);
   --surface-inverse:var(--neutral-900);
@@ -35,18 +42,19 @@
   --border-subtle:var(--neutral-200); --border-default:var(--neutral-300);
   --border-strong:var(--neutral-400); --border-brand:var(--blue-500);
 
-  --action-primary:var(--orange-400); --action-primary-hover:var(--orange-500);
-  --action-primary-press:var(--orange-600); --action-secondary:var(--blue-700);
+  --action-primary:var(--orange-500); --action-primary-hover:var(--orange-600);
+  --action-primary-press:var(--orange-700); --action-secondary:var(--blue-700);
   --action-secondary-hover:var(--blue-800); --action-link:var(--blue-600);
   --focus-ring:var(--sky-500);
 
   --gradient-header:linear-gradient(105deg,var(--blue-800) 0%,var(--blue-700) 45%,var(--blue-500) 100%);
-  --gradient-accent:linear-gradient(105deg,var(--orange-500) 0%,var(--orange-400) 100%);
+  --gradient-accent:linear-gradient(105deg,var(--orange-600) 0%,var(--orange-500) 100%);
 
   /* ── typography ── */
-  --font-sans:"Noto Sans TC","Noto Sans","PingFang TC","Microsoft JhengHei","Helvetica Neue",system-ui,sans-serif;
-  --font-latin:"Noto Sans","Noto Sans TC",system-ui,sans-serif;
-  --font-mono:"SFMono-Regular",ui-monospace,Menlo,Consolas,monospace;
+  --font-sans:"Inter","Noto Sans TC","Noto Sans","PingFang TC","Microsoft JhengHei","Helvetica Neue",system-ui,sans-serif;
+  --font-latin:"Inter","Noto Sans",system-ui,sans-serif;
+  --font-serif:"Crimson Pro","Noto Serif TC","Source Han Serif TC",Georgia,serif;
+  --font-mono:"JetBrains Mono","SFMono-Regular",ui-monospace,Menlo,Consolas,monospace;
   --weight-regular:400; --weight-medium:500; --weight-bold:700; --weight-black:900;
   --text-2xs:0.6875rem; --text-xs:0.75rem; --text-sm:0.875rem; --text-base:1rem;
   --text-md:1.125rem; --text-lg:1.25rem; --text-xl:1.5rem; --text-2xl:1.875rem;
@@ -58,17 +66,20 @@
   --space-1:0.25rem; --space-2:0.5rem; --space-3:0.75rem; --space-4:1rem;
   --space-5:1.5rem; --space-6:2rem; --space-7:2.5rem; --space-8:3rem;
 
-  /* Softer radius scale (prototype override), pill kept for buttons/tags */
-  --radius-xs:2px; --radius-sm:3px; --radius-md:5px; --radius-lg:8px;
-  --radius-xl:11px; --radius-2xl:14px; --radius-pill:999px; --radius-circle:50%;
+  /* label-suite radius scale (4 / 8 / 12 / 16 / full), pill kept for buttons/tags */
+  --radius-xs:4px; --radius-sm:4px; --radius-md:8px; --radius-lg:12px;
+  --radius-xl:16px; --radius-2xl:20px; --radius-pill:9999px; --radius-circle:50%;
 
-  --shadow-xs:0 1px 2px rgba(17,47,93,0.06);
-  --shadow-sm:0 2px 6px rgba(17,47,93,0.08);
-  --shadow-md:0 6px 18px rgba(17,47,93,0.10);
-  --shadow-lg:0 14px 34px rgba(17,47,93,0.12);
-  --shadow-xl:0 24px 60px rgba(17,47,93,0.16);
-  --shadow-accent:0 8px 22px rgba(227,123,36,0.32);
-  --shadow-brand:0 10px 28px rgba(27,79,156,0.28);
+  /* label-suite shadow scale (neutral, no color tint) + a dedicated indigo-tinted
+     --shadow-card for surfaces that want the label-suite "glow" (toast, floating panels). */
+  --shadow-xs:0 1px 2px rgba(30,27,75,0.04);
+  --shadow-sm:0 1px 2px rgba(0,0,0,0.05);
+  --shadow-md:0 4px 6px rgba(0,0,0,0.08);
+  --shadow-lg:0 10px 15px rgba(0,0,0,0.10);
+  --shadow-xl:0 20px 25px rgba(0,0,0,0.15);
+  --shadow-card:0 4px 24px rgba(99,102,241,0.10), 0 1px 4px rgba(0,0,0,0.06);
+  --shadow-accent:0 8px 22px rgba(16,185,129,0.32);
+  --shadow-brand:0 10px 28px rgba(67,56,202,0.28);
 
   --ease-standard:cubic-bezier(0.4,0,0.2,1);
   --ease-out:cubic-bezier(0.16,1,0.3,1);

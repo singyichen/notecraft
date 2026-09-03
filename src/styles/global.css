@@ -25,6 +25,9 @@ h1, h2, h3, h4, h5, h6 {
   color: var(--text-strong);
   text-wrap: balance;
 }
+/* label-suite 字級：Display / H1 / H2 走 Crimson Pro 襯線，H3 以下維持 Inter 黑體 */
+h1, h2 { font-family: var(--font-serif); font-weight: 700; }
+h3 { font-family: var(--font-sans); font-weight: 600; }
 p { margin: 0; line-height: var(--leading-relaxed); text-wrap: pretty; }
 a { color: var(--action-link); text-decoration: none; }
 a:hover { color: var(--blue-700); }

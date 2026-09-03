@@ -20,10 +20,11 @@ export interface DeckThemeTokens {
    * SeriesTone 的 "muted" **標記色**（非文字色）。
    *
    * 刻意與下面的 `muted`（文字墨色）分開：dataviz 的硬規則是「文字穿文字 token、
-   * 不穿系列色」，兩者職責不同。實測理由 —— 若讓標記直接沿用文字用的 `muted`
-   * （暗色 = neutral-400），它與暗色 `brand`（blue-300）的 ΔE 只有 6.1（normal），
-   * 低於 15 的 hard FAIL，`tone:"blue"` 與 `tone:"muted"` 在暗色投影片上分不出來。
-   * 改用暗色 neutral-300 後三色全項 PASS。
+   * 不穿系列色」，兩者職責不同。實測理由 —— 文字用的 `muted`（暗色 neutral-400）
+   * 在暗色投影片上與暗色 `brand`（現為 indigo-300）色相太近，容易讓
+   * `tone:"blue"` 與 `tone:"muted"` 分不出來，改用暗色 neutral-300 拉開差異。
+   * 色票已改為 label-suite 版本（見 tokens.css），若調整深色 brand/neutral 階序，
+   * 需重新量測 ΔE 是否仍過 15 的門檻。
    */
   seriesMuted: string;
   /**
@@ -47,8 +48,9 @@ export interface DeckThemeTokens {
    * 程式碼卡片的底色（Task 38，`<Code>` / 後續 `<Terminal>` 共用）。
    *
    * 暗色**刻意比投影片更深**（內嵌感），不是沿用 `sunken`（5% 白）——
-   * 實測 5% 白會把卡片提亮到 #313847，`attr`（sky-400）在其上只有 4.20:1、低於 4.5；
-   * 改成 22% 黑後最低的一項（attr）是 5.63:1，九個語法類別全數過關。
+   * 5% 白會把卡片提亮太多，讓部分語法 token（如 attr／sky-400）對比不足；
+   * 改成 22% 黑維持足夠內嵌暗度。色票已改為 label-suite 版本（見 tokens.css），
+   * 若語法配色有調整，需重新對九個語法類別逐一量測對比。
    */
   codeSurface: string;
   /** 程式碼卡片的標頭列底色（比 codeSurface 再深一階） */

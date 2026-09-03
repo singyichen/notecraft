@@ -18,7 +18,7 @@ model: sonnet
 
 1. **載入規範**（本對話尚未讀過才讀）：
    - `.claude/skills/content-present/SKILL.md` —— 契約、6 種版型、原子層、密度、圖表選型、版面自檢
-   - **`trendlink-design` Skill 的 SKILL.md** —— 設計系統。`custom` 頁要寫版面，必須先知道間距節奏、圓角、陰影與色票語意
+   - **`notecraft-design` Skill 的 SKILL.md** —— 設計系統。`custom` 頁要寫版面，必須先知道間距節奏、圓角、陰影與色票語意
    - **few-shot 範例**：用 Glob 找 `src/components/generated/*.deck.tsx`，挑**含有 `layout: "custom"` 的那份**讀（只有固定版型的舊 deck 不能照抄頁面組成）。一份都沒有就跳過，例如 viewer 場景下還沒有任何 deck
 2. **確認可用 viz**：規劃書的 `full-visual` 頁會指定既有元件 id；用 Glob / Read 確認 `src/components/generated/<id>.tsx` 確實存在，才 import。**不存在就不要 import**（會 build fail）——回頭在回報中標出，改用占位（不給 `viz`，只填 `vizLabel` / `vizHint`）。
 3. **建立 deck 檔**（一份 deck 一個檔，不拆目錄）：
