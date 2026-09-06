@@ -31,6 +31,28 @@ updatedAt: "2026-09-06"
 
 **內容重點**：涵蓋二極體、BJT／MOS 電晶體、運算放大器等半導體元件與電路的原理、電路模型與應用，強調從理論推導到電路設計直覺的培養。
 
+## 內容地圖
+
+{/* @ai-visualize
+id: microelectronics-concept-map
+type: diagram
+prompt: |
+  展示本書半導體元件與電路的學習路徑：從二極體（最基本的單向導通元件）出發，
+  進到 BJT 與 MOS 電晶體（放大與開關的核心元件），最後匯聚到運算放大器
+  （由電晶體組成的高階模組，是類比電路設計的常見基石）。用循序遞進的流程圖／
+  架構圖呈現「元件複雜度」與「電路角色」的遞進關係，每個節點簡短標註該元件在
+  電路設計中扮演的角色。手繪 SVG，不引入圖表函式庫。
+status: generated
+caption: 從二極體到電晶體，再到運算放大器：元件複雜度每上一階，電路角色就更抽象一層。
+*/}
+
+import GeneratedFrame from '@/components/GeneratedFrame.astro'
+import MicroelectronicsConceptMap from '@/components/generated/microelectronics-concept-map'
+
+<GeneratedFrame id="microelectronics-concept-map" type="diagram" prompt={"展示本書半導體元件與電路的學習路徑：從二極體（最基本的單向導通元件）出發，進到 BJT 與 MOS 電晶體（放大與開關的核心元件），最後匯聚到運算放大器（由電晶體組成的高階模組，是類比電路設計的常見基石）。用循序遞進的流程圖／架構圖呈現「元件複雜度」與「電路角色」的遞進關係，每個節點簡短標註該元件在電路設計中扮演的角色。手繪 SVG，不引入圖表函式庫。"} caption="從二極體到電晶體，再到運算放大器：元件複雜度每上一階，電路角色就更抽象一層。">
+  <MicroelectronicsConceptMap />
+</GeneratedFrame>
+
 ## 線上資源
 
 - [作者官方 UCLA 教學網頁（含勘誤表）](https://www.seas.ucla.edu/brweb/teaching.html)

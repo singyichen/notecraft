@@ -22,6 +22,27 @@ updatedAt: "2026-09-06"
 
 涵蓋 IPython、NumPy、pandas、Matplotlib、Scikit-Learn 等 Python 資料科學工具鏈，著重資料清理、轉換、視覺化，以及統計 / 機器學習建模的實務應用。
 
+## 內容地圖
+
+{/* @ai-visualize
+id: pdsh-toolchain-map
+type: diagram
+prompt: |
+  展示本書涵蓋的 Python 資料科學工具鏈：NumPy → pandas → Matplotlib → Scikit-Learn，
+  用簡單的流程圖／架構圖呈現這四個工具在「資料科學工作流程」中各自的定位與先後關係——
+  NumPy 提供底層陣列運算，pandas 在其上做資料清理與轉換，Matplotlib 負責視覺化，
+  Scikit-Learn 銜接到統計／機器學習建模。手繪 SVG，不引入圖表函式庫。
+status: generated
+caption: NumPy → pandas → Matplotlib → Scikit-Learn：一條從陣列運算到機器學習建模的資料科學工具鏈。
+*/}
+
+import GeneratedFrame from '@/components/GeneratedFrame.astro'
+import PdshToolchainMap from '@/components/generated/pdsh-toolchain-map'
+
+<GeneratedFrame id="pdsh-toolchain-map" type="diagram" prompt={"展示本書涵蓋的 Python 資料科學工具鏈：NumPy → pandas → Matplotlib → Scikit-Learn，用簡單的流程圖／架構圖呈現這四個工具在「資料科學工作流程」中各自的定位與先後關係——NumPy 提供底層陣列運算，pandas 在其上做資料清理與轉換，Matplotlib 負責視覺化，Scikit-Learn 銜接到統計／機器學習建模。手繪 SVG，不引入圖表函式庫。"} caption="NumPy → pandas → Matplotlib → Scikit-Learn：一條從陣列運算到機器學習建模的資料科學工具鏈。">
+  <PdshToolchainMap />
+</GeneratedFrame>
+
 ## 線上資源
 
 - [官方免費全文（第 2 版）](https://jakevdp.github.io/PythonDataScienceHandbook/)

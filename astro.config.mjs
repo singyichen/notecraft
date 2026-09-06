@@ -37,6 +37,10 @@ export default defineConfig({
     devApi(),
   ],
   vite: {
+    // NOTECRAFT_VERIFY_BUILD=1 時（元件生成流程的 `astro build` 驗證）改用獨立 cacheDir，
+    // 避免跟同時在跑的 `astro dev` 共用 node_modules/.vite，兩邊互相 invalidate
+    // 導致瀏覽器載到不一致的 React 模組副本（症狀：island 全部 "Cannot read properties of null (reading useState)"）。
+    ...(process.env.NOTECRAFT_VERIFY_BUILD && { cacheDir: "node_modules/.vite-verify" }),
     server: {
       host: "127.0.0.1",
       // fs.allow：notesDir、userCwd 都要允許（dev server 才能讀專案根外的 tsx / mdx）
