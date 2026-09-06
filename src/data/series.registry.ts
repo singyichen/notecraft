@@ -112,4 +112,19 @@ export const SERIES: SeriesDef[] = [
       "trendlink-ai-入門工作坊提案草稿",
     ],
   },
+  {
+    id: "tech-books",
+    title: "技術書籍系列",
+    eyebrow: "TECHNICAL BOOKS",
+    description:
+      "收錄研讀中的技術書籍筆記，包含書目資訊、內容摘要與線上資源連結，依主題（資料科學／機器學習）分類，作為技術學習與延伸筆記的參考基礎。",
+    accent: "navy",
+    icon: "bookOpen",
+    slugs: [
+      "技術書籍系列",
+      "python-data-science-handbook",
+      "machine-learning-with-pytorch-and-scikit-learn",
+      "fundamentals-of-microelectronics",
+    ],
+  },
 ];
