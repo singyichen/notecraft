@@ -1,0 +1,68 @@
+---
+title: "Label Suite：Config-Driven NLP 標註平台"
+description: "碩士論文 Demo Paper 成果，config-driven 的 NLP 標註平台，內建資料集分析，採 Spec-Driven Development 治理"
+tags: ["專案管理", "Spec-Driven Development", "NLP 標註平台"]
+createdAt: "2026-09-06"
+updatedAt: "2026-09-06"
+---
+
+# Label Suite
+
+> GitHub: `singyichen/label-suite`。本機路徑：`project/label-suite`（與 notecraft 同層的 sibling 專案）。
+
+## 專案定位
+
+Config-driven 的 NLP 標註平台，內建資料集分析功能，設計給學術研究實驗室使用，同時是開發者陳欣怡的碩士論文 Demo Paper 成果（指導教授李龍豪，NLP Lab, ainlp.tw）。
+
+目標是解決現有標註工具（如 Label Studio）的痛點：伺服器設定複雜、任務設定／標註／分析流程割裂、缺乏內建資料品質可視化。
+
+核心特色：
+
+- 用 YAML/JSON 設定驅動任務類型（單句分類、句對分類、序列標註、生成式標註），不需寫程式碼
+- Dry Run（試標）與 Official Run（正式標註）流程隔離
+- 內建資料集分析（#Sentence / #Token / #Label 等統計）
+- 針對非工程背景標註者優化的可用性
+
+## 技術棧
+
+| 層 | 技術 |
+|---|---|
+| 前端 | React 18 + TypeScript + Vite 6 + react-router 7 + TanStack Query，測試 Vitest/RTL/MSW，pnpm |
+| 後端 | FastAPI + 非同步 SQLAlchemy 2 + Python 3.12+，Alembic 遷移，mypy strict + ruff，uv |
+| 資料庫 | SQLite（開發快速啟動）／ PostgreSQL（正式環境，ADR-024） |
+| 非同步任務 | Redis + Celery（規劃中，README 標註為 Phase 3，尚未實作） |
+
+目前 `frontend/` 僅是 Foundation-Core scaffold（serve `/health-check`），實際產品畫面以 `design/prototype/` 下的靜態 HTML 原型為準。
+
+## 架構治理
+
+- **Modular Monorepo**（ADR-001）：`frontend/`、`backend/` 同倉庫。理由：單人論文專案、單一 docker-compose 即可整合啟動、且 spec 常跨前後端層，PR 應能原子性地涵蓋全端變更。
+- **ADR-033（關鍵）**：導入 OpenSpec 作為「變更工作流程層」，但 `specs/` 才是唯一正典（canon），OpenSpec 不取代它。流程：
+
+  ```
+  specs/（canon）
+    → openspec/changes/<change>/（propose → apply）
+    → archive 時雙寫回：
+        - openspec/specs/（derived view，僅供參考，非正典）
+        - specs/[module]/spec.md（正典，version bump + Changelog，硬性關卡）
+  ```
+
+- 全部 34 篇 ADR 收在 `docs/adr/`，涵蓋框架選型、狀態機、i18n、稽核軌跡、CI 安全掃描等決策。
+
+## 規格與治理（Spec-Driven Development）
+
+- `specs/` 下模組：`account`、`admin`、`annotation`、`dashboard`、`dataset`、`foundation`、`shared`、`task-management`，共 18 項追蹤中的功能規格（如 `015-annotation-workspace`、`017-dataset-analysis-detail`）。
+- `specs/STATUS.md` 是狀態機唯一真相來源：`spec-ready → change-open → in-progress → review → done → archived`（另有 `deferred`）。目前多數 account/admin/shared 規格仍是 spec-ready，annotation-015、dashboard-012、task-management 系列已進入 in-progress/review。
+- `specs/_governance/constitution.md`（v1.33.0）共 21 條原則，其中 **NON-NEGOTIABLE**（不可退讓）：
+  - **Generalization-First**：禁止為特定任務類型硬編碼邏輯，一切靠設定（config）驅動；新增任務類型不得修改核心程式碼。
+  - **Data Fairness**：防止測試集／標準答案外洩給標註者，gold item 須與一般 item 不可區分，抽樣/切分/計分/匯出須可從宣告輸入重現。
+  - 另有 Security & Privacy Baseline、Role-Based Access Control 等不可退讓原則。
+
+## 文件索引
+
+- `docs/adr/` — 34 篇架構決策紀錄
+- `docs/sdd-workflow.md` — SDD 流程機器可讀指南
+- `docs/product/prd.md` — PRD
+- `docs/thesis/outline.md` — 碩士論文大綱
+- `docs/research/tool-analysis.md` — 競品分析（如 Label Studio）
+- `docs/site-map/` — 互動式網站地圖
