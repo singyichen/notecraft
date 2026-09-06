@@ -80,6 +80,14 @@ status: pending | generated | locked | failed
 | 動畫 / 互動 / scroll-driven | `motion`（Framer Motion） |
 | 複合需求 | 組合上述，不要二選一 |
 
+### 草稿輔助 Skill（`diagram-design` / `archify`）
+
+`.claude/skills/diagram-design/`、`.claude/skills/archify/` 是兩個外部繪圖 Skill，可在對話中直接請 Claude 呼叫，快速畫出流程 / 架構 / 時序 / 狀態機圖的**獨立 standalone HTML 草稿**（含自己的配色系統與互動 viewer），方便在下筆前先確認節點、分支、標籤與版面是否合理，或用於 `docs/` 底下的專案文件配圖。
+
+- **不可**當作 `@ai-visualize` 標記的最終產出：兩者輸出都是 standalone HTML（內建自己的 CSS/JS/配色系統），不是 `.tsx`，無法被 `mdx-writer` 以 `import` 寫回 MDX，也不遵循 `notecraft-design` 的 token。
+- 嵌入筆記的視覺化仍必須照舊流程走：note-scanner → visualize-planner → component-generator → mdx-writer，由 component-generator 依決策樹手寫 SVG／`recharts`／`motion` 並跑 `tsc` + `astro build` 驗證。
+- 用途僅限：author 本機草稿預覽、複雜流程圖的佈局試錯、或專案文件（非筆記 MDX）配圖。
+
 ### 樣式規範
 
 色票、字級、間距、圓角、陰影一律遵循 **`notecraft-design` Skill**（改編自 label-suite 的 indigo/emerald 配色系統，見 `.claude/skills/notecraft-design/SKILL.md`）。生成元件前先讀取其 SKILL.md 與 `src/styles/tokens.css`，優先使用既有 token / CSS 變數，**不要硬編碼色碼**。僅在 prompt 明確要求跳脫設計系統時例外，並在對話中說明。
