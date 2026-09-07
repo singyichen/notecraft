@@ -1,6 +1,6 @@
 ---
 title: "機器學習實作系列：第 1 週 - 機器學習簡介"
-description: ""
+description: "課程介紹、機器學習的定義與分類（監督式／非監督式／半監督／強化式）、典型任務、建立機器學習系統的工作流程，以及 Python 開發環境建置。"
 tags: ["機器學習實作系列"]
 createdAt: "2026-09-07"
 updatedAt: "2026-09-07"
@@ -10,6 +10,54 @@ updatedAt: "2026-09-07"
 
 *Introduction to Machine Learning*
 
+## 課程資訊
+
+《資料分析與機器學習》由陳慶永老師開授，第一堂課先講清楚課要怎麼上、要準備什麼，再進入機器學習本身。
+
+### 課程定位
+
+課程分三塊：**理論**（術語與意義、原理與觀念、經典演算法）、**實作**（資料前處理與模型訓練流程、以 Python 程式實現）、**專題應用**（期末專案）。每堂課的節奏也對應這個分工：前半段講機器學習理論（資料前處理 → 傳統機器學習 → 模型選擇與評估 → 深度學習，難度依序遞增），後半段換成 Python 程式與套件的課堂實作。
+
+### 先修科目
+
+- **線性代數**：向量內積、矩陣乘法、矩陣轉置
+- **微積分**：函數、微分（含連鎖律）、偏微分、梯度
+- **（建議）Python**：型別、資料結構、條件邏輯與流程控制、函式與模組、物件導向程式設計
+
+### 這門課對「程式能力」的要求
+
+老師點出一個時代趨勢：現在大多數程式碼會由 AI 生成，單純「會打字寫程式」的能力（老師戲稱「碼農」——把寫程式比作像農夫一樣逐行敲打維護程式碼）已經不是重點，重點轉向**跨領域、能拆解複雜問題的系統設計能力**：專注在架構設計與問題拆解，剩下的交給 AI。因此這門課對程式能力的要求，不是「會不會寫」，而是**能不能引導 AI 寫出對的程式**——用精確的邏輯、規格與邊界條件下指令，並且有能力檢查 AI 生成的程式碼有沒有邏輯漏洞或安全風險。這個要求會直接體現在後面「AI 協助撰寫 Python 程式」這一節的示範裡。
+
+### 教科書與參考書
+
+- **教科書**：J. Vanderplas, *Python Data Science Handbook: Essential Tools for Working with Data*, 2nd Edition, O'Reilly Media, 2023.（ISBN: 9781098121228）
+- **參考書**：S. Raschka, *Machine Learning with PyTorch and Scikit-Learn: Develop machine learning and deep learning models with Python*, Packt, 2022.（ISBN: 9781801819312）
+
+### 教學進度表
+
+| 週次 | 主題 | 課堂作業 |
+| --- | --- | --- |
+| 1 | Introduction to Machine Learning | |
+| 2 | Perceptron Learning Algorithm (PLA) ／ Python: Basics | |
+| 3 | Adaline ／ Python: NumPy and Pandas | Assignment #1 |
+| 4 | 教師節放假 | |
+| 5 | Logistic Regression ／ Python: Matplotlib, Seaborn | Assignment #2 |
+| 6 | Data Preprocessing ／ Python: Scikit-learn | |
+| 7 | Model Selection and Evaluation ／ Python: Scikit-learn | Assignment #3 |
+| 8 | 光復節補假 | |
+| 9 | Midterm Exam（期中考） | |
+| 10 | Multilayer Neural Networks & Deep Learning ／ Python: PyTorch | |
+| 11 | Convolutional Neural Networks (CNN) ／ Python: PyTorch | Assignment #4 |
+| 12 | Dimensionality Reduction and Applications | Assignment #5 |
+| 13 | Regression and Applications | Assignment #6 |
+| 14 | Clustering and Applications | |
+| 15 | Final Project（期末專案） | |
+| 16 | Final Project（期末專案） | |
+
+### 成績評分方法
+
+課堂實作平均佔 **60%**，期中考佔 **20%**（可攜帶一張 A4 雙面小抄），期末專案佔 **20%**（教師評分 + 同儕評分）。
+
 ## 本週摘要
 
 ### 什麼是機器學習？
@@ -17,6 +65,8 @@ updatedAt: "2026-09-07"
 傳統寫程式是「人工設計規則」：工程師把邏輯寫死進程式裡（例如「信件包含這幾個關鍵字，就判定為垃圾郵件」）。機器學習反過來——不寫死規則，而是給模型大量資料，讓模型自己從資料裡「歸納」出規律，再把歸納出的規律套用到新資料上。這個「從資料中歸納規律」的過程，就是「學習」。
 
 機器學習模型通常帶有一組「可調參數」，訓練的過程就是不斷調整這些參數，讓模型在訓練資料上的預測誤差越來越小。
+
+以老師舉的**眼底影像多標籤分類**為例：輸入一張眼底影像，模型 f(·) 要同時判斷它符不符合「正常」「糖尿病視網膜病變」「老年黃斑部病變」「青光眼」「白內障」「高血壓性視網膜病變」「病理性近視」「其他」這幾個標籤——一張影像可能同時符合多個標籤，所以是「多標籤」而非單一分類。機器學習要做的事，就是訓練出這個模型 f(·)。
 
 ### 監督式學習：有「標準答案」可以學
 
@@ -41,6 +91,17 @@ updatedAt: "2026-09-07"
 ### 為什麼這套分類法重要
 
 「監督式 vs 非監督式、分類 vs 迴歸、聚類 vs 降維」是機器學習領域的基本詞彙，因為拿到一個新問題時，第一件事就是先判斷「有沒有標籤」「標籤是類別還是數值」——這會直接決定該挑哪一類演算法、用什麼指標評估好壞：分類常看準確率／precision／recall，迴歸常看均方誤差（MSE）。
+
+### 機器學習的典型任務：預測、降維、分群、生成
+
+把前面談的分類法落到實際任務，機器學習大致做四件事：
+
+- **預測（Prediction）**：分類（Classification，預測離散類別，例如判斷腫瘤良性或惡性）與迴歸（Regression，預測連續數值，例如預測明天氣溫）都屬於預測，差別只在標籤型態。
+- **降維（Dimensionality Reduction）**：簡化複雜特徵，例如用特徵提取做資料壓縮。
+- **分群 / 集群（Clustering）**：把相似的資料聚在一起，例如電商客群分群。
+- **生成（Generation）**：創造出全新且合理的資料，例如文本、圖片與影音多媒體生成——這正是近年生成式 AI（GAI）的核心任務，也是「有無標籤」這套分類法之外，第四種獨立存在的任務型態。
+
+前三種都能套進監督式／非監督式的框架（預測靠監督式學習，降維與分群靠非監督式學習），生成則是另一條路線，通常需要更龐大的資料與模型規模，這也是為什麼機器學習與人工智慧的關係（見後文）要另外拉出來談。
 
 > 延伸閱讀：[《Python Data Science Handbook》"What Is Machine Learning?"](https://jakevdp.github.io/PythonDataScienceHandbook/05.01-what-is-machine-learning.html)（上文為獨立整理與舉例，非該書內容改寫）
 
@@ -86,6 +147,8 @@ import MlWeek1Concept from '@/components/generated/ml-week1-concept'
 - **Training（訓練）→ Validation（驗證）→ Testing（測試）**：訓練資料用來調整可訓練參數；驗證資料（訓練時抽出、不參與訓練）用來比較不同超參數或演算法的表現；測試資料則在最後才拿出來評估模型對「全新資料」的預測能力，三者不可混用。
 - **Feature scaling / selection / extraction（特徵縮放／選取／提取）**：訓練前常見的前處理——縮放讓不同量級的特徵公平參與計算，選取是挑出有用的原始特徵，提取則是把原始特徵組合成新的、更精簡的特徵。
 
+除了上面這幾組，老師在第一堂課也預告了一串本學期會陸續碰到、目前先不展開的術語，之後每一組會在對應週次深入講解：**Activation function（激活函數）**、**Loss function（損失函數）**、**Gradient descent v.s. Stochastic gradient descent**（梯度下降 v.s. 隨機梯度下降）、**Mini-batch v.s. Full-batch**、**Backpropagation（反向傳播）**、**Normalization v.s. Standardization**（正規化 v.s. 標準化）、**Model selection v.s. Model validation v.s. Model evaluation**（模型選擇／驗證／評估）、**Loss curve v.s. Learning curve v.s. Validation curve**、**Overfitting（high variance）v.s. Underfitting（high bias）**、**Regularization、Dropout**。先知道這些詞存在、大概屬於「訓練最佳化」或「模型診斷」哪個範疇即可，不用現在就搞懂細節。
+
 ## 補充：資料長什麼樣子——以 Iris 資料集為例
 
 判斷一份資料能用什麼方法處理，通常從三個角度分類：
@@ -101,6 +164,91 @@ import MlWeek1Concept from '@/components/generated/ml-week1-concept'
 前面談的監督式／非監督式學習都是從「靜態資料」裡學規律，但還有一種**強化式學習（Reinforcement Learning, RL）**：代理人（Agent）透過與環境（Environment）互動、採取行動（Action）、試錯（trial-and-error），並根據獲得的獎勵（Reward）去學習一套能讓總獎勵最大化的策略。
 
 RL 跟監督式學習的關鍵差異在於「回饋的型態」：監督式學習有明確的正確標籤可以直接比對誤差；RL 沒有標準答案，只有一個衡量「這個行動好不好」的獎勵函數，而且獎勵有時是延遲的（做了一連串動作後才知道好壞），例如 AlphaGo 下圍棋要等一整盤棋下完才知道輸贏。
+
+## 補充：建立機器學習系統的工作流程
+
+以監督式學習的預測建模為例，建立一套機器學習系統不是「選一個演算法訓練完就結束」，而是一個會反覆調整的迴圈：
+
+1. **選擇特徵並收集帶標籤的訓練樣本**
+2. **選擇效能指標**——例如正確率（Accuracy）、精準率（Precision）、召回率（Recall）、F1-Score
+3. **選擇機器學習演算法並訓練模型**——通常先由這一步切入，之後再回頭處理其他議題
+4. **評估模型的效能**——從訓練樣本中抽出一部分作為驗證集（不參與訓練），拿來評估表現
+5. **調整演算法設定並優化模型（或更換演算法）**——也就是調整超參數
+
+這五步不是線性跑一次就結束：第 4 步評估完若表現不理想，會回到第 5 步調整超參數、甚至回到第 3 步換一個演算法，形成一個迴圈。
+
+背後的原因是機器學習領域公認的 **No Free Lunch 定理**：不存在一個分類器能在所有可能的場景下都表現最好。因此正確的做法是**至少比較幾種不同的機器學習演算法**，才能替手上這個具體問題挑出最適合的模型——這也是為什麼「選擇機器學習演算法並訓練模型」在流程裡通常不會只做一次。
+
+## 補充：機器學習與人工智慧的關係
+
+人工智慧（AI）是一個終極目標，因為目標太遠大，實際上會分階段逐步邁進；機器學習（ML）則是達成這個目標的其中一種**手段**——ML 把資料轉換成知識，深度學習（Deep Learning, DL）又是 ML 底下特別強大的一種手段。
+
+| AI 階段 | 代表技術／概念 | 核心能力 |
+| --- | --- | --- |
+| 當前階段 | GAI（生成式 AI） | 內容的創造與文字／影像生成 |
+| 現在～近未來 | AI Agent（代理人） | 自主規劃步驟、使用工具完成線上任務 |
+| 下一階段（躍升） | Physical AI（具身智能） | 結合硬體與機器人，在物理世界採取行動 |
+| 終極目標 | AGI／ASI（通用／超級 AI） | 跨領域自學、自我反思，達到或超越人類智慧 |
+
+AGI（Artificial General Intelligence，通用人工智慧）與 ASI（Artificial Superintelligence，超級人工智慧）是這條演進路線的終點；目前普遍認為正處在「生成式 AI 邁向 AI 代理人」的階段。這張分期表也解釋了這門課的位置：機器學習是整條路線最基礎、最核心的手段，不管未來走到哪個階段，都是建立在這門課教的觀念與方法上。
+
+## Python 環境建置
+
+這堂課後半段開始進入實作，第一步是把 Python 開發環境建起來。
+
+### 開發環境的組成
+
+- **Python 主程式**：包含直譯器（Interpreter，`python.exe`）、套件管理工具 `pip`、以及內建的標準函式庫
+- **IDE（整合式開發環境）**：課程推薦輕量且強大的 **Visual Studio Code**，負責程式碼編輯、編譯／直譯、連結、執行、除錯
+- **外部函式庫（第三方套件）**：NumPy、SciPy、Pandas、Matplotlib、Scikit-learn、PyTorch 等
+- **（選用）虛擬環境（Virtual Environment）**：為不同專案建立獨立的套件庫，避免版本衝突
+
+Python 之所以在資料科學圈這麼流行，除了語法親和，關鍵是**大量科學計算與機器學習函式庫**：NumPy／SciPy 做科學計算、Pandas／Matplotlib 做資料分析與視覺化、Scikit-learn／PyTorch 做機器學習與深度學習。缺點是直譯式語言效能不如低階語言，但 NumPy／SciPy 底層建立在 Fortran 與 C 之上、能做快速向量化運算，PyTorch 又能透過 GPU 有效率訓練深度神經網路，某種程度彌補了這個劣勢。
+
+### 建置步驟
+
+1. **安裝 Python 主程式**：從 Python 官網下載安裝檔（依作業系統選擇），安裝時務必在視窗底部**勾選「Add python.exe to PATH」**，再點擊「Install Now」。裝完打開終端機輸入 `python --version`，能正確顯示版本號（例如 `Python 3.14.6`）就代表成功。
+2. **安裝 VS Code**：從官網下載對應作業系統與處理器架構（x64／Arm64／…）的安裝檔，直接執行安裝。裝好後在「擴充功能（Extensions）」搜尋 Python，安裝微軟開發的三個套件：**Python**（官方核心套件）、**Pylance**（語法補全與靜態型別檢查）、**Python Debugger**（中斷點、變數監控、逐行除錯），以及獨立出來的 **Python Environments**（虛擬環境管理）。裝完記得重啟 VS Code。接著用 `Ctrl+Shift+P` 開命令面板，搜尋「Python: Select Interpreter」選擇剛才安裝的 Python 版本。
+3. **安裝外部函式庫**：在 VS Code 下方 Panel 開啟 TERMINAL 頁籤，執行：
+
+   ```bash
+   python -m pip install -U numpy matplotlib seaborn scipy pandas scikit-learn torch torchvision
+   ```
+
+   等 pip 依套件相依性下載安裝完成即可。
+
+### 撰寫與執行第一支 Python 程式
+
+在專案資料夾（例如 `Machine Learning`）中用 VS Code 開啟，新增一個以 `.py` 為副檔名的原始碼檔案（例如 `hello.py`），寫入：
+
+```python
+print("Hello, World!")
+```
+
+點視窗右上角的「▷」（Run Python File）按鈕執行，TERMINAL 會輸出 `Hello, World!`。
+
+### AI 協助撰寫 Python 程式
+
+老師示範了一次完整的「用 AI 寫程式」流程，呼應前面「這門課對程式能力的要求」——重點在給 AI 精確的規格。示範提示詞是：
+
+> 產生一段 Python 程式碼，其功能是提示使用者輸入 1~100 範圍內的整數（假設整數為 n），立即計算 1~n 的累加值並以 `print()` 函式輸出結果「從 1 至您輸入的整數值 n 的累加結果為: ...」。（若使用者輸入的字串不在限定的範圍內，或是非整數值，則以 `print()` 函式輸出一段警語）
+
+AI（示範用 Google 搜尋的「AI 模式」）給出的程式沒有傻傻寫迴圈累加，而是直接套用等差級數公式：
+
+```python
+total = (1 + n) * n // 2
+```
+
+這個細節值得注意：精確的提示詞規格加上 AI 對演算法的理解，讓最終程式碼比「照著需求硬翻譯成迴圈」更精簡有效率——這正是「引導 AI 寫出對的程式」的具體樣子。範例程式存為 `01_1.py`。
+
+### 載入 Iris Dataset 並顯示資料
+
+延續前面「補充：資料長什麼樣子」談到的 Iris 資料集，老師示範了兩種載入方式：
+
+- **方法 A**：直接呼叫 `sklearn.datasets.load_iris()`（範例程式 `01_2a.py`）——Scikit-learn 內建這份資料集，一行就能拿到特徵與標籤。
+- **方法 B**：從本地端 CSV 檔（`iris.data`，預先存在專案資料夾）讀取（範例程式 `01_2b.py`，需要 `iris.data` 檔案）。
+
+兩種方法殊途同歸，差別只在資料來源是套件內建還是自己準備的檔案——實務上遇到套件沒收錄的資料集，就得換成方法 B 這種本地檔案讀取的路線。
 
 ## 實作心得
 
