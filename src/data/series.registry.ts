@@ -153,4 +153,25 @@ export const SERIES: SeriesDef[] = [
       "機器學習實作系列第16週-期末專案",
     ],
   },
+  {
+    id: "electronics-practicum",
+    title: "電子學實作系列",
+    eyebrow: "ELECTRONICS PRACTICUM",
+    description:
+      "碩士課程「電子學實作」的課程筆記系列，沿著半導體物理 → PN 接面與二極體 → BJT 與 MOS 電晶體 → 運算放大器這條抽象階梯往上走，並穿插整流電路、CE／CS 放大器與運放電路四次實驗，對應《Fundamentals of Microelectronics》CH1–CH8。",
+    accent: "navy",
+    icon: "bolt",
+    slugs: [
+      "電子學實作系列",
+      "電子學實作系列第1週-半導體物理基礎",
+      "電子學實作系列第2週-二極體與eda模擬",
+      "電子學實作系列第3週-整流電路實驗",
+      "電子學實作系列第4週-bjt雙極性電晶體",
+      "電子學實作系列第6週-ce放大器實驗",
+      "電子學實作系列第7週-mos電晶體與cs放大器",
+      "電子學實作系列第8週-期中考",
+      "電子學實作系列第9週-運算放大器",
+      "電子學實作系列第10週-mos電晶體與運放電路實驗",
+    ],
+  },
 ];
