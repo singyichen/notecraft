@@ -50,30 +50,78 @@ Python 用 `0` 起算的索引取單一元素，用 `a[start:stop:step]` 取一�
 
 > 延伸閱讀：[Python 官方教學](https://docs.python.org/zh-tw/3/tutorial/)（上文為依課程需求獨立整理）
 
+import GeneratedFrame from '@/components/GeneratedFrame.astro'
+import MlWeek2ContainerChoice from '@/components/generated/ml-week2-container-choice'
+import MlWeek2ContainerTable from '@/components/generated/ml-week2-container-table'
+
 {/* @ai-visualize
-id: ml-week2-concept
-type: table
+id: ml-week2-container-choice
+type: motion
 prompt: |
-  用 Tailwind 表格比較 Python 四種內建容器的選型依據。列為 list、tuple、dict、
-  set 四種容器；欄位依序為：建立語法範例（方括號的 list、圓括號的 tuple、
-  大括號鍵值對的 dict、大括號單值的 set）、是否有序、是否可變、元素是否可重複、
-  成員查找的效率（list 需逐一掃描，
-  dict/set 為雜湊查找近乎常數時間）、典型使用場景（一句話＋一個貼近實務的例子，
-  例如逐行讀檔累積結果／固定的陣列形狀 (28,28)／超參數設定字典／兩份名單取交集
-  去重）、以及「之後會接到哪裡」（如 list 切片語法延伸為 NumPy／Pandas 索引、
-  dict 的鍵值取值對應 DataFrame 依欄位名取欄）。
-  要凸顯的洞察：選容器不是看「能裝什麼」，而是三個問題——要不要改、要不要順序、
-  要不要查得快；把「是否可變」「是否有序」「查找效率」三欄用色票或圖示強調，
-  讓讀者能橫向掃一列就做出選型判斷。表格需可橫向捲動，不要做成 SVG。
-caption: Python 四種內建容器的選型對照：從「要不要改、要不要順序、要不要查得快」三個問題挑出對的資料結構。
+  一個「三個問題選容器」的互動元件。三個獨立的 toggle 由讀者切換，四張容器卡片
+  依當前答案即時亮起或變灰。
+
+  三個問題（各自是二選一的 toggle，彼此獨立）：
+  - 要不要改？ → 可變 / 不可變
+  - 要不要順序？ → 要按位置取用 / 不在乎順序
+  - 要不要查得快？ → 只在乎有沒有這個成員 / 不需要
+
+  四張容器卡片與其屬性（用來比對 toggle）：
+  - list —— 可變、有序、可重複、成員查找需逐一掃描（線性）、建立語法 [1, 2, 3]
+  - tuple —— 不可變、有序、可重複、成員查找需逐一掃描（線性）、建立語法 (28, 28)
+  - dict —— 可變、有序（插入序）、鍵不可重複、雜湊查找近乎常數時間、建立語法 {"lr": 0.01}
+  - set —— 可變、無序、元素不可重複、雜湊查找近乎常數時間、建立語法 {1, 2, 3}
+
+  互動規則：三個 toggle 的當前組合篩選四張卡片——完全符合的維持彩色並加外框強調，
+  不符合的降為灰階並降低不透明度。至少要有一組組合能讓四張只剩一張亮著，
+  讓讀者親身體驗「三個問題就能唯一決定容器」。
+
+  視覺要求：
+  - 四張卡片用 flex-wrap 排列，禁止使用 sm: / md: 這類 viewport breakpoint
+    （內文欄實際只有 647px，viewport breakpoint 量的是視窗寬，對不上）
+  - 每張卡片顯示容器名與建立語法一行，語法用等寬字
+  - 三個 toggle 排在卡片上方，配色用 notecraft-design 的 token
+  - 底部一行收斂句
+
+  核心洞察：選容器不是看「能裝什麼」，而是這三個問題——要不要改、要不要順序、要不要查得快。
+caption: 三個問題選容器：切換「要不要改／要不要順序／要不要查得快」，看四種容器誰還留在檯面上。
 status: generated
 */}
 
-import GeneratedFrame from '@/components/GeneratedFrame.astro'
-import MlWeek2Concept from '@/components/generated/ml-week2-concept'
+<GeneratedFrame id="ml-week2-container-choice" type="motion" prompt={"用三個 toggle 選容器：切換「要不要改／要不要順序／要不要查得快」，看誰還留在檯面上。"} caption={"三個問題選容器：切換「要不要改／要不要順序／要不要查得快」，看四種容器誰還留在檯面上。"}>
+  <MlWeek2ContainerChoice client:visible />
+</GeneratedFrame>
 
-<GeneratedFrame id="ml-week2-concept" type="table" prompt={"用表格列舉 Python 四種容器（list、tuple、dict、set）的特性，按「要不要改、要不要順序、要不要查得快」三個問題引導選型。"} caption="Python 四種內建容器的選型對照：從「要不要改、要不要順序、要不要查得快」三個問題挑出對的資料結構。">
-  <MlWeek2Concept />
+{/* @ai-visualize
+id: ml-week2-container-table
+type: table
+prompt: |
+  用 Tailwind <table> 做一張精簡的容器速查表，只放能「橫向掃一列就判斷」的欄位。
+  長句說明不要放進來（那由同篇的 ml-week2-container-choice 互動元件負責）。
+
+  列（4 列）：list、tuple、dict、set
+  欄（共 5 欄）：
+  1. 容器 —— 名稱加建立語法，例如 list ／ [1, 2, 3]
+  2. 有序 —— 是 ／ 是 ／ 是（插入序）／ 否
+  3. 可變 —— 是 ／ 否 ／ 是 ／ 是
+  4. 元素可重複 —— 是 ／ 是 ／ 鍵不可 ／ 否
+  5. 成員查找 —— 線性掃描 ／ 線性掃描 ／ 雜湊 O(1) ／ 雜湊 O(1)
+
+  視覺要求：
+  - 「有序」「可變」「元素可重複」三欄用 lucide-react 的 Check 與 X 圖示，
+    不要用文字的是／否，更不要用 emoji
+  - 「成員查找」欄用兩種底色色塊區分線性與雜湊兩類，讓分界一眼可見
+  - 表格外層包一層 overflow-x: auto 容器
+  - 不要限制寬度在 max-w-3xl（.nc-prose 上限 760px，max-w-3xl 是 768px，永遠不會生效）
+  - 不要做成 SVG
+
+  核心洞察：dict 與 set 背後是雜湊表，查找幾乎與資料量無關；list 的 in 要從頭掃到尾。
+caption: 四種內建容器的速查表：有序、可變、可重複與查找成本，一列掃完就能決定用哪個。
+status: generated
+*/}
+
+<GeneratedFrame id="ml-week2-container-table" type="table" prompt={"用表格速查四種容器的有序性、可變性、可重複性與查找成本。"} caption={"四種內建容器的速查表：有序、可變、可重複與查找成本，一列掃完就能決定用哪個。"}>
+  <MlWeek2ContainerTable />
 </GeneratedFrame>
 
 ## 實作心得

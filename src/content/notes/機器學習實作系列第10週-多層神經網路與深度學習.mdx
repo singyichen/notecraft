@@ -6,6 +6,10 @@ createdAt: "2026-11-09"
 updatedAt: "2026-11-09"
 ---
 
+import GeneratedFrame from '@/components/GeneratedFrame.astro'
+import MlWeek10TwoDirections from '@/components/generated/ml-week10-two-directions'
+import MlWeek10DeltaChain from '@/components/generated/ml-week10-delta-chain'
+
 # 第 10 週：多層神經網路與深度學習
 
 *Multilayer Neural Networks and Deep Learning*
@@ -52,30 +56,81 @@ updatedAt: "2026-11-09"
 > 延伸閱讀：[《Machine Learning with PyTorch and Scikit-Learn》ch11 程式碼與章節大綱](https://github.com/rasbt/machine-learning-book/tree/main/ch11)（上文為獨立整理與舉例，非該書內容改寫）
 
 {/* @ai-visualize
-id: ml-week10-concept
+id: ml-week10-two-directions
 type: motion
 prompt: |
-  用一張可播放 / 可切換的動畫圖解，把 MLP 一次訓練迭代的資料流方向講清楚。骨架是
-  三層網路：輸入層（標示 784 個像素，只畫少數代表節點加省略號）→ 隱藏層（50 個
-  神經元，同樣以代表節點呈現）→ 輸出層（10 個類別節點，對應數字 0–9）。動畫分兩段，
-  可用按鈕切換或自動循環播放：
-  「前向傳播」時訊號沿連線由左往右流動，依序點亮 z_h → a_h → z_out → a_out，並在
-  輸出層右側顯示與 one-hot 標籤比對後算出的損失（MSE）。
-  「反向傳播」時改由右往左流動，要凸顯三件事：(1) delta_out 先在輸出層產生（損失
-  對輸出激活值的偏導 × sigmoid 導數）；(2) 責任乘上權重轉置 W 轉置後往回送到隱藏層；
-  (3) 每退一層就再乘一次該層激活函數的導數，形成「同一個小動作重複執行」的節奏。
-  前向與反向用不同色系與相反的箭頭方向明確區分，連線上標出對應的量（前向是激活值、
-  反向是梯度），核心洞察是：同一組權重，前向送訊號、反向送責任，兩者互為轉置。
-  請尊重 prefers-reduced-motion，動畫關閉時仍能靠靜態標註看懂兩個方向。
-caption: 一次訓練迭代裡的雙向資料流：前向傳播把像素推成預測，反向傳播把誤差沿同一組權重逐層送回。
+  一個方向切換的 MLP 資料流動畫。骨架是固定的三層網路，切換「前向傳播 / 反向傳播」
+  時流動方向與標註整組改變，凸顯兩者共用同一組權重。
+
+  網路骨架（切換時不變）：
+  - 輸入層：784 個像素，只畫 4 個代表節點加省略號
+  - 隱藏層：50 個神經元，畫 3 個代表節點加省略號
+  - 輸出層：10 個類別節點（數字 0–9），畫 3 個代表節點加省略號
+
+  前向傳播模式：訊號沿連線由左往右流動，依序點亮四個階段，每階段標出對應的量：
+  1. z_h = X · W_h + b_h（隱藏層淨輸入）
+  2. a_h = sigmoid(z_h)（隱藏層激活）
+  3. z_out = a_h · W_out + b_out（輸出層淨輸入）
+  4. a_out = sigmoid(z_out)，並在輸出層右側顯示與 one-hot 標籤比對後的損失 MSE
+
+  反向傳播模式：改由右往左流動，依序點亮三個階段：
+  1. delta_out = (a_out − y) × sigmoid'(z_out)（責任先在輸出層產生）
+  2. delta_h = (delta_out · W_out^T) × sigmoid'(z_h)（責任乘上權重轉置往回送）
+  3. 梯度落到 W_h 與 W_out，交給優化器更新
+
+  互動規則：一個二選一切換（前向 / 反向）加一個播放按鈕。切換方向時連線箭頭整組反轉，
+  配色從前向色系換到反向色系。權重連線本身用同一組線條，只是標籤從激活值換成梯度——
+  讓「同一組權重」這件事在視覺上明確。
+
+  視覺要求：
+  - 手寫 SVG，viewBox 寬度不超過 660，preserveAspectRatio="xMidYMid meet"
+  - 公式若放進 SVG text，字級不低於 12px；中文標註一律用 DOM 放在 SVG 下方
+    （中文在 SVG 裡估寬容易失準而被裁切；每個全形字要抓 1em）
+  - 前向與反向用兩個明顯不同的色系
+  - 尊重 prefers-reduced-motion：關閉動畫時兩個方向的標註仍完整可讀（改為一次全部顯示）
+
+  核心洞察：同一組權重，前向送訊號、反向送責任，兩者互為轉置。
+caption: 一次訓練迭代的雙向資料流：切換方向就會發現，前向與反向走的是同一組權重的兩面。
 status: generated
 */}
 
-import GeneratedFrame from '@/components/GeneratedFrame.astro'
-import MlWeek10Concept from '@/components/generated/ml-week10-concept'
+<GeneratedFrame id="ml-week10-two-directions" type="motion" prompt={"切換前向／反向傳播，看同一組權重怎麼雙向承載訊號與責任。"} caption={"一次訓練迭代的雙向資料流：切換方向就會發現，前向與反向走的是同一組權重的兩面。"}>
+  <MlWeek10TwoDirections client:visible />
+</GeneratedFrame>
 
-<GeneratedFrame id="ml-week10-concept" type="motion" prompt={"用可互動的動畫圖解 MLP 的一次訓練迭代：前向傳播訊號左→右、反向傳播誤差右→左，各層標出激活值與梯度，可切換兩個階段或自動循環，不同色系區分方向。"} caption="一次訓練迭代裡的雙向資料流：前向傳播把像素推成預測，反向傳播把誤差沿同一組權重逐層送回。">
-  <MlWeek10Concept client:visible />
+{/* @ai-visualize
+id: ml-week10-delta-chain
+type: diagram
+prompt: |
+  一張「責任鏈」的代數節奏圖，說明反向傳播為什麼只是同一個小動作重複執行。
+
+  由右往左三個階段，每階段是一個算式方塊：
+  1. 輸出層 —— delta_out = (a_out − y) × sigmoid'(z_out)
+     標註：損失對輸出激活的偏導 × 該層激活函數的導數
+  2. 隱藏層 —— delta_h = (delta_out · W_out^T) × sigmoid'(z_h)
+     標註：上一層的責任 × 權重轉置 × 該層激活函數的導數
+  3. 更深的層 —— delta_(l−1) = (delta_l · W_l^T) × f'(z_(l−1))
+     標註：每退一層就重複同一個動作
+
+  三個方塊下方橫貫一條「重複的節奏」帶，把每階段共通的兩個動作標出來：
+  - 動作 A：乘上該層權重的轉置（把責任往回分配）
+  - 動作 B：乘上該層激活函數的導數（過那一層的閘門）
+
+  視覺要求：
+  - 手寫 SVG，viewBox 寬度不超過 660，preserveAspectRatio="xMidYMid meet"
+  - 三個方塊排成一列若太擠就改直向排列，不要縮字級（內文欄實際只有 647px）
+  - 動作 A 與動作 B 在三個方塊中用同一組顏色標記，讓「重複」一眼可見
+  - 算式用等寬字，字級不低於 12px
+  - 中文說明用 DOM 放在 SVG 下方
+
+  核心洞察：反向傳播沒有新東西，只是「乘權重轉置、乘激活導數」這兩個動作
+  一層一層重複下去。
+caption: 責任鏈的節奏：每退一層就重複同樣兩個動作——乘權重轉置、乘激活導數。
+status: generated
+*/}
+
+<GeneratedFrame id="ml-week10-delta-chain" type="diagram" prompt={"反向傳播只是兩個動作一層層重複：乘權重轉置、乘激活導數。"} caption={"責任鏈的節奏：每退一層就重複同樣兩個動作——乘權重轉置、乘激活導數。"}>
+  <MlWeek10DeltaChain client:visible />
 </GeneratedFrame>
 
 ## 教材預習重點

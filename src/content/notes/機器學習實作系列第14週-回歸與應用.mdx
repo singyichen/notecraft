@@ -6,6 +6,10 @@ createdAt: "2026-12-07"
 updatedAt: "2026-12-07"
 ---
 
+import GeneratedFrame from '@/components/GeneratedFrame.astro'
+import MlWeek14ResidualDiagnosis from '@/components/generated/ml-week14-residual-diagnosis'
+import MlWeek14Regularization from '@/components/generated/ml-week14-regularization'
+
 # 第 14 週：回歸與應用
 
 *Regression and Applications*
@@ -46,34 +50,96 @@ updatedAt: "2026-12-07"
 > 延伸閱讀：[《Machine Learning with PyTorch and Scikit-Learn》ch09 程式碼與章節大綱](https://github.com/rasbt/machine-learning-book/tree/main/ch09)、[《Python Data Science Handbook》"In Depth: Linear Regression"](https://jakevdp.github.io/PythonDataScienceHandbook/05.06-linear-regression.html)（上文為獨立整理與舉例，非該書內容改寫）
 
 {/* @ai-visualize
-id: ml-week14-concept
-type: diagram
+id: ml-week14-residual-diagnosis
+type: motion
 prompt: |
-  畫一張「迴歸實作流程與除錯決策圖」，把整章串成一條可操作的路徑。
-  主幹由上往下四步：① 探索資料（散佈圖矩陣 + 相關係數矩陣）→
-  ② 用最小平方線性迴歸（OLS）配出基準線 → ③ 看評估指標（MSE / MAE / R²，
-  訓練 vs 測試）與殘差圖 → ④ 依殘差圖的「形狀」分岔出三條處方支線。
-  三條支線分別是：少數點殘差特別大（離群值）→ RANSAC，以內群點投票重配；
-  特徵多／欄位彼此高度相關（共線性、過擬合）→ 正則化，再細分 Ridge（L2，
-  係數壓小但不歸零）、Lasso（L1，係數直接壓成 0＝順手做特徵選擇）、
-  Elastic Net（兩者混合）；殘差呈結構性彎曲（非線性）→ 先試多項式／基底函數
-  迴歸（仍是線性模型，只是特徵空間被撐開，需搭配正則化），若仍不理想再換
-  決策樹迴歸（階梯狀擬合）與隨機森林迴歸（多樹平均）。
-  每條支線末端拉回主幹，形成「配模型 → 看殘差 → 對症下藥 → 再配」的迴圈。
-  要凸顯的洞察有三個：(a) 殘差圖的形狀直接對應該用哪一種處方；
-  (b) L1 與 L2 的差別在於「壓成 0」還是「只壓小」，用兩個小示意（係數長條圖，
-  一組有歸零的、一組只是變矮）標在 Ridge / Lasso 節點旁；
-  (c) 從線性模型換到樹模型的觸發條件（結構性彎曲、明顯交互作用）標在該分岔上。
-  手繪 SVG，不引入圖表函式庫；主幹用實線、支線用虛線，分岔點標註判斷依據。
-caption: 迴歸的實作流程與除錯決策圖：從探索資料到 OLS 基準線，再依殘差圖的形狀分別走向 RANSAC、正則化與非線性模型。
+  一個「看殘差圖的形狀，對症下藥」的互動診斷元件，並用一條迴圈把整個流程串起來。
+
+  三種殘差形狀，讀者可切換，每種顯示對應的散點圖、殘差圖與處方：
+
+  1. 少數點殘差特別大（離群值）
+     - 散點圖：一條明顯的線性趨勢，加三個離群點把回歸線拉歪
+     - 殘差圖：多數點在零線附近，三個點殘差極大
+     - 處方：RANSAC —— 隨機抽子集配線、以內群點投票，離群點不參與最終擬合
+
+  2. 特徵多、欄位彼此高度相關（共線性、過擬合）
+     - 散點圖：訓練點幾乎完美貼合一條扭曲的曲線，測試點散得很開
+     - 殘差圖：訓練殘差極小、測試殘差大（用兩種顏色區分）
+     - 處方：正則化 —— Ridge（L2）／ Lasso（L1）／ Elastic Net，
+       細節見同篇的 ml-week14-regularization 元件
+
+  3. 殘差呈結構性彎曲（非線性）
+     - 散點圖：資料本身是彎的，卻用直線硬配
+     - 殘差圖：殘差沿零線呈明顯的 U 形或波浪，不是隨機散布
+     - 處方：先試多項式／基底函數迴歸（仍是線性模型，只是特徵空間被撐開，
+       需搭配正則化）；若仍不理想再換決策樹迴歸（階梯狀擬合）與隨機森林迴歸（多樹平均）
+
+  版面下方固定顯示一條四步驟迴圈：
+  探索資料（散佈圖矩陣、相關係數矩陣）→ 用 OLS 配基準線 →
+  看指標（MSE / MAE / R²，訓練 vs 測試）與殘差圖 → 對症下藥 → 回到第 2 步
+
+  互動規則：三選一切換殘差形狀。切換時散點圖與殘差圖以 motion 交叉淡入，
+  處方文字同步更新，迴圈的「對症下藥」那一格高亮。
+
+  視覺要求：
+  - 散點圖與殘差圖「上下」排列，不要左右並排
+    （內文欄只有 647px，分兩欄後每欄僅約 310px，散點會擠成一團）
+  - 手寫 SVG，viewBox 寬度不超過 660，preserveAspectRatio="xMidYMid meet"
+  - 殘差圖的零線用虛線標出
+  - 處方文字與圖例一律用 DOM 放在 SVG 下方
+  - 尊重 prefers-reduced-motion
+
+  核心洞察：殘差圖的形狀直接對應該用哪一種處方——不是先挑模型，是先看殘差長什麼樣。
+caption: 殘差圖的形狀就是處方箋：離群點走 RANSAC、共線性走正則化、結構性彎曲才換非線性模型。
 status: generated
 */}
 
-import GeneratedFrame from '@/components/GeneratedFrame.astro'
-import MlWeek14Concept from '@/components/generated/ml-week14-concept'
+<GeneratedFrame id="ml-week14-residual-diagnosis" type="motion" prompt={"看殘差圖形狀對症下藥：離群點用 RANSAC、共線性用正則化、彎曲用非線性模型。"} caption={"殘差圖的形狀就是處方箋：離群點走 RANSAC、共線性走正則化、結構性彎曲才換非線性模型。"}>
+  <MlWeek14ResidualDiagnosis client:visible />
+</GeneratedFrame>
 
-<GeneratedFrame id="ml-week14-concept" type="diagram" prompt={"用流程決策圖展示迴歸實作：探索資料 → OLS 基準線 → 依殘差圖形狀分岔到 RANSAC、正則化與非線性模型，標註觸發條件與選擇理由。"} caption="迴歸的實作流程與除錯決策圖：從探索資料到 OLS 基準線，再依殘差圖的形狀分別走向 RANSAC、正則化與非線性模型。">
-  <MlWeek14Concept />
+{/* @ai-visualize
+id: ml-week14-regularization
+type: motion
+prompt: |
+  一個「L1 與 L2 差在哪」的互動元件，用係數長條圖讓「壓成 0」與「只壓小」
+  的差別被直接看見。
+
+  八個特徵的原始 OLS 係數（自行編寫，有正有負、量級不一）：
+  x1: 4.2、x2: −3.1、x3: 2.8、x4: 0.9、x5: −0.6、x6: 0.4、x7: −0.3、x8: 0.15
+
+  三種正則化，各自的係數結果：
+  - Ridge（L2）—— 全部係數等比例壓小，但沒有一個變成 0
+    結果：2.6, −1.9, 1.7, 0.55, −0.36, 0.24, −0.18, 0.09
+  - Lasso（L1）—— 小係數直接被壓成 0，等於順手做了特徵選擇
+    結果：3.1, −2.2, 1.9, 0.3, 0, 0, 0, 0
+  - Elastic Net —— 兩者混合，部分歸零但保留較多相關特徵
+    結果：2.8, −2.0, 1.8, 0.42, −0.15, 0, 0, 0
+
+  互動規則：
+  - 一個三選一切換（Ridge / Lasso / Elastic Net），另加一個正則化強度滑桿（弱 → 強）
+  - 切換方法時長條以 motion 過渡到新高度
+  - 拖動強度滑桿時，係數依該方法的特性連續變化：
+    Ridge 全部一起變矮；Lasso 由小到大依序歸零，歸零的長條變灰並標「已淘汰」
+  - 被壓成 0 的長條要有明確的視覺標記，不能只是變短
+
+  視覺要求：
+  - 長條圖用手寫 SVG（八根長條加一條零線），viewBox 寬度不超過 660，
+    preserveAspectRatio="xMidYMid meet"
+  - 正負係數分別畫在零線上下
+  - 三種方法用三種色票
+  - 底部一行對照：L1 會歸零（順手做特徵選擇）／ L2 只壓小（保留全部特徵）
+  - 滑桿與說明文字用 DOM，不要塞進 SVG
+  - 尊重 prefers-reduced-motion：關閉動畫時滑桿仍可用，只是不做過渡
+
+  核心洞察：L1 與 L2 的差別在於「壓成 0」還是「只壓小」——前者順手幫你選特徵，
+  後者保留全部但都不極端。
+caption: 拉大正則化強度會發生什麼：L2 把所有係數一起壓矮，L1 則是把小的一個個壓成零。
+status: generated
+*/}
+
+<GeneratedFrame id="ml-week14-regularization" type="motion" prompt={"L1 與 L2 的差別：L2 全部係數等比縮小，L1 把小係數直接壓成零做特徵選擇。"} caption={"拉大正則化強度會發生什麼：L2 把所有係數一起壓矮，L1 則是把小的一個個壓成零。"}>
+  <MlWeek14Regularization client:visible />
 </GeneratedFrame>
 
 ## 教材預習重點

@@ -6,6 +6,11 @@ createdAt: "2026-10-12"
 updatedAt: "2026-10-12"
 ---
 
+import GeneratedFrame from '@/components/GeneratedFrame.astro'
+import MlWeek6ScalingDivide from '@/components/generated/ml-week6-scaling-divide'
+import MlWeek6CostTradeoff from '@/components/generated/ml-week6-cost-tradeoff'
+import MlWeek6ClassifierTable from '@/components/generated/ml-week6-classifier-table'
+
 # 第 6 週：Scikit-learn 機器學習
 
 *Machine Learning in Python: Scikit-learn*
@@ -48,30 +53,119 @@ ch03 起，手刻的東西全被包成同一種形狀：輸入固定是二維特
 > [《Python Data Science Handbook》"Introducing Scikit-Learn"](https://jakevdp.github.io/PythonDataScienceHandbook/05.02-introducing-scikit-learn.html)（上文為獨立整理與舉例，非該書內容改寫）
 
 {/* @ai-visualize
-id: ml-week6-concept
-type: table
+id: ml-week6-scaling-divide
+type: motion
 prompt: |
-  用一張比較表把 ch02–ch03 走過的分類器擺在一起，讓「怎麼挑演算法」從名詞清單變成
-  可以直接查的判斷依據。
-  列（由簡到繁）：感知器 / Adaline、邏輯斯迴歸、線性 SVM、RBF 核 SVM、決策樹、
-  隨機森林、k 近鄰（KNN）。
-  欄位：決策邊界形狀（直線／曲面／軸平行切割／鄰域投票）、是否需要特徵縮放、
-  輸出是否為機率、可解釋性高低、訓練成本 vs 預測成本、主要調參旋鈕（學習率、C、
-  gamma、樹深、n_estimators、k）、典型適用情境一句話。
-  要凸顯的洞察有兩個：（1）「是否需要特徵縮放」這欄的是／否分界，正好切在「靠距離或
-  靠梯度學習」與「只比大小」兩類模型之間，請用色塊或圖示讓這條分界一眼可見；
-  （2）「訓練成本 vs 預測成本」欄要凸顯 KNN 與核 SVM 的相反取捨（KNN 訓練免費、預測昂貴；
-  核 SVM 訓練昂貴、預測便宜）。
-  用 Tailwind 的 <table> 呈現，不要做成 SVG；強弱以圖示或色票標記，表格在窄螢幕可橫向捲動。
-caption: 七種分類器的對照表：決策邊界形狀、是否需要特徵縮放、可解釋性與主要調參旋鈕一次比較。
+  一個「哪些分類器需要特徵縮放」的互動分界元件。七個分類器分成兩組，
+  讀者可切換「只看分組 / 顯示原因」把分界的理由攤開。
+
+  需要特徵縮放（靠距離或靠梯度學習）：
+  - 感知器 / Adaline —— 梯度下降，特徵尺度會改變有效步長
+  - 邏輯斯迴歸 —— 梯度下降，同上
+  - 線性 SVM —— 靠間隔（距離）定義最佳邊界
+  - RBF 核 SVM —— 核函數直接吃歐氏距離
+  - k 近鄰（KNN）—— 整個演算法就是在算距離
+
+  不需要特徵縮放（只比大小）：
+  - 決策樹 —— 每次分裂只問「這個特徵大於某閾值嗎」
+  - 隨機森林 —— 多棵決策樹，同上
+
+  互動規則：一個二選一切換。「只看分組」時七張卡片依歸屬排成左右兩欄；
+  「顯示原因」時每張卡片以 motion 展開一行理由，並在兩欄之間畫出一條明確分界線，
+  線上標註「靠距離或靠梯度 ↔ 只比大小」。
+
+  視覺要求：
+  - 兩欄用 grid-cols-2 固定值，禁止使用 sm: / md: 等 viewport breakpoint
+    （內文欄實際只有 647px）
+  - 兩組用兩種色票區分，分界線用 notecraft-design 的強調色
+  - 卡片不要自帶外框陰影（外框由 GeneratedFrame 統一提供）
+  - 尊重 prefers-reduced-motion
+
+  核心洞察：「是否需要特徵縮放」的分界，正好切在「靠距離或靠梯度學習」與
+  「只比大小」兩類模型之間。
+caption: 要不要做特徵縮放的那條線：靠距離或靠梯度學習的模型全部要，只比大小的樹模型全部不用。
 status: generated
 */}
 
-import GeneratedFrame from '@/components/GeneratedFrame.astro'
-import MlWeek6Concept from '@/components/generated/ml-week6-concept'
+<GeneratedFrame id="ml-week6-scaling-divide" type="motion" prompt={"七個分類器按是否需特徵縮放分組互動展示，切換分界線與理由。"} caption={"要不要做特徵縮放的那條線：靠距離或靠梯度學習的模型全部要，只比大小的樹模型全部不用。"}>
+  <MlWeek6ScalingDivide client:visible />
+</GeneratedFrame>
 
-<GeneratedFrame id="ml-week6-concept" type="table" prompt={"用 Tailwind 表格比較七種分類器的決策邊界、特徵縮放需求、可解釋性、訓練/預測成本與調參旋鈕，凸顯縮放與成本取捨的分界。"} caption="七種分類器的對照表：決策邊界形狀、是否需要特徵縮放、可解釋性與主要調參旋鈕一次比較。">
-  <MlWeek6Concept />
+{/* @ai-visualize
+id: ml-week6-cost-tradeoff
+type: motion
+prompt: |
+  一張「訓練成本 vs 預測成本」的二維定位圖，把七個分類器放在座標上，
+  凸顯 KNN 與核 SVM 是完全相反的取捨。
+
+  座標軸：橫軸「訓練成本」低→高，縱軸「預測成本」低→高。兩軸都是相對量級，
+  不需要真實數值，標低 / 中 / 高三個刻度即可。
+
+  七個分類器的位置：
+  - KNN —— 訓練極低、預測高（訓練只是把資料存起來，預測要跟每個樣本比距離）
+  - RBF 核 SVM —— 訓練高、預測低（訓練要解二次規劃，預測只跟支援向量比）
+  - 感知器 / Adaline —— 訓練低、預測低
+  - 邏輯斯迴歸 —— 訓練低、預測低
+  - 線性 SVM —— 訓練中、預測低
+  - 決策樹 —— 訓練中、預測低
+  - 隨機森林 —— 訓練高、預測中
+
+  互動規則：點選任一個點，下方面板顯示該分類器的主要調參旋鈕：
+  - 感知器 / Adaline —— 學習率 eta、迭代次數 n_iter
+  - 邏輯斯迴歸 —— 正則化強度 C
+  - 線性 SVM —— C
+  - RBF 核 SVM —— C、gamma
+  - 決策樹 —— max_depth
+  - 隨機森林 —— n_estimators、max_depth
+  - KNN —— k（n_neighbors）
+
+  視覺要求：
+  - 散點用手寫 SVG，viewBox 寬度不超過 660，preserveAspectRatio="xMidYMid meet"
+  - KNN 與核 SVM 兩點用強調色，並以一條虛線連起來標註「相反的取捨」，其餘五點用中性色
+  - 說明面板用 DOM 放在 SVG 下方，不要塞進 SVG（中文標註在 SVG 裡最容易被裁切）
+  - 面板固定高度，避免點選時版面跳動
+  - 尊重 prefers-reduced-motion
+
+  核心洞察：KNN 訓練免費、預測昂貴；核 SVM 訓練昂貴、預測便宜——
+  成本會從哪一端付出去，決定它適不適合你的場景。
+caption: 七個分類器的成本定位：KNN 把帳單留到預測時才付，核 SVM 則是先付清再享受便宜的預測。
+status: generated
+*/}
+
+<GeneratedFrame id="ml-week6-cost-tradeoff" type="motion" prompt={"七個分類器在訓練與預測成本座標上的定位，點選檢視調參旋鈕。"} caption={"七個分類器的成本定位：KNN 把帳單留到預測時才付，核 SVM 則是先付清再享受便宜的預測。"}>
+  <MlWeek6CostTradeoff client:visible />
+</GeneratedFrame>
+
+{/* @ai-visualize
+id: ml-week6-classifier-table
+type: table
+prompt: |
+  用 Tailwind <table> 做一張七個分類器的速查表，只放四欄。
+  不要重複同篇另外兩個元件已經處理的「是否需要特徵縮放」與「訓練 / 預測成本」。
+
+  列（7 列，由簡到繁）：感知器 / Adaline、邏輯斯迴歸、線性 SVM、RBF 核 SVM、
+  決策樹、隨機森林、k 近鄰（KNN）
+
+  欄（4 欄）：
+  1. 分類器
+  2. 決策邊界形狀 —— 直線 ／ 直線 ／ 直線（最大間隔）／ 曲面 ／ 軸平行切割 ／
+     多棵樹的軸平行切割平均 ／ 鄰域投票（不規則）
+  3. 輸出是否為機率 —— 否 ／ 是 ／ 否（需 Platt scaling）／ 否（需 Platt scaling）／
+     是（葉節點比例）／ 是（多樹投票比例）／ 是（鄰居比例）
+  4. 可解釋性 —— 高 ／ 高 ／ 中 ／ 低 ／ 高 ／ 中 ／ 中
+
+  視覺要求：
+  - 「輸出是否為機率」用 lucide-react 的 Check / X 圖示搭配一行小字，不要用 emoji
+  - 「可解釋性」用三段色塊（高 / 中 / 低）標記，讓縱向比較一眼可見
+  - 表格外層包一層 overflow-x: auto 容器
+  - 不要限制寬度在 max-w-3xl（.nc-prose 上限 760px，max-w-3xl 是 768px，永遠不會生效）
+  - 不要做成 SVG
+caption: 七個分類器的速查表：決策邊界形狀、能不能直接吐機率，以及可解釋性高低。
+status: generated
+*/}
+
+<GeneratedFrame id="ml-week6-classifier-table" type="table" prompt={"七個分類器的速查表，比較決策邊界、機率輸出、可解釋性等四個維度。"} caption={"七個分類器的速查表：決策邊界形狀、能不能直接吐機率，以及可解釋性高低。"}>
+  <MlWeek6ClassifierTable />
 </GeneratedFrame>
 
 ## 教材預習重點

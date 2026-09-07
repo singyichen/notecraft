@@ -6,6 +6,10 @@ createdAt: "2026-09-21"
 updatedAt: "2026-09-21"
 ---
 
+import GeneratedFrame from '@/components/GeneratedFrame.astro'
+import MlWeek3TwoLayers from '@/components/generated/ml-week3-two-layers'
+import MlWeek3Pipeline from '@/components/generated/ml-week3-pipeline'
+
 # 第 3 週：NumPy 與 Pandas
 
 *Scientific Computing and Data Analysis in Python: NumPy and Pandas*
@@ -47,34 +51,76 @@ NumPy 假設資料是整齊的數字方陣，真實資料卻長得像報表：�
 > 延伸閱讀：[《Python Data Science Handbook》Part 2: Introduction to NumPy](https://jakevdp.github.io/PythonDataScienceHandbook/02.00-introduction-to-numpy.html)、[Part 3: Data Manipulation with Pandas](https://jakevdp.github.io/PythonDataScienceHandbook/03.00-introduction-to-pandas.html)（上文為獨立整理與舉例，非該書內容改寫）
 
 {/* @ai-visualize
-id: ml-week3-concept
-type: diagram
+id: ml-week3-two-layers
+type: motion
 prompt: |
-  畫一張「資料處理工具分層地圖」，把 NumPy 與 Pandas 的職責與接力關係一次說清楚。
-  版面分成上下兩層加一條貫穿的流程軸：
-  下層「NumPy：同型別數值運算」以 ndarray 為中心節點，向外接出五個能力節點——
-  向量化 / ufuncs、聚合（含 axis 是「被壓扁的維度」這個標註）、廣播、布林遮罩、
-  花式索引，每個節點旁附一行極短的代表寫法（如 `X - X.mean(axis=0)`、
-  `temps[temps > 30]`）。
-  上層「Pandas：有欄名的真實表格」以 Series / DataFrame 為中心節點，向外接出
-  五個能力節點——`.loc` / `.iloc`、缺失值處理、groupby、concat / merge / join、
-  樞紐分析表與時間序列，同樣各附一行代表寫法。
-  兩層之間用一條粗箭頭標示「DataFrame 底下就是 ndarray」，表示上層的廣播、遮罩、
-  聚合其實沿用下層同一套機制。
-  最下方橫貫一條流程軸：讀檔 → 清缺值 → 合併 → 分組算特徵 → `.to_numpy()` →
-  交給模型，並用底色區分哪幾段屬於 Pandas、哪幾段屬於 NumPy。
-  要凸顯的洞察有兩個：(1) 選型判斷是「有沒有欄名 / 型別是否一致」而不是資料大小；
-  (2) 兩者不是二選一，而是同一條管線上的前後段。
-  手繪 SVG，不引入圖表函式庫。
-caption: NumPy 與 Pandas 的分層地圖：下層是 ndarray 的向量化能力，上層是 DataFrame 的表格操作，兩者在同一條資料處理管線上接力。
+  一個「NumPy 與 Pandas 分層對照」的切換元件。上方一個二選一切換（NumPy / Pandas），
+  下方顯示該層的中心物件與五個能力節點。兩層之間固定顯示一條關係帶，切換時不消失。
+
+  NumPy 層（中心物件 ndarray，副標「同型別數值運算」）的五個能力節點，
+  每個節點附一行極短的代表寫法：
+  - 向量化 / ufuncs —— X * 2 + 1
+  - 聚合（axis 是「被壓扁的維度」）—— X.mean(axis=0)
+  - 廣播 —— X - X.mean(axis=0)
+  - 布林遮罩 —— temps[temps > 30]
+  - 花式索引 —— X[[0, 2, 5]]
+
+  Pandas 層（中心物件 Series / DataFrame，副標「有欄名的真實表格」）的五個能力節點：
+  - .loc / .iloc —— df.loc["2024-01", "close"]
+  - 缺失值處理 —— df.fillna(df.mean())
+  - groupby —— df.groupby("city")["temp"].mean()
+  - concat / merge / join —— df.merge(other, on="id")
+  - 樞紐分析與時間序列 —— df.pivot_table(index="city")
+
+  互動規則：切換時五個能力節點以 motion 逐一淡入（stagger 約 40ms），中心物件名稱同步變換。
+  兩層的能力節點刻意採相同的排列位置，讓讀者看出上層是下層同一套機制的延伸。
+
+  視覺要求：
+  - 中心物件置左，五個能力節點以 flex-wrap 排在右側；禁止使用 sm: / md: 等 viewport breakpoint
+    （內文欄實際只有 647px）
+  - 代表寫法用等寬字，字級不低於 12px
+  - 關係帶用一條粗橫箭頭，文字為「DataFrame 底下就是 ndarray：廣播、遮罩、聚合沿用同一套機制」
+  - 尊重 prefers-reduced-motion，關閉動畫時五個節點一次顯示
+
+  核心洞察：選型判斷是「有沒有欄名、型別是否一致」，不是資料大小。
+caption: NumPy 與 Pandas 的分層對照：切換兩層看各自的五個看家本領，以及 DataFrame 底下其實就是 ndarray。
 status: generated
 */}
 
-import GeneratedFrame from '@/components/GeneratedFrame.astro'
-import MlWeek3Concept from '@/components/generated/ml-week3-concept'
+<GeneratedFrame id="ml-week3-two-layers" type="motion" prompt={"切換 NumPy / Pandas 兩層，看各自的五個能力節點與相互關係。"} caption={"NumPy 與 Pandas 的分層對照：切換兩層看各自的五個看家本領，以及 DataFrame 底下其實就是 ndarray。"}>
+  <MlWeek3TwoLayers client:visible />
+</GeneratedFrame>
 
-<GeneratedFrame id="ml-week3-concept" type="diagram" prompt={"用手寫 SVG 分層地圖展示資料處理工具的架構：下層 NumPy ndarray 的向量化能力（廣播、遮罩、聚合），上層 Pandas DataFrame 的表格操作（groupby、merge、時間序列），中間示意兩層銜接，下方流程軸展示讀檔到交給模型的完整資料處理管線。"} caption="NumPy 與 Pandas 的分層地圖：下層是 ndarray 的向量化能力，上層是 DataFrame 的表格操作，兩者在同一條資料處理管線上接力。">
-  <MlWeek3Concept />
+{/* @ai-visualize
+id: ml-week3-pipeline
+type: diagram
+prompt: |
+  一條由左到右的資料處理流程軸，六個步驟，用底色標出每一段屬於誰。
+
+  六個步驟，每步附一行代表寫法：
+  1. 讀檔 —— pd.read_csv()（Pandas）
+  2. 清缺值 —— df.dropna() / df.fillna()（Pandas）
+  3. 合併 —— df.merge(other, on="id")（Pandas）
+  4. 分組算特徵 —— df.groupby("city").agg(...)（Pandas）
+  5. 交接 —— X = df.to_numpy()（交界）
+  6. 交給模型 —— model.fit(X, y)（NumPy）
+
+  視覺要求：
+  - 手寫 SVG，viewBox 寬度不超過 660，加 preserveAspectRatio="xMidYMid meet"
+  - 六個步驟若一列排不下就排成兩列蛇形（第一列左→右，第二列右→左），
+    不要硬擠成一列導致字級被壓小
+  - Pandas 段與 NumPy 段用兩種底色帶區分，第 5 步 .to_numpy() 畫成兩色交界的閘門
+  - 代表寫法用等寬字，字級不低於 12px
+  - 中文標籤估寬時每個全形字抓 1em（字級 14px 就抓 14px 寬）；
+    放不下時縮短文字，不要縮字級
+
+  核心洞察：NumPy 與 Pandas 不是二選一，而是同一條管線上的前後段。
+caption: 一條資料處理管線：前段由 Pandas 清理與組裝，.to_numpy() 之後交棒給 NumPy 與模型。
+status: generated
+*/}
+
+<GeneratedFrame id="ml-week3-pipeline" type="diagram" prompt={"一條資料管線：前段 Pandas 清理與組裝，後段 NumPy 與模型訓練。"} caption={"一條資料處理管線：前段由 Pandas 清理與組裝，.to_numpy() 之後交棒給 NumPy 與模型。"}>
+  <MlWeek3Pipeline />
 </GeneratedFrame>
 
 ## 教材預習重點

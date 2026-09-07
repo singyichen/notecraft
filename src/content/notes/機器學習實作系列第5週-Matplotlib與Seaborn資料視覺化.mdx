@@ -48,43 +48,119 @@ Matplotlib 最容易絆倒人的不是函式名稱，而是同一件事有兩種
 
 > 延伸閱讀：[《Python Data Science Handbook》Part 4: Visualization with Matplotlib](https://jakevdp.github.io/PythonDataScienceHandbook/04.00-introduction-to-matplotlib.html)（上文為獨立整理與舉例，非該書內容改寫）
 
+import GeneratedFrame from '@/components/GeneratedFrame.astro'
+import MlWeek5TwoInterfaces from '@/components/generated/ml-week5-two-interfaces'
+import MlWeek5FigureAnatomy from '@/components/generated/ml-week5-figure-anatomy'
+import MlWeek5PlotSelector from '@/components/generated/ml-week5-plot-selector'
+
 {/* @ai-visualize
-id: ml-week5-concept
-type: diagram
+id: ml-week5-two-interfaces
+type: motion
 prompt: |
-  一張整合「圖形解剖 × 兩套介面 × 繪圖選型」的示意圖，分成三區：
+  互動對照「狀態式」與「物件導向」兩套 Matplotlib 介面，凸顯 gca 這個看不見的
+  全域狀態何時會咬人。
 
-  （1）左區畫 Figure／Axes 的容器層級：一個大的 Figure 外框內放兩個 Axes 子圖，
-      以細引線標出各元件落在哪一層——座標軸與刻度、折線／散點、誤差棒
-      （errorbar）、圖例（legend）、色條（colorbar）、標註文字與箭頭
-      （annotation）。要凸顯的洞察是「Figure 是整張畫布，Axes 是一整張有座標軸
-      的子圖，不是一條軸」這個最常被誤解的層級關係。
+  情境切換（元件頂端一組兩顆的切換鈕，預設停在「單一 Axes」）：
+    - 單一 Axes：畫布上只有一個作圖區
+    - 多子圖（2x1）：畫布上有上下兩個作圖區
 
-  （2）右上區做兩套介面的呼叫路徑對照：狀態式的 plt.plot() / plt.title() 要先經過
-      一個虛線框的隱含節點「目前這張圖（gca）」才連到某個 Axes；物件導向的
-      fig, ax = plt.subplots() 則以實線直接連到指名的 ax.plot() / ax.set_title()。
-      用虛線 vs 實線凸顯「隱含 vs 明確」，並在多子圖情境旁標一句：狀態式介面
-      在多個 Axes 下容易畫錯地方。
+  左欄「狀態式（MATLAB 風格）」，由上而下三個節點：
+    plt.plot() → 目前這張圖 gca（虛線框，標「隱含」）→ 實際被畫到的 Axes
+  右欄「物件導向」，由上而下三個節點：
+    fig, ax = plt.subplots() → ax（實線框，標「明確」）→ ax.plot() 指名的 Axes
 
-  （3）下方一條橫向決策帶：從「想回答什麼問題」分支到該用的函式——隨序列變化
-      的趨勢 → plt.plot；兩變數關係且想用大小／顏色多編碼變數 → plt.scatter；
-      單變數分布 → plt.hist（附註 bin 寬度是關鍵旋鈕，太寬壓掉雙峰、太窄全是
-      雜訊）；雙變數密度 → hist2d／hexbin／KDE；網格上的函數場 → contour／
-      contourf；要呈現不確定性 → errorbar／fill_between；要一次掃多欄位或做統計
-      摘要 → Seaborn（pairplot／jointplot／FacetGrid）。決策帶最右端用兩個對比
-      色塊收束成本週的判斷依據：「探索式：畫給自己，快而多，可丟棄」與
-      「解釋式：畫給別人，一圖一結論」。
+  互動行為：
+    - 切到「單一 Axes」時，兩欄的箭頭都指向同一個作圖區，右側畫布兩個路徑
+      都亮綠色，底部結論列顯示「只有一個 Axes 時，兩套寫法結果相同」
+    - 切到「多子圖」時，狀態式那欄的箭頭指向「最後一次被建立/觸碰的子圖」並
+      標成警示色，物件導向那欄仍精準指向 ax[0]，底部結論列顯示
+      「多個 Axes 時，狀態式會畫到你以為之外的地方」
 
-  手繪 SVG，不引入圖表函式庫。
-caption: Matplotlib 的圖形解剖與兩套介面對照，以及從「想回答什麼問題」出發的繪圖選型決策帶。
+  右側附一張小畫布示意圖，隨情境切換顯示 1 個或 2 個作圖區，被指到的那格高亮。
+
+  另附一組方法名對照（四列即可）：plt.plot / ax.plot、plt.title / ax.set_title、
+  plt.xlabel / ax.set_xlabel、plt.xlim / ax.set_xlim，凸顯多半只差一個 set_ 前綴，
+  混著抄就會出錯。
+
+  以 DOM 元素加 motion 過場實作，不要畫成一整張座標寫死的 SVG。
+caption: 兩套 Matplotlib 介面的呼叫路徑對照：切到多子圖就能看出狀態式介面的 gca 是個看不見的全域變數。
 status: generated
 */}
 
-import GeneratedFrame from '@/components/GeneratedFrame.astro'
-import MlWeek5Concept from '@/components/generated/ml-week5-concept'
+<GeneratedFrame id="ml-week5-two-interfaces" type="motion" prompt={"切換「單一 Axes / 多子圖」，對照狀態式與物件導向兩套 Matplotlib 介面的呼叫路徑，看 gca 這個隱含全域狀態何時會咬人。"} caption={"兩套 Matplotlib 介面的呼叫路徑對照：切到多子圖就能看出狀態式介面的 gca 是個看不見的全域變數。"}>
+  <MlWeek5TwoInterfaces client:visible />
+</GeneratedFrame>
 
-<GeneratedFrame id="ml-week5-concept" type="diagram" prompt={"用手繪 SVG 展示 Matplotlib 的圖形解剖、兩套介面對照與繪圖選型決策。"} caption="Matplotlib 的圖形解剖與兩套介面對照，以及從「想回答什麼問題」出發的繪圖選型決策帶。">
-  <MlWeek5Concept />
+{/* @ai-visualize
+id: ml-week5-figure-anatomy
+type: diagram
+prompt: |
+  互動解剖一張 Matplotlib 圖的組成層級，釐清「Figure 是整張畫布，Axes 是一整個
+  有座標軸的作圖區（不是一條軸）」這個最常被誤解的關係。
+
+  主視覺：一個外框代表 Figure，內含一個 Axes 作圖區，作圖區裡有一條折線、
+  幾個散點、一組誤差棒、一個圖例方塊、右側一條色條、一個帶箭頭的標註。
+
+  左側（或上方）列出可點的元件清單，點任一項就在主視覺中高亮對應部位，並顯示
+  一行說明與對應的呼叫方法：
+    - Figure — 整張畫布，一張圖只有一個 — plt.figure() / plt.subplots()
+    - Axes — 一個有座標軸的作圖區，可以有很多個 — fig.add_subplot() / ax
+    - Axis（座標軸與刻度）— 一個 Axes 底下的 x 軸與 y 軸 — ax.set_xlim() / ax.set_xticks()
+    - 折線與散點 — 資料本體 — ax.plot() / ax.scatter()
+    - 誤差棒 — 每點的不確定範圍，通常調得比資料點更淡 — ax.errorbar()
+    - 圖例 — 自動蒐集帶 label 的元素 — ax.legend(loc=, frameon=, ncol=)
+    - 色條 — 顏色在編碼數值時必須附的刻度尺 — fig.colorbar()
+    - 標註 — 把「一堆線」變成「一個結論」— ax.annotate() / ax.text()
+
+  預設狀態不高亮任何項目，主視覺完整顯示。標題列附一句定位：
+  Figure ⊃ Axes ⊃ Axis，三個名字很像但層級不同。
+
+  主視覺可用單一 SVG，但必須帶 viewBox 且 width 100%，內部文字不得超出所屬區塊。
+caption: 一張 Matplotlib 圖的組成層級：點選任一元件，看它落在 Figure、Axes、Axis 的哪一層。
+status: generated
+*/}
+
+<GeneratedFrame id="ml-week5-figure-anatomy" type="diagram" prompt={"點選任一元件，看它落在 Figure、Axes、Axis 的哪一層，並顯示對應的呼叫方法。"} caption={"一張 Matplotlib 圖的組成層級：點選任一元件，看它落在 Figure、Axes、Axis 的哪一層。"}>
+  <MlWeek5FigureAnatomy client:visible />
+</GeneratedFrame>
+
+{/* @ai-visualize
+id: ml-week5-plot-selector
+type: motion
+prompt: |
+  互動式繪圖選型器：從「這張圖想回答什麼問題」出發，選出該用的函式。
+
+  第一層，六個可點的問題卡：
+    - 這個量隨序列怎麼變化？
+    - 兩個變數有沒有關係？
+    - 單一變數的分布長什麼樣？
+    - 兩個變數的密度分布？
+    - 網格上的函數場長什麼樣？
+    - 我想誠實表達不確定性
+
+  點下去後在下方展開對應的答案卡，每張含函式名、一句選用理由、一個關鍵旋鈕提醒：
+    - 隨序列變化 → plt.plot — 連成折線看趨勢 — 旋鈕：加 'o' 也能畫點，但全部共用一組樣式
+    - 兩變數關係 → plt.scatter — 可逐點指定大小 s、顏色 c、透明度 alpha —
+      旋鈕：一張二維圖能塞進四個變數，代價是點多時較慢
+    - 單變數分布 → plt.hist — 切箱再數每箱幾筆 —
+      旋鈕：箱寬是最關鍵的旋鈕，太寬壓掉雙峰、太窄整張都是雜訊
+    - 雙變數密度 → plt.hist2d / plt.hexbin / KDE — 旋鈕：hexbin 的相鄰距離一致
+    - 網格函數場 → plt.contour / plt.contourf — 旋鈕：慣例是 contourf 打底、contour 疊邊
+    - 不確定性 → plt.errorbar / plt.fill_between —
+      旋鈕：離散點用 errorbar，連續信賴區間用 fill_between
+
+  另設一個獨立的切換（不要跟上面的問題卡混在同一層）：「探索式 / 解釋式」。
+  切到探索式時，答案卡右上出現一個 Seaborn 徽章，並顯示對應的高階替代
+  （pairplot / jointplot / FacetGrid），底部提示「畫給自己，快而多，可丟棄」；
+  切到解釋式時徽章消失，底部提示「畫給別人，一圖一結論，落回 Axes 慢慢調」。
+
+  以 DOM 卡片加 motion 展開實作，不要用手繪 SVG 排版。
+caption: 從「想回答什麼問題」反推繪圖函式，並用探索式／解釋式切換看 Seaborn 何時能省下二三十行樣板碼。
+status: generated
+*/}
+
+<GeneratedFrame id="ml-week5-plot-selector" type="motion" prompt={"從「想回答什麼問題」反推該用的繪圖函式，並用探索式／解釋式切換看 Seaborn 何時能省下樣板碼。"} caption={"從「想回答什麼問題」反推繪圖函式，並用探索式／解釋式切換看 Seaborn 何時能省下二三十行樣板碼。"}>
+  <MlWeek5PlotSelector client:visible />
 </GeneratedFrame>
 
 ## 教材預習重點

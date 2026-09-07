@@ -6,6 +6,10 @@ createdAt: "2026-10-19"
 updatedAt: "2026-10-19"
 ---
 
+import GeneratedFrame from '@/components/GeneratedFrame.astro'
+import MlWeek7LeakageContrast from '@/components/generated/ml-week7-leakage-contrast'
+import MlWeek7PipelineInFold from '@/components/generated/ml-week7-pipeline-in-fold'
+
 # 第 7 週：資料前處理、特徵工程與模型選擇評估
 
 *Data Preprocessing and Feature Engineering. Model Selection and Evaluation*
@@ -45,31 +49,81 @@ updatedAt: "2026-10-19"
 > 延伸閱讀：[《Machine Learning with PyTorch and Scikit-Learn》ch04、ch06 程式碼與章節大綱](https://github.com/rasbt/machine-learning-book)、[《Python Data Science Handbook》"Hyperparameters and Model Validation"](https://jakevdp.github.io/PythonDataScienceHandbook/05.03-hyperparameters-and-model-validation.html)（上文為獨立整理與舉例，非該書內容改寫）
 
 {/* @ai-visualize
-id: ml-week7-concept
-type: diagram
+id: ml-week7-leakage-contrast
+type: motion
 prompt: |
-  用手寫 SVG 上下並排對比兩種模型評估流程，凸顯資料洩漏（data leakage）
-  究竟發生在哪一步。
-  上排「會洩漏的做法」：整份原始資料 → 補缺值／one-hot／標準化（在這個節點
-  加一個警示標記：轉換器的統計量已經看過全部資料）→ 才切 train/test 與 k 個
-  fold → 交叉驗證分數虛高。
-  下排「正確做法」：原始資料 → 先切出 test 留到最後 → 訓練集再切成 k 個 fold
-  → 每個 fold 內部各自跑一次 pipeline（補缺值 → one-hot → 標準化 → 模型），
-  轉換器只用該 fold 的訓練部分 fit、對驗證部分只做 transform → k 個分數取
-  平均與標準差 → 最後才用一次 test 確認。
-  把 pipeline 畫成一個框住「補缺值 → one-hot → 標準化 → 模型」的容器，
-  用箭頭清楚標示 fit 只發生在 fold 內的訓練部分、驗證部分只有 transform。
-  右側附小圖例說明兩條流程得到的分數差異（虛高 vs 誠實估計）。
-  手繪 SVG，不引入圖表函式庫。
-caption: 資料洩漏發生在哪裡：把前處理放在切分之前，和把它包進 pipeline、在每個 fold 內各自 fit 的差別。
+  一個上下並排、可逐步播放的對比元件，凸顯資料洩漏究竟發生在哪一步。
+
+  上排「會洩漏的做法」四個步驟：
+  1. 整份原始資料
+  2. 補缺值 / one-hot / 標準化 ← 這一步標警示：轉換器的統計量已經看過全部資料
+  3. 才切 train / test 與 k 個 fold
+  4. 交叉驗證分數虛高
+
+  下排「正確做法」四個步驟：
+  1. 原始資料
+  2. 先切出 test，留到最後才動
+  3. 訓練集再切成 k 個 fold，每個 fold 內各自跑一次 pipeline
+  4. k 個分數取平均與標準差，最後才用一次 test 確認
+
+  互動規則：一個「下一步」按鈕加 1–4 的步驟指示器，上下兩排同步推進到同一步，
+  讓讀者看到兩條路在第 2、3 步就分岔了。推進到上排第 2 步時，警示標記以 motion 淡入。
+
+  視覺要求：
+  - 上下兩排各自是一列四個節點，用 flex-wrap，節點過窄時自動換行；
+    禁止使用 sm: / md: 等 viewport breakpoint（內文欄實際只有 647px）
+  - 上排用警示色系，下排用正常色系
+  - 第 4 步右側各標一個分數示意：上排「0.95（虛高）」、下排「0.87 ± 0.03（誠實估計）」
+  - 警示圖示用 lucide-react 的 TriangleAlert，不要用 emoji
+  - 尊重 prefers-reduced-motion，關閉動畫時四步一次顯示
+
+  核心洞察：洩漏不是模型的問題，是「轉換器在切分之前就看過測試資料」造成的。
+caption: 洩漏發生在哪一步：把前處理放在切分之前，分數會虛高；先切再處理，才是誠實的估計。
 status: generated
 */}
 
-import GeneratedFrame from '@/components/GeneratedFrame.astro'
-import MlWeek7Concept from '@/components/generated/ml-week7-concept'
+<GeneratedFrame id="ml-week7-leakage-contrast" type="motion" prompt={"對比會洩漏與正確做法，逐步展示資料洩漏發生在前處理的哪一步。"} caption={"洩漏發生在哪一步：把前處理放在切分之前，分數會虛高；先切再處理，才是誠實的估計。"}>
+  <MlWeek7LeakageContrast client:visible />
+</GeneratedFrame>
 
-<GeneratedFrame id="ml-week7-concept" type="diagram" prompt={"用手寫 SVG 上下對比兩種模型評估流程，凸顯資料洩漏的發生位置：上排會洩漏的做法（先全資料轉換再切分），下排正確做法（先切分再在 pipeline 內各自轉換），右側附圖例說明分數差異。"} caption="資料洩漏發生在哪裡：把前處理放在切分之前，和把它包進 pipeline、在每個 fold 內各自 fit 的差別。">
-  <MlWeek7Concept />
+{/* @ai-visualize
+id: ml-week7-pipeline-in-fold
+type: motion
+prompt: |
+  放大單一 fold 的內部，說明 pipeline 裡的 fit 與 transform 分別發生在哪。
+
+  版面（上下兩區）：
+  上區是 k = 5 的 fold 條狀圖——五條橫帶，當前 fold 的驗證段用強調色，其餘四段是訓練段。
+  下區是被放大的當前 fold 內部。
+
+  下區的 pipeline 容器，框住四個依序串接的階段：
+  1. 補缺值 SimpleImputer
+  2. one-hot OneHotEncoder
+  3. 標準化 StandardScaler
+  4. 模型 LogisticRegression
+
+  每個階段標兩件事：
+  - 對訓練段：fit + transform（用實線箭頭）
+  - 對驗證段：只有 transform（用虛線箭頭，並標「不 fit」）
+
+  互動規則：讀者可切換當前是第幾個 fold（1–5），上區條狀圖的強調段跟著移動，
+  下區的訓練段 / 驗證段標籤同步更新。切換時強調段以 motion 平移。
+
+  視覺要求：
+  - fold 條狀圖用手寫 SVG，viewBox 寬度不超過 660，preserveAspectRatio="xMidYMid meet"
+  - pipeline 容器用 DOM（不要畫進 SVG），四個階段用 flex-wrap
+  - 實線與虛線箭頭的差別要明顯，並附一個小圖例：
+    實線 = fit + transform，虛線 = 只有 transform
+  - 尊重 prefers-reduced-motion
+
+  核心洞察：pipeline 的價值不是少寫幾行，而是讓「fit 只能看訓練段」
+  變成結構上做不到違反。
+caption: 放大一個 fold 看 pipeline：訓練段才 fit，驗證段只有 transform——這個限制是被結構保證的。
+status: generated
+*/}
+
+<GeneratedFrame id="ml-week7-pipeline-in-fold" type="motion" prompt={"放大單一 fold，展示 pipeline 中轉換器對訓練段 fit、對驗證段只 transform 的差別。"} caption={"放大一個 fold 看 pipeline：訓練段才 fit，驗證段只有 transform——這個限制是被結構保證的。"}>
+  <MlWeek7PipelineInFold client:visible />
 </GeneratedFrame>
 
 ## 教材預習重點

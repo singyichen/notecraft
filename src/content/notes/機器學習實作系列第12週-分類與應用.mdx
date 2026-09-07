@@ -6,6 +6,10 @@ createdAt: "2026-11-23"
 updatedAt: "2026-11-23"
 ---
 
+import GeneratedFrame from '@/components/GeneratedFrame.astro'
+import MlWeek12BaggingVsBoosting from '@/components/generated/ml-week12-bagging-vs-boosting'
+import MlWeek12TextPipeline from '@/components/generated/ml-week12-text-pipeline'
+
 # 第 12 週：分類與應用
 
 *Classification and Applications*
@@ -50,34 +54,97 @@ PDSH 補上了 MLPTSL 沒教的傳統路線：樸素貝氏（naive Bayes）。�
 > 延伸閱讀：[《Machine Learning with PyTorch and Scikit-Learn》ch07–ch08 程式碼與章節大綱](https://github.com/rasbt/machine-learning-book)、[《Python Data Science Handbook》"In Depth: Naive Bayes Classification"](https://jakevdp.github.io/PythonDataScienceHandbook/05.05-naive-bayes.html)（上文為獨立整理與舉例，非該書內容改寫）
 
 {/* @ai-visualize
-id: ml-week12-concept
-type: diagram
+id: ml-week12-bagging-vs-boosting
+type: motion
 prompt: |
-  畫一張「單一模型不夠好時該動哪裡」的決策流程圖，把本週兩條線收在同一張圖裡。
-  起點是一個判斷節點「模型表現不如預期」，先分出兩大支：
-  （A）「換模型」支——再依「訓練分數高但測試落後（高變異）」與「訓練測試都不好
-  （高偏差）」分岔：高變異那側連到 majority voting 與 bagging / random forest，
-  標註「並行訓練、彼此獨立、平均掉抖動」；高偏差那側連到 boosting 家族，依序
-  串起 AdaBoost（調樣本權重）→ gradient boosting（擬合負梯度／殘差）→ XGBoost
-  （正則化與高效實作），標註「序列補課、後者修正前者的錯」。用箭頭方向與排列
-  凸顯 bagging 是並排、boosting 是串接這個根本差異。
-  （B）「換特徵表示」支——畫成一條由左到右的文字處理管線：原始文字 → text
-  cleaning（去 HTML／標點、轉小寫、保留顏文字）→ tokenization（斷詞、stemming、
-  移除停用詞）→ bag-of-words（詞頻向量）→ TF-IDF（壓低高頻無鑑別力的詞）→
-  分類器，並在分類器處分成 logistic regression（判別式）與 naive Bayes（生成式）
-  兩個並列的終點，各標一句差異。管線末端另拉一條旁支到 out-of-core learning
-  （雜湊向量化＋小批次 partial_fit），標註「資料大到記憶體裝不下時走這裡」。
-  最後兩支在底部匯流到一個「回頭看資料」節點（標籤雜訊、類別不平衡、樣本太少）。
-  手繪 SVG，用顏色區分「換模型」與「換特徵」兩支，不引入圖表函式庫。
-caption: 單一模型不夠好時的決策地圖：一邊靠集成組合多個模型，一邊靠更好的特徵表示把非結構化資料變成模型吃得下的輸入。
+  一個「模型表現不如預期時該往哪走」的互動診斷元件，凸顯 bagging 與 boosting
+  的根本差異在並行 vs 序列。
+
+  起點是一個二選一診斷：
+  - 「訓練分數高但測試落後」→ 高變異（overfitting）→ 走 bagging 支
+  - 「訓練測試都不好」→ 高偏差（underfitting）→ 走 boosting 支
+
+  bagging 支（並行）：
+  - majority voting —— 多個不同模型各自預測，投票決定
+  - bagging / random forest —— 對訓練資料做 bootstrap 抽樣，每棵樹看不同子集
+  - 視覺呈現：三到四個模型方塊「並排」，同時從同一份資料各拉一條線出來，
+    末端匯流到一個「平均 / 投票」節點
+  - 標註：並行訓練、彼此獨立、平均掉抖動
+
+  boosting 支（序列）：
+  - AdaBoost —— 調樣本權重，前一輪答錯的樣本下一輪權重加大
+  - gradient boosting —— 擬合前一輪的負梯度（殘差）
+  - XGBoost —— 加上正則化與高效實作
+  - 視覺呈現：三個模型方塊「串接」，每個方塊的輸出接到下一個的輸入，
+    箭頭上標「把上一輪的錯誤交給下一輪」
+  - 標註：序列補課、後者修正前者的錯
+
+  互動規則：讀者點選診斷結果後，對應那一支以 motion 展開——
+  並行支是三個方塊「同時」淡入，序列支是三個方塊「依序」淡入（每個間隔約 200ms），
+  用動畫本身傳達並行 vs 序列的差別。另一支保持折疊但可點開對照。
+
+  視覺要求：
+  - 模型方塊用 DOM 與 flex（兩支都橫排，序列支之間加箭頭）；
+    禁止使用 sm: / md: 等 viewport breakpoint（內文欄實際只有 647px）
+  - 兩支用兩種色系
+  - 尊重 prefers-reduced-motion：關閉動畫時改用「並排」與「串接」的排版本身傳達差異
+
+  核心洞察：bagging 是並排、boosting 是串接——高變異靠平均掉抖動，
+  高偏差靠後者補前者的課。
+caption: 集成學習的兩條路：高變異就並排訓練再平均，高偏差就串接起來讓後者補前者的課。
 status: generated
 */}
 
-import GeneratedFrame from '@/components/GeneratedFrame.astro'
-import MlWeek12Concept from '@/components/generated/ml-week12-concept'
+<GeneratedFrame id="ml-week12-bagging-vs-boosting" type="motion" prompt={"互動診斷模型表現不佳的原因，凸顯 bagging（並行）與 boosting（序列）的根本差異。"} caption={"集成學習的兩條路：高變異就並排訓練再平均，高偏差就串接起來讓後者補前者的課。"}>
+  <MlWeek12BaggingVsBoosting client:visible />
+</GeneratedFrame>
 
-<GeneratedFrame id="ml-week12-concept" type="diagram" prompt={"畫一張決策流程圖展示模型改進的兩大方向：集成學習（bagging 與 boosting 等）用於多個模型的組合方案，與文字處理管線（清理、斷詞、詞頻、TF-IDF）的特徵表示優化，並在底部匯流到資料品質檢查。"} caption="單一模型不夠好時的決策地圖：一邊靠集成組合多個模型，一邊靠更好的特徵表示把非結構化資料變成模型吃得下的輸入。">
-  <MlWeek12Concept />
+{/* @ai-visualize
+id: ml-week12-text-pipeline
+type: motion
+prompt: |
+  一條文字特徵工程的處理管線，讀者可逐步推進，看同一句範例文字在每一步變成什麼。
+
+  範例輸入（自行編寫，不要引用任何書上的資料集敘事）：
+  這部片超好看的!!! 演員演技一流 :) <br />強烈推薦
+
+  五個步驟，每步顯示該步之後的結果：
+  1. 原始文字 —— 上面那句原文
+  2. text cleaning —— 去 HTML 標籤、去標點、轉小寫，但保留顏文字
+     結果：這部片超好看的 演員演技一流 強烈推薦 :)
+  3. tokenization —— 斷詞、移除停用詞（英文另有 stemming）
+     結果：["這部片", "超好看", "演員", "演技", "一流", "強烈推薦", ":)"]
+  4. bag-of-words —— 詞頻向量，顯示成「詞 → 次數」的對照
+     結果：這部片 1、超好看 1、演員 1、演技 1、一流 1、強烈推薦 1、:) 1
+  5. TF-IDF —— 壓低高頻但無鑑別力的詞，顯示成「詞 → 權重」
+     結果示意：這部片 0.12、超好看 0.61、演員 0.28、演技 0.35、一流 0.58、
+     強烈推薦 0.66、:) 0.44
+
+  管線末端分成兩個並列終點：
+  - logistic regression —— 判別式：直接學「給定特徵，標籤是什麼」的邊界
+  - naive Bayes —— 生成式：先學每個類別下詞的分布，再用貝氏定理反推
+
+  另從第 4 步拉一條旁支到 out-of-core learning：
+  HashingVectorizer 加 partial_fit 小批次，標註「資料大到記憶體裝不下時走這裡」。
+
+  互動規則：一個步驟指示器（1–5）或「下一步」按鈕。推進時結果區以 motion 淡入替換。
+  走到第 5 步後顯示兩個終點與旁支。
+
+  視覺要求：
+  - 結果區一律用 DOM 呈現（等寬字），不要畫進 SVG——文字長度會變，SVG 一定會被裁切
+  - 步驟指示器用 flex-wrap；禁止使用 sm: / md: 等 viewport breakpoint
+    （內文欄實際只有 647px）
+  - TF-IDF 那步用長條長度或底色深淺，讓「常見詞的權重被壓低」看得出來
+  - 尊重 prefers-reduced-motion
+
+  核心洞察：模型吃不下文字，只吃得下數字——這條管線就是把非結構化的字
+  變成有鑑別力的向量。
+caption: 從一句評論到一個向量：cleaning、斷詞、詞頻、TF-IDF 逐步推進，末端再分判別式與生成式兩種分類器。
+status: generated
+*/}
+
+<GeneratedFrame id="ml-week12-text-pipeline" type="motion" prompt={"逐步推進文字特徵工程：從原文經 cleaning、斷詞、詞頻到 TF-IDF，看文本如何轉成向量。"} caption={"從一句評論到一個向量：cleaning、斷詞、詞頻、TF-IDF 逐步推進，末端再分判別式與生成式兩種分類器。"}>
+  <MlWeek12TextPipeline client:visible />
 </GeneratedFrame>
 
 ## 教材預習重點

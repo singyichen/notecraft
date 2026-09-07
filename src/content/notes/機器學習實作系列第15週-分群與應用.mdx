@@ -6,6 +6,10 @@ createdAt: "2026-12-14"
 updatedAt: "2026-12-14"
 ---
 
+import GeneratedFrame from '@/components/GeneratedFrame.astro'
+import MlWeek15FourDefinitions from '@/components/generated/ml-week15-four-definitions'
+import MlWeek15Selection from '@/components/generated/ml-week15-selection'
+
 # 第 15 週：分群與應用
 
 *Clustering and Applications*
@@ -44,34 +48,88 @@ DBSCAN 只問密度：半徑 ε 內鄰居數達 MinPts 的是核心點，核心�
 > 延伸閱讀：[《Machine Learning with PyTorch and Scikit-Learn》ch10 程式碼與章節大綱](https://github.com/rasbt/machine-learning-book/tree/main/ch10)、[《Python Data Science Handbook》"In Depth: Gaussian Mixture Models"](https://jakevdp.github.io/PythonDataScienceHandbook/05.12-gaussian-mixtures.html)（上文為獨立整理與舉例，非該書內容改寫）
 
 {/* @ai-visualize
-id: ml-week15-concept
-type: diagram
+id: ml-week15-four-definitions
+type: motion
 prompt: |
-  一張「四種分群演算法如何定義『一群』」的對照圖，用 2×2 四格面板呈現，
-  每格都拿同一批散點，但畫出各自的群概念：
-  (1) k-means —— 三團球狀點配三個星形中心，中心之間畫出中垂線構成的直線
-      邊界，標註「群 ＝ 離中心最近的一票點」；
-  (2) 階層式分群 —— 下方是同一批點，上方接一棵樹狀圖（dendrogram），縱軸
-      為合併距離，加一條水平虛線示意「橫切一刀就得到 k 群」，標註
-      「群 ＝ 由下而上合併出來的子樹」；
-  (3) DBSCAN —— 兩條交錯的月牙形點雲被正確分成兩群，散在外圍的幾點塗灰
-      標成「雜訊」，另畫一個半徑 ε 的小圓示意核心點的鄰域，標註
-      「群 ＝ 密度夠高的連通區域」；
-  (4) 高斯混合模型（GMM）—— 兩個傾斜且互相重疊的橢圓等高線，重疊區的點
-      用漸層色表示「70% 屬 A、30% 屬 B」，標註「群 ＝ 屬於每一群的機率」。
-  四格下方再接一條橫向的選型提示帶：球狀且大小相近 → k-means；想看階層
-  或不想先決定 k → hierarchical；形狀不規則且有離群點 → DBSCAN；群會重疊
-  且需要信心度 → GMM。要凸顯的洞察是「同一批資料，換一個對『群』的定義
-  就會得到完全不同的答案」。手寫 SVG，不引入圖表函式庫。
-caption: 同一批資料，四種分群演算法對「一群」的定義各不相同：最近中心、合併樹、密度連通區、機率歸屬。
+  一個「同一批散點，四種演算法對『一群』的定義」的切換元件。
+  散點資料固定不變，切換演算法時「群」的畫法整組改變。
+  一次只顯示一種，讓每張圖用滿整個欄寬。
+
+  散點資料：自行生成一批二維點約 60 個，要同時包含
+  （a）三團大致球狀、大小相近的點雲，
+  （b）其中兩團之間有少數散落的離群點。
+  座標寫死在元件裡，四種模式共用同一批點，位置絕對不變。
+
+  四種模式：
+  1. k-means
+     - 畫三個星形中心，中心之間畫出中垂線構成的直線邊界
+     - 每個點依最近中心上色
+     - 標註：群 ＝ 離中心最近的一票點
+  2. 階層式分群（hierarchical）
+     - 下方是同一批點，上方接一棵樹狀圖（dendrogram），縱軸為合併距離
+     - 加一條水平虛線示意「橫切一刀就得到 k 群」
+     - 標註：群 ＝ 由下而上合併出來的子樹
+  3. DBSCAN
+     - 三團被正確分出，散落的離群點塗灰標成「雜訊」（不屬於任何群）
+     - 另畫一個半徑 ε 的小圓示意核心點的鄰域
+     - 標註：群 ＝ 密度夠高的連通區域
+  4. 高斯混合模型（GMM）
+     - 三組橢圓等高線，其中兩組刻意傾斜且互相重疊
+     - 重疊區的點用漸層色表示機率歸屬，並挑一個點標出「70% 屬 A、30% 屬 B」
+     - 標註：群 ＝ 屬於每一群的機率
+
+  互動規則：四選一切換。切換時點的位置不動，只有群的畫法（邊界／樹／雜訊標記／
+  等高線）以 motion 交叉淡入。這個「點不動、答案卻變了」的對比就是核心。
+
+  視覺要求：
+  - 手寫 SVG，viewBox 寬度不超過 660，preserveAspectRatio="xMidYMid meet"
+  - 一次只畫一種模式並用滿整個寬度——絕對不要做成 2×2 四格
+    （內文欄只有 647px，分成四格後每格僅約 310px，散點與等高線會糊成一團）
+  - 中文標註一律用 DOM 放在 SVG 下方，不要塞進 SVG
+  - 四種模式用四種色票
+  - 尊重 prefers-reduced-motion
+
+  核心洞察：同一批資料，換一個對「群」的定義就會得到完全不同的答案。
+caption: 同一批點，四種答案：最近中心、合併子樹、密度連通區、機率歸屬——換個定義就換個結果。
 status: generated
 */}
 
-import GeneratedFrame from '@/components/GeneratedFrame.astro'
-import MlWeek15Concept from '@/components/generated/ml-week15-concept'
+<GeneratedFrame id="ml-week15-four-definitions" type="motion" prompt={"同一批點，四種答案：最近中心、合併子樹、密度連通區、機率歸屬——換個定義就換個結果。"} caption={"同一批點，四種答案：最近中心、合併子樹、密度連通區、機率歸屬——換個定義就換個結果。"}>
+  <MlWeek15FourDefinitions client:visible />
+</GeneratedFrame>
 
-<GeneratedFrame id="ml-week15-concept" type="diagram" prompt={"用 2×2 四格面板對照四種分群演算法（k-means、階層式、DBSCAN、GMM）各自定義『一群』的方式，揭示同一批資料在不同定義下得到的完全不同分群結果。"} caption="同一批資料，四種分群演算法對「一群」的定義各不相同：最近中心、合併樹、密度連通區、機率歸屬。">
-  <MlWeek15Concept />
+{/* @ai-visualize
+id: ml-week15-selection
+type: diagram
+prompt: |
+  一條分群演算法的選型提示帶，四個判斷條件對應四個演算法。
+
+  四組對應（每組：判斷條件 → 演算法 → 一句補充）：
+  1. 群大致是球狀、大小相近，而且你已經知道要分幾群 → k-means
+     補充：對離群點敏感，須先做特徵標準化
+  2. 想看群之間的階層關係，或不想先決定 k → 階層式分群（hierarchical）
+     補充：先得到 dendrogram，事後橫切一刀再決定 k
+  3. 群的形狀不規則，而且資料裡有離群點 → DBSCAN
+     補充：離群點會被標成雜訊而不是硬塞進某一群；要調 eps 與 min_samples
+  4. 群會重疊，而且需要「有多確定」的信心度 → 高斯混合模型（GMM）
+     補充：輸出的是機率歸屬而不是硬分配
+
+  視覺要求：
+  - 四組排成上下四列，每列橫向依序是「判斷條件 → 箭頭 → 演算法 → 補充」
+  - 一律用 DOM 與 flex，不要用 SVG（各列文字長度差異大，SVG 估寬容易裁切）
+  - 每列的演算法名稱配色要對應 ml-week15-four-definitions 的四種模式色票，
+    讓兩個元件可以對讀
+  - 箭頭用 lucide-react 的 ArrowRight，不要用 emoji
+  - 禁止使用 sm: / md: 等 viewport breakpoint（內文欄實際只有 647px）
+  - 不要限制寬度在 max-w-3xl（.nc-prose 上限 760px，max-w-3xl 是 768px，永遠不會生效）
+
+  核心洞察：先問「群長什麼形狀、要不要信心度、能不能先決定 k」，再挑演算法。
+caption: 四個問題挑分群演算法：形狀規不規則、要不要先決定 k、有沒有離群點、需不需要信心度。
+status: generated
+*/}
+
+<GeneratedFrame id="ml-week15-selection" type="diagram" prompt={"四個問題挑分群演算法：形狀規不規則、要不要先決定 k、有沒有離群點、需不需要信心度。"} caption={"四個問題挑分群演算法：形狀規不規則、要不要先決定 k、有沒有離群點、需不需要信心度。"}>
+  <MlWeek15Selection />
 </GeneratedFrame>
 
 ## 教材預習重點

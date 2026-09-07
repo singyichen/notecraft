@@ -6,6 +6,11 @@ createdAt: "2026-11-30"
 updatedAt: "2026-11-30"
 ---
 
+import GeneratedFrame from '@/components/GeneratedFrame.astro'
+import MlWeek13ThreeObjectives from '@/components/generated/ml-week13-three-objectives'
+import MlWeek13Selection from '@/components/generated/ml-week13-selection'
+import MlWeek13ExplainedVariance from '@/components/generated/ml-week13-explained-variance'
+
 # 第 13 週：降維與應用
 
 *Dimensionality Reduction and Applications*
@@ -65,40 +70,115 @@ t-SNE 不能當前處理的理由很具體：它沒有學出一個「高維→�
 > 延伸閱讀：[《Machine Learning with PyTorch and Scikit-Learn》ch05 程式碼與章節大綱](https://github.com/rasbt/machine-learning-book/tree/main/ch05)、[《Python Data Science Handbook》"In Depth: Principal Component Analysis"](https://jakevdp.github.io/PythonDataScienceHandbook/05.09-principal-component-analysis.html)（上文為獨立整理與舉例，非該書內容改寫）
 
 {/* @ai-visualize
-id: ml-week13-concept
-type: diagram
+id: ml-week13-three-objectives
+type: motion
 prompt: |
-  用手寫 SVG 畫一張「三種降維方法在最大化什麼」的對照決策圖，分成上下兩區。
+  一個「同一團散點，三種降維方法在最大化什麼」的切換元件。散點資料固定不變，
+  切換 PCA / LDA / t-SNE 時投影方式與標註整組改變。
 
-  上區並排三格，每格是同一團二維散點雲（兩類用不同顏色與形狀標記），但畫上
-  不同的投影方向，凸顯三者目標函數的差異：
-  - PCA：畫一條穿過點雲最長軸的箭頭，標註「最大化總變異」，並用虛線標出點在
-    該軸上的投影落點散得最開；註明「不看標籤（unsupervised）」。
-  - LDA：畫一條與 PCA 明顯不同角度的箭頭，標註「最大化類間距離 ÷ 類內離散」，
-    用兩個小括號分別標示類內散布 S_W 與類間距離 S_B；註明「用標籤（supervised）」。
-  - t-SNE：不畫直線軸，改畫鄰居連線把鄰近點連成小團，旁邊畫出投影後的二維
-    團塊配置，標註「保留局部鄰近結構」，並明確標示「團塊間距離無意義」。
+  散點資料：自行生成一團二維散點約 40 個，分成兩類（用不同顏色與形狀標記），
+  兩類略有重疊但整體有一個明顯的最長軸方向，且該最長軸方向刻意「不等於」
+  最能分開兩類的方向——這個錯開正是 PCA 與 LDA 會選出不同方向的原因。
+  座標寫死在元件裡即可。
 
-  下區是一個決策分支，從「要拿降維結果做什麼？」出發：
-  - 「餵給後續模型 → 有標籤嗎？」→ 有 → LDA（註明上限 c−1 維）；沒有 → PCA
-    （註明可 fit/transform、能放進 pipeline）。
-  - 「只是要畫圖看分群」→ t-SNE（註明只有 fit_transform、無法套用到新資料，
-    所以不能當前處理）。
-  - 「資料是彎的、線性壓不好」→ 流形學習 Isomap / LLE。
+  PCA 模式：
+  - 畫一條穿過點雲最長軸的箭頭
+  - 用虛線把每個點投影到該軸上，顯示投影落點散得最開
+  - 標註：最大化總變異；不看標籤（unsupervised）
 
-  在 PCA 分支旁補一個小標註帶出解釋變異量（explained variance）：一條累積解釋
-  變異的階梯示意，標記「累積達 90–95% 即可決定保留幾個主成分」。
+  LDA 模式：
+  - 畫一條與 PCA 明顯不同角度的箭頭，指向最能分開兩類的方向
+  - 用兩個小括號分別標示類內散布 S_W 與類間距離 S_B
+  - 標註：最大化 類間距離 ÷ 類內離散；用標籤（supervised），最多降到 c−1 維
 
-  整體以節點與箭頭的示意圖呈現，不引入圖表函式庫，遵循 notecraft-design 的色票。
-caption: 三種降維方法的目標對照與選型決策：PCA 最大化資料變異、LDA 最大化類別可分性、t-SNE 保留局部鄰近結構且僅供視覺化。
+  t-SNE 模式：
+  - 不畫直線軸，改畫鄰居連線把鄰近點連成小團
+  - 旁邊畫出投影後的二維團塊配置（兩到三個分開的團）
+  - 標註：保留局部鄰近結構；團塊之間的距離無意義
+
+  互動規則：三選一切換。切換時箭頭以 motion 旋轉到新角度（PCA ↔ LDA 之間），
+  切到 t-SNE 時箭頭淡出、鄰居連線淡入。散點本身位置絕對不動，強化「同一批資料」。
+
+  視覺要求：
+  - 手寫 SVG，viewBox 寬度不超過 660，preserveAspectRatio="xMidYMid meet"
+  - 一次只顯示一種模式，用滿整個欄寬——不要做成三格並排
+    （內文欄只有 647px，分成三格後每格僅約 200px，散點會糊成一團）
+  - 中文標註一律用 DOM 放在 SVG 下方，不要塞進 SVG
+  - 三種方法用三種色票
+  - 尊重 prefers-reduced-motion
+
+  核心洞察：三者的差別不在「壓到幾維」，而在目標函數在最大化什麼。
+caption: 同一團散點，三種降維方法各自選出不同的方向：PCA 追變異、LDA 追可分性、t-SNE 只保鄰居。
 status: generated
 */}
 
-import GeneratedFrame from '@/components/GeneratedFrame.astro'
-import MlWeek13Concept from '@/components/generated/ml-week13-concept'
+<GeneratedFrame id="ml-week13-three-objectives" type="motion" prompt={"切換 PCA / LDA / t-SNE，同一批散點用三種方式投影，看各方法的優化目標有何不同。"} caption={"同一團散點，三種降維方法各自選出不同的方向：PCA 追變異、LDA 追可分性、t-SNE 只保鄰居。"}>
+  <MlWeek13ThreeObjectives client:visible />
+</GeneratedFrame>
 
-<GeneratedFrame id="ml-week13-concept" type="diagram" prompt={"用手寫 SVG 對照與決策圖展示 PCA、LDA、t-SNE 三種降維方法各自最大化的目標與選型決策。"} caption="三種降維方法的目標對照與選型決策：PCA 最大化資料變異、LDA 最大化類別可分性、t-SNE 保留局部鄰近結構且僅供視覺化。">
-  <MlWeek13Concept />
+{/* @ai-visualize
+id: ml-week13-selection
+type: diagram
+prompt: |
+  一張「要拿降維結果做什麼」的決策分支圖，四個終點，節點總數控制在 8 個以內。
+
+  從起點「要拿降維結果做什麼？」出發：
+  1. 「餵給後續模型」→ 再問「有標籤嗎？」
+     - 有 → LDA（註明：上限 c−1 維，c 是類別數）
+     - 沒有 → PCA（註明：有 fit / transform，能放進 pipeline 當前處理）
+  2. 「只是要畫圖看分群」→ t-SNE
+     （註明：只有 fit_transform，無法套用到新資料，所以不能當前處理）
+  3. 「資料是彎的、線性壓不好」→ 流形學習 Isomap / LLE
+
+  視覺要求：
+  - 手寫 SVG，viewBox 寬度不超過 660，preserveAspectRatio="xMidYMid meet"
+  - 每個分支上標註判斷依據
+  - 「t-SNE 不能當前處理」這個限制用警示色標記——這是最容易踩到的坑
+  - 中文標籤估寬時每個全形字抓 1em（字級 14px 就抓 14px 寬）；
+    放不下時縮短文字，不要縮字級到 10px 以下
+  - 節點若一列排不下就改直向或蛇形排列
+
+  核心洞察：能不能放進 pipeline，取決於這個方法有沒有 transform——t-SNE 沒有。
+caption: 降維方法怎麼挑：先問拿來做什麼、有沒有標籤，再決定 PCA、LDA、t-SNE 還是流形學習。
+status: generated
+*/}
+
+<GeneratedFrame id="ml-week13-selection" type="diagram" prompt={"從「降維用在哪裡」和「有沒有標籤」出發，四個終點決定 PCA、LDA、t-SNE 還是流形學習。"} caption={"降維方法怎麼挑：先問拿來做什麼、有沒有標籤，再決定 PCA、LDA、t-SNE 還是流形學習。"}>
+  <MlWeek13Selection client:visible />
+</GeneratedFrame>
+
+{/* @ai-visualize
+id: ml-week13-explained-variance
+type: chart
+prompt: |
+  一張累積解釋變異（cumulative explained variance）圖，說明「保留幾個主成分」
+  怎麼決定。
+
+  資料（自行編寫的一組遞減比例，共 10 個主成分）：
+  個別解釋變異：0.32, 0.21, 0.14, 0.10, 0.07, 0.05, 0.04, 0.03, 0.025, 0.015
+  累積解釋變異：0.32, 0.53, 0.67, 0.77, 0.84, 0.89, 0.93, 0.96, 0.985, 1.00
+
+  呈現方式：
+  - 長條顯示每個主成分的「個別」解釋變異
+  - 疊上一條階梯線顯示「累積」解釋變異
+  - 畫兩條水平參考線：90% 與 95%
+  - 標出累積首次達到 90% 的位置（第 7 個主成分）與 95% 的位置（第 8 個）
+
+  視覺要求：
+  - 用 recharts（這是有軸的量化資料，符合決策樹的選型）
+  - 兩條參考線用 ReferenceLine，標籤放在圖內
+  - 圖表容器寬度 100%，高度固定約 280px；
+    禁止使用 sm: / md: 等 viewport breakpoint（內文欄實際只有 647px）
+  - 座標軸標籤：橫軸「主成分」，縱軸「解釋變異比例」
+  - 橫軸刻度用 1–10 的數字，避免中文標籤在窄圖上重疊
+
+  核心洞察：不用先決定要留幾維，看累積解釋變異在哪裡達到 90–95% 再決定。
+caption: 累積解釋變異決定保留幾個主成分：這組資料到第 7 個成分就跨過 90%，第 8 個跨過 95%。
+status: generated
+*/}
+
+<GeneratedFrame id="ml-week13-explained-variance" type="chart" prompt={"長條 + 階梯線呈現每個主成分的個別與累積解釋變異，標出達到 90% / 95% 的位置。"} caption={"累積解釋變異決定保留幾個主成分：這組資料到第 7 個成分就跨過 90%，第 8 個跨過 95%。"}>
+  <MlWeek13ExplainedVariance client:visible />
 </GeneratedFrame>
 
 ## 教材預習重點

@@ -6,6 +6,10 @@ createdAt: "2026-11-16"
 updatedAt: "2026-11-16"
 ---
 
+import GeneratedFrame from '@/components/GeneratedFrame.astro'
+import MlWeek11AbstractionStack from '@/components/generated/ml-week11-abstraction-stack'
+import MlWeek11TrainingLoop from '@/components/generated/ml-week11-training-loop'
+
 # 第 11 週：PyTorch 深度學習
 
 *Deep Learning in Python: PyTorch*
@@ -43,33 +47,83 @@ updatedAt: "2026-11-16"
 > 延伸閱讀：[《Machine Learning with PyTorch and Scikit-Learn》ch12–ch13 程式碼與章節大綱](https://github.com/rasbt/machine-learning-book)（上文為獨立整理與舉例，非該書內容改寫）
 
 {/* @ai-visualize
-id: ml-week11-concept
-type: diagram
+id: ml-week11-abstraction-stack
+type: motion
 prompt: |
-  畫一張「PyTorch 抽象層級堆疊圖」，由下往上分五層，說明每一層各自接手了什麼、
-  以及出錯時該往哪一層看：
-  (1) 手刻 numpy（第 10 週）——自己算矩陣、自己推導梯度；
-  (2) tensor 與 autograd——tensor 操作、GPU 搬移、requires_grad 記帳、
-      計算圖與 backward() 沿圖回推；
-  (3) torch.nn.Module 與 torch.optim——層的組合、activation functions
-      （sigmoid / softmax / tanh / ReLU）、優化器更新參數；
-  (4) nn.Sequential vs. 自訂 nn.Module——單一資料流 vs. 有分支／自訂層；
-  (5) PyTorch Lightning——連訓練迴圈都收走，只填 training_step 等空格。
-  右側並排一條「一次訓練迭代的五步驟」直向流程：算預測 → 算 loss →
-  backward() → optimizer.step() → zero_grad()，每個步驟用細線連回左側
-  「這一步由哪一層負責」，凸顯核心洞察：越往上寫的樣板越少，但出錯時要
-  排查的層級離你越遠。每層右緣標一個常見錯誤提示（例如「權重沒包成
-  nn.Parameter，optimizer 抓不到」「漏掉 zero_grad，梯度累加」
-  「同一張計算圖 backward 兩次」）。手寫 SVG，不引入圖表函式庫。
-caption: PyTorch 的五層抽象堆疊：從手刻 numpy 到 Lightning，每一層接手了什麼、訓練五步驟歸誰管、出錯時往哪裡看。
+  一個五層抽象堆疊的互動元件。由下往上五層，點選任一層，面板顯示該層接手了什麼、
+  樣板程式碼量、以及該層最常見的錯誤。
+
+  五層（由下往上）：
+  1. 手刻 numpy（第 10 週）—— 自己算矩陣、自己推導梯度
+     樣板量：最多
+     常見錯誤：矩陣維度對不上；導數推錯符號
+  2. tensor 與 autograd —— tensor 操作、GPU 搬移、requires_grad 記帳、
+     計算圖與 backward() 沿圖回推
+     樣板量：多
+     常見錯誤：同一張計算圖 backward 兩次（需 retain_graph）；
+     忘記 .detach() 導致計算圖無限長大
+  3. torch.nn.Module 與 torch.optim —— 層的組合、activation functions
+     （sigmoid / softmax / tanh / ReLU）、優化器更新參數
+     樣板量：中
+     常見錯誤：權重沒包成 nn.Parameter，optimizer 抓不到
+  4. nn.Sequential vs. 自訂 nn.Module —— 單一資料流 vs. 有分支／自訂層
+     樣板量：少
+     常見錯誤：需要分支卻硬用 Sequential；自訂 Module 忘了呼叫 super().__init__()
+  5. PyTorch Lightning —— 連訓練迴圈都收走，只填 training_step 等空格
+     樣板量：最少
+     常見錯誤：出錯時堆疊追蹤落在框架內部，不知道該往下面哪一層看
+
+  互動規則：五層堆成一疊，點選展開該層詳情。旁邊附一條「樣板量」的漸變刻度帶，
+  由下（最多）往上（最少），讓 trade-off 一眼可見。
+
+  視覺要求：
+  - 五層用 DOM 堆疊（不要畫進 SVG），才不會被 figure 的 overflow:hidden 裁掉
+  - 詳情面板固定高度，切換時內容以 motion 淡入，避免版面跳動
+  - 常見錯誤那行用警示色與 lucide-react 的 TriangleAlert 圖示，不要用 emoji
+  - 禁止使用 sm: / md: 等 viewport breakpoint（內文欄實際只有 647px）
+  - 尊重 prefers-reduced-motion
+
+  核心洞察：越往上寫的樣板越少，但出錯時要排查的層級離你越遠。
+caption: PyTorch 的五層抽象：點一層看它替你接手了什麼、省下多少樣板，以及那一層最容易踩的坑。
 status: generated
 */}
 
-import GeneratedFrame from '@/components/GeneratedFrame.astro'
-import MlWeek11Concept from '@/components/generated/ml-week11-concept'
+<GeneratedFrame id="ml-week11-abstraction-stack" type="motion" prompt={"互動五層抽象堆疊，點選展示各層接手的功能、樣板量與常見錯誤。"} caption={"PyTorch 的五層抽象：點一層看它替你接手了什麼、省下多少樣板，以及那一層最容易踩的坑。"}>
+  <MlWeek11AbstractionStack client:visible />
+</GeneratedFrame>
 
-<GeneratedFrame id="ml-week11-concept" type="diagram" prompt={"用手寫 SVG 繪製 PyTorch 五層抽象堆疊圖：從手刻 numpy、tensor autograd、torch.nn.Module、nn.Sequential 到 PyTorch Lightning，每層標註職責與常見錯誤，右側配搭訓練五步驟流程圖示。"} caption="PyTorch 的五層抽象堆疊：從手刻 numpy 到 Lightning，每一層接手了什麼、訓練五步驟歸誰管、出錯時往哪裡看。">
-  <MlWeek11Concept />
+{/* @ai-visualize
+id: ml-week11-training-loop
+type: motion
+prompt: |
+  一次訓練迭代的五個步驟，每步標明由哪一層抽象負責。
+
+  五個步驟（依序，會不斷重複）：
+  1. 算預測 —— y_hat = model(X) —— 負責層：nn.Module
+  2. 算 loss —— loss = criterion(y_hat, y) —— 負責層：nn（損失函數）
+  3. 回推梯度 —— loss.backward() —— 負責層：autograd
+  4. 更新參數 —— optimizer.step() —— 負責層：torch.optim
+  5. 清空梯度 —— optimizer.zero_grad() —— 負責層：torch.optim
+
+  互動規則：一個「下一步」按鈕循環推進 1→2→3→4→5→1，當前步驟高亮、其餘變淡。
+  每步顯示該步的一行程式碼與負責層標籤。推進到第 5 步時額外顯示提示：
+  「漏掉這步，梯度會累加到下一次迭代」。
+
+  視覺要求：
+  - 五個步驟排成一個環（凸顯這是會重複的迴圈），或排成一列並在末端拉一條回到起點的箭頭
+  - 若用環狀，手寫 SVG 的 viewBox 寬度不超過 660，preserveAspectRatio="xMidYMid meet"；
+    中文標籤放 DOM 不要塞進 SVG
+  - 程式碼用等寬字，字級不低於 12px
+  - 負責層標籤的配色要對應 ml-week11-abstraction-stack 的五層配色，讓兩個元件可以對讀
+  - 尊重 prefers-reduced-motion
+
+  核心洞察：訓練迴圈的五步驟分屬不同抽象層，知道哪一步歸誰管，出錯時才知道往哪裡看。
+caption: 訓練迴圈的五個步驟，以及每一步各自由哪一層抽象負責。
+status: generated
+*/}
+
+<GeneratedFrame id="ml-week11-training-loop" type="motion" prompt={"訓練迴圈五步驟循環動畫，展示每步所屬的抽象層級與對應程式碼。"} caption={"訓練迴圈的五個步驟，以及每一步各自由哪一層抽象負責。"}>
+  <MlWeek11TrainingLoop client:visible />
 </GeneratedFrame>
 
 ## 教材預習重點
