@@ -187,7 +187,7 @@ import MlWeek1Concept from '@/components/generated/ml-week1-concept'
 - **Overfitting（過擬合，high variance）**：模型過度擬合訓練資料裡的細節與雜訊，在訓練集表現很好、但在驗證／測試集表現明顯變差——模型「記住」了訓練資料，而不是學到通則。
 - **Underfitting（欠擬合，high bias）**：模型太簡單，連訓練資料本身的規律都學不好，訓練集與驗證集的表現都不理想。
 - **Regularization（正則化）**：在 loss function 中加入一個懲罰項，限制可訓練參數（權重）不要過大，藉此抑制模型複雜度、緩解 overfitting，常見作法有 L1、L2 正則化。
-- **Dropout**：訓練神經網路時，每次迭代隨機「關閉」一部分神經元（不參與這次的前向與反向傳播），迫使網路不能過度依賴少數幾個神經元，是深度學習裡常見的 overfitting 對抗手法。
+- **Dropout（失活）**：訓練神經網路時，每次迭代隨機「關閉」（失活）一部分神經元（不參與這次的前向與反向傳播），迫使網路不能過度依賴少數幾個神經元，是深度學習裡常見的 overfitting 對抗手法。
 
 ## 資料長什麼樣子——以 Iris 資料集為例
 
