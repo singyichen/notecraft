@@ -12,11 +12,61 @@ updatedAt: "2026-09-21"
 
 > 本週參考：[《Python Data Science Handbook》](/notes/python-data-science-handbook)
 
+## 本週摘要
+
+### 陣列（ndarray）：放棄彈性換速度
+
+Python 的 list 存的是一排指標，元素散在記憶體各處、各自帶著型別標頭；要加總一百萬個數字，直譯器得逐一跳過去問「你是什麼型別」。NumPy 的多維陣列（ndarray）反過來：整個陣列只有一種型別（dtype），數值連續排在同一塊記憶體裡。像是把一疊散落的便利貼換成方格筆記本——格子大小固定，要找第 500 格直接算位移就到。它同時帶著 `shape`、`ndim` 這些描述；要留意切片出來的是「檢視（view）」而非複製，改子陣列等於改到原資料，這跟 list 的行為相反。
+
+### 向量化（vectorization）與聚合（aggregation）
+
+迴圈慢的原因不是加法慢，而是每一圈都要重新確認型別、決定該呼叫哪個函式，這層調度成本乘上一百萬次就很可觀。NumPy 的通用函式（ufuncs）把整段迴圈交給預先編譯好、型別固定的 C 常式：`arr * 2`、`np.sin(arr)` 看似一行運算，實際上是「一次對整個陣列下指令」，這就是向量化。把資料壓成一個數字的聚合（aggregation）——`sum`、`mean`、`std`——走同一條路。多維時要記住 `axis` 指的是「被壓扁掉的那個維度」：一張每列一位學生、每欄一科的成績表，`axis=0` 得到各科平均，`axis=1` 得到各人平均。有缺值時改用 `np.nanmean`，否則一個 NaN 會把整個結果拖成 NaN。
+
+### 廣播、布林遮罩、花式索引：三種不寫迴圈的取值法
+
+廣播（broadcasting）讓形狀不同的陣列直接運算：先在較小者的形狀左邊補 1，再把長度為 1 的維度延展對齊，若某維兩邊既不相等也不是 1 就報錯。延展只是概念上的，不會真的複製一大塊記憶體，所以「每欄各自減掉自己的平均」可以寫成一行 `X - X.mean(axis=0)`。
+
+布林遮罩（boolean masking）建立在「比較運算子也是 ufunc」上：`temps > 30` 回傳的是逐格比較的布林陣列，把它丟回中括號 `temps[temps > 30]` 就取出所有符合條件的元素，再 `sum()` 一下就知道幾天超過 30 度。組合條件要用 `&`、`|`、`~`，不能用 `and`／`or`。
+
+花式索引（fancy indexing）是把整個索引陣列丟進中括號，`arr[[3, 0, 7]]` 一次抓出任意位置的元素；結果的形狀取決於索引陣列而非原陣列。拿它寫入時要小心：重複的索引不會累加，只會被最後一次賦值蓋掉，想累加得用 `np.add.at`。
+
+### 從陣列到表格：`Series`、`DataFrame` 與缺失值
+
+NumPy 假設資料是整齊的數字方陣，真實資料卻長得像報表：有欄名、各欄型別不同、還缺了幾格。`Series` 可以想成「多了一條明確索引的一維陣列」，索引不必是 0、1、2，可以是會員 ID 或日期；`DataFrame` 則是一組共用同一條索引、對齊排好的 `Series`，所以 `df['sales']` 拿到的是一整欄而不是一列。當索引本身就是整數時，`s[1]` 到底指標籤還是位置？`.loc`／`.iloc` 就是為消除這個歧義而生：`.loc` 一律走標籤且切片含尾端，`.iloc` 一律走位置且不含尾端。缺失值（missing data）以 `NaN` 與 `None` 兩種哨兵值表示；`NaN` 會傳染，而且整數欄一旦出現缺值會整欄升格成浮點數。實務三動作：`isnull()` 找出來、`dropna()` 丟掉、`fillna()` 補上固定值或前後值。
+
+### 拼接、合併、分組、樞紐與時間序列
+
+`pd.concat` 是把資料疊起來（例如十二個月的訂單檔），與 `np.concatenate` 的差別在於它保留原索引，很容易疊出重複索引，必要時用 `ignore_index=True` 重編號。`merge`／`join` 則是照鍵值對起來，就是資料庫那套 join：訂單表配會員表、`on='member_id'`，一筆會員對到多筆訂單即為一對多；`how` 決定沒對上的怎麼辦，`left` 最常用來「補欄位但不掉資料」。`groupby` 是切開—套用—合併：`df.groupby('city')['sales'].mean()` 得到各城市的平均銷售額，它延遲計算，也能 `filter` 掉樣本太少的組、或 `transform` 出「相對自己城市平均的差距」。樞紐分析表（pivot table）是二維版的 groupby，同時沿列與欄切，`pivot_table(values='amount', index='city', columns='channel')` 一行做出城市 × 通路的矩陣。時間序列（time series）則區分時間戳記、時段與時間差；把日期設成索引後，`df['2026']` 直接取出整年，`resample('M').mean()` 聚合成月平均，`rolling(7).mean()` 算七日移動平均。
+
+### 該用哪一個？向量化思維為什麼會改變寫法
+
+判斷其實很直接：資料若是同一種型別、沒有欄名、你關心的是數學運算——像素矩陣、特徵矩陣、距離矩陣——用 NumPy；若有欄名、各欄型別不同、有缺值、要按鍵合併或分組，那是 Pandas 的場子。實務上兩者是接力：Pandas 讀檔、清缺值、合併、分組算出特徵，最後 `.to_numpy()` 把整理好的表格交給 scikit-learn，而它內部又回到 NumPy 的向量化運算。也因為 `DataFrame` 底下就是 ndarray，前面學的廣播、遮罩、聚合會在 Pandas 裡原封不動再用一次。
+
+真正改變寫法的是向量化思維。寫迴圈的人想的是「對每一筆資料做什麼」，向量化要你改成「對整個欄位做什麼」——不是「跑過每一列、金額大於一千就記下來」，而是「先做出一個布林遮罩，再用它切出子表」。換來的是快（跑在編譯過的程式碼裡）、短（一行取代十行，出錯空間也少），以及最重要的：你開始用集合而不是逐筆在描述問題，而這正是後面所有機器學習套件的 API 說話的方式。當你發現自己在對 `DataFrame` 逐列跑 `for` 迴圈，那通常就是個訊號——這裡應該有個遮罩、廣播或 groupby 的寫法。
+
+> 延伸閱讀：[《Python Data Science Handbook》Part 2: Introduction to NumPy](https://jakevdp.github.io/PythonDataScienceHandbook/02.00-introduction-to-numpy.html)、[Part 3: Data Manipulation with Pandas](https://jakevdp.github.io/PythonDataScienceHandbook/03.00-introduction-to-pandas.html)（上文為獨立整理與舉例，非該書內容改寫）
+
 {/* @ai-visualize
 id: ml-week3-concept
-type: free
+type: diagram
 prompt: |
-  本週核心概念的示意圖，待上課後依實際授課內容調整 prompt。
+  畫一張「資料處理工具分層地圖」，把 NumPy 與 Pandas 的職責與接力關係一次說清楚。
+  版面分成上下兩層加一條貫穿的流程軸：
+  下層「NumPy：同型別數值運算」以 ndarray 為中心節點，向外接出五個能力節點——
+  向量化 / ufuncs、聚合（含 axis 是「被壓扁的維度」這個標註）、廣播、布林遮罩、
+  花式索引，每個節點旁附一行極短的代表寫法（如 `X - X.mean(axis=0)`、
+  `temps[temps > 30]`）。
+  上層「Pandas：有欄名的真實表格」以 Series / DataFrame 為中心節點，向外接出
+  五個能力節點——`.loc` / `.iloc`、缺失值處理、groupby、concat / merge / join、
+  樞紐分析表與時間序列，同樣各附一行代表寫法。
+  兩層之間用一條粗箭頭標示「DataFrame 底下就是 ndarray」，表示上層的廣播、遮罩、
+  聚合其實沿用下層同一套機制。
+  最下方橫貫一條流程軸：讀檔 → 清缺值 → 合併 → 分組算特徵 → `.to_numpy()` →
+  交給模型，並用底色區分哪幾段屬於 Pandas、哪幾段屬於 NumPy。
+  要凸顯的洞察有兩個：(1) 選型判斷是「有沒有欄名 / 型別是否一致」而不是資料大小；
+  (2) 兩者不是二選一，而是同一條管線上的前後段。
+  手繪 SVG，不引入圖表函式庫。
+caption: NumPy 與 Pandas 的分層地圖：下層是 ndarray 的向量化能力，上層是 DataFrame 的表格操作，兩者在同一條資料處理管線上接力。
 status: pending
 */}
 

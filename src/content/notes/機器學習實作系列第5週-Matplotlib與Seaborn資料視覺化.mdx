@@ -12,11 +12,71 @@ updatedAt: "2026-10-05"
 
 > 本週參考：[《Python Data Science Handbook》](/notes/python-data-science-handbook)
 
+## 本週摘要
+
+### 兩套介面：初學者最容易踩的坑
+
+Matplotlib 最容易絆倒人的不是函式名稱，而是同一件事有兩種寫法。**狀態式（MATLAB 風格）**介面靠 `plt.plot()`、`plt.title()` 這些呼叫，套件內部維持一個「目前這張圖」，指令默默作用在它身上——像白板只有一塊，不必指名要畫在哪裡，寫小圖很順手。**物件導向**介面則先 `fig, ax = plt.subplots()` 拿到把手，之後 `ax.plot()`、`ax.set_title()` 每次都指名對象。兩套的方法名常只差一個 `set_`（`plt.xlabel()` ↔ `ax.set_xlabel()`），照著網路範例混著抄就會出事。判準是「圖裡有幾個 Axes」：一旦有多個子圖、或把畫圖包成可重複呼叫的函式，「目前那張圖」就成了看不見的全域變數。順帶釐清層級：Figure 是整張畫布，Axes 是其中一個有座標軸的作圖區（一整張子圖，不是一條軸）。
+
+### `plt.plot` 與 `plt.scatter`：差別不在折線或散點
+
+`plt.plot` 給 x、y 兩個序列就連成折線，第三個參數換成標記符號（如 `'o'`）一樣能畫散佈圖，那為何還需要 `plt.scatter`？差別在「每個點能不能長得不一樣」：`plt.plot` 全部共用一組樣式，畫十萬個點很快；`plt.scatter` 允許逐點指定大小（`s`）、顏色（`c`）、透明度（`alpha`），代價是點多時明顯較慢，好處是一張二維圖能塞進四個變數——例如各縣市的「通勤時間 vs. 房價」，再用點的大小代表人口、顏色代表所得中位數。
+
+### 誠實地畫出「不確定」與「分布」
+
+量測值幾乎不會是乾淨的數字。**誤差棒（errorbar）**用 `plt.errorbar` 在每個點加上代表誤差範圍的線段，實務上會把它調得比資料點更淡，點一多才不會糊成一團；若不確定性是連續的（模型曲線在每個 x 都有信賴區間），改用 `plt.fill_between` 畫成一條淡色帶——帶子在資料密集處收窄、外插區張開，一眼看出模型哪裡有把握。
+
+單變數的整體樣貌靠**直方圖（histogram）**：`plt.hist` 把數值切成一段段再數每段幾筆，這個切法就是**分箱（binning）**，而箱寬是直方圖最關鍵的旋鈕——太寬會把雙峰壓成單峰，太窄則整張都是雜訊。比較多組分布時用 `histtype='stepfilled'` 加 `alpha` 疊起來，比並排三張好讀。二維密度可用 `plt.hist2d`（方格）、`plt.hexbin`（六邊形，相鄰距離一致）或核密度估計（KDE）。若 z 是定義在網格上的函數而非散落樣本，就進入**密度與等高線圖（density & contour plot）**的地盤：先用 `np.meshgrid` 展開網格，再以 `plt.contour` 描等高線、`plt.contourf` 填色塊、`plt.imshow` 直接當影像鋪上，常見做法是 `contourf` 打底、`contour` 疊上去描邊。
+
+### 讓圖說出重點：圖例、色條、子圖與標註
+
+**圖例（legend）客製化**：`plt.legend()` 會自動蒐集所有帶 `label` 的元素，但自動不等於清楚——`loc` 決定位置、`frameon=False` 去邊框、`ncol` 讓它橫排少佔版面，`label` 開頭加底線則可讓基準線之類的輔助線不進圖例。
+
+**色條（colorbar）客製化**：顏色一旦在編碼數值，就得用 `plt.colorbar()` 附上刻度尺。色盤要配資料型態：有序的量用連續型（sequential）、有意義中點的量（溫度距平、盈虧）用發散型（divergent）、無序類別用質性（qualitative）。並記得轉成灰階檢查一次——彩虹型色盤（如 jet）亮度起伏不單調，印成黑白就整個崩掉，對色覺障礙讀者也不友善。
+
+**子圖（subplots）**：`plt.subplots(2, 3)` 一行開出網格並回傳 Axes 陣列，加 `sharex`／`sharey` 讓各格共用尺度（並排比較時尺度不一致最容易誤導人）；要跨欄的自由版面用 `plt.GridSpec` 配切片語法，要在圖中塞放大插圖就用 `plt.axes([left, bottom, width, height])` 手動指定。
+
+**標註（annotation）**：`plt.text` 放文字、`plt.annotate` 再拉一條帶箭頭的引線指向特定資料點。關鍵是座標系——`transData` 用資料座標（文字跟著資料跑）、`transAxes` 用子圖內的 0–1 相對位置（永遠貼在角落）、`transFigure` 相對整張畫布。一張圖有沒有標註，往往就是「一堆線」跟「一個結論」的差別。
+
+### 什麼時候用哪個：探索 vs. 溝通
+
+**Seaborn 統計繪圖**架在 Matplotlib 之上，解決三件事：預設樣式更耐看、API 更高階、原生吃 pandas DataFrame（Matplotlib 比 pandas 早問世十幾年，思維還是餵 NumPy 陣列）。它更把統計動作包了進去：`histplot`／`kdeplot` 估分布、`jointplot` 同時給雙變數關係與各自邊際分布、`pairplot` 一次畫出所有欄位兩兩配對的散佈矩陣、`FacetGrid`／`catplot` 依類別欄位自動切成一排小圖——這些純 Matplotlib 都做得到，只是要多寫二三十行樣板碼。
+
+所以判準不是誰比較強，而是：**探索階段用 Seaborn，溝通階段用 Matplotlib**。剛拿到資料、想在五分鐘內掃過二十個欄位的分布與相關性，一行 `pairplot` 的產值遠高於自己刻迴圈；等這張圖要進報告或簡報、需要精準控制標註放哪裡、色條刻度怎麼寫、兩個子圖如何對齊時，就落回 Matplotlib 的 Axes 物件慢慢調（Seaborn 畫完也回傳 Axes，兩者可以無縫接手）。
+
+這正對應畫圖在資料科學流程裡的兩種角色：**探索式視覺化**畫給自己看，要快、要多、要丟得掉——這個分布是雙峰嗎？有沒有離群值？醜沒關係，一分鐘畫十張才重要；**解釋式視覺化**畫給別人看，一張圖只准講一件事，圖例、色條、標註都是為了預先消滅讀者的疑問。本週前半的 `plot`／`scatter`／`hist`／`contour` 讓你快速看見資料的形狀，後半的 legend／colorbar／subplots／annotation 則讓別人看見你已經看見的東西。
+
+> 延伸閱讀：[《Python Data Science Handbook》Part 4: Visualization with Matplotlib](https://jakevdp.github.io/PythonDataScienceHandbook/04.00-introduction-to-matplotlib.html)（上文為獨立整理與舉例，非該書內容改寫）
+
 {/* @ai-visualize
 id: ml-week5-concept
-type: free
+type: diagram
 prompt: |
-  本週核心概念的示意圖，待上課後依實際授課內容調整 prompt。
+  一張整合「圖形解剖 × 兩套介面 × 繪圖選型」的示意圖，分成三區：
+
+  （1）左區畫 Figure／Axes 的容器層級：一個大的 Figure 外框內放兩個 Axes 子圖，
+      以細引線標出各元件落在哪一層——座標軸與刻度、折線／散點、誤差棒
+      （errorbar）、圖例（legend）、色條（colorbar）、標註文字與箭頭
+      （annotation）。要凸顯的洞察是「Figure 是整張畫布，Axes 是一整張有座標軸
+      的子圖，不是一條軸」這個最常被誤解的層級關係。
+
+  （2）右上區做兩套介面的呼叫路徑對照：狀態式的 plt.plot() / plt.title() 要先經過
+      一個虛線框的隱含節點「目前這張圖（gca）」才連到某個 Axes；物件導向的
+      fig, ax = plt.subplots() 則以實線直接連到指名的 ax.plot() / ax.set_title()。
+      用虛線 vs 實線凸顯「隱含 vs 明確」，並在多子圖情境旁標一句：狀態式介面
+      在多個 Axes 下容易畫錯地方。
+
+  （3）下方一條橫向決策帶：從「想回答什麼問題」分支到該用的函式——隨序列變化
+      的趨勢 → plt.plot；兩變數關係且想用大小／顏色多編碼變數 → plt.scatter；
+      單變數分布 → plt.hist（附註 bin 寬度是關鍵旋鈕，太寬壓掉雙峰、太窄全是
+      雜訊）；雙變數密度 → hist2d／hexbin／KDE；網格上的函數場 → contour／
+      contourf；要呈現不確定性 → errorbar／fill_between；要一次掃多欄位或做統計
+      摘要 → Seaborn（pairplot／jointplot／FacetGrid）。決策帶最右端用兩個對比
+      色塊收束成本週的判斷依據：「探索式：畫給自己，快而多，可丟棄」與
+      「解釋式：畫給別人，一圖一結論」。
+
+  手繪 SVG，不引入圖表函式庫。
+caption: Matplotlib 的圖形解剖與兩套介面對照，以及從「想回答什麼問題」出發的繪圖選型決策帶。
 status: pending
 */}
 

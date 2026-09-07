@@ -12,11 +12,56 @@ updatedAt: "2026-11-16"
 
 > 本週參考：[《Machine Learning with PyTorch and Scikit-Learn》](/notes/machine-learning-with-pytorch-and-scikit-learn)
 
+## 本週摘要
+
+### 框架接手的第一件事：tensor
+
+第 10 週用 numpy 手刻多層感知器，最累的不是前向傳播，而是自己推導每一層的梯度。PyTorch 的起點很樸素——把 `ndarray` 換成 **tensor（張量）**：`torch.tensor()` 建立、`.reshape()` 改形狀、`torch.matmul()` 相乘、`torch.cat()` 與 `torch.stack()` 接合或堆疊，這些 **tensor 操作（tensor operations）**幾乎可以照著 numpy 的直覺用。真正的差別在兩處：tensor 能整包搬上 GPU，同一段矩陣乘法一行都不改就換了執行硬體；更關鍵的是它帶一個 `requires_grad` 開關，打開之後，這個張量參與的每一次運算都會被記帳。numpy 陣列算完就算完了，tensor 算完還留著「我是怎麼被算出來的」——這份帳就是後面自動微分的全部基礎。
+
+### 餵資料：Dataset 定義一筆，DataLoader 決定怎麼發
+
+手刻階段資料就是一個大矩陣，訓練迴圈裡自己切片、自己洗牌。PyTorch 把這件事拆成兩個角色：`Dataset` 只回答兩個問題——總共幾筆、第 i 筆長什麼樣；`DataLoader` 則負責發料——批次多大、每個 epoch 要不要重新洗牌（shuffle）、最後不滿一批要不要丟掉。拆開的價值要在資料不是現成矩陣時才顯現：教材用一個貓狗圖片資料夾示範，`__getitem__` 被呼叫的當下才真的打開那張 jpg、縮成 80×120、轉成 tensor。磁碟上有一萬張圖，記憶體裡永遠只有當下這一批——像餐廳一道一道出餐，而不是把整鍋菜端上桌。MNIST、CelebA 這類常見資料集則由 `torchvision.datasets` 直接給你現成的 Dataset。
+
+### 疊層與激活函數：模型是可巢狀的積木
+
+**`torch.nn.Module`** 是所有模型與所有層的共同基底：`nn.Linear(4, 16)` 是一個 Module，你自己寫的整張網路也是一個 Module。這種自我相似讓層能任意巢狀，而 `model.parameters()` 會自動把裡面每個可訓練參數交給優化器。層與層之間必須插**激活函數（activation functions）**，否則疊再多線性層仍等於一層線性。四個常見選擇各有分工：**sigmoid** 把任意數字壓進 0 到 1，適合輸出「這封信是垃圾郵件的機率」；**softmax** 是它的多類別版本，把一整排分數正規化成加總為 1 的機率分布（鳶尾花三個品種各佔多少）；**tanh** 形狀跟 sigmoid 相同但輸出範圍是 −1 到 1、以 0 為中心，隱藏層通常比 sigmoid 收斂快；**ReLU** 最粗暴——負的歸零、正的原樣通過，導數非 0 即 1，梯度往回傳很多層也不易衰減，所以深層網路的隱藏層現在幾乎預設用它。搭上 `torch.optim` 之後，訓練迴圈收斂成固定五步：算預測、算 loss、`backward()`、`optimizer.step()`、`optimizer.zero_grad()`。
+
+### autograd：帳是怎麼記、怎麼往回推的
+
+`z = (a − b) × 2 + c` 這樣一條式子，PyTorch 執行時不只算出數字，還順手把它記成一張**計算圖（computation graph）**：節點是張量與運算，邊是「誰由誰算出來」。這張圖是動態的，在你真的跑一次前向傳播的那一刻才被建起來，所以中間寫 `if` 與 `for` 都照樣被記錄，也隨時能 print 中間值來看。`loss.backward()` 做的事，就是從圖的終點（loss 這個純量）沿著邊往回走，每經過一個運算就套用該運算的微分規則、把局部導數乘進去——鏈鎖律的自動化版本，也就是 **`autograd`（automatic differentiation，自動微分）**。走完之後，每個 `requires_grad=True` 的張量上就多出一個 `.grad`。它不像數值微分用差分近似，也不像符號微分要先推出整條導數公式，而是照實際執行過的順序機械地連乘，因此精確、成本跟前向傳播同一個量級。兩個細節要記牢：梯度是累加的，不歸零就會把上一批的混進來；而 `backward()` 之後計算圖預設會被釋放，同一張圖不能回推兩次。
+
+### 三種抽象層級：Sequential、自訂 Module、Lightning
+
+同一個 XOR 分類器，教材用三種寫法各蓋了一次。**`nn.Sequential`** 最省事：把層依序列進去，資料就照順序流過，`nn.Linear(2, 4)` → `nn.ReLU()` → … 一路到 `nn.Sigmoid()`，適合「一條直線走到底」的網路。一旦需要分支、跳接，或 forward 時要多吃一個參數（教材那個只在訓練時加雜訊的自訂層 `NoisyLinear` 就是），就得**自訂 `nn.Module`**：`__init__` 裡宣告有哪些層，`forward` 裡用普通 Python 寫資料怎麼流，想怎麼繞都行。**PyTorch Lightning** 再往上一層，連「訓練迴圈」本身都收走：你只填 `training_step`／`validation_step`／`configure_optimizers` 這幾個空格，epoch 迴圈、梯度歸零、裝置搬移、checkpoint 存檔、TensorBoard 記錄全由 `Trainer` 代勞。
+
+### 該站在哪一層，以及出錯時往哪裡看
+
+選層級的判斷其實很直接：模型是單一條資料流就用 `nn.Sequential`；結構一有分支、或 forward 需要額外參數，就換成自訂 `nn.Module`；等到你開始在多個專案之間複製貼上同一套訓練迴圈、或需要多 GPU 與 checkpoint 管理，才值得換上 Lightning。往上一層省掉的是樣板，代價是「出事時中間那層不是你寫的」。
+
+所以反過來，框架幫你做掉的事，就是 bug 的藏身處。loss 完全不動，先看參數有沒有真的進到優化器——自訂 Module 裡若用普通 tensor 而不是 `nn.Parameter` 存權重，`model.parameters()` 根本抓不到它。loss 抖得離譜，檢查 `zero_grad()` 是不是漏了、梯度正在偷偷累加。`backward()` 抱怨圖已被釋放，代表你對同一張計算圖回推了兩次。輸出機率怪怪的，多半是激活函數跟損失函數重複算——`nn.CrossEntropyLoss` 內部已經含 softmax，模型最後再疊一層就等於做了兩次。Lightning 出狀況時，最快的排查是把模型退回純 PyTorch 迴圈跑一遍，先確認錯在模型還是錯在 `Trainer` 的設定。
+
+> 延伸閱讀：[《Machine Learning with PyTorch and Scikit-Learn》ch12–ch13 程式碼與章節大綱](https://github.com/rasbt/machine-learning-book)（上文為獨立整理與舉例，非該書內容改寫）
+
 {/* @ai-visualize
 id: ml-week11-concept
-type: free
+type: diagram
 prompt: |
-  本週核心概念的示意圖，待上課後依實際授課內容調整 prompt。
+  畫一張「PyTorch 抽象層級堆疊圖」，由下往上分五層，說明每一層各自接手了什麼、
+  以及出錯時該往哪一層看：
+  (1) 手刻 numpy（第 10 週）——自己算矩陣、自己推導梯度；
+  (2) tensor 與 autograd——tensor 操作、GPU 搬移、requires_grad 記帳、
+      計算圖與 backward() 沿圖回推；
+  (3) torch.nn.Module 與 torch.optim——層的組合、activation functions
+      （sigmoid / softmax / tanh / ReLU）、優化器更新參數；
+  (4) nn.Sequential vs. 自訂 nn.Module——單一資料流 vs. 有分支／自訂層；
+  (5) PyTorch Lightning——連訓練迴圈都收走，只填 training_step 等空格。
+  右側並排一條「一次訓練迭代的五步驟」直向流程：算預測 → 算 loss →
+  backward() → optimizer.step() → zero_grad()，每個步驟用細線連回左側
+  「這一步由哪一層負責」，凸顯核心洞察：越往上寫的樣板越少，但出錯時要
+  排查的層級離你越遠。每層右緣標一個常見錯誤提示（例如「權重沒包成
+  nn.Parameter，optimizer 抓不到」「漏掉 zero_grad，梯度累加」
+  「同一張計算圖 backward 兩次」）。手寫 SVG，不引入圖表函式庫。
+caption: PyTorch 的五層抽象堆疊：從手刻 numpy 到 Lightning，每一層接手了什麼、訓練五步驟歸誰管、出錯時往哪裡看。
 status: pending
 */}
 
