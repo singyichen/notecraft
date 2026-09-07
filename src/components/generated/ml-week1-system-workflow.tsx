@@ -1,98 +1,347 @@
 /**
- * 核心洞察：建立 ML 系統不是「訓練完就結束」的一次性流程，而是「評估不理想
- * → 繞回調整、甚至換演算法」的迴圈；No Free Lunch 定理正是這個迴圈存在的
- * 理由——沒有一個演算法能在所有情境穩贏，所以步驟③常態性地要重跑、要比較。
+ * 核心洞察：這張圖真正要教的不是「流程的先後順序」，而是四道防止「模型偷看
+ * 考題／帶錯配方上線」的隔離機制——①測試集切分後立刻封存、②前處理其實是兩條
+ * 互不相通的獨立管線、③調參的本質是交叉驗證迴圈（因為 No Free Lunch，沒有
+ * 萬能演算法）、④上線與最終評估必須帶著同一套前處理管線。
  *
- * 互動：五步驟環狀排列，讀者用上一步／下一步或點步驟圓點推進。推進到步驟④
- * 時浮現「評估結果如何？」的兩個按鈕；點「不理想」第一次畫出④→⑤的虛線
- * 迴圈箭頭並讓 step 跳回 5，第二次改畫④→③的虛線迴圈箭頭並讓 step 跳回 3，
- * 之後在兩者間循環，模擬反覆迭代。
+ * 互動：4 階段 stepper，讀者主動點擊 chevron／步驟圓點累加式推進（不自動播放）。
+ * 每個階段新揭露的節點／邊／badge 用 stagger fade-in-y 標出；先前已揭露的元素
+ * 保留但降階至 opacity 0.55。唯一例外是「測試集」的封存視覺（虛線框＋鎖頭＋
+ * 灰底 badge）：stage1–3 全程 opacity 1.0，直到 stage4 才切換為解封視覺，藉此
+ * 讓讀者清楚看到它「一直在那裡、沒有被動過」。
  *
- * 版面：viewBox 640x360（內文欄實測最窄 583px），五節點取五角形座標，
- * 迴圈虛線走節點外側避免與主線交叉；NFL 對照條形改在 DOM 呈現（非真實資料，
- * 純示意），字級不隨 SVG 縮放。
+ * 版面：viewBox 640x580，縱向雙欄（左欄＝訓練建模路徑 cx≈155，右欄＝測試／
+ * 新資料的隔離與部署路徑 cx≈475），中央窄欄（cx≈320）放最上層的 Raw data
+ * collection。CV 迴圈虛線繞到左欄外側（x<80）避免與主線交叉；No Free Lunch
+ * 對照 mini-panel 貼在左右欄中間的空白處（gutter，x≈235–390）。
  */
 
 import { useState } from 'react'
 import { motion, AnimatePresence, useReducedMotion } from 'motion/react'
 import {
   Database,
-  Gauge,
-  Wand2,
-  ClipboardCheck,
+  Filter,
   SlidersHorizontal,
-  Repeat,
-  RotateCcw,
-  Shuffle,
-  Check,
-  ArrowUp,
+  Lock,
+  Unlock,
+  Cpu,
+  Target,
+  Award,
+  ClipboardCheck,
+  FileInput,
+  Rocket,
+  RotateCw,
   ChevronLeft,
   ChevronRight,
+  ArrowRight,
   type LucideIcon,
 } from 'lucide-react'
 
 const VBW = 640
-const VBH = 360
+const VBH = 580
 
-type StepId = 1 | 2 | 3 | 4 | 5
-type LoopPhase = 'to5' | 'to3' | null
+const NODE_W = 150
+const NODE_H = 50
+const TOP_W = 180
+const TOP_H = 46
 
-interface StepDef {
-  id: StepId
-  lines: [string, string]
+const LEFT_CX = 155
+const RIGHT_CX = 475
+const TOP_CX = 320
+
+const ROW = { r0: 30, r1: 120, r2: 210, r3: 300, r4: 390, r5: 480 }
+
+type Stage = 1 | 2 | 3 | 4
+
+const STAGE_DOTS: Stage[] = [1, 2, 3, 4]
+
+interface StageInfo {
+  stage: Stage
+  title: string
+  desc: string
   Icon: LucideIcon
 }
 
-const STEPS: StepDef[] = [
-  { id: 1, lines: ['① 選特徵', '收集樣本'], Icon: Database },
-  { id: 2, lines: ['② 選效能', '指標'], Icon: Gauge },
-  { id: 3, lines: ['③ 選演算法', '訓練模型'], Icon: Wand2 },
-  { id: 4, lines: ['④ 評估模型', '（驗證集）'], Icon: ClipboardCheck },
-  { id: 5, lines: ['⑤ 調整超參數', '／換演算法'], Icon: SlidersHorizontal },
+const STAGE_INFO: StageInfo[] = [
+  {
+    stage: 1,
+    title: '① 測試集何時切開、如何被隔離',
+    desc: '原始資料一分岔為訓練集與測試集，測試集在切分的當下就立刻封存，直到最終評估前完全不會被使用或參考。',
+    Icon: Lock,
+  },
+  {
+    stage: 2,
+    title: '② 前處理其實是兩條獨立管線',
+    desc: 'Pipeline 1 套用在切分前的整份原始資料；Pipeline 2 只套用在訓練集上。此時測試集這一側還沒有任何前處理發生。',
+    Icon: Filter,
+  },
+  {
+    stage: 3,
+    title: '③ 調參其實是交叉驗證迴圈',
+    desc: '反覆訓練、評估候選模型，直到選出表現最好的版本才做最終訓練。No Free Lunch 定理：不同資料情境下最佳演算法不同，所以這一步通常要比較多種演算法。',
+    Icon: RotateCw,
+  },
+  {
+    stage: 4,
+    title: '④ 上線與最終評估都要帶著同一套前處理',
+    desc: '測試集在此解封：對它做最後一次評估、以及對新資料上線預測，都必須套用同一套 Final preprocessing pipeline——兩處 badge 長得一模一樣，正是要強調這件事。',
+    Icon: Rocket,
+  },
 ]
 
-const POS: Record<StepId, { cx: number; cy: number }> = {
-  1: { cx: 320, cy: 55 },
-  2: { cx: 486, cy: 138 },
-  3: { cx: 423, cy: 272 },
-  4: { cx: 217, cy: 272 },
-  5: { cx: 154, cy: 138 },
+const ARROW_COLOR = 'var(--neutral-400)'
+const LOOP_COLOR = 'var(--blue-500)'
+
+/* ── 揭露包裝：依 revealStage 決定顯示與 stagger／降階 ── */
+function Reveal({
+  revealStage,
+  stage,
+  index = 0,
+  forceOpacity,
+  children,
+}: {
+  revealStage: Stage
+  stage: Stage
+  index?: number
+  forceOpacity?: number
+  children: React.ReactNode
+}) {
+  const shouldReduce = useReducedMotion()
+  if (revealStage > stage) return null
+  const isNew = revealStage === stage
+  const targetOpacity = forceOpacity ?? (isNew ? 1 : 0.55)
+  return (
+    <motion.g
+      initial={shouldReduce ? false : isNew ? { opacity: 0, y: 6 } : false}
+      animate={{ opacity: targetOpacity, y: 0 }}
+      transition={{
+        duration: shouldReduce ? 0 : 0.28,
+        ease: 'easeOut',
+        delay: shouldReduce || !isNew ? 0 : index * 0.045,
+      }}
+    >
+      {children}
+    </motion.g>
+  )
 }
 
-const NODE_W = 126
-const NODE_H = 64
-const SEQUENCE: Array<[StepId, StepId]> = [
-  [1, 2],
-  [2, 3],
-  [3, 4],
-  [4, 5],
-]
-
-/** 找出從節點外框邊界、朝另一節點方向延伸的交點，讓連線不壓在節點文字上。 */
-function edgePoint(from: { cx: number; cy: number }, to: { cx: number; cy: number }) {
-  const dx = to.cx - from.cx
-  const dy = to.cy - from.cy
-  if (dx === 0 && dy === 0) return { x: from.cx, y: from.cy }
-  const scaleX = dx !== 0 ? NODE_W / 2 / Math.abs(dx) : Infinity
-  const scaleY = dy !== 0 ? NODE_H / 2 / Math.abs(dy) : Infinity
-  const scale = Math.min(scaleX, scaleY)
-  return { x: from.cx + dx * scale, y: from.cy + dy * scale }
+/* ── 一般節點：icon + 兩行文字 ── */
+function NodeBox({
+  cx,
+  cy,
+  w = NODE_W,
+  h = NODE_H,
+  lines,
+  Icon,
+  emphasis,
+}: {
+  cx: number
+  cy: number
+  w?: number
+  h?: number
+  lines: [string, string]
+  Icon: LucideIcon
+  emphasis?: boolean
+}) {
+  const x = cx - w / 2
+  const y = cy - h / 2
+  const border = emphasis ? 'var(--blue-500)' : 'var(--border-subtle)'
+  const fill = emphasis ? 'var(--blue-50)' : 'var(--neutral-100)'
+  return (
+    <g>
+      <rect x={x} y={y} width={w} height={h} rx={8} fill={fill} stroke={border} strokeWidth={1.4} />
+      <foreignObject x={cx - 7} y={y + 6} width={14} height={14}>
+        <Icon size={14} color="var(--blue-600)" />
+      </foreignObject>
+      <text
+        x={cx}
+        y={y + h - 18}
+        fontSize={11.5}
+        fontWeight={700}
+        fill="var(--neutral-700)"
+        textAnchor="middle"
+        style={{ fontFamily: 'var(--font-sans)' }}
+      >
+        {lines[0]}
+      </text>
+      <text
+        x={cx}
+        y={y + h - 6}
+        fontSize={10.5}
+        fontWeight={500}
+        fill="var(--text-muted)"
+        textAnchor="middle"
+        style={{ fontFamily: 'var(--font-sans)' }}
+      >
+        {lines[1]}
+      </text>
+    </g>
+  )
 }
 
-// 迴圈虛線路徑：走節點外側，避免與主序列直線交叉
-const PATH_TO_5 = 'M154,272 Q30,205 91,138'
-const PATH_TO_3 = 'M217,304 Q320,350 423,304'
-const LOOP_TO_5_ICON = { x: 68, y: 197 }
-const LOOP_TO_3_ICON = { x: 312, y: 319 }
-
-interface ScenarioBar {
-  name: string
-  pct: number
+/* ── 測試集節點：封存／解封兩態，封存視覺全程 opacity 1.0（由外層 Reveal 保證） ── */
+function TestDatasetNode({ cx, cy, unlocked }: { cx: number; cy: number; unlocked: boolean }) {
+  const shouldReduce = useReducedMotion()
+  const w = NODE_W
+  const h = NODE_H
+  const x = cx - w / 2
+  const y = cy - h / 2
+  const border = unlocked ? 'var(--blue-500)' : 'var(--border-strong)'
+  return (
+    <g>
+      <rect
+        x={x}
+        y={y}
+        width={w}
+        height={h}
+        rx={8}
+        fill="var(--neutral-100)"
+        stroke={border}
+        strokeWidth={1.6}
+        strokeDasharray={unlocked ? undefined : '5 4'}
+      />
+      <foreignObject x={cx - 7} y={y + 6} width={14} height={14}>
+        <AnimatePresence mode="wait" initial={false}>
+          {unlocked ? (
+            <motion.div
+              key="unlock"
+              initial={shouldReduce ? false : { opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: shouldReduce ? 0 : 0.2 }}
+            >
+              <Unlock size={14} color="var(--blue-600)" />
+            </motion.div>
+          ) : (
+            <motion.div
+              key="lock"
+              initial={shouldReduce ? false : { opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: shouldReduce ? 0 : 0.2 }}
+            >
+              <Lock size={14} color="var(--blue-600)" />
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </foreignObject>
+      <text
+        x={cx}
+        y={y + h - 18}
+        fontSize={11.5}
+        fontWeight={700}
+        fill="var(--neutral-700)"
+        textAnchor="middle"
+        style={{ fontFamily: 'var(--font-sans)' }}
+      >
+        測試集
+      </text>
+      <text
+        x={cx}
+        y={y + h - 6}
+        fontSize={10.5}
+        fontWeight={500}
+        fill="var(--text-muted)"
+        textAnchor="middle"
+        style={{ fontFamily: 'var(--font-sans)' }}
+      >
+        {unlocked ? '（已解封）' : '（切分後封存）'}
+      </text>
+      <rect
+        x={cx - 58}
+        y={y + h + 6}
+        width={116}
+        height={18}
+        rx={9}
+        fill={unlocked ? 'var(--success-50)' : 'var(--neutral-100)'}
+      />
+      <text
+        x={cx}
+        y={y + h + 18}
+        fontSize={10.5}
+        fontWeight={700}
+        textAnchor="middle"
+        fill={unlocked ? 'var(--success-500)' : 'var(--neutral-600)'}
+        style={{ fontFamily: 'var(--font-sans)' }}
+      >
+        {unlocked ? '已用於最終評估' : '封存至最終評估'}
+      </text>
+    </g>
+  )
 }
+
+/* ── Pipeline / Final preprocessing pipeline badge：Pipeline2 與 Final pipeline 視覺完全相同 ── */
+function PipelineBadge({
+  cx,
+  cy,
+  label,
+  tone,
+  Icon,
+  width,
+}: {
+  cx: number
+  cy: number
+  label: string
+  tone: 'indigo' | 'emerald'
+  Icon: LucideIcon
+  width: number
+}) {
+  const bg = tone === 'indigo' ? 'var(--blue-100)' : 'var(--orange-50)'
+  const fg = tone === 'indigo' ? 'var(--blue-700)' : 'var(--orange-600)'
+  const x = cx - width / 2
+  return (
+    <g>
+      <rect x={x} y={cy - 11} width={width} height={22} rx={11} fill={bg} />
+      <foreignObject x={x + 7} y={cy - 7} width={14} height={14}>
+        <Icon size={13} color={fg} />
+      </foreignObject>
+      <text
+        x={x + 25}
+        y={cy + 3.5}
+        fontSize={10.5}
+        fontWeight={700}
+        fill={fg}
+        style={{ fontFamily: 'var(--font-sans)' }}
+      >
+        {label}
+      </text>
+    </g>
+  )
+}
+
+function Arrow({
+  x1,
+  y1,
+  x2,
+  y2,
+  color = ARROW_COLOR,
+  dashed,
+}: {
+  x1: number
+  y1: number
+  x2: number
+  y2: number
+  color?: string
+  dashed?: boolean
+}) {
+  return (
+    <line
+      x1={x1}
+      y1={y1}
+      x2={x2}
+      y2={y2}
+      stroke={color}
+      strokeWidth={1.8}
+      strokeDasharray={dashed ? '4 4' : undefined}
+      markerEnd="url(#wf-arrow)"
+    />
+  )
+}
+
+/* ── No Free Lunch 對照 mini-panel：貼在 CV 迴圈與左欄之間的空白處 ── */
 interface Scenario {
   key: string
-  label: string
-  bars: ScenarioBar[]
+  bars: { name: 'X' | 'Y' | 'Z'; pct: number }[]
   best: string
 }
 
@@ -103,185 +352,159 @@ const BAR_COLORS: Record<string, string> = {
 }
 
 const SCENARIOS: Scenario[] = [
-  {
-    key: 'A',
-    label: '資料情境 A',
-    bars: [
-      { name: 'X', pct: 88 },
-      { name: 'Y', pct: 52 },
-      { name: 'Z', pct: 38 },
-    ],
-    best: 'X',
-  },
-  {
-    key: 'B',
-    label: '資料情境 B',
-    bars: [
-      { name: 'X', pct: 42 },
-      { name: 'Y', pct: 90 },
-      { name: 'Z', pct: 58 },
-    ],
-    best: 'Y',
-  },
-  {
-    key: 'C',
-    label: '資料情境 C',
-    bars: [
-      { name: 'X', pct: 48 },
-      { name: 'Y', pct: 36 },
-      { name: 'Z', pct: 92 },
-    ],
-    best: 'Z',
-  },
+  { key: 'A', bars: [{ name: 'X', pct: 88 }, { name: 'Y', pct: 52 }, { name: 'Z', pct: 38 }], best: 'X' },
+  { key: 'B', bars: [{ name: 'X', pct: 42 }, { name: 'Y', pct: 90 }, { name: 'Z', pct: 58 }], best: 'Y' },
+  { key: 'C', bars: [{ name: 'X', pct: 48 }, { name: 'Y', pct: 36 }, { name: 'Z', pct: 92 }], best: 'Z' },
 ]
 
-function Node({ def, active }: { def: StepDef; active: boolean }) {
-  const shouldReduce = useReducedMotion()
-  const { cx, cy } = POS[def.id]
-  const x = cx - NODE_W / 2
-  const y = cy - NODE_H / 2
-  const color = active ? '#ffffff' : 'var(--neutral-700)'
-  const Icon = def.Icon
-
+function NflPanel({ x, y, shouldReduce }: { x: number; y: number; shouldReduce: boolean }) {
+  const rowH = 42
   return (
-    <motion.g
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1, scale: active ? 1.04 : 1 }}
-      transition={{ duration: shouldReduce ? 0 : 0.2, ease: 'easeOut' }}
-      style={{ transformOrigin: `${cx}px ${cy}px` }}
-    >
-      <rect
-        x={x}
-        y={y}
-        width={NODE_W}
-        height={NODE_H}
-        rx={8}
-        fill={active ? 'var(--blue-600)' : 'var(--neutral-100)'}
-      />
-      <foreignObject x={cx - 9} y={y + 10} width={18} height={18}>
-        <Icon size={18} color={color} />
+    <g>
+      <rect x={x} y={y} width={158} height={168} rx={8} fill="var(--surface-sunken)" />
+      <text
+        x={x + 9}
+        y={y + 17}
+        fontSize={10}
+        fontWeight={700}
+        fill="var(--text-strong)"
+        style={{ fontFamily: 'var(--font-sans)' }}
+      >
+        沒有萬能演算法（NFL）
+      </text>
+      {SCENARIOS.map((sc, sIdx) => {
+        const rowY = y + 32 + sIdx * rowH
+        return (
+          <g key={sc.key}>
+            <text
+              x={x + 9}
+              y={rowY}
+              fontSize={9.5}
+              fontWeight={600}
+              fill="var(--text-muted)"
+              style={{ fontFamily: 'var(--font-sans)' }}
+            >
+              情境 {sc.key} ・ 最佳：{sc.best}
+            </text>
+            {sc.bars.map((bar, bIdx) => (
+              <motion.rect
+                key={bar.name}
+                x={x + 9}
+                y={rowY + 6 + bIdx * 7}
+                height={4}
+                rx={2}
+                fill={BAR_COLORS[bar.name]}
+                initial={shouldReduce ? false : { width: 0 }}
+                animate={{ width: (bar.pct / 100) * 128 }}
+                transition={{
+                  duration: shouldReduce ? 0 : 0.32,
+                  ease: 'easeOut',
+                  delay: shouldReduce ? 0 : (sIdx * 3 + bIdx) * 0.05,
+                }}
+              />
+            ))}
+          </g>
+        )
+      })}
+      <foreignObject x={x + 9} y={y + 150} width={14} height={14}>
+        <ArrowRight size={12} color="var(--text-muted)" />
       </foreignObject>
       <text
-        x={cx}
-        y={y + 42}
-        fontSize={12.5}
-        fontWeight={600}
-        fill={color}
-        textAnchor="middle"
+        x={x + 26}
+        y={y + 160}
+        fontSize={9.5}
+        fill="var(--text-muted)"
         style={{ fontFamily: 'var(--font-sans)' }}
       >
-        {def.lines[0]}
+        所以要比較多種演算法
       </text>
-      <text
-        x={cx}
-        y={y + 57}
-        fontSize={12.5}
-        fontWeight={600}
-        fill={color}
-        textAnchor="middle"
-        style={{ fontFamily: 'var(--font-sans)' }}
-      >
-        {def.lines[1]}
-      </text>
-    </motion.g>
-  )
-}
-
-function IterationPill({ count }: { count: number }) {
-  return (
-    <span
-      className="inline-flex items-center gap-1 text-[11px] font-semibold"
-      style={{
-        padding: '2px 10px',
-        borderRadius: 'var(--radius-pill)',
-        background: 'var(--orange-500)',
-        color: '#ffffff',
-      }}
-    >
-      已迭代 {count} 輪
-    </span>
+    </g>
   )
 }
 
 export default function MlWeek1SystemWorkflow() {
   const shouldReduce = useReducedMotion()
-  const [step, setStep] = useState<StepId>(1)
-  const [loopPhase, setLoopPhase] = useState<LoopPhase>(null)
-  const [loopCount, setLoopCount] = useState(0)
-  const [completed, setCompleted] = useState(false)
+  const [stage, setStage] = useState<Stage>(1)
 
-  const goPrev = () => setStep((s) => (s > 1 ? ((s - 1) as StepId) : s))
-  const goNext = () => setStep((s) => (s < 5 ? ((s + 1) as StepId) : s))
+  const goPrev = () => setStage((s) => (s > 1 ? ((s - 1) as Stage) : s))
+  const goNext = () => setStage((s) => (s < 4 ? ((s + 1) as Stage) : s))
+  const unlocked = stage === 4
 
-  const handleGood = () => setCompleted(true)
-  const handleBad = () => {
-    setCompleted(false)
-    setLoopCount((c) => c + 1)
-    if (loopPhase === 'to5') {
-      setLoopPhase('to3')
-      setStep(3)
-    } else {
-      setLoopPhase('to5')
-      setStep(5)
-    }
-  }
+  const current = STAGE_INFO[stage - 1]
 
-  const pathTransition = { duration: shouldReduce ? 0 : 0.3, ease: 'easeOut' as const }
-  const pathInitial = shouldReduce ? false : { pathLength: 0, opacity: 0 }
-  const iconInitial = shouldReduce ? false : { opacity: 0 }
+  // 節點座標（左欄 x=80..230，右欄 x=400..550，中央頂部 x=230..410）
+  const topBottom = ROW.r0 + TOP_H / 2 // 53
+  const branchY = topBottom + 25 // 78
+  const r1Top = ROW.r1 - NODE_H / 2 // 95
+  const r1Bottom = ROW.r1 + NODE_H / 2 // 145
+  const r2Top = ROW.r2 - NODE_H / 2 // 185
+  const r2Bottom = ROW.r2 + NODE_H / 2 // 235
+  const r3Top = ROW.r3 - NODE_H / 2 // 275
+  const r3Bottom = ROW.r3 + NODE_H / 2 // 325
+  const r4Top = ROW.r4 - NODE_H / 2 // 365
+  const r4Bottom = ROW.r4 + NODE_H / 2 // 415
+  const r5Top = ROW.r5 - NODE_H / 2 // 455
+  const r5Bottom = ROW.r5 + NODE_H / 2 // 505
+
+  const leftEdge = LEFT_CX - NODE_W / 2 // 80
+  const leftRight = LEFT_CX + NODE_W / 2 // 230
+  const rightEdge = RIGHT_CX - NODE_W / 2 // 400
+
+  const ariaLabel =
+    stage === 1
+      ? '流程圖第 1 階段：原始資料切分為訓練集與測試集，測試集立即封存。'
+      : stage === 2
+        ? '流程圖第 2 階段：前處理分為套用在整份原始資料的 Pipeline 1，以及只套用在訓練集的 Pipeline 2；測試集尚未經過任何前處理。'
+        : stage === 3
+          ? '流程圖第 3 階段：ML 演算法透過交叉驗證迴圈反覆訓練與評估候選模型，選定後做最終訓練得到最終預測模型；No Free Lunch 定理說明需要比較多種演算法。'
+          : '流程圖第 4 階段：測試集解封，與最終預測模型搭配同一套 Final preprocessing pipeline 做最後一次評估；新資料也套用同一套管線後由最終模型上線預測。'
 
   return (
-    <div className="not-prose w-full space-y-6" style={{ fontFamily: 'var(--font-sans)' }}>
+    <div className="not-prose w-full space-y-5" style={{ fontFamily: 'var(--font-sans)' }}>
       {/* 標題與控制列 */}
       <div className="flex items-center justify-between flex-wrap gap-3">
-        <div className="flex items-center gap-2 min-w-0">
-          <h3
-            className="text-sm font-bold leading-snug"
-            style={{ color: 'var(--text-strong)' }}
-          >
-            建立 ML 系統：反覆迭代的工作流程
-          </h3>
-          {loopCount > 0 && <IterationPill count={loopCount} />}
-        </div>
+        <h3 className="text-sm font-bold leading-snug" style={{ color: 'var(--text-strong)' }}>
+          建立 ML 系統的完整工作流程
+        </h3>
 
         <div className="flex items-center gap-2">
           <button
             type="button"
             onClick={goPrev}
-            disabled={step === 1}
+            disabled={stage === 1}
             className="inline-flex items-center gap-1 text-[13px] font-medium transition-colors"
             style={{
               padding: '5px 10px',
               borderRadius: 'var(--radius-md)',
               border: '1px solid var(--border-subtle)',
-              color: step === 1 ? 'var(--text-muted)' : 'var(--text-body)',
+              color: stage === 1 ? 'var(--text-muted)' : 'var(--text-body)',
               background: 'var(--surface-card)',
-              opacity: step === 1 ? 0.5 : 1,
-              cursor: step === 1 ? 'not-allowed' : 'pointer',
+              opacity: stage === 1 ? 0.5 : 1,
+              cursor: stage === 1 ? 'not-allowed' : 'pointer',
             }}
           >
             <ChevronLeft size={14} />
             上一步
           </button>
 
-          <div className="flex items-center gap-1.5" role="group" aria-label="跳至步驟">
-            {STEPS.map((s) => (
+          <div className="flex items-center gap-1.5" role="group" aria-label="跳至階段">
+            {STAGE_DOTS.map((s) => (
               <button
-                key={s.id}
+                key={s}
                 type="button"
-                onClick={() => setStep(s.id)}
-                aria-current={step === s.id}
-                aria-label={`步驟 ${s.id}`}
+                onClick={() => setStage(s)}
+                aria-current={stage === s}
+                aria-label={`階段 ${s}`}
                 className="text-[11px] font-bold transition-colors"
                 style={{
                   width: 20,
                   height: 20,
                   borderRadius: 'var(--radius-pill)',
-                  background: step === s.id ? 'var(--blue-600)' : 'var(--neutral-100)',
-                  color: step === s.id ? '#ffffff' : 'var(--neutral-600)',
+                  background: stage === s ? 'var(--blue-600)' : 'var(--neutral-100)',
+                  color: stage === s ? '#ffffff' : 'var(--neutral-600)',
                 }}
               >
-                {s.id}
+                {s}
               </button>
             ))}
           </div>
@@ -289,16 +512,16 @@ export default function MlWeek1SystemWorkflow() {
           <button
             type="button"
             onClick={goNext}
-            disabled={step === 5}
+            disabled={stage === 4}
             className="inline-flex items-center gap-1 text-[13px] font-medium transition-colors"
             style={{
               padding: '5px 10px',
               borderRadius: 'var(--radius-md)',
               border: '1px solid var(--border-subtle)',
-              color: step === 5 ? 'var(--text-muted)' : 'var(--text-body)',
+              color: stage === 4 ? 'var(--text-muted)' : 'var(--text-body)',
               background: 'var(--surface-card)',
-              opacity: step === 5 ? 0.5 : 1,
-              cursor: step === 5 ? 'not-allowed' : 'pointer',
+              opacity: stage === 4 ? 0.5 : 1,
+              cursor: stage === 4 ? 'not-allowed' : 'pointer',
             }}
           >
             下一步
@@ -308,244 +531,244 @@ export default function MlWeek1SystemWorkflow() {
       </div>
 
       {/* 主流程圖 */}
+      <p className="sr-only">
+        十個節點依序為：原始資料收集（Raw data collection）；訓練集（Training dataset）；測試集（Test
+        dataset，切分後立即封存，直到最終評估才解封）；訓練集（已前處理）（Processed training
+        dataset，套用 Pipeline 2）；ML 演算法：超參數選擇與訓練（ML algorithm：hyperparameter choice +
+        training）；候選預測模型（Predictive model candidate，透過交叉驗證反覆評估）；最終預測模型（Final
+        predictive model，選定並以完整訓練集重新訓練）；最終評估（Evaluate，以測試集搭配 Final
+        preprocessing pipeline 做最後一次評估）；新資料（New dataset，上線後的新輸入）；套用／預測
+        （Apply/Predict，套用同一套 Final preprocessing pipeline 後由最終模型預測）。
+        四道隔離規則：一、測試集在切分當下就被隔離封存，全程不能用於訓練或調參；二、前處理是兩條獨立管線，
+        Pipeline 1 套用於切分前的整份原始資料，Pipeline 2 只套用於訓練集；三、調參的本質是交叉驗證迴圈，因為
+        No Free Lunch 定理沒有萬能演算法，需要反覆比較多種演算法；四、最終上線與最終評估測試集都必須套用同一套
+        Final preprocessing pipeline，確保前後一致。
+      </p>
       <svg
         viewBox={`0 0 ${VBW} ${VBH}`}
         width="100%"
         preserveAspectRatio="xMidYMid meet"
         role="img"
-        aria-label="建立機器學習系統的五步驟迴圈：選特徵收集樣本、選效能指標、選演算法訓練模型、評估模型效能、調整超參數或換演算法，依序連接；評估後若表現不理想會繞回調整超參數、甚至繞回換演算法，形成反覆迭代的迴圈。"
+        aria-label={ariaLabel}
       >
         <defs>
           <marker id="wf-arrow" markerWidth="9" markerHeight="9" refX="7" refY="4" orient="auto">
-            <path d="M0,0 L8,4 L0,8 Z" fill="var(--neutral-400)" />
+            <path d="M0,0 L8,4 L0,8 Z" fill={ARROW_COLOR} />
           </marker>
           <marker id="wf-loop-arrow" markerWidth="9" markerHeight="9" refX="7" refY="4" orient="auto">
-            <path d="M0,0 L8,4 L0,8 Z" fill="var(--blue-500)" />
+            <path d="M0,0 L8,4 L0,8 Z" fill={LOOP_COLOR} />
           </marker>
         </defs>
 
-        {/* 主序列：實線箭頭 1→2→3→4→5 */}
-        {SEQUENCE.map(([a, b]) => {
-          const p1 = edgePoint(POS[a], POS[b])
-          const p2 = edgePoint(POS[b], POS[a])
-          return (
-            <line
-              key={`${a}-${b}`}
-              x1={p1.x}
-              y1={p1.y}
-              x2={p2.x}
-              y2={p2.y}
-              stroke="var(--neutral-400)"
-              strokeWidth={2}
-              markerEnd="url(#wf-arrow)"
+        {/* stage 1 : raw data + split + training/test */}
+        <Reveal revealStage={1} stage={stage} index={0}>
+          <NodeBox cx={TOP_CX} cy={ROW.r0} w={TOP_W} h={TOP_H} lines={['原始資料', '收集']} Icon={Database} />
+        </Reveal>
+        <Reveal revealStage={1} stage={stage} index={1}>
+          <g>
+            <line x1={TOP_CX} y1={topBottom} x2={TOP_CX} y2={branchY} stroke={ARROW_COLOR} strokeWidth={1.8} />
+            <Arrow x1={TOP_CX} y1={branchY} x2={LEFT_CX} y2={r1Top} />
+            <Arrow x1={TOP_CX} y1={branchY} x2={RIGHT_CX} y2={r1Top} />
+          </g>
+        </Reveal>
+        <Reveal revealStage={1} stage={stage} index={2}>
+          <NodeBox cx={LEFT_CX} cy={ROW.r1} lines={['訓練集', '（切分後）']} Icon={Database} />
+        </Reveal>
+        {/* 測試集封存視覺：全程 opacity 1.0，不受降階規則影響 */}
+        <Reveal revealStage={1} stage={stage} index={3} forceOpacity={1}>
+          <TestDatasetNode cx={RIGHT_CX} cy={ROW.r1} unlocked={unlocked} />
+        </Reveal>
+
+        {/* stage 2 : pipeline 1 / pipeline 2 / processed training dataset */}
+        <Reveal revealStage={2} stage={stage} index={0}>
+          <PipelineBadge cx={TOP_CX} cy={(topBottom + branchY) / 2} label="Pipeline 1" tone="indigo" Icon={Filter} width={84} />
+        </Reveal>
+        <Reveal revealStage={2} stage={stage} index={1}>
+          <Arrow x1={LEFT_CX} y1={r1Bottom} x2={LEFT_CX} y2={r2Top} />
+        </Reveal>
+        <Reveal revealStage={2} stage={stage} index={2}>
+          <NodeBox cx={LEFT_CX} cy={ROW.r2} lines={['訓練集', '（已前處理）']} Icon={SlidersHorizontal} />
+        </Reveal>
+        <Reveal revealStage={2} stage={stage} index={3}>
+          <PipelineBadge
+            cx={LEFT_CX}
+            cy={(r1Bottom + r2Top) / 2}
+            label="Pipeline 2"
+            tone="emerald"
+            Icon={SlidersHorizontal}
+            width={90}
+          />
+        </Reveal>
+
+        {/* stage 3 : ML algorithm / candidate / CV loop / NFL / final model */}
+        <Reveal revealStage={3} stage={stage} index={0}>
+          <Arrow x1={LEFT_CX} y1={r2Bottom} x2={LEFT_CX} y2={r3Top} />
+        </Reveal>
+        <Reveal revealStage={3} stage={stage} index={1}>
+          <NodeBox cx={LEFT_CX} cy={ROW.r3} lines={['ML 演算法', '超參數選擇＋訓練']} Icon={Cpu} emphasis />
+        </Reveal>
+        <Reveal revealStage={3} stage={stage} index={2}>
+          <Arrow x1={LEFT_CX} y1={r3Bottom} x2={LEFT_CX} y2={r4Top} />
+        </Reveal>
+        <Reveal revealStage={3} stage={stage} index={3}>
+          <NodeBox cx={LEFT_CX} cy={ROW.r4} lines={['候選', '預測模型']} Icon={Target} />
+        </Reveal>
+        <Reveal revealStage={3} stage={stage} index={4}>
+          <g>
+            <path
+              id="cv-loop-path"
+              d={`M${leftEdge},${ROW.r4} C${leftEdge - 60},${ROW.r4} ${leftEdge - 60},${ROW.r3} ${leftEdge},${ROW.r3}`}
+              fill="none"
+              stroke={LOOP_COLOR}
+              strokeWidth={1.8}
+              strokeDasharray="3 5"
+              markerEnd="url(#wf-loop-arrow)"
             />
-          )
-        })}
+            {!shouldReduce && (
+              <circle r={3.5} fill={LOOP_COLOR}>
+                <animateMotion dur="2.4s" repeatCount="indefinite">
+                  <mpath href="#cv-loop-path" />
+                </animateMotion>
+              </circle>
+            )}
+          </g>
+        </Reveal>
+        <Reveal revealStage={3} stage={stage} index={5}>
+          <g>
+            <foreignObject x={4} y={ROW.r3 + 13} width={13} height={13}>
+              <RotateCw size={12} color={LOOP_COLOR} />
+            </foreignObject>
+            <text x={2} y={ROW.r3 + 40} fontSize={9} fontWeight={600} fill="var(--text-muted)" style={{ fontFamily: 'var(--font-sans)' }}>
+              交叉驗證
+            </text>
+            <text x={2} y={ROW.r3 + 52} fontSize={9} fontWeight={600} fill="var(--text-muted)" style={{ fontFamily: 'var(--font-sans)' }}>
+              反覆迭代
+            </text>
+          </g>
+        </Reveal>
+        <Reveal revealStage={3} stage={stage} index={6}>
+          <NflPanel x={235} y={250} shouldReduce={!!shouldReduce} />
+        </Reveal>
+        <Reveal revealStage={3} stage={stage} index={7}>
+          <g>
+            <Arrow x1={LEFT_CX} y1={r4Bottom} x2={LEFT_CX} y2={r5Top} />
+            <text x={192} y={438} fontSize={9.5} fontWeight={600} fill="var(--text-muted)" style={{ fontFamily: 'var(--font-sans)' }}>
+              選定→
+            </text>
+            <text x={192} y={450} fontSize={9.5} fontWeight={600} fill="var(--text-muted)" style={{ fontFamily: 'var(--font-sans)' }}>
+              最終訓練
+            </text>
+          </g>
+        </Reveal>
+        <Reveal revealStage={3} stage={stage} index={8}>
+          <NodeBox cx={LEFT_CX} cy={ROW.r5} lines={['最終', '預測模型']} Icon={Award} emphasis />
+        </Reveal>
 
-        {/* 迴圈虛線：④→⑤ 或 ④→③，依 loopPhase 動態畫出 */}
-        <AnimatePresence>
-          {loopPhase === 'to5' && (
-            <motion.g key="loop-to5">
-              <motion.path
-                d={PATH_TO_5}
-                fill="none"
-                stroke="var(--blue-500)"
-                strokeWidth={2}
-                strokeDasharray="4 4"
-                markerEnd="url(#wf-loop-arrow)"
-                initial={pathInitial}
-                animate={{ pathLength: 1, opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={pathTransition}
-              />
-              <motion.g
-                initial={iconInitial}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={pathTransition}
-              >
-                <circle cx={LOOP_TO_5_ICON.x + 8} cy={LOOP_TO_5_ICON.y + 8} r={12} fill="var(--surface-page)" />
-                <foreignObject x={LOOP_TO_5_ICON.x} y={LOOP_TO_5_ICON.y} width={16} height={16}>
-                  <RotateCcw size={16} color="var(--blue-600)" />
-                </foreignObject>
-              </motion.g>
-            </motion.g>
-          )}
-          {loopPhase === 'to3' && (
-            <motion.g key="loop-to3">
-              <motion.path
-                d={PATH_TO_3}
-                fill="none"
-                stroke="var(--blue-500)"
-                strokeWidth={2}
-                strokeDasharray="2 6"
-                markerEnd="url(#wf-loop-arrow)"
-                initial={pathInitial}
-                animate={{ pathLength: 1, opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={pathTransition}
-              />
-              <motion.g
-                initial={iconInitial}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={pathTransition}
-              >
-                <circle cx={LOOP_TO_3_ICON.x + 8} cy={LOOP_TO_3_ICON.y + 8} r={12} fill="var(--surface-page)" />
-                <foreignObject x={LOOP_TO_3_ICON.x} y={LOOP_TO_3_ICON.y} width={16} height={16}>
-                  <Shuffle size={16} color="var(--blue-600)" />
-                </foreignObject>
-              </motion.g>
-            </motion.g>
-          )}
-        </AnimatePresence>
-
-        {/* 中心提示 */}
-        <foreignObject x={320 - 10} y={148} width={20} height={20}>
-          <Repeat size={20} color="var(--neutral-400)" />
-        </foreignObject>
-        <text
-          x={320}
-          y={183}
-          fontSize={11.5}
-          fontWeight={600}
-          fill="var(--neutral-400)"
-          textAnchor="middle"
-          style={{ fontFamily: 'var(--font-sans)' }}
-        >
-          反覆優化迴圈
-        </text>
-
-        {/* 節點本體畫在連線之上 */}
-        {STEPS.map((s) => (
-          <Node key={s.id} def={s} active={step === s.id} />
-        ))}
+        {/* stage 4 : final preprocessing pipeline x2 / evaluate / new dataset / apply */}
+        <Reveal revealStage={4} stage={stage} index={0}>
+          <Arrow x1={RIGHT_CX} y1={r1Bottom} x2={RIGHT_CX} y2={r3Top} />
+        </Reveal>
+        <Reveal revealStage={4} stage={stage} index={1}>
+          <PipelineBadge
+            cx={RIGHT_CX}
+            cy={(r1Bottom + r3Top) / 2}
+            label="最終前處理管線"
+            tone="emerald"
+            Icon={SlidersHorizontal}
+            width={116}
+          />
+        </Reveal>
+        <Reveal revealStage={4} stage={stage} index={2}>
+          <NodeBox cx={RIGHT_CX} cy={ROW.r3} lines={['最終評估', '（測試集）']} Icon={ClipboardCheck} emphasis />
+        </Reveal>
+        <Reveal revealStage={4} stage={stage} index={3}>
+          <g>
+            <rect x={RIGHT_CX + 46} y={r3Top - 22} width={64} height={17} rx={8.5} fill="var(--blue-50)" />
+            <text
+              x={RIGHT_CX + 78}
+              y={r3Top - 10}
+              fontSize={9.5}
+              fontWeight={700}
+              textAnchor="middle"
+              fill="var(--blue-600)"
+              style={{ fontFamily: 'var(--font-sans)' }}
+            >
+              僅此一次
+            </text>
+          </g>
+        </Reveal>
+        <Reveal revealStage={4} stage={stage} index={4}>
+          <g>
+            <path
+              d={`M${LEFT_CX},${r5Bottom} L${LEFT_CX},530 L610,530 L610,${ROW.r3} L${RIGHT_CX + NODE_W / 2},${ROW.r3}`}
+              fill="none"
+              stroke="var(--blue-300)"
+              strokeWidth={1.4}
+              strokeDasharray="2 5"
+              markerEnd="url(#wf-loop-arrow)"
+            />
+            <text x={420} y={524} fontSize={9} fill="var(--text-muted)" textAnchor="middle" style={{ fontFamily: 'var(--font-sans)' }}>
+              同一套模型
+            </text>
+          </g>
+        </Reveal>
+        <Reveal revealStage={4} stage={stage} index={5}>
+          <NodeBox cx={RIGHT_CX} cy={ROW.r4} lines={['新資料', '（上線輸入）']} Icon={FileInput} />
+        </Reveal>
+        <Reveal revealStage={4} stage={stage} index={6}>
+          <Arrow x1={RIGHT_CX} y1={r4Bottom} x2={RIGHT_CX} y2={r5Top} />
+        </Reveal>
+        <Reveal revealStage={4} stage={stage} index={7}>
+          <PipelineBadge
+            cx={RIGHT_CX}
+            cy={(r4Bottom + r5Top) / 2}
+            label="最終前處理管線"
+            tone="emerald"
+            Icon={SlidersHorizontal}
+            width={116}
+          />
+        </Reveal>
+        <Reveal revealStage={4} stage={stage} index={8}>
+          <NodeBox cx={RIGHT_CX} cy={ROW.r5} lines={['套用', '／ 預測']} Icon={Rocket} emphasis />
+        </Reveal>
+        <Reveal revealStage={4} stage={stage} index={9}>
+          <g>
+            <Arrow x1={leftRight} y1={ROW.r5} x2={rightEdge} y2={ROW.r5} color="var(--blue-500)" />
+            <text x={315} y={468} fontSize={9.5} fontWeight={600} textAnchor="middle" fill="var(--blue-600)" style={{ fontFamily: 'var(--font-sans)' }}>
+              上線套用
+            </text>
+          </g>
+        </Reveal>
       </svg>
 
-      {/* 步驟④：評估結果如何？ */}
-      {step === 4 && (
-        <div className="flex flex-wrap items-center gap-2.5">
-          {completed ? (
-            <span
-              className="inline-flex items-center gap-1.5 text-[13px] font-semibold"
-              style={{
-                padding: '6px 12px',
-                borderRadius: 'var(--radius-pill)',
-                background: 'var(--success-50)',
-                color: 'var(--success-500)',
-              }}
-            >
-              <Check size={14} />
-              表現理想，模型可以部署
-            </span>
-          ) : (
-            <>
-              <span className="text-[13px] font-medium" style={{ color: 'var(--text-body)' }}>
-                評估結果如何？
-              </span>
-              <button
-                type="button"
-                onClick={handleGood}
-                className="inline-flex items-center gap-1.5 text-[13px] font-semibold transition-colors"
-                style={{
-                  padding: '6px 14px',
-                  borderRadius: 'var(--radius-pill)',
-                  background: 'var(--action-primary)',
-                  color: '#ffffff',
-                  border: 'none',
-                }}
-              >
-                <Check size={14} />
-                表現理想，完成
-              </button>
-              <button
-                type="button"
-                onClick={handleBad}
-                className="inline-flex items-center gap-1.5 text-[13px] font-semibold transition-colors"
-                style={{
-                  padding: '6px 14px',
-                  borderRadius: 'var(--radius-pill)',
-                  background: 'var(--surface-card)',
-                  color: 'var(--blue-600)',
-                  border: '1.5px solid var(--blue-500)',
-                }}
-              >
-                {loopPhase === 'to5' ? <Shuffle size={14} /> : <RotateCcw size={14} />}
-                表現不理想，調整
-              </button>
-            </>
-          )}
-        </div>
-      )}
-
-      {/* No Free Lunch 定理小面板 */}
-      <div
-        className="space-y-4"
-        style={{
-          background: 'var(--surface-sunken)',
-          borderRadius: 'var(--radius-lg)',
-          padding: 16,
-        }}
-      >
-        <h4 className="text-sm font-medium" style={{ color: 'var(--text-strong)' }}>
-          No Free Lunch 定理：沒有萬能演算法
-        </h4>
-
-        <div className="grid grid-cols-3 gap-4">
-          {SCENARIOS.map((scenario, sIdx) => (
-            <div key={scenario.key} className="flex flex-col items-center">
-              <div className="flex items-end gap-1.5 h-14">
-                {scenario.bars.map((bar, bIdx) => (
-                  <div key={bar.name} className="flex flex-col items-center justify-end h-full">
-                    <motion.div
-                      initial={shouldReduce ? false : { height: 0 }}
-                      animate={{ height: `${bar.pct}%` }}
-                      transition={{
-                        duration: shouldReduce ? 0 : 0.32,
-                        ease: 'easeOut',
-                        delay: shouldReduce ? 0 : (sIdx * 3 + bIdx) * 0.05,
-                      }}
-                      style={{
-                        width: 15,
-                        borderRadius: 'var(--radius-sm) var(--radius-sm) 0 0',
-                        background: BAR_COLORS[bar.name],
-                      }}
-                    />
-                  </div>
-                ))}
-              </div>
-              <div className="flex gap-1.5 mt-1">
-                {scenario.bars.map((bar) => (
-                  <span
-                    key={bar.name}
-                    className="text-[11px] text-center"
-                    style={{ width: 15, color: 'var(--text-muted)' }}
-                  >
-                    {bar.name}
-                  </span>
-                ))}
-              </div>
-              <p className="text-[11px] mt-1.5" style={{ color: 'var(--text-muted)' }}>
-                {scenario.label}
-              </p>
-              <p
-                className="text-[12px] font-semibold"
-                style={{ color: BAR_COLORS[scenario.best] }}
-              >
-                最佳：演算法 {scenario.best}
-              </p>
-            </div>
-          ))}
-        </div>
-
-        <p
-          className="flex items-center gap-1.5 text-[12px]"
-          style={{ color: 'var(--text-body)' }}
+      {/* 階段說明卡片 */}
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={stage}
+          initial={shouldReduce ? false : { opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: shouldReduce ? 0 : 0.2 }}
+          className="flex items-start gap-2.5"
+          style={{
+            background: 'var(--surface-sunken)',
+            borderRadius: 'var(--radius-lg)',
+            padding: '12px 14px',
+          }}
         >
-          <ArrowUp size={14} style={{ color: 'var(--blue-600)' }} />
-          這就是為什麼步驟③通常要比較多種演算法
-        </p>
-      </div>
+          <div style={{ color: 'var(--blue-600)', flexShrink: 0, marginTop: 1 }}>
+            <current.Icon size={16} />
+          </div>
+          <div className="space-y-0.5">
+            <p className="text-[13px] font-bold" style={{ color: 'var(--text-strong)' }}>
+              {current.title}
+            </p>
+            <p className="text-[12.5px] leading-snug" style={{ color: 'var(--text-body)' }}>
+              {current.desc}
+            </p>
+          </div>
+        </motion.div>
+      </AnimatePresence>
     </div>
   )
 }
