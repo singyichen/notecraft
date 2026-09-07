@@ -35,9 +35,26 @@ model: sonnet
 - import 僅限 SKILL.md 列舉的白名單（<!-- BEGIN:whitelist -->`react`、`react-dom`、`motion`、`recharts`、`d3`、`lucide-react`、`clsx`、`tailwind-merge`<!-- END:whitelist -->）+ 專案相對路徑。**由工作流程 step 3 的 import lint 把關**——這條白名單同時是 `astro.config.mjs` 的 `vite.resolve.dedupe` 清單，違反會在 rollup 端 build fail
 - **禁止使用任何 emoji 字元**（🚀 ✅ ⚠️ 等 Unicode emoji）。需要圖示時一律 `import { Check, TriangleAlert, ArrowRight, ... } from 'lucide-react'`；icon 大小用 `size` prop、顏色透過 Tailwind class 與 `currentColor` 控制。若在程式碼中偵測到 emoji，視為驗證失敗的一種，須立即替換為對應的 lucide icon
 - 樣式採 Tailwind utility class；色彩、間距、圓角等優先使用 `notecraft-design` 提供的 token 或 class
-- SVG 設定 `viewBox` 與 `width="100%"`
+- SVG 設定 `viewBox` 與 `width="100%"`，並加 `preserveAspectRatio="xMidYMid meet"`
 - motion 元件套用 `useReducedMotion()`，預設動畫 200–400ms ease-out
 - **元件本體不得自帶外框卡片**：根（最外層）元素禁止加上 `border`／`shadow-*`／大圓角 `rounded-*` 卡片／白底（`bg-white`）等卡片化樣式，也不要自畫左上類型標籤、右上 `generated/<id>.tsx` 來源標頭、或外層 padding。這些外框、陰影、來源標頭、底部 caption 一律由系統元件 `GeneratedFrame` 在寫回時統一提供（mdx-writer 負責），元件自帶會造成**雙層外框**。根元素只應是透明版型容器（`flex`／`grid`／`space-y-*`）加必要的 `max-w-*`／`mx-auto`／`not-prose`。**禁止 import 任何自製 `Figure` 之類的外框包裝元件**——外框唯一來源是 `GeneratedFrame`。（內部子卡片、面板、表格圓角屬內容結構，不在此限。）
+
+## 版面寬度硬限制（實測值，不是估計）
+
+元件被放進筆記內文欄，欄寬比你想的窄很多。以下是量出來的：
+
+| 視窗寬 | `[data-nc-viz-body]` 實際可用寬 |
+| --- | --- |
+| 1440px | 726px |
+| 1280px | **647px**（有 TOC 側欄時） |
+| 660px | 583px |
+
+- `.nc-prose` 的 `max-width: 760px` 是硬上限，所以 **`max-w-3xl`（768px）永遠不會生效**，寫了等於沒寫。要限寬就用 `max-w-2xl` 以下，或乾脆不限。
+- `GeneratedFrame` 的 `<figure>` 是 `overflow: hidden`：**超出的內容會被靜默裁掉，沒有捲軸、沒有警告、build 也會過**。你不會從 tsc 或 astro build 得到任何提示，只能靠一開始就設計在 647px 內。
+- **禁止用 Tailwind 的 viewport breakpoint（`sm:` / `md:` / `lg:` / `xl:`）控制元件內部版面。** 它們量的是**視窗寬**而不是容器寬：視窗 660px 時 `sm:` 已經啟動，但容器只剩 583px，兩者會對不上。要自適應請用 `flex-wrap`、`grid-cols-*` 固定值、或 `minmax()`，讓內容自己決定換行點。（本專案未安裝 `@tailwindcss/container-queries`，`@container` 不可用。）
+- SVG 的 `viewBox` 寬度建議 **≤ 680**。畫布開得比欄寬大，等於把字級整體等比縮小：960 的畫布放進 647px 的欄位，12px 的節點名實際只剩 8.1px。
+- **中文字寬估算：SVG `<text>` 每個全形字抓 1em**（字級 16px 就抓 16px 寬），不要用拉丁字元均寬去打折。標籤放不下時**縮短文字，不要縮字級**——中文低於 10px 就糊掉了。
+- 若規劃書要求的節點/區塊超過 **9 個**，不要硬塞：照「失敗」格式回報，建議主 Agent 把這個標記拆成兩個。
 
 ## 輸出格式
 
