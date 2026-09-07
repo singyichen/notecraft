@@ -64,8 +64,15 @@ prompt: |
   且需要信心度 → GMM。要凸顯的洞察是「同一批資料，換一個對『群』的定義
   就會得到完全不同的答案」。手寫 SVG，不引入圖表函式庫。
 caption: 同一批資料，四種分群演算法對「一群」的定義各不相同：最近中心、合併樹、密度連通區、機率歸屬。
-status: pending
+status: generated
 */}
+
+import GeneratedFrame from '@/components/GeneratedFrame.astro'
+import MlWeek15Concept from '@/components/generated/ml-week15-concept'
+
+<GeneratedFrame id="ml-week15-concept" type="diagram" prompt={"用 2×2 四格面板對照四種分群演算法（k-means、階層式、DBSCAN、GMM）各自定義『一群』的方式，揭示同一批資料在不同定義下得到的完全不同分群結果。"} caption="同一批資料，四種分群演算法對「一群」的定義各不相同：最近中心、合併樹、密度連通區、機率歸屬。">
+  <MlWeek15Concept />
+</GeneratedFrame>
 
 ## 教材預習重點
 

@@ -91,8 +91,15 @@ prompt: |
 
   整體以節點與箭頭的示意圖呈現，不引入圖表函式庫，遵循 notecraft-design 的色票。
 caption: 三種降維方法的目標對照與選型決策：PCA 最大化資料變異、LDA 最大化類別可分性、t-SNE 保留局部鄰近結構且僅供視覺化。
-status: pending
+status: generated
 */}
+
+import GeneratedFrame from '@/components/GeneratedFrame.astro'
+import MlWeek13Concept from '@/components/generated/ml-week13-concept'
+
+<GeneratedFrame id="ml-week13-concept" type="diagram" prompt={"用手寫 SVG 對照與決策圖展示 PCA、LDA、t-SNE 三種降維方法各自最大化的目標與選型決策。"} caption="三種降維方法的目標對照與選型決策：PCA 最大化資料變異、LDA 最大化類別可分性、t-SNE 保留局部鄰近結構且僅供視覺化。">
+  <MlWeek13Concept />
+</GeneratedFrame>
 
 ## 教材預習重點
 

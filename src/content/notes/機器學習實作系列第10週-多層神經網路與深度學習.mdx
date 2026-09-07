@@ -68,8 +68,15 @@ prompt: |
   反向是梯度），核心洞察是：同一組權重，前向送訊號、反向送責任，兩者互為轉置。
   請尊重 prefers-reduced-motion，動畫關閉時仍能靠靜態標註看懂兩個方向。
 caption: 一次訓練迭代裡的雙向資料流：前向傳播把像素推成預測，反向傳播把誤差沿同一組權重逐層送回。
-status: pending
+status: generated
 */}
+
+import GeneratedFrame from '@/components/GeneratedFrame.astro'
+import MlWeek10Concept from '@/components/generated/ml-week10-concept'
+
+<GeneratedFrame id="ml-week10-concept" type="motion" prompt={"用可互動的動畫圖解 MLP 的一次訓練迭代：前向傳播訊號左→右、反向傳播誤差右→左，各層標出激活值與梯度，可切換兩個階段或自動循環，不同色系區分方向。"} caption="一次訓練迭代裡的雙向資料流：前向傳播把像素推成預測，反向傳播把誤差沿同一組權重逐層送回。">
+  <MlWeek10Concept client:visible />
+</GeneratedFrame>
 
 ## 教材預習重點
 

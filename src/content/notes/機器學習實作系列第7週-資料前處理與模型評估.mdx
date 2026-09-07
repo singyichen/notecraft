@@ -62,8 +62,15 @@ prompt: |
   右側附小圖例說明兩條流程得到的分數差異（虛高 vs 誠實估計）。
   手繪 SVG，不引入圖表函式庫。
 caption: 資料洩漏發生在哪裡：把前處理放在切分之前，和把它包進 pipeline、在每個 fold 內各自 fit 的差別。
-status: pending
+status: generated
 */}
+
+import GeneratedFrame from '@/components/GeneratedFrame.astro'
+import MlWeek7Concept from '@/components/generated/ml-week7-concept'
+
+<GeneratedFrame id="ml-week7-concept" type="diagram" prompt={"用手寫 SVG 上下對比兩種模型評估流程，凸顯資料洩漏的發生位置：上排會洩漏的做法（先全資料轉換再切分），下排正確做法（先切分再在 pipeline 內各自轉換），右側附圖例說明分數差異。"} caption="資料洩漏發生在哪裡：把前處理放在切分之前，和把它包進 pipeline、在每個 fold 內各自 fit 的差別。">
+  <MlWeek7Concept />
+</GeneratedFrame>
 
 ## 教材預習重點
 

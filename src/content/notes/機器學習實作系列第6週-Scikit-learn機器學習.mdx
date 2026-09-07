@@ -64,8 +64,15 @@ prompt: |
   核 SVM 訓練昂貴、預測便宜）。
   用 Tailwind 的 <table> 呈現，不要做成 SVG；強弱以圖示或色票標記，表格在窄螢幕可橫向捲動。
 caption: 七種分類器的對照表：決策邊界形狀、是否需要特徵縮放、可解釋性與主要調參旋鈕一次比較。
-status: pending
+status: generated
 */}
+
+import GeneratedFrame from '@/components/GeneratedFrame.astro'
+import MlWeek6Concept from '@/components/generated/ml-week6-concept'
+
+<GeneratedFrame id="ml-week6-concept" type="table" prompt={"用 Tailwind 表格比較七種分類器的決策邊界、特徵縮放需求、可解釋性、訓練/預測成本與調參旋鈕，凸顯縮放與成本取捨的分界。"} caption="七種分類器的對照表：決策邊界形狀、是否需要特徵縮放、可解釋性與主要調參旋鈕一次比較。">
+  <MlWeek6Concept />
+</GeneratedFrame>
 
 ## 教材預習重點
 

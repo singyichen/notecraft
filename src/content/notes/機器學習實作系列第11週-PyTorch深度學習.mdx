@@ -62,8 +62,15 @@ prompt: |
   nn.Parameter，optimizer 抓不到」「漏掉 zero_grad，梯度累加」
   「同一張計算圖 backward 兩次」）。手寫 SVG，不引入圖表函式庫。
 caption: PyTorch 的五層抽象堆疊：從手刻 numpy 到 Lightning，每一層接手了什麼、訓練五步驟歸誰管、出錯時往哪裡看。
-status: pending
+status: generated
 */}
+
+import GeneratedFrame from '@/components/GeneratedFrame.astro'
+import MlWeek11Concept from '@/components/generated/ml-week11-concept'
+
+<GeneratedFrame id="ml-week11-concept" type="diagram" prompt={"用手寫 SVG 繪製 PyTorch 五層抽象堆疊圖：從手刻 numpy、tensor autograd、torch.nn.Module、nn.Sequential 到 PyTorch Lightning，每層標註職責與常見錯誤，右側配搭訓練五步驟流程圖示。"} caption="PyTorch 的五層抽象堆疊：從手刻 numpy 到 Lightning，每一層接手了什麼、訓練五步驟歸誰管、出錯時往哪裡看。">
+  <MlWeek11Concept />
+</GeneratedFrame>
 
 ## 教材預習重點
 

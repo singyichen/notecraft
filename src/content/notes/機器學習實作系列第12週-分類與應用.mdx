@@ -70,8 +70,15 @@ prompt: |
   最後兩支在底部匯流到一個「回頭看資料」節點（標籤雜訊、類別不平衡、樣本太少）。
   手繪 SVG，用顏色區分「換模型」與「換特徵」兩支，不引入圖表函式庫。
 caption: 單一模型不夠好時的決策地圖：一邊靠集成組合多個模型，一邊靠更好的特徵表示把非結構化資料變成模型吃得下的輸入。
-status: pending
+status: generated
 */}
+
+import GeneratedFrame from '@/components/GeneratedFrame.astro'
+import MlWeek12Concept from '@/components/generated/ml-week12-concept'
+
+<GeneratedFrame id="ml-week12-concept" type="diagram" prompt={"畫一張決策流程圖展示模型改進的兩大方向：集成學習（bagging 與 boosting 等）用於多個模型的組合方案，與文字處理管線（清理、斷詞、詞頻、TF-IDF）的特徵表示優化，並在底部匯流到資料品質檢查。"} caption="單一模型不夠好時的決策地圖：一邊靠集成組合多個模型，一邊靠更好的特徵表示把非結構化資料變成模型吃得下的輸入。">
+  <MlWeek12Concept />
+</GeneratedFrame>
 
 ## 教材預習重點
 

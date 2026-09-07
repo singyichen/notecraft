@@ -67,8 +67,15 @@ prompt: |
   (2) 兩者不是二選一，而是同一條管線上的前後段。
   手繪 SVG，不引入圖表函式庫。
 caption: NumPy 與 Pandas 的分層地圖：下層是 ndarray 的向量化能力，上層是 DataFrame 的表格操作，兩者在同一條資料處理管線上接力。
-status: pending
+status: generated
 */}
+
+import GeneratedFrame from '@/components/GeneratedFrame.astro'
+import MlWeek3Concept from '@/components/generated/ml-week3-concept'
+
+<GeneratedFrame id="ml-week3-concept" type="diagram" prompt={"用手寫 SVG 分層地圖展示資料處理工具的架構：下層 NumPy ndarray 的向量化能力（廣播、遮罩、聚合），上層 Pandas DataFrame 的表格操作（groupby、merge、時間序列），中間示意兩層銜接，下方流程軸展示讀檔到交給模型的完整資料處理管線。"} caption="NumPy 與 Pandas 的分層地圖：下層是 ndarray 的向量化能力，上層是 DataFrame 的表格操作，兩者在同一條資料處理管線上接力。">
+  <MlWeek3Concept />
+</GeneratedFrame>
 
 ## 教材預習重點
 
