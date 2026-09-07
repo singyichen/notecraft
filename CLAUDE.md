@@ -125,6 +125,7 @@ trim 前後空白 → 過濾空字串 → 同篇內不分大小寫去重（保�
 - 元件強制 TypeScript（`.tsx`），禁用 `any`（除非註解說明理由），不可有 required props
 - motion 元件預設 200–400ms ease-out，並用 `useReducedMotion()` 尊重 `prefers-reduced-motion`
 - Pre-push hook 跑 `astro build` 確保生成元件可成功 build
+- 筆記正文（非 `@ai-visualize` 生成元件）若要並列 3 個以上「名稱＋定義＋範例」的平行項目，改用 Markdown 表格，不要在同一段塞多組 `**粗體**`——已知 remark 在多組粗體被全形標點緊貼（中間無空格，如 `**A**：**B**...**C**`）時，只有第一組會正確轉譯成 `<strong>`，其餘會照字面輸出 `**文字**`
 
 ## 待釐清項已收斂的決策
 
