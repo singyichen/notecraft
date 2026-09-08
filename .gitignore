@@ -11,3 +11,6 @@ tmp/
 
 # 私有筆記：不進 git、不 publish 到 Netlify（含內部基礎架構手冊與其截圖）
 src/content/notes/private/
+
+# 課程錄音／音檔（大檔，不進 git）
+recordings/
