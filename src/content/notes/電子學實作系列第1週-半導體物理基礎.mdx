@@ -375,7 +375,7 @@ import EcWeek1IcEcosystem from '@/components/generated/ec-week1-ic-ecosystem'
 
 - **Anatomy of Integrated Circuits（積體電路的解剖）**：投影片用實體照片展示 IC 從外部到內部的完整層次——**PCB**（印刷電路板模組）→ 封裝好的晶片（**QFP** 封裝，四邊有金色接腳）→ **Die**（裸晶，晶片內部的矽本體）→ **Bonding pad**（接墊，裸晶邊緣透過細金屬線與外部接腳相連的接點），一路放大到微米（**μm**）等級的顯微走線（投影片範例標示放大倍率 121:1，比例尺 200μm，來源標註 ON Semiconductor 安森美半導體）。
 
-> **尺寸與良率的課堂直覺**：老師回顧約二十至二十五年前開始談 **System on Chip（SoC，系統單晶片）**時，約 `1.5 cm × 1.5 cm` 的大晶粒就會引起良率疑慮；課堂當下則以約 `3 cm × 3 cm` 的晶粒說明今日可製造尺寸已經放大。直覺上，晶粒面積越大，同一片晶圓可切出的顆數越少，而且單顆晶粒碰到缺陷的機率越高，因此良率通常更難維持。
+> **尺寸與良率的課堂直覺**：老師回顧約二十至二十五年前開始談 **System on Chip（SoC，系統單晶片）**時，約 $1.5\text{ cm} \times 1.5\text{ cm}$ 的大晶粒就會引起良率疑慮；課堂當下則以約 $3\text{ cm} \times 3\text{ cm}$ 的晶粒說明今日可製造尺寸已經放大。直覺上，晶粒面積越大，同一片晶圓可切出的顆數越少，而且單顆晶粒碰到缺陷的機率越高，因此良率通常更難維持。
 
 老師接著把晶粒尺寸與單一元件所占面積放在一起，估算一顆 IC 可以容納的元件數量。若先忽略走線、記憶體陣列以外的電路與晶片邊緣，可以用下面的理想化關係抓數量級：
 
@@ -384,9 +384,9 @@ import EcWeek1IcEcosystem from '@/components/generated/ec-week1-ic-ecosystem'
 實際元件數量 ≈ 理想元件數量 × 版圖利用率
 ```
 
-這個估算的重點不是得到一個精確答案，而是看懂微縮的威力：若元件的長、寬都縮成原來的 `1/k`，單顆占用面積理想上會縮成 `1/k²`，同樣面積可容納的數量便可能提高到約 `k²` 倍。實際 IC 還必須保留金屬互連、接觸孔、隔離區、電源網路與輸入輸出區域，因此不能單用「晶粒面積 ÷ 最小製程節點平方」當成真正的電晶體數量。這段語音未完整留下投影片所用的單一元件尺寸，故不在此補寫未確認的數值結果。
+這個估算的重點不是得到一個精確答案，而是看懂微縮的威力：若元件的長、寬都縮成原來的 $1/k$，單顆占用面積理想上會縮成 $1/k^2$，同樣面積可容納的數量便可能提高到約 $k^2$ 倍。實際 IC 還必須保留金屬互連、接觸孔、隔離區、電源網路與輸入輸出區域，因此不能單用「晶粒面積 ÷ 最小製程節點平方」當成真正的電晶體數量。這段語音未完整留下投影片所用的單一元件尺寸，故不在此補寫未確認的數值結果。
 
-> **常見誤解｜公分與奈米在量不同東西**：這裡的 `3 cm × 3 cm` 是 **die size（晶粒外形尺寸）**；常聽到的「幾奈米」則是 **process node（製程節點）**的世代名稱。前者描述整顆晶片有多寬、多長，後者描述製造技術世代，不能把「三公分見方的晶粒」寫成「三乘三奈米的晶片」。
+> **常見誤解｜公分與奈米在量不同東西**：這裡的 $3\text{ cm} \times 3\text{ cm}$ 是 **die size（晶粒外形尺寸）**；常聽到的「幾奈米」則是 **process node（製程節點）**的世代名稱。前者描述整顆晶片有多寬、多長，後者描述製造技術世代，不能把「三公分見方的晶粒」寫成「三乘三奈米的晶片」。
 
 ![一塊實際的 PCB 模組，上面焊有多顆晶片與連接器](/note-images/ec-week1-ch1/14-pcb-module-example.jpeg)
 
@@ -432,9 +432,9 @@ import EcWeek1IcEcosystem from '@/components/generated/ec-week1-ic-ecosystem'
 **升頻 Frequency Up-conversion（第 22 頁）**：
 
 - **Voice Signal x(t)（語音訊號）**：麥克風收到的原始類比波形，頻率很低（頻寬大約在 20kHz 以內），沒辦法有效率地用天線發射。
-- **Carrier（載波，A cos(2πf_C t)）**：一個振幅固定、頻率高的餘弦波，`A` 是振幅、`f_C` 是**載波頻率（carrier frequency）**、`t` 是時間。
+- **Carrier（載波，A cos(2πf_C t)）**：一個振幅固定、頻率高的餘弦波，$A$ 是振幅、$f_C$ 是**載波頻率（carrier frequency）**、$t$ 是時間。
 - **Up-converted（升頻）**：投影片說明 **voice is "up-converted" by multiplying two sinusoids**（語音訊號透過乘上一個高頻餘弦波而被搬移到高頻）。
-- **Convolution（卷積，符號 "\*"）**：訊號處理的基本定理——**when multiplying two sinusoids in time domain, their spectra are convolved in frequency domain**（時域中兩訊號相乘，等於頻域中兩者頻譜做卷積）。語音頻譜 `X(f)` 原本集中在 0 附近（投影片示意範圍 −20kHz 到 +20kHz），載波的頻譜只在 `+f_C` 與 `−f_C` 兩點各有一根**脈衝（impulse）**，兩者卷積後，輸出頻譜就是把語音頻譜整個搬移到 `±f_C` 附近。
+- **Convolution（卷積，符號 "\*"）**：訊號處理的基本定理——**when multiplying two sinusoids in time domain, their spectra are convolved in frequency domain**（時域中兩訊號相乘，等於頻域中兩者頻譜做卷積）。語音頻譜 $X(f)$ 原本集中在 0 附近（投影片示意範圍 −20kHz 到 +20kHz），載波的頻譜只在 $+f_C$ 與 $-f_C$ 兩點各有一根**脈衝（impulse）**，兩者卷積後，輸出頻譜就是把語音頻譜整個搬移到 $\pm f_C$ 附近。
 
 ![升頻的時域與頻域對照圖：語音訊號乘上載波，頻譜從集中在 0 附近搬移到 ±f_C 附近](/note-images/ec-week1-ch1/17-frequency-up-conversion.jpeg)
 
@@ -443,7 +443,7 @@ import EcWeek1IcEcosystem from '@/components/generated/ec-week1-ic-ecosystem'
 **發射機 Transmitter（第 23 頁）**：
 
 - **Multiplier（乘法器，符號 "⊗"）**：把語音訊號與載波相乘、做升頻的電路方塊。
-- **Oscillator（振盪器）**：產生載波訊號（`A cos(2πf_C t)`）餵給乘法器的電路方塊。
+- **Oscillator（振盪器）**：產生載波訊號（$A\cos(2\pi f_C t)$）餵給乘法器的電路方塊。
 - **Power Amplifier（功率放大器）**：投影片說明 **a power amplifier is added to boost the signal**（加入功率放大器把訊號功率放大），因為天線發射需要足夠的功率才能讓訊號傳得夠遠。
 
 ![發射機方塊圖：(a) D 訊號與載波經乘法器直接接天線發射 (b) 加上 Power Amplifier 與 Oscillator 的完整版本](/note-images/ec-week1-ch1/31-transmitter-block-diagram.jpeg)
@@ -452,8 +452,8 @@ import EcWeek1IcEcosystem from '@/components/generated/ec-week1-ic-ecosystem'
 
 **接收機 Receiver（第 24 頁）**：
 
-- **Down-convert（降頻）**：投影片說明 **high frequency is translated to DC by multiplying by f_C**（高頻訊號透過再乘上一次頻率 `f_C` 的訊號，被轉換搬移回接近直流），是升頻的反向操作。降頻後除了在 0 附近還原出原始語音頻譜，也會在 `±2f_C` 產生不要的高頻分量。
-- **Low-Pass Filter（低通濾波器）**：把降頻後在 `±2f_C` 產生的多餘高頻分量濾除，只留下 0 附近還原出的語音頻譜。
+- **Down-convert（降頻）**：投影片說明 **high frequency is translated to DC by multiplying by f_C**（高頻訊號透過再乘上一次頻率 $f_C$ 的訊號，被轉換搬移回接近直流），是升頻的反向操作。降頻後除了在 0 附近還原出原始語音頻譜，也會在 $\pm 2f_C$ 產生不要的高頻分量。
+- **Low-Pass Filter（低通濾波器）**：把降頻後在 $\pm 2f_C$ 產生的多餘高頻分量濾除，只留下 0 附近還原出的語音頻譜。
 - **Low-Noise Amplifier, LNA（低雜訊放大器）**：投影片說明 **a low-noise amplifier is needed for signal boosting without excessive noise**（需要低雜訊放大器放大微弱的接收訊號，同時不引入過多雜訊），因為天線收到的訊號通常極其微弱。
 
 ![接收機的頻域降頻示意圖與方塊圖：接收頻譜在 ±f_C，經降頻搬回 0 附近，並產生 ±2f_C 的多餘分量；方塊圖含 LNA、乘法器、振盪器、低通濾波器](/note-images/ec-week1-ch1/18-receiver-block-diagram.jpeg)
@@ -462,8 +462,8 @@ import EcWeek1IcEcosystem from '@/components/generated/ec-week1-ic-ecosystem'
 
 **分貝增益 Example 1-3（第 36–37 頁）**：投影片給了一道具體例題——手機收到的訊號只有 **20μV**，但要送給喇叭的訊號要有 **50mV**，兩者相差 2500 倍。
 
-- **Decibel, dB（分貝）**：工程上表示放大倍率的常用單位，投影片定義 **voltage gain of an amplifier is defined as v_out/v_in and sometimes expressed in decibels (dB) as 20log(v_out/v_in)**（放大器的電壓增益定義為輸出電壓除以輸入電壓，有時以 `20 × log₁₀(v_out/v_in)` 表示為分貝）。
-- 代入本題：`A_V = 20 × log₁₀(50mV / 20μV) ≈ 68dB`——說明手機接收機需要極高的放大倍率，才能把微弱的天線訊號變成聽得到的聲音。投影片接著留一題練習：若增益改為 **50 dB**，輸出擺幅會是多少？
+- **Decibel, dB（分貝）**：工程上表示放大倍率的常用單位，投影片定義 **voltage gain of an amplifier is defined as v_out/v_in and sometimes expressed in decibels (dB) as 20log(v_out/v_in)**（放大器的電壓增益定義為輸出電壓除以輸入電壓，有時以 $20 \times \log_{10}(v_{out}/v_{in})$ 表示為分貝）。
+- 代入本題：$A_V = 20\log_{10}\!\left(\dfrac{50\text{mV}}{20\mu\text{V}}\right) \approx 68\text{dB}$——說明手機接收機需要極高的放大倍率，才能把微弱的天線訊號變成聽得到的聲音。投影片接著留一題練習：若增益改為 **50 dB**，輸出擺幅會是多少？
 
 ### 數位相機：把光變成一串數字——Digital Camera（第 25–31 頁）
 
@@ -499,14 +499,14 @@ import EcWeek1IcEcosystem from '@/components/generated/ec-week1-ic-ecosystem'
 *同一種數位訊號，位元率從 100Mb/s 拉高到 1Gb/s 後，波形邊緣就從方正變圓滑——這正是「高速數位訊號其實很類比」的直接證據。*
 - **Bit rate（位元率，Mb/s / Gb/s）**：每秒傳輸的位元數，是衡量數位訊號速度的單位。
 - 投影片的核心結論：**"a digital signal operating at very high frequency is very 'analog'"**（運作在極高頻率的數位訊號，其實非常「類比」）——因為在極短時間內，電路本身的物理特性（電容充放電、頻寬限制）來不及讓電壓瞬間跳變。
-- **Analog signal（類比訊號）**：投影片定義的波形 `V(t)`，呈現連續、任意振幅高低變化，沒有固定離散電位準位。
-- **Noise（雜訊）**：投影片對照 `V(t)` 與 `V(t) + Noise`——類比訊號一旦疊加雜訊，雜訊會直接、永久地混入訊號本身，難以事後分辨哪段是原訊號、哪段是雜訊。
+- **Analog signal（類比訊號）**：投影片定義的波形 $V(t)$，呈現連續、任意振幅高低變化，沒有固定離散電位準位。
+- **Noise（雜訊）**：投影片對照 $V(t)$ 與 $V(t) + \text{Noise}$——類比訊號一旦疊加雜訊，雜訊會直接、永久地混入訊號本身，難以事後分辨哪段是原訊號、哪段是雜訊。
 
 ![類比訊號 V(t) 與疊加雜訊後 V(t)+Noise 的波形對照](/note-images/ec-week1-ch1/21-analog-digital-noise.jpeg)
 
 *(a) 類比訊號，(b) 雜訊疊加後永久混入訊號本身、難以分辨哪段是原訊號。*
 
-- **Digital signal（數位訊號）**：投影片定義的波形只有兩個電位準位 **ZERO（零）**與 **ONE（一）**，每個位元持續時間標示為 `T`。加上雜訊後，只要雜訊幅度不足以讓接收端誤判準位，訊號代表的 0 或 1 邏輯資訊仍能被正確判讀——這是數位訊號**抗雜訊（noise immunity）**能力的來源。
+- **Digital signal（數位訊號）**：投影片定義的波形只有兩個電位準位 **ZERO（零）**與 **ONE（一）**，每個位元持續時間標示為 $T$。加上雜訊後，只要雜訊幅度不足以讓接收端誤判準位，訊號代表的 0 或 1 邏輯資訊仍能被正確判讀——這是數位訊號**抗雜訊（noise immunity）**能力的來源。
 
 ![數位訊號 V(t)（標示 ZERO、ONE、位元週期 T）與疊加雜訊後 V(t)+Noise 的波形對照](/note-images/ec-week1-ch1/23-digital-signal-noise.png)
 
@@ -545,12 +545,12 @@ import EcWeek1IcEcosystem from '@/components/generated/ec-week1-ic-ecosystem'
 - **Microprocessors（微處理器）、Memories（記憶體，含 static 靜態與 dynamic 動態）、Digital Signal Processors, DSP（數位訊號處理器）**：投影片列舉的數位電路應用範例。
 - **Combinational circuits（組合邏輯電路）**：由邏輯閘（**gates**）構成，輸出僅取決於當下輸入。
 - **Sequential machines（循序邏輯機器）**：由閂鎖器（**latches**）與正反器（**flipflops**）構成，輸出還與過去狀態（記憶）有關。
-- **NOT Gate（反閘）**：輸入 `A`，輸出 `Y = Ā`（A 取反相）。
-- **NOR Gate（反或閘）**：兩個輸入 `A`、`B`，輸出 `Y = (A+B)‾`（先做 OR 運算再整體取反相）。
+- **NOT Gate（反閘）**：輸入 $A$，輸出 $Y = \overline{A}$（A 取反相）。
+- **NOR Gate（反或閘）**：兩個輸入 $A$、$B$，輸出 $Y = \overline{A+B}$（先做 OR 運算再整體取反相）。
 
 ![NOT Gate 與 NOR Gate 的電路符號，分別標示輸入輸出與布林表示式](/note-images/ec-week1-ch1/28-not-nor-gate-symbols.png)
 
-*NOT 閘（`Y = Ā`）與 NOR 閘（`Y = (A+B)‾`）的標準符號。*
+*NOT 閘（$Y = \overline{A}$）與 NOR 閘（$Y = \overline{A+B}$）的標準符號。*
 
 - **Response of a gate to a noisy input（邏輯閘對雜訊輸入的響應）**：投影片用一個雜訊很大的輸入波形接到反閘，提出「輸出會是什麼樣子」的問題——只要雜訊不足以讓輸入跨越邏輯閘的判斷門檻，閘的輸出仍會是乾淨方波，這是數位邏輯閘本身具備「重新整形」（**signal restoration**）能力的具體展示。
 
@@ -558,27 +558,27 @@ import EcWeek1IcEcosystem from '@/components/generated/ec-week1-ic-ecosystem'
 
 *投影片留下的問題：輸入這麼雜訊的波形，NOT 閘的輸出會是什麼樣子？（答案：只要雜訊沒有跨越判斷門檻，輸出仍是乾淨方波。）*
 
-**Example 1-4（NOT 閘電路證明，第 42–43 頁）**：投影片用一個具體電路證明邏輯閘可以只靠最基本的類比元件實現——一個負載電阻 **R_L** 接在電源 **V_DD** 與輸出節點 **V_out** 之間，輸出節點同時接一個由輸入 `A` 控制的**開關（switch，S₁）**到地：
+**Example 1-4（NOT 閘電路證明，第 42–43 頁）**：投影片用一個具體電路證明邏輯閘可以只靠最基本的類比元件實現——一個負載電阻 **R_L** 接在電源 **V_DD** 與輸出節點 **V_out** 之間，輸出節點同時接一個由輸入 $A$ 控制的**開關（switch，S₁）**到地：
 
 ![Example 1-4 電路圖：電阻 R_L 接在電源 V_DD 與輸出節點 V_out 之間，輸出節點另接一個由輸入 A 控制的開關 S1 到地](/note-images/ec-week1-ch1/37-example-1-4-circuit.png)
 
 *這個電路只用電阻、開關、電源三種最基本的類比元件，就能實現 NOT 閘的邏輯功能。*
 
-- `A` 為高電位時，`S₁` 導通（on），**forcing V_out to zero**（把輸出直接拉到地，V_out 為零）。
-- `A` 為低電位時，`S₁` 保持斷開（off），**drawing no current from R_L**（電阻上沒有電流），根據歐姆定律壓降為零，因此 **V_out = V_DD**（輸出為高）。
+- $A$ 為高電位時，$S_1$ 導通（on），**forcing V_out to zero**（把輸出直接拉到地，V_out 為零）。
+- $A$ 為低電位時，$S_1$ 保持斷開（off），**drawing no current from R_L**（電阻上沒有電流），根據歐姆定律壓降為零，因此 **V_out = V_DD**（輸出為高）。
 - 結論：**for both logical states at the input, the output assumes the opposite state**（無論輸入是高或低，輸出都呈現相反的邏輯狀態）——證明這個電路實現的正是 NOT（反相）功能。
 
 ### 電路分析的兩條鐵律：Basic Circuit Theorems（第 44–45 頁）
 
 不管電路多複雜，之後所有電路方程式的推導都建立在這兩條定律上：
 
-- **Kirchoff's Current Law, KCL（克希荷夫電流定律）**：投影片定義 **the sum of all currents flowing into any node is zero**（流入任一**節點（node）**的所有電流總和為零，公式 `ΣI_j = 0`）。背後的物理意義是電荷守恆——電荷不會在某個點上憑空出現或消失。
+- **Kirchoff's Current Law, KCL（克希荷夫電流定律）**：投影片定義 **the sum of all currents flowing into any node is zero**（流入任一**節點（node）**的所有電流總和為零，公式 $\Sigma I_j = 0$）。背後的物理意義是電荷守恆——電荷不會在某個點上憑空出現或消失。
 
 ![一個節點示意圖，多條電流 I1、I2、In、Ij 從不同方向流向同一個中心點](/note-images/ec-week1-ch1/38-kcl-diagram.jpeg)
 
 *KCL：流入同一個節點的所有電流，加總起來一定是零。*
 
-- **Kirchoff's Voltage Law, KVL（克希荷夫電壓定律）**：投影片定義 **the sum of all voltages around any loop is zero**（沿著任一封閉**迴路（loop）**走一圈，所有元件上的電壓總和為零，公式 `ΣV_j = 0`）。背後的物理意義是電位是路徑無關的——繞一圈回到起點，電位變化的總和必然是零。
+- **Kirchoff's Voltage Law, KVL（克希荷夫電壓定律）**：投影片定義 **the sum of all voltages around any loop is zero**（沿著任一封閉**迴路（loop）**走一圈，所有元件上的電壓總和為零，公式 $\Sigma V_j = 0$）。背後的物理意義是電位是路徑無關的——繞一圈回到起點，電位變化的總和必然是零。
 
 ![一個封閉迴路示意圖，四個元件標號 1234，各自標示跨壓 V1、V2、V3、V4 與正負極性](/note-images/ec-week1-ch1/39-kvl-diagram.jpeg)
 
@@ -618,18 +618,18 @@ import EcWeek1IcEcosystem from '@/components/generated/ec-week1-ic-ecosystem'
 ### 電子電洞對與本質載子濃度（第 8–12 頁）
 
 - **Electron-Hole Pair（電子電洞對）**：投影片標題直接點出——**with free electrons breaking off covalent bonds, holes are generated**（自由電子脫離共價鍵後，電洞隨之產生）。
-- **Hole（電洞）**：共價鍵中電子脫離後留下的空位，可以被鄰近電子跳過來填補，效果上等於電洞本身在往反方向移動——投影片用三張時間序列圖（`t=t₁, t=t₂, t=t₃`）展示這個「movement of electron through crystal」（電子在晶體中的移動）如何等效呈現電洞位置的遷移。
+- **Hole（電洞）**：共價鍵中電子脫離後留下的空位，可以被鄰近電子跳過來填補，效果上等於電洞本身在往反方向移動——投影片用三張時間序列圖（$t=t_1,\ t=t_2,\ t=t_3$）展示這個「movement of electron through crystal」（電子在晶體中的移動）如何等效呈現電洞位置的遷移。
 
 ![三張時間序列晶格圖，展示電洞位置隨時間從一個節點移動到另一個節點](/note-images/ec-week1-ch2/03-electron-hole-pair-movement.png)
 
 *電洞的移動其實是相鄰電子依序跳過去填補空缺，等效呈現電洞往反方向遷移。*
 - **Bandgap energy（能隙能量，記為 Eg）**：投影片說明 **Eg determines how much effort is required for an electron to break off a covalent bond and become free**（Eg 決定了讓一個電子脫離共價鍵、變成自由電子所需要的努力／能量）。
-- **electron volt, eV（電子伏特）**：能量單位，投影片定義 **the energy necessary to move one electron across a potential difference of 1V**（讓一個電子通過 1 伏特電位差所需的能量），換算 `1 eV = 1.6×10⁻¹⁹ J`。
-- **Insulators（絕緣體）**：Eg **高**（投影片舉例鑽石 diamond 的 `Eg = 2.5 eV`）。
+- **electron volt, eV（電子伏特）**：能量單位，投影片定義 **the energy necessary to move one electron across a potential difference of 1V**（讓一個電子通過 1 伏特電位差所需的能量），換算 $1\text{ eV} = 1.6\times10^{-19}\text{ J}$。
+- **Insulators（絕緣體）**：Eg **高**（投影片舉例鑽石 diamond 的 $E_g = 2.5\text{ eV}$）。
 - **Conductors（導體）**：Eg **很小**。
 - **Semiconductors（半導體）**：Eg **中等**，典型範圍 **1 eV 到 1.5 eV**（矽是 1.12 eV）。
-- **Intrinsic carrier concentration（本質載子濃度，記為 n_i）**：投影片給出的公式 `n_i = 5.2×10¹⁵ × T^(3/2) × exp(−Eg/2kT)`（單位 electrons/cm³），`T` 是絕對溫度、`k` 是**波茲曼常數（Boltzmann constant）**。投影片指出兩個推論：`Eg ↑ ⟹ n_i ↓`（能隙越大、本質載子濃度越小）；`T → 0, n_i → 0`（溫度趨近絕對零度時本質載子濃度趨近零）。
-- **Example 2-1（第 11 頁）**：計算矽在 **T = 300 K（室溫）**與 **T = 600 K** 下的電子密度——矽的 `Eg = 1.12 eV = 1.792×10⁻¹⁹ J`，代入公式得 `n_i(300K) = 1.08×10¹⁰ electrons/cm³`、`n_i(600K) = 1.54×10¹⁵ electrons/cm³`。矽的原子密度為 `5×10²² atoms/cm³`，投影片結論 **silicon still seems a very poor conductor**（純矽在室溫下仍是很差的導體）——因為每 5×10¹² 個原子中只有大約 1 個電子是自由的。
+- **Intrinsic carrier concentration（本質載子濃度，記為 n_i）**：投影片給出的公式 $n_i = 5.2\times10^{15}\, T^{3/2}\exp\!\left(-\dfrac{E_g}{2kT}\right)$（單位 electrons/cm³），$T$ 是絕對溫度、$k$ 是**波茲曼常數（Boltzmann constant）**。投影片指出兩個推論：$E_g\uparrow \Rightarrow n_i\downarrow$（能隙越大、本質載子濃度越小）；$T \to 0,\ n_i \to 0$（溫度趨近絕對零度時本質載子濃度趨近零）。
+- **Example 2-1（第 11 頁）**：計算矽在 **T = 300 K（室溫）**與 **T = 600 K** 下的電子密度——矽的 $E_g = 1.12\text{ eV} = 1.792\times10^{-19}\text{ J}$，代入公式得 $n_i(300\text{K}) = 1.08\times10^{10}\text{ electrons/cm}^3$、$n_i(600\text{K}) = 1.54\times10^{15}\text{ electrons/cm}^3$。矽的原子密度為 $5\times10^{22}\text{ atoms/cm}^3$，投影片結論 **silicon still seems a very poor conductor**（純矽在室溫下仍是很差的導體）——因為每 5×10¹² 個原子中只有大約 1 個電子是自由的。
 
 ### 摻雜：Modification of Carrier Densities（第 13–19 頁）
 
@@ -648,10 +648,10 @@ import EcWeek1IcEcosystem from '@/components/generated/ec-week1-ic-ecosystem'
 
 ### 質量作用定律與多數/少數載子公式（第 17–19 頁）
 
-- **Mass Action Law（質量作用定律）**：投影片給出的核心公式 `n × p = n_i²`——**the product of electron and hole densities is ALWAYS equal to the square of intrinsic electron density regardless of doping levels**（電子與電洞濃度的乘積永遠等於本質載子濃度的平方，不論摻雜程度為何）。
-- **Majority Carriers（多數載子）公式**：N 型中 `n ≈ N_D`（因為 `N_D ≫ n_i`）；P 型中 `p ≈ N_A`（因為 `N_A ≫ n_i`）。
-- **Minority Carriers（少數載子）公式**：N 型中 `p ≈ n_i²/N_D`；P 型中 `n ≈ n_i²/N_A`。
-- **Example 2-3（第 19 頁）**：一片矽均勻摻雜磷原子，摻雜濃度 `N_D = 10¹⁶ electrons/cm³`。因為磷貢獻的自由電子比矽本身熱激發產生的電子（`n_i = 10¹⁰`）多出 10⁶ 倍，可設 `n ≈ N_D = 10¹⁶ electrons/cm³`；代入質量作用定律得 `p ≈ n_i²/N_D = 1.17×10⁴ holes/cm³`。投影片結論：**this example justifies the reason for calling electrons the "majority carriers" and holes the "minority carriers" in an n-type semiconductor**（此例說明了為何電子稱多數載子、電洞稱少數載子——兩者濃度相差 12 個數量級）。
+- **Mass Action Law（質量作用定律）**：投影片給出的核心公式 $n \times p = n_i^2$——**the product of electron and hole densities is ALWAYS equal to the square of intrinsic electron density regardless of doping levels**（電子與電洞濃度的乘積永遠等於本質載子濃度的平方，不論摻雜程度為何）。
+- **Majority Carriers（多數載子）公式**：N 型中 $n \approx N_D$（因為 $N_D \gg n_i$）；P 型中 $p \approx N_A$（因為 $N_A \gg n_i$）。
+- **Minority Carriers（少數載子）公式**：N 型中 $p \approx \dfrac{n_i^2}{N_D}$；P 型中 $n \approx n_i^2/N_A$。
+- **Example 2-3（第 19 頁）**：一片矽均勻摻雜磷原子，摻雜濃度 $N_D = 10^{16}\text{ electrons/cm}^3$。因為磷貢獻的自由電子比矽本身熱激發產生的電子（$n_i = 10^{10}$）多出 10⁶ 倍，可設 $n \approx N_D = 10^{16}\text{ electrons/cm}^3$；代入質量作用定律得 $p \approx \dfrac{n_i^2}{N_D} = 1.17\times10^4\text{ holes/cm}^3$。投影片結論：**this example justifies the reason for calling electrons the "majority carriers" and holes the "minority carriers" in an n-type semiconductor**（此例說明了為何電子稱多數載子、電洞稱少數載子——兩者濃度相差 12 個數量級）。
 
 ### 漂移：Drift（第一種電荷傳輸機制，第 20–28 頁）
 
@@ -660,18 +660,18 @@ import EcWeek1IcEcosystem from '@/components/generated/ec-week1-ic-ecosystem'
 ![立體長方體半導體樣品示意圖，頂部標示電場 E 指向左方，內部畫出鋸齒狀路徑代表載子漂移時因碰撞晶格而蜿蜒前進，下方連接電池](/note-images/ec-week1-ch2/19-drift-diagram.png)
 
 *漂移：載子在電場推動下往一個方向淨移動，但路徑上仍不斷跟晶格碰撞、蜿蜒前進。*
-- **Mobility（遷移率，記為 μ）**：投影片說明 **charge particles will move at a velocity (v) that is proportional to the electric field, i.e., v = μE, where μ is the mobility**（電荷粒子移動速度與電場成正比，比例常數稱為遷移率）。電洞速度 `v⃗_h = μ_p × E⃗`；電子速度 `v⃗_e = −μ_n × E⃗`（帶負號，因為電子帶負電、移動方向與電場相反）。
-- **Example 2-5（第 21 頁）**：一片長 **1 μm** 的 N 型矽兩端加 **1 V** 電壓，電場 `E = V/L = 10⁶ V/m`，代入矽的電子遷移率 `μ_n = 1350 cm²/(V·s)`，得電子漂移速度 `v_e = 1.35×10⁷ cm/s`；渡越 1 微米所需時間 `Δt = L/v_e = 7.4 ps`（皮秒）。
-- **Drift current（漂移電流，記為 I_p）**：投影片推導——電流等於「若電荷以速度 v m/s 移動，單位時間內通過某截面的電荷量」，公式 `I_p = (v×W×h) × p × q`，`W`、`h` 分別是樣品的寬與高，`q` 是單一電子（或電洞）的電荷量 `1.6×10⁻¹⁹ C`。
-- **Drift current density（漂移電流密度，記為 J）**：通過單位截面積的電流。推導得 `J_p = μ_p × E × p × q`（電洞）、`J_n = μ_n × E × n × q`（電子），**Total drift current density** `J_tot = J_n + J_p = q(μ_n n + μ_p p)E`。
-- **Example 2-6（第 24 頁）**：求電子與電洞漂移電流相等時的濃度關係，推導出對矽而言 `p = 1.68 n_i`、`n = 0.596 n_i`——投影片結論 **since p and n are of the same order as n_i, equal electron and hole drift currents can occur for only a very lightly doped material**（因為 p、n 與 n_i 同數量級，只有非常輕摻雜的材料才會出現電子電洞漂移電流相等）。
-- **Velocity saturation（速度飽和）**：投影片指出先前假設遷移率與電場無關並不精確——**in reality, carrier velocity does not increase linearly with the electric field due to frequent collisions with lattice and eventually saturates at high electric fields, limiting transistor performance**（實際上載子因頻繁與晶格碰撞，速度不會隨電場線性增加，最終在高電場下飽和，限制電晶體效能）。公式：`v(E) = (μ₀/(1+μ₀E/v_sat)) × E`，`μ₀` 是**低電場遷移率（low-field mobility）**、`v_sat` 是**飽和速度**。
+- **Mobility（遷移率，記為 μ）**：投影片說明 **charge particles will move at a velocity (v) that is proportional to the electric field, i.e., v = μE, where μ is the mobility**（電荷粒子移動速度與電場成正比，比例常數稱為遷移率）。電洞速度 $\vec{v}_h = \mu_p \vec{E}$；電子速度 $\vec{v}_e = -\mu_n \vec{E}$（帶負號，因為電子帶負電、移動方向與電場相反）。
+- **Example 2-5（第 21 頁）**：一片長 **1 μm** 的 N 型矽兩端加 **1 V** 電壓，電場 $E = V/L = 10^6\ \text{V/m}$，代入矽的電子遷移率 $\mu_n = 1350\ \text{cm}^2/(\text{V}\cdot\text{s})$，得電子漂移速度 $v_e = 1.35\times10^7\text{ cm/s}$；渡越 1 微米所需時間 $\Delta t = L/v_e = 7.4\text{ ps}$（皮秒）。
+- **Drift current（漂移電流，記為 I_p）**：投影片推導——電流等於「若電荷以速度 v m/s 移動，單位時間內通過某截面的電荷量」，公式 $I_p = (v \cdot W \cdot h)\, p\, q$，$W$、$h$ 分別是樣品的寬與高，$q$ 是單一電子（或電洞）的電荷量 $1.6\times10^{-19}\text{ C}$。
+- **Drift current density（漂移電流密度，記為 J）**：通過單位截面積的電流。推導得 $J_p = \mu_p E p q$（電洞）、$J_n = \mu_n E n q$（電子），**Total drift current density** $J_{tot} = J_n + J_p = q(\mu_n n + \mu_p p)E$。
+- **Example 2-6（第 24 頁）**：求電子與電洞漂移電流相等時的濃度關係，推導出對矽而言 $p = 1.68\, n_i$、$n = 0.596\, n_i$——投影片結論 **since p and n are of the same order as n_i, equal electron and hole drift currents can occur for only a very lightly doped material**（因為 p、n 與 n_i 同數量級，只有非常輕摻雜的材料才會出現電子電洞漂移電流相等）。
+- **Velocity saturation（速度飽和）**：投影片指出先前假設遷移率與電場無關並不精確——**in reality, carrier velocity does not increase linearly with the electric field due to frequent collisions with lattice and eventually saturates at high electric fields, limiting transistor performance**（實際上載子因頻繁與晶格碰撞，速度不會隨電場線性增加，最終在高電場下飽和，限制電晶體效能）。公式：$v(E) = \dfrac{\mu_0}{1+\mu_0E/v_{sat}}\, E$，$\mu_0$ 是**低電場遷移率（low-field mobility）**、$v_{sat}$ 是**飽和速度**。
 
 ![速度 v 對電場 E 的曲線圖，一開始線性上升，隨後趨於平緩並收斂到 v_sat](/note-images/ec-week1-ch2/05-velocity-saturation.png)
 
 *速度飽和：電場夠大之後，速度不再隨電場線性增加，而是收斂到 v_sat。*
-- **Effective mobility, μ(E)（有效遷移率）**：`μ(E) = μ₀/(1+(μ₀/v_sat)×E)`，會隨電場 E 增加而逐漸趨近零。
-- **Example 2-7（第 27 頁）**：長 0.2 μm 元件加 1V，算出 `μ = 0.129μ₀ = 174 cm²/(V·s)`；並求出 `μ` 只比 `μ₀` 低 10% 時對應的最大電壓約 **16.5 mV**——投影片結論 **modern submicron devices experience velocity saturation because they operate at voltages much higher than 16.5 mV**（現代次微米元件因操作電壓遠高於 16.5mV，普遍會遭遇速度飽和）。
+- **Effective mobility, μ(E)（有效遷移率）**：$\mu(E) = \dfrac{\mu_0}{1+(\mu_0/v_{sat})E}$，會隨電場 E 增加而逐漸趨近零。
+- **Example 2-7（第 27 頁）**：長 0.2 μm 元件加 1V，算出 $\mu = 0.129\mu_0 = 174\ \text{cm}^2/(\text{V}\cdot\text{s})$；並求出 $\mu$ 只比 $\mu_0$ 低 10% 時對應的最大電壓約 **16.5 mV**——投影片結論 **modern submicron devices experience velocity saturation because they operate at voltages much higher than 16.5 mV**（現代次微米元件因操作電壓遠高於 16.5mV，普遍會遭遇速度飽和）。
 
 ### 擴散：Diffusion（第二種電荷傳輸機制，第 29–33 頁）
 
@@ -681,14 +681,14 @@ import EcWeek1IcEcosystem from '@/components/generated/ec-week1-ic-ecosystem'
 
 *擴散：載子從注入點的高濃度往低濃度方向自然散開，不需要外加電場。*
 
-- **Diffusion current（擴散電流）**：投影片說明 **diffusion current is proportional to the gradient of charge (dn/dx) along the direction of current flow**（擴散電流正比於沿電流方向的濃度梯度）。公式 `I_n = A × q × D_n × (dn/dx)`，`D_n` 稱為**擴散係數（diffusion constant）**。總電流密度 `J_n = q×D_n×(dn/dx)`、`J_p = −q×D_p×(dp/dx)`。本質矽的數值：`D_n = 34 cm²/s`、`D_p = 12 cm²/s`。
-- **Example 2-8（第 31 頁）**：電子濃度在 `x=0` 為 `N`、線性降到 `x=L` 為零，求得 `J_n = −qD_n(N/L)`——投影片結論 **the current is constant along the x-axis**（電流沿 x 軸為定值，因為濃度梯度是常數斜率）。
+- **Diffusion current（擴散電流）**：投影片說明 **diffusion current is proportional to the gradient of charge (dn/dx) along the direction of current flow**（擴散電流正比於沿電流方向的濃度梯度）。公式 $I_n = A q D_n \dfrac{dn}{dx}$，$D_n$ 稱為**擴散係數（diffusion constant）**。總電流密度 $J_n = qD_n\dfrac{dn}{dx}$、$J_p = -qD_p\dfrac{dp}{dx}$。本質矽的數值：$D_n = 34\ \text{cm}^2/\text{s}$、$D_p = 12\ \text{cm}^2/\text{s}$。
+- **Example 2-8（第 31 頁）**：電子濃度在 $x=0$ 為 $N$、線性降到 $x=L$ 為零，求得 $J_n = -qD_n\dfrac{N}{L}$——投影片結論 **the current is constant along the x-axis**（電流沿 x 軸為定值，因為濃度梯度是常數斜率）。
 
 ![濃度分布為一條從 N 線性降到 L 處為零的直線圖，沿線畫有向右的箭頭表示擴散方向](/note-images/ec-week1-ch2/21-example-2-8-linear-gradient.png)
 
 *Example 2-8：線性濃度梯度，斜率固定，擴散電流沿 x 軸處處相等。*
 
-- **Example 2-9（第 32 頁）**：改為指數濃度梯度 `n(x) = N × exp(−x/L_d)`，`L_d` 為常數，求得 `J_n = (−qD_nN/L_d) × exp(−x/L_d)`——這裡電流密度本身其實會隨 `x` 呈指數衰減（跟線性梯度那題「電流沿 x 軸恆定」不同），讀原始投影片時要留意這個差異。
+- **Example 2-9（第 32 頁）**：改為指數濃度梯度 $n(x) = N\exp(-x/L_d)$，$L_d$ 為常數，求得 $J_n = \left(-\dfrac{qD_nN}{L_d}\right)\exp(-x/L_d)$——這裡電流密度本身其實會隨 $x$ 呈指數衰減（跟線性梯度那題「電流沿 x 軸恆定」不同），讀原始投影片時要留意這個差異。
 
 ![濃度分布為一條從 N 呈指數衰減到 L 處趨近零的曲線圖，沿線畫有向右的箭頭表示擴散方向](/note-images/ec-week1-ch2/22-example-2-9-exponential-gradient.png)
 
@@ -697,8 +697,8 @@ import EcWeek1IcEcosystem from '@/components/generated/ec-week1-ic-ecosystem'
 
 *漂移靠電場、擴散靠濃度梯度——物理機制完全不同，公式長得也不像，但兩者的比例常數（μ 與 D）之間卻有固定關係。*
 
-- **Einstein's Relation（愛因斯坦關係式）**：投影片指出 **while the underlying physics behind drift and diffusion currents are totally different**（漂移與擴散背後的物理機制完全不同），兩者卻透過這條關係式產生神秘連結：`D_n/μ_n = D_p/μ_p = kT/q`。
-- **Thermal voltage（熱電壓，記為 V_T）**：定義 `V_T ≜ kT/q`，投影片給出室溫數值 **V_T ≈ 26 mV at T = 300 K**——這個數字之後會反覆出現在幾乎所有 PN 接面公式裡。
+- **Einstein's Relation（愛因斯坦關係式）**：投影片指出 **while the underlying physics behind drift and diffusion currents are totally different**（漂移與擴散背後的物理機制完全不同），兩者卻透過這條關係式產生神秘連結：$\dfrac{D_n}{\mu_n} = \dfrac{D_p}{\mu_p} = \dfrac{kT}{q}$。
+- **Thermal voltage（熱電壓，記為 V_T）**：定義 $V_T \triangleq \dfrac{kT}{q}$，投影片給出室溫數值 **V_T ≈ 26 mV at T = 300 K**——這個數字之後會反覆出現在幾乎所有 PN 接面公式裡。
 
 ### PN 接面的結構與三個工作區（第 34–35 頁）
 
@@ -722,29 +722,29 @@ import EcWeek1IcEcosystem from '@/components/generated/ec-week1-ic-ecosystem'
 ![n/p 兩側濃度曲線交叉圖，左側標示 Majority Carriers 指向 n_n、Minority Carriers 指向 p_n；右側標示 Majority Carriers 指向 p_p、Minority Carriers 指向 n_p](/note-images/ec-week1-ch2/25-equilibrium-carrier-profile.png)
 
 *平衡態下兩側的多數／少數載子濃度分布：n 側電子多、p 側電洞多，但各自也都有極少量的少數載子。*
-- **Depletion Region（空乏區）**：投影片說明——**as free electrons and holes diffuse across the junction, a region of fixed ions is left behind**（自由電子與電洞擴散通過接面後，留下一個由固定離子構成的區域）。投影片用三個時間點展示形成過程：`t=0`（n 區滿是 **Free Electrons**、p 區滿是 **Free Holes**，尚未擴散）→ `t=t₁`（接面附近出現 **Positive Donor Ions（正電施體離子）**與 **Negative Acceptor Ions（負電受體離子）**）→ `t=∞`（離子區域擴大穩定，成為完整的空乏區）。
+- **Depletion Region（空乏區）**：投影片說明——**as free electrons and holes diffuse across the junction, a region of fixed ions is left behind**（自由電子與電洞擴散通過接面後，留下一個由固定離子構成的區域）。投影片用三個時間點展示形成過程：$t=0$（n 區滿是 **Free Electrons**、p 區滿是 **Free Holes**，尚未擴散）→ $t=t_1$（接面附近出現 **Positive Donor Ions（正電施體離子）**與 **Negative Acceptor Ions（負電受體離子）**）→ $t=\infty$（離子區域擴大穩定，成為完整的空乏區）。
 
 ![空乏區形成的三個時間點：t=0 自由電子電洞尚未擴散、t=t₁ 接面附近出現固定離子、t=∞ 空乏區穩定形成](/note-images/ec-week1-ch2/07-depletion-region-formation.png)
 
 *空乏區的形成過程：載子擴散後留下不能動的固定離子，逐漸穩定成完整的空乏區。*
-- **Built-in field（內建電場）／Drift current（漂移電流，此處由空乏區內建電場驅動）**：投影片說明——**the fixed ions in depletion region create an electric field that results in a drift current**（空乏區內的固定離子產生電場，進而導致漂移電流），電場在接面中心（`x=0`）最強、往兩端空乏區邊界（`−b` 與 `a`）遞減為零。
+- **Built-in field（內建電場）／Drift current（漂移電流，此處由空乏區內建電場驅動）**：投影片說明——**the fixed ions in depletion region create an electric field that results in a drift current**（空乏區內的固定離子產生電場，進而導致漂移電流），電場在接面中心（$x=0$）最強、往兩端空乏區邊界（$-b$ 與 $a$）遞減為零。
 
 ![上圖：n/p 接面空乏區內固定離子分布，頂部標示電場箭頭 E；下圖：電場強度對位置 x 的三角形分布圖，在 x=0 達到峰值，於 −b 與 a 處歸零](/note-images/ec-week1-ch2/26-drift-current-efield.png)
 
 *空乏區內建電場的強度分布：在接面中心最強，兩端邊界處歸零，形狀是一個三角形。*
-- **Equilibrium（平衡）條件**：投影片給出 `I_drift,p + I_diff,p = 0`、`I_drift,n + I_diff,n = 0`——**the drift currents resulting from the electric field exactly cancel the diffusion currents due to the gradients**（電場產生的漂移電流恰好抵消濃度梯度產生的擴散電流），這正是「平衡」兩個字的意義：不是沒有電流在流動，而是兩股大電流打平。
+- **Equilibrium（平衡）條件**：投影片給出 $I_{drift,p} + I_{diff,p} = 0$、$I_{drift,n} + I_{diff,n} = 0$——**the drift currents resulting from the electric field exactly cancel the diffusion currents due to the gradients**（電場產生的漂移電流恰好抵消濃度梯度產生的擴散電流），這正是「平衡」兩個字的意義：不是沒有電流在流動，而是兩股大電流打平。
 ![n/p 兩側載子濃度分布圖，橫軸標示空乏區邊界 x1 與 x2，n 側標示較高的 n_n 與較低的 p_n，p 側標示較高的 p_p 與較低的 n_p](/note-images/ec-week1-ch2/27-carrier-profiles-x1-x2.png)
 
 *內建電位推導要用到的濃度分布圖：對 x1 到 x2 這段空乏區積分，就能推出 V₀ 的公式。*
 
-- **Built-in potential（內建電位，記為 V₀）**：因為接面上存在電場，所以存在一個內建電位。投影片推導：從平衡條件出發，代入電場與電位的關係（`E = −dV/dx`），對空乏區積分後得到 `V(x₁) − V(x₂) = (D_p/μ_p) × ln(p_p/p_n)`；再代入愛因斯坦關係式 `D_p/μ_p = kT/q`，並代入 `p_p = N_A`、`p_n = n_i²/N_D`，最終得到：
+- **Built-in potential（內建電位，記為 V₀）**：因為接面上存在電場，所以存在一個內建電位。投影片推導：從平衡條件出發，代入電場與電位的關係（$E = -\dfrac{dV}{dx}$），對空乏區積分後得到 $V(x_1) - V(x_2) = \dfrac{D_p}{\mu_p}\ln\!\left(\dfrac{p_p}{p_n}\right)$；再代入愛因斯坦關係式 $\dfrac{D_p}{\mu_p} = \dfrac{kT}{q}$，並代入 $p_p = N_A$、$p_n = n_i^2/N_D$，最終得到：
 
 ```
 V₀ = V_T × ln(N_A × N_D / n_i²)
 ```
 
-- **Example 2-13（第 42 頁）**：`N_A = 2×10¹⁶ cm⁻³`、`N_D = 4×10¹⁶ cm⁻³`，代入得 **V₀ = 768 mV**。
-- **Example 2-14（第 43 頁）**：投影片提問 **V₀ is a weak function of the doping levels**（V₀ 是摻雜濃度的弱函數），若 `N_A` 或 `N_D` 增加一個數量級（10 倍），推導得 `ΔV₀ = V_T × ln(10) = 60 mV`——即使摻雜濃度增加 10 倍，內建電位也只增加約 60mV。
+- **Example 2-13（第 42 頁）**：$N_A = 2\times10^{16}\text{ cm}^{-3}$、$N_D = 4\times10^{16}\text{ cm}^{-3}$，代入得 **V₀ = 768 mV**。
+- **Example 2-14（第 43 頁）**：投影片提問 **V₀ is a weak function of the doping levels**（V₀ 是摻雜濃度的弱函數），若 $N_A$ 或 $N_D$ 增加一個數量級（10 倍），推導得 $\Delta V_0 = V_T\ln(10) = 60\text{ mV}$——即使摻雜濃度增加 10 倍，內建電位也只增加約 60mV。
 
 ### 逆偏：pn Junction Under Reverse Bias（第 44–50 頁）
 
@@ -753,19 +753,19 @@ V₀ = V_T × ln(N_A × N_D / n_i²)
 ![上圖為平衡態空乏區、下圖外加逆偏電源 V_R（正極接 n 側）後空乏區明顯變寬，正負離子區域範圍都擴大](/note-images/ec-week1-ch2/28-reverse-bias-before-after.png)
 
 *逆偏前後對照：外加電源把 n 側接到更高電位，空乏區跟著被拉寬。*
-- **Voltage-Dependent Capacitor（電壓相依電容）**：投影片說明——**the PN junction can be viewed as a capacitor. By varying V_R, the depletion width changes, changing its capacitance value**（PN 接面可視為電容器；改變逆偏電壓 `V_R` 會改變空乏區寬度，進而改變電容值）。
+- **Voltage-Dependent Capacitor（電壓相依電容）**：投影片說明——**the PN junction can be viewed as a capacitor. By varying V_R, the depletion width changes, changing its capacitance value**（PN 接面可視為電容器；改變逆偏電壓 $V_R$ 會改變空乏區寬度，進而改變電容值）。
 
 ![逆偏電壓下的 PN 接面晶格圖，(a) 電子被電場往兩側拉開、(b) 更多電子被拉開示意逆偏電流組成](/note-images/ec-week1-ch2/08-voltage-dependent-capacitor.png)
 
 *逆偏 PN 接面：外加電場與內建電場同向，空乏區被拉寬。*
 
-- **Junction capacitance（接面電容，記為 C_j）**：公式 `C_j = C_j0/√(1−V_R/V₀)`，`C_j0` 是零偏壓（`V_R=0`）時的電容，另有推導公式 `C_j0 = √[(ε_si×q/2) × (N_A×N_D)/(N_A+N_D) × (1/V₀)]`，`ε_si` 是矽的**介電常數（dielectric constant）**。
+- **Junction capacitance（接面電容，記為 C_j）**：公式 $C_j = \dfrac{C_{j0}}{\sqrt{1-V_R/V_0}}$，$C_{j0}$ 是零偏壓（$V_R = 0$）時的電容，另有推導公式 $C_{j0} = \sqrt{\dfrac{\varepsilon_{si}q}{2}\cdot\dfrac{N_AN_D}{N_A+N_D}\cdot\dfrac{1}{V_0}}$，$\varepsilon_{si}$ 是矽的**介電常數（dielectric constant）**。
 
 ![接面電容 C_j 對逆偏電壓 V_R 的曲線圖，V_R=0 時電容最大，隨 |V_R| 增加而遞減](/note-images/ec-week1-ch2/09-capacitance-vs-reverse-voltage.png)
 
 *接面電容隨逆偏電壓增加而遞減——這正是 PN 接面能當「電壓控制電容」的原因。*
-- **Example 2-15（第 47 頁）**：`N_A = 2×10¹⁶ cm⁻³`、`N_D = 9×10¹⁵ cm⁻³`，算得 `V₀ = 730 mV`、`C_j0 = 0.265 fF/μm²`；`V_R = −1V` 時 `C_j = 0.172 fF/μm²`。
-- **Voltage-Controlled Oscillator, VCO（電壓控制振盪器，Example 2-16，第 48–49 頁）**：投影片舉的實際應用——手機內建 **2-GHz oscillator**，頻率由 **LC tank（LC 振盪槽電路）**的共振頻率決定，公式 `f_res = (1/2π) × 1/√(LC)`。若電容用 Example 2-15 的 PN 接面實現（接面面積 2000 μm²），逆偏電壓從 0 變化到 **−2V** 時，算得共振頻率從 2GHz 變化到 **2.78GHz**。
+- **Example 2-15（第 47 頁）**：$N_A = 2\times10^{16}\text{ cm}^{-3}$、$N_D = 9\times10^{15}\text{ cm}^{-3}$，算得 $V_0 = 730\text{ mV}$、$C_{j0} = 0.265\ \text{fF}/\mu\text{m}^2$；$V_R = -1\text{V}$ 時 $C_j = 0.172\ \text{fF}/\mu\text{m}^2$。
+- **Voltage-Controlled Oscillator, VCO（電壓控制振盪器，Example 2-16，第 48–49 頁）**：投影片舉的實際應用——手機內建 **2-GHz oscillator**，頻率由 **LC tank（LC 振盪槽電路）**的共振頻率決定，公式 $f_{res} = \dfrac{1}{2\pi}\dfrac{1}{\sqrt{LC}}$。若電容用 Example 2-15 的 PN 接面實現（接面面積 2000 μm²），逆偏電壓從 0 變化到 **−2V** 時，算得共振頻率從 2GHz 變化到 **2.78GHz**。
 
 ![LC 振盪電路符號：左側可變電容 C（箭頭穿過電容符號代表電壓可調），右側電感 L，左下方標示輸入 V_R](/note-images/ec-week1-ch2/29-lc-oscillator-circuit.png)
 
@@ -788,10 +788,10 @@ V₀ = V_T × ln(N_A × N_D / n_i²)
 ![平衡態與順偏態的載子濃度分布對照圖，順偏態下 n 側電洞濃度與 p 側電子濃度都明顯升高](/note-images/ec-week1-ch2/10-minority-carrier-forward-bias.png)
 
 *順偏後，兩側的少數載子濃度（虛線標示處）都比平衡態明顯升高。*
-- **推導**：從 `p_p/p_n = e^(V₀/V_T)` 出發，平衡態 `p_n,e = p_p,e × e^(−V₀/V_T)`；順偏態 `p_n,f = p_p,f × e^(−(V₀−V_F)/V_T)`；因為 `p_p,e ≈ p_p,f ≈ N_A`（外加順偏電壓幾乎不改變多數載子濃度），可得 `p_n,f = e^(V_F/V_T) × p_n,e`——順偏態的少數載子濃度是平衡態的 `e^(V_F/V_T)` 倍，遠大於平衡態值。
-- **Reverse saturation current（逆向飽和電流，記為 I_S）**：把少數載子增加量整理成電流公式後得到：`I_S = A×q×n_i²×(D_n/(N_A×L_n) + D_p/(N_D×L_p))`，`A` 是元件截面積，`L_n`、`L_p` 是電子與電洞的**擴散長度（diffusion lengths）**——少數載子在復合消失前平均能擴散的距離。
-- **Example 2-17（第 55 頁）**：`A = 100 μm²`、`L_n = L_p = 20 μm`，代入 Example 2-13 的摻雜濃度，算得 `I_S ≈ 1.77×10⁻¹⁷ A`——投影片結論 **since I_S is extremely small, the exponential term must be very large values so as to yield a useful amount (e.g., 1 mA)**（因為 I_S 極小，指數項必須非常大才能產生像 1mA 這樣有用的電流）。
-- **Diffusion length（擴散長度）與電流分布**：投影片進一步說明，少數載子濃度分布不應是常數（否則沒有濃度梯度、沒有擴散電流），而是離開空乏區邊界後逐漸衰減，衰減的範圍就對應 `L_p`、`L_n`；順偏下多數載子擴散電流與少數載子擴散電流的總和沿 `x` 軸維持定值：`J = J_n(x) + J_p(x) = constant`。
+- **推導**：從 $p_p/p_n = e^{V_0/V_T}$ 出發，平衡態 $p_{n,e} = p_{p,e}\, e^{-V_0/V_T}$；順偏態 $p_{n,f} = p_{p,f}\, e^{-(V_0-V_F)/V_T}$；因為 $p_{p,e} \approx p_{p,f} \approx N_A$（外加順偏電壓幾乎不改變多數載子濃度），可得 $p_{n,f} = e^{V_F/V_T}\, p_{n,e}$——順偏態的少數載子濃度是平衡態的 $e^{V_F/V_T}$ 倍，遠大於平衡態值。
+- **Reverse saturation current（逆向飽和電流，記為 I_S）**：把少數載子增加量整理成電流公式後得到：$I_S = Aqn_i^2\left(\dfrac{D_n}{N_AL_n} + \dfrac{D_p}{N_DL_p}\right)$，$A$ 是元件截面積，$L_n$、$L_p$ 是電子與電洞的**擴散長度（diffusion lengths）**——少數載子在復合消失前平均能擴散的距離。
+- **Example 2-17（第 55 頁）**：$A = 100\ \mu\text{m}^2$、$L_n = L_p = 20\ \mu\text{m}$，代入 Example 2-13 的摻雜濃度，算得 $I_S \approx 1.77\times10^{-17}\text{ A}$——投影片結論 **since I_S is extremely small, the exponential term must be very large values so as to yield a useful amount (e.g., 1 mA)**（因為 I_S 極小，指數項必須非常大才能產生像 1mA 這樣有用的電流）。
+- **Diffusion length（擴散長度）與電流分布**：投影片進一步說明，少數載子濃度分布不應是常數（否則沒有濃度梯度、沒有擴散電流），而是離開空乏區邊界後逐漸衰減，衰減的範圍就對應 $L_p$、$L_n$；順偏下多數載子擴散電流與少數載子擴散電流的總和沿 $x$ 軸維持定值：$J = J_n(x) + J_p(x) = \text{constant}$。
 
 ![n/p 兩側各畫出電子流與電洞流的三角形箭頭，三角形尖端與底部的粗細變化代表電流分量沿 x 軸的相對大小](/note-images/ec-week1-ch2/31-diffusion-current-triangles.png)
 
@@ -809,19 +809,19 @@ V₀ = V_T × ln(N_A × N_D / n_i²)
 I_D = I_S × (exp(V_D/V_T) − 1)
 ```
 
-當 `V_D` 為正且遠大於 `V_T` 時可近似為 `I_D ≈ I_S × exp(V_D/V_T)`。投影片說明——**the current and voltage relationship of a PN junction is exponential in forward bias region, and relatively constant in reverse bias region**（PN 接面的電流電壓關係在順偏區呈指數關係，逆偏區則相對維持定值，接近 `−I_S`）。
+當 $V_D$ 為正且遠大於 $V_T$ 時可近似為 $I_D \approx I_S \exp(V_D/V_T)$。投影片說明——**the current and voltage relationship of a PN junction is exponential in forward bias region, and relatively constant in reverse bias region**（PN 接面的電流電壓關係在順偏區呈指數關係，逆偏區則相對維持定值，接近 $-I_S$）。
 
 ![二極體 I-V 特性曲線：逆偏區電流趨近 −I_S 的水平線，順偏區電流呈指數陡升](/note-images/ec-week1-ch2/12-diode-iv-characteristic.png)
 
 *二極體的 I-V 曲線：逆偏幾乎不導通，順偏後電流隨電壓呈指數暴增。*
 
-- **Example 2-18: Parallel PN Junctions（並聯 PN 接面，第 60–61 頁）**：投影片說明兩個相同接面並聯，等效於一個截面積加倍（`2A`）的單一元件——**equivalence of parallel devices to a larger device**。
+- **Example 2-18: Parallel PN Junctions（並聯 PN 接面，第 60–61 頁）**：投影片說明兩個相同接面並聯，等效於一個截面積加倍（$2A$）的單一元件——**equivalence of parallel devices to a larger device**。
 
 ![左側兩個截面積 A 的二極體並聯接同一個電源 V_F，右側箭頭指向一個截面積 2A 的等效單一元件](/note-images/ec-week1-ch2/32-parallel-junctions-equivalence.png)
 
-*兩個並聯的相同二極體，等效於一個截面積加倍的單一元件——飽和電流 I_S 正比於接面面積，所以並聯後 I_S 也加倍。*代入 `I_S = 1.77×10⁻¹⁷ A`，算得 `V_D=300mV` 時總電流 `I_D,tot ≈ 3.63 pA`，`V_D=800mV` 時 `I_D,tot ≈ 816 μA`——電壓只增加 500mV，電流卻跨了約 8 個數量級。
-- **Example 2-19（第 62 頁，60mV 經驗法則）**：投影片提問——電流要增加為原來的 10 倍，`V_D` 需要改變多少？推導 `V_D = V_T × ln(I_D/I_S)`，設 `I_1 = 10×I_D`，得 `ΔV_D = V_T × ln(10) ≈ 59.9 mV`——這是電子學裡非常重要的經驗法則：**二極體電流每增加 10 倍，兩端電壓大約只需增加 60 mV**。
-- **Constant-Voltage Diode Model（定電壓二極體模型，第 63 頁）**：投影片定義——**diode operates as an open circuit if V_D < V_D,on and a constant voltage source of V_D,on if V_D tends to exceed V_D,on**（若 `V_D` 小於開啟電壓 `V_D,on`，二極體視為開路；電壓有超過 `V_D,on` 的趨勢，則視為固定電壓源）。
+*兩個並聯的相同二極體，等效於一個截面積加倍的單一元件——飽和電流 I_S 正比於接面面積，所以並聯後 I_S 也加倍。*代入 $I_S = 1.77\times10^{-17}\text{ A}$，算得 $V_D = 300\text{mV}$ 時總電流 $I_{D,tot} \approx 3.63\text{ pA}$，$V_D = 800\text{mV}$ 時 $I_{D,tot} \approx 816\ \mu\text{A}$——電壓只增加 500mV，電流卻跨了約 8 個數量級。
+- **Example 2-19（第 62 頁，60mV 經驗法則）**：投影片提問——電流要增加為原來的 10 倍，$V_D$ 需要改變多少？推導 $V_D = V_T\ln(I_D/I_S)$，設 $I_1 = 10\times I_D$，得 $\Delta V_D = V_T\ln(10) \approx 59.9\text{ mV}$——這是電子學裡非常重要的經驗法則：**二極體電流每增加 10 倍，兩端電壓大約只需增加 60 mV**。
+- **Constant-Voltage Diode Model（定電壓二極體模型，第 63 頁）**：投影片定義——**diode operates as an open circuit if V_D < V_D,on and a constant voltage source of V_D,on if V_D tends to exceed V_D,on**（若 $V_D$ 小於開啟電壓 $V_{D,on}$，二極體視為開路；電壓有超過 $V_{D,on}$ 的趨勢，則視為固定電壓源）。
 
 ![定電壓模型的 I-V 曲線（電壓未達 V_D,on 前電流為零、達到後垂直陡升）與對應的電路符號等效（開路／固定電壓源）](/note-images/ec-week1-ch2/13-constant-voltage-model.png)
 
@@ -832,11 +832,11 @@ I_D = I_S × (exp(V_D/V_T) − 1)
 
 *Example 2-21 的電路：一個電壓源、一顆電阻、一顆二極體——分別用指數模型與定電壓模型解，比較兩者的難易與準確度。*
 
-一個電壓源 `V_X` 接電阻 `R₁=1kΩ` 再接二極體 `D₁` 的簡單電路，分別用**指數模型**（`I_S=10⁻¹⁶ A`，須用**疊代法（iterative method）**求解，因為 `V_D = V_T×ln(I_X/I_S)` 與 `I_X=(V_X−V_D)/R₁` 互相牽扯）與**定電壓模型**（`V_D,on=800mV`，直接解線性方程式）計算 `V_X=3V` 與 `V_X=1V` 時的電流：指數模型算出 `2.201mA`／`0.258mA`，定電壓模型算出 `2.2mA`／`0.2mA`——兩者結果幾乎一樣準。投影片結論：**this example shows the simplicity provided by a constant-voltage model over an exponential model**（定電壓模型比指數模型簡單得多，指數模型需要疊代法，定電壓模型只需線性方程式）。
+一個電壓源 $V_X$ 接電阻 $R_1 = 1\text{k}\Omega$ 再接二極體 $D_1$ 的簡單電路，分別用**指數模型**（$I_S = 10^{-16}\text{ A}$，須用**疊代法（iterative method）**求解，因為 $V_D = V_T\ln(I_X/I_S)$ 與 $I_X = \dfrac{V_X-V_D}{R_1}$ 互相牽扯）與**定電壓模型**（$V_{D,on} = 800\text{mV}$，直接解線性方程式）計算 $V_X = 3\text{V}$ 與 $V_X = 1\text{V}$ 時的電流：指數模型算出 $2.201\text{mA}$／$0.258\text{mA}$，定電壓模型算出 $2.2\text{mA}$／$0.2\text{mA}$——兩者結果幾乎一樣準。投影片結論：**this example shows the simplicity provided by a constant-voltage model over an exponential model**（定電壓模型比指數模型簡單得多，指數模型需要疊代法，定電壓模型只需線性方程式）。
 
 ### 生醫應用：Bioengineering Application（第 67 頁）
 
-- **Cancer Detection（癌症偵測）**：投影片舉例——**Laser diode（雷射二極體）**產生波長 `λ₁` 的光照射 **Tissue（組織）**，若組織含有癌細胞並含有 **Fluorophore（螢光團）**，會產生新波長 `λ₂`；光線通過 **Optical Filter（光學濾波器）**濾除 `λ₁`、只留下 `λ₂`，再交給 **Photodiode（光電二極體）**轉換成電流 `I_D`，送入 **Amplifier（放大器）**放大輸出——核心元件同樣只是「光電二極體＋放大器」，說明同一套 PN 接面物理換個包裝就能從手機用到醫療設備上。
+- **Cancer Detection（癌症偵測）**：投影片舉例——**Laser diode（雷射二極體）**產生波長 $\lambda_1$ 的光照射 **Tissue（組織）**，若組織含有癌細胞並含有 **Fluorophore（螢光團）**，會產生新波長 $\lambda_2$；光線通過 **Optical Filter（光學濾波器）**濾除 $\lambda_1$、只留下 $\lambda_2$，再交給 **Photodiode（光電二極體）**轉換成電流 $I_D$，送入 **Amplifier（放大器）**放大輸出——核心元件同樣只是「光電二極體＋放大器」，說明同一套 PN 接面物理換個包裝就能從手機用到醫療設備上。
 
 ![癌症偵測應用方塊圖：雷射二極體發出 λ₁ 光穿過組織、光學濾波器濾除 λ₁ 只留 λ₂、光電二極體轉電流、放大器放大輸出](/note-images/ec-week1-ch2/14-cancer-detection-application.png)
 
