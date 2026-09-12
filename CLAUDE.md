@@ -74,6 +74,7 @@ status: pending | generated | locked | failed
 | Prompt 描述 | 採用方式 |
 | --- | --- |
 | 流程 / 時序 / 狀態機 / 架構 | 手寫 SVG（不引入函式庫） |
+| 電路 / 電子元件示意圖 | 手寫 SVG，符號參考 `references/circuit-symbols.md`（不引入 tscircuit 等電路函式庫） |
 | 有軸的量化資料 | recharts；非標準才用 d3 |
 | 時間軸 / Gantt | 手寫 SVG |
 | 含豐富欄位的比較表 | Tailwind `<table>`，不要做成 SVG |
@@ -141,4 +142,4 @@ trim 前後空白 → 過濾空字串 → 同篇內不分大小寫去重（保�
 - Subagent 模型**寫死建議值**（haiku / sonnet），不用 `inherit`
 - note-scanner / mdx-writer **獨立成 Subagent**
 - **不**提供「新增空標籤」；**不**做軟刪除 / undo（依靠 git 復原）
-- `references/svg-patterns.md` 等 Skill 參考檔初版**先不提供**，待累積案例後再回填
+- `references/svg-patterns.md` 等 Skill 參考檔初版**先不提供**，待累積案例後再回填（`references/circuit-symbols.md`、`references/motion-patterns.md` 已因實際案例回填，格式可作為後續回填其他參考檔的範本）

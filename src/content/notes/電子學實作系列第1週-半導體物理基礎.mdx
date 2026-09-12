@@ -333,6 +333,29 @@ import EcWeek1PnJunction from '@/components/generated/ec-week1-pn-junction'
 再往上一層還有 **IC Design Eco-System（IC 設計生態系）**，分成三個階段：**Design (Fabless)（設計，無晶圓廠模式）→ Fabrication (Foundries)（製造，晶圓代工廠）→ Packaging（封裝）**。
 
 - **Fabless**：只做設計、不擁有晶圓廠的公司，例如 **MediaTek（聯發科）、Realtek（瑞昱）、Qualcomm（高通）、AMD、Apple、NVIDIA**；它們把設計交給 **Foundry（晶圓代工廠，如 TSMC）**生產，再交給封測廠（如 ASE）封裝測試。課堂另以 **Intel** 對照傳統 IDM：它長期同時擁有產品設計與製造能力，不能簡化成典型的純 fabless 公司。
+
+{/* @ai-visualize
+id: ec-week1-ic-ecosystem
+type: diagram
+prompt: |
+  重繪投影片「IC Design Eco-System」這張圖：三個階段的水平流程圖，
+  Design (Fabless) → Fabrication (Foundries) → Packaging，兩個箭頭串接。
+  每個階段畫一個圓角矩形標題方塊，方塊底下列出該階段代表公司的「文字名稱」
+  （不要重繪任何公司商標／Logo，一律用純文字排版）：
+  - Design (Fabless)：MediaTek、Realtek、Qualcomm、AMD、Apple、NVIDIA
+  - Fabrication (Foundries)：TSMC
+  - Packaging：ASE
+  另外用一顆獨立的小標籤或註記標出 Intel，並附一行小字說明「傳統 IDM，
+  同時擁有設計與製造，不是典型 fabless」，避免讀者誤把 Intel 歸類成單純
+  fabless 公司。
+  視覺要求：手寫 SVG 流程圖，不引入圖表函式庫；三個階段方塊用一致的圓角、
+  字級與間距，箭頭方向由左至右；配色沿用 notecraft-design 的 token，不要
+  硬編色碼；公司名稱這種 3 個以上的並列項目排成清楚的直向列表或小卡片，
+  避免擠成一段文字。
+status: pending
+caption: IC 設計生態系的三段分工：Fabless 只做設計、Foundry 負責製造、封測廠負責封裝測試；Intel 是同時擁有設計與製造能力的傳統 IDM，不是典型 fabless。
+*/}
+
 - **Anatomy of Integrated Circuits（積體電路的解剖）**：投影片用實體照片展示 IC 從外部到內部的完整層次——**PCB**（印刷電路板模組）→ 封裝好的晶片（**QFP** 封裝，四邊有金色接腳）→ **Die**（裸晶，晶片內部的矽本體）→ **Bonding pad**（接墊，裸晶邊緣透過細金屬線與外部接腳相連的接點），一路放大到微米（**μm**）等級的顯微走線（投影片範例標示放大倍率 121:1，比例尺 200μm，來源標註 ON Semiconductor 安森美半導體）。
 
 > **尺寸與良率的課堂直覺**：老師回顧約二十至二十五年前開始談 **System on Chip（SoC，系統單晶片）**時，約 `1.5 cm × 1.5 cm` 的大晶粒就會引起良率疑慮；課堂當下則以約 `3 cm × 3 cm` 的晶粒說明今日可製造尺寸已經放大。直覺上，晶粒面積越大，同一片晶圓可切出的顆數越少，而且單顆晶粒碰到缺陷的機率越高，因此良率通常更難維持。

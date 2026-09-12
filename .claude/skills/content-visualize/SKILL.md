@@ -55,7 +55,7 @@ status: pending | generated | locked | failed
    - **可增長 / 浮動列表**：用「長出新項目」「虛線占位」暗示持續變動
    底層幾何（線段、流程、狀態）仍用手寫 SVG 繪製，再以 state / motion 驅動。
 
-2. **流程 / 時序 / 狀態機 / 架構圖** —— 描述「依序的步驟」、「角色對話」、「方塊與箭頭」。底層用手寫 SVG（vertical lanes / boxes-and-arrows / circles-and-transitions）。**若步驟有先後或值得逐步揭露，優先加上 motion 逐步播放或點擊推進**，而非一次全部畫出來的靜態圖。
+2. **流程 / 時序 / 狀態機 / 架構圖** —— 描述「依序的步驟」、「角色對話」、「方塊與箭頭」。底層用手寫 SVG（vertical lanes / boxes-and-arrows / circles-and-transitions）。**若步驟有先後或值得逐步揭露，優先加上 motion 逐步播放或點擊推進**，而非一次全部畫出來的靜態圖。**電路示意圖**（電阻、電容、電晶體、op-amp 等元件組成的電路）也歸在這條——同樣手寫 SVG、不引入 `tscircuit` 之類電路函式庫，符號畫法讀 `references/circuit-symbols.md`。
 
 3. **有軸的量化資料（長條 / 折線 / 區域 / 散佈 / 圓餅）** —— 提示詞提到數值、隨時間比較、分佈。標準圖表使用 `recharts`；非標準圖表（Sankey、力導向圖、自訂幾何）才動用 `d3`。
 
@@ -86,6 +86,7 @@ status: pending | generated | locked | failed
   - 樣式使用 Tailwind utility classes；除非動畫需要，否則不要寫原生 CSS
   - 純 SVG 元件請設定 `viewBox` 並用 `width="100%"` 讓它可縮放；挑一個合理的長寬比
   - motion 元件預設動畫保持節制（200–400ms、ease-out）；並透過 `motion/react` 的 `useReducedMotion()` 尊重 `prefers-reduced-motion`
+  - 用 `AnimatePresence` 包住「一載入就該立刻可見」的內容時（例如分頁切換的當前面板），一律加 `initial={false}`，否則首次掛載的進場動畫在分頁未取得焦點時可能卡在 `opacity:0` 永久不恢復，實際踩過的案例與原理見 `references/motion-patterns.md`
 - 目標是讓元件看起來像「一位用心的設計師寫出來的」，而不是「程式生成的產物」。具體的顏色與間距，永遠勝過通用的灰色方塊。
 
 ### 4. 驗證
@@ -166,5 +167,6 @@ import <PascalCaseId> from '@/components/generated/<id>'
 - `references/svg-patterns.md` —— 常見 SVG 示意圖樣式（時序、流程、架構）
 - `references/motion-patterns.md` —— 嵌入筆記中的 Framer Motion 範例
 - `references/recharts-patterns.md` —— recharts 組合技巧與常見陷阱
+- `references/circuit-symbols.md` —— 電路示意圖標準符號（電阻、電容、電晶體、op-amp 等）與組裝範例，處理電子學 / 電路類筆記的標記時讀取
 
 僅在當前任務符合對應主題時才讀取上述檔案。

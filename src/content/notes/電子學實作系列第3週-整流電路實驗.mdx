@@ -127,9 +127,16 @@ prompt: |
   導通路徑用主色加粗、截止用灰色細線；切換時用 200-400ms ease-out；
   元件標號用 SVG text（英數字可），中文說明一律放 DOM；
   尊重 prefers-reduced-motion。
-status: pending
+status: generated
 caption: 橋式整流的兩個半週：導通的那一對換人，但流過負載的電流方向始終不變。
 */}
+
+import GeneratedFrame from '@/components/GeneratedFrame.astro'
+import EcWeek3Bridge from '@/components/generated/ec-week3-bridge'
+
+<GeneratedFrame id="ec-week3-bridge" type="motion" prompt={"用可切換的兩個半週，呈現橋式整流器中四顆二極體的導通路徑。\n兩個狀態（兩顆切換鈕或一顆自動播放的開關）：\n1. 正半週：其中一對二極體導通、另一對截止\n2. 負半週：換另一對導通，電流仍以同一方向流過負載\n每個狀態要標示：哪兩顆導通（高亮）、哪兩顆截止（淡化）、電流流經負載的方向。\n下方固定顯示三個對照欄位（不隨狀態改變）：\n1. 每條導通路徑串兩顆二極體，所以死區是兩倍導通壓降\n2. 相同電容下漣波是半波整流的一半\n3. 每顆二極體承受的逆向電壓約為一倍峰值（半波是兩倍）\n視覺要求：手繪 SVG 畫橋式電路的菱形拓樸，viewBox 寬度不超過 640；\n導通路徑用主色加粗、截止用灰色細線；切換時用 200-400ms ease-out；\n元件標號用 SVG text（英數字可），中文說明一律放 DOM；\n尊重 prefers-reduced-motion。"} caption="橋式整流的兩個半週：導通的那一對換人，但流過負載的電流方向始終不變。">
+  <EcWeek3Bridge client:visible />
+</GeneratedFrame>
 
 ## 教材預習重點
 
