@@ -48,8 +48,13 @@ export default function PdfViewerDrawer() {
   // 不能只靠 page / scale / numPages（兩份不同文件很可能剛好頁碼、頁數都相同）。
   const [docVersion, setDocVersion] = useState(0);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const contentRef = useRef<HTMLDivElement | null>(null);
   const docRef = useRef<PDFDocumentProxy | null>(null);
   const renderTaskRef = useRef<RenderTask | null>(null);
+  // 換文件時重置：讓每份新開的 PDF 第一次都自動縮到「跟抽屜一樣寬」，
+  // 而不是照 PDF 原生的 pt 尺寸（常比 560px 的抽屜寬，得手動縮小才看得到全頁）。
+  // 使用者開始手動縮放後，同一份文件內翻頁不再重算，維持使用者選的縮放。
+  const autoFitDoneRef = useRef(false);
 
   const close = useCallback(() => setOpen(false), []);
 
@@ -100,6 +105,7 @@ export default function PdfViewerDrawer() {
       .then((doc) => {
         if (cancelled || !doc) return;
         docRef.current = doc;
+        autoFitDoneRef.current = false;
         setNumPages(doc.numPages);
         setLoading(false);
         setDocVersion((v) => v + 1);
@@ -128,13 +134,33 @@ export default function PdfViewerDrawer() {
     const clampedPage = Math.min(Math.max(page, 1), doc.numPages);
     doc.getPage(clampedPage).then((pdfPage) => {
       if (cancelled) return;
-      const viewport = pdfPage.getViewport({ scale });
+
+      // 第一次畫這份文件：算出「跟抽屜內容寬度貼齊」的縮放比例，取代預設的 100%
+      // （PDF 原生 pt 尺寸常比 560px 的抽屜寬，100% 會被裁掉、得手動縮小才看得到全頁）。
+      // setScale 觸發下一輪 effect 重跑，才用算出來的比例真的畫，這一輪先跳過。
+      if (!autoFitDoneRef.current) {
+        autoFitDoneRef.current = true;
+        const natural = pdfPage.getViewport({ scale: 1 });
+        const available = (contentRef.current?.clientWidth ?? natural.width + 32) - 32; // 扣掉左右各 16px padding
+        const fitScale = Math.min(MAX_SCALE, Math.max(MIN_SCALE, available / natural.width));
+        setScale(+fitScale.toFixed(2));
+        return;
+      }
+
       const context = canvas.getContext("2d");
       if (!context) return;
-      canvas.width = viewport.width;
-      canvas.height = viewport.height;
+      // devicePixelRatio：canvas 的畫布解析度只跟著 CSS 邏輯像素跑會在 Retina /
+      // HiDPI 螢幕被瀏覽器放大成模糊的點陣圖。內部畫布用 scale * dpr 的解析度畫，
+      // 再用 style.width/height 把顯示尺寸壓回原本的 CSS 像素，畫面看起來一樣大但夠銳利。
+      const dpr = window.devicePixelRatio || 1;
+      const viewport = pdfPage.getViewport({ scale });
+      const renderViewport = pdfPage.getViewport({ scale: scale * dpr });
+      canvas.width = renderViewport.width;
+      canvas.height = renderViewport.height;
+      canvas.style.width = `${viewport.width}px`;
+      canvas.style.height = `${viewport.height}px`;
       renderTaskRef.current?.cancel();
-      const task = pdfPage.render({ canvasContext: context, viewport, canvas });
+      const task = pdfPage.render({ canvasContext: context, viewport: renderViewport, canvas });
       renderTaskRef.current = task;
       task.promise.catch(() => {
         /* 被下一次 render 取消時會 reject，忽略即可 */
@@ -228,6 +254,7 @@ export default function PdfViewerDrawer() {
             </div>
 
             <div
+              ref={contentRef}
               style={{
                 flex: "1 1 auto",
                 minHeight: 0,
