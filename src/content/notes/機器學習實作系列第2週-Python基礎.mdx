@@ -16,7 +16,27 @@ updatedAt: "2026-09-14"
 
 感知器（Perceptron）是最早、也最簡單的一種監督式學習分類器，由 Frank Rosenblatt 於 1958 年提出，靈感來自生物神經元「輸入訊號加總、超過閾值才會發射」的機制。給定一筆樣本的特徵向量 x，感知器先算出**加權總和（net input）**`z = w·x + b`——w 是每個特徵的權重（weights），b 是偏差項（bias unit），兩者合稱第 1 週定義過的**可訓練參數（trainable parameters）**。接著把 z 丟進一個**階梯函數（step function）**：z ≥ 0 輸出 +1，否則輸出 −1。這個階梯函數就是第 1 週術語表提到的**激活函數（activation function）**最原始的版本——雖然現代神經網路幾乎不再用它（不可微分，無法配合梯度下降），但它是理解「線性模型 + 非線性判斷」這個組合的起點。
 
+import PdfRefChip from '@/components/islands/PdfRefChip.tsx'
+
+{/* @ai-reference
+id: pla-net-input
+file: _references/機器學習實作系列/第2週-Python基礎.pdf
+page: 7
+status: suggested
+excerpt: z = w1x1+...+wmxm+b = wTx+b；bias unit b(=−θ) included，decision function σ(z)
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第2週-Python基礎.pdf" page={7} status="suggested" excerpt={"z = w1x1+...+wmxm+b = wTx+b；bias unit b(=−θ) included，decision function σ(z)"} client:visible />
+
 從幾何角度看，`w·x + b = 0` 這個方程式定義了一個**超平面（hyperplane）**——在二維特徵空間裡就是一條直線。w 是這條線的法向量（決定傾斜方向），b 決定它離原點多遠。這條線把特徵空間切成兩半，落在哪一半就對應哪一個類別；感知器的訓練目標，就是找出一組能把兩類樣本正確切開的 w 與 b。
+
+{/* @ai-reference
+id: pla-decision-boundary
+file: _references/機器學習實作系列/第2週-Python基礎.pdf
+page: 8
+status: suggested
+excerpt: The perceptron can be used to discriminate between two classes separable by a linear decision boundary
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第2週-Python基礎.pdf" page={8} status="suggested" excerpt={"The perceptron can be used to discriminate between two classes separable by a linear decision boundary"} client:visible />
 
 ### 訓練規則：PLA 怎麼一步步找到那條線
 
@@ -28,13 +48,49 @@ PLA 是一個線上（online）、逐筆更新的迭代演算法：
    - 若分類錯誤，依更新規則調整參數：`w ← w + η·y·x`、`b ← b + η·y`（η 是學習率，最基本版本可以直接設 η = 1）
 3. 重複整個資料集（一輪稱為一個 epoch，第 1 週定義過），直到某一輪完全沒有誤判樣本為止
 
+{/* @ai-reference
+id: pla-update-rule
+file: _references/機器學習實作系列/第2週-Python基礎.pdf
+page: 16
+status: suggested
+excerpt: Δwj = η(y(i)−ŷ(i))xj(i)，Δb = η(y(i)−ŷ(i))；wj := wj+Δwj, b := b+Δb
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第2週-Python基礎.pdf" page={16} status="suggested" excerpt={"Δwj = η(y(i)−ŷ(i))xj(i)，Δb = η(y(i)−ŷ(i))；wj := wj+Δwj, b := b+Δb"} client:visible />
+
 更新規則背後的直覺很直白：如果一個正樣本（y = +1）被誤判成負類，代表目前的決策邊界「離它太近、把它推錯邊了」，於是把 w 往這個樣本的方向調——`w + y·x` 會讓下一次算出來的 `w·x` 變大，讓這個樣本更容易被判成正類；負樣本被誤判的道理相反。PLA 不會一次把邊界調到完美，而是每次只用「一筆答錯的樣本」推它一小步，逐步修正。
+
+{/* @ai-reference
+id: pla-update-intuition
+file: _references/機器學習實作系列/第2週-Python基礎.pdf
+page: 18
+status: suggested
+excerpt: we would increase the corresponding weights and bias unit so that the net input z would be more positive
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第2週-Python基礎.pdf" page={18} status="suggested" excerpt={"we would increase the corresponding weights and bias unit so that the net input z would be more positive"} client:visible />
 
 ### 收斂定理與線性可分的限制
 
 PLA 有一個重要的理論保證——**Novikoff 收斂定理**：只要訓練資料是**線性可分**的（存在一個超平面能把兩類完全分開），PLA 保證能在有限步內找到一組能完全分類正確的 w、b，且更新次數的上界與兩類之間的「間隔（margin）」有關——間隔越大，收斂需要的步數越少。
 
+{/* @ai-reference
+id: pla-convergence-separable
+file: _references/機器學習實作系列/第2週-Python基礎.pdf
+page: 20
+status: suggested
+excerpt: Convergence is only guaranteed if the two classes are linearly separable
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第2週-Python基礎.pdf" page={20} status="suggested" excerpt={"Convergence is only guaranteed if the two classes are linearly separable"} client:visible />
+
 但反過來，如果資料**不是線性可分**（例如經典的 XOR 問題：兩類樣本呈對角交錯排列，任何一條直線都切不開），PLA 會永遠找不到能讓整輪都不誤判的參數，陷入無窮迴圈、不斷更新卻不收斂。1969 年 Marvin Minsky 與 Seymour Papert 在《*Perceptrons*》一書中正式指出這個侷限，是感知器研究一度停滯（第一次 AI 寒冬的起點之一）的關鍵原因；也正是這個侷限，催生了後面用**多層感知器（Multilayer Perceptron, MLP）**疊加非線性 activation function 來處理非線性可分問題的路線——呼應第 10 週要學的多層神經網路與深度學習。
+
+{/* @ai-reference
+id: pla-convergence-not-separable
+file: _references/機器學習實作系列/第2週-Python基礎.pdf
+page: 21
+status: suggested
+excerpt: If the two classes are not linearly separable, the perceptron would never stop updating the weights
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第2週-Python基礎.pdf" page={21} status="suggested" excerpt={"If the two classes are not linearly separable, the perceptron would never stop updating the weights"} client:visible />
 
 ### PLA 與課程其他概念的連結
 
@@ -76,9 +132,27 @@ Python 是動態型別語言：變數不用事先宣告型別，賦值當下直�
 
 輸出用 `print()`，輸入用 `input()`（回傳一律是字串，需要數值要自己轉型）。格式化字串首選 **f-string**：`f"總和為 {total}"` 直接把變數值內嵌進字串，比舊式的 `%` 格式化或 `.format()` 更直覺，也支援在大括號內做運算或呼叫函式，例如 `f"{price:.2f}"` 可以順便控制小數位數。單行註解用 `#`，說明「為什麼這樣寫」而不是「這行做了什麼」。
 
+{/* @ai-reference
+id: python-fstring-input
+file: _references/機器學習實作系列/第2週-Python基礎.pdf
+page: 25
+status: suggested
+excerpt: 複習重點：input() 處理、float() 型別轉換、** 算術運算子、F-string 格式化字串
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第2週-Python基礎.pdf" page={25} status="suggested" excerpt={"複習重點：input() 處理、float() 型別轉換、** 算術運算子、F-string 格式化字串"} client:visible />
+
 ### 四種內建容器：先問「要不要改、要不要順序、要不要查得快」
 
 Python 的四種基本容器差別不在「能裝什麼」，而在「你打算怎麼用它」。**列表（list）**是可變的有序序列，適合會一直增刪的暫存區——逐行讀檔時把解析結果 `append` 進去就是典型用法。**元組（tuple）**是不可變的有序序列，適合表示「一組固定的東西」，例如圖片的形狀 `(28, 28)`；因為不可變，它還能當字典的鍵。**字典（dict）**是鍵值對映射，適合「用名字查東西」，例如把欄位名對應到那一欄資料。**集合（set）**只裝不重複的元素、不保證順序，適合去重與取交集——想知道兩份名單重疊多少，`set(a) & set(b)` 一行就好。
+
+{/* @ai-reference
+id: python-containers-dedup
+file: _references/機器學習實作系列/第2週-Python基礎.pdf
+page: 27
+status: suggested
+excerpt: 複習重點：set 去重特性、list 轉換、字典的鍵值對操作與 get() 方法
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第2週-Python基礎.pdf" page={27} status="suggested" excerpt={"複習重點：set 去重特性、list 轉換、字典的鍵值對操作與 get() 方法"} client:visible />
 
 判斷法很簡單：要「按位置取用」就用 list／tuple，要「按名字取用」就用 dict，只在乎「有沒有這個成員」就用 set。dict 與 set 背後是雜湊表，查找幾乎與資料量無關；list 的 `in` 要從頭掃到尾，資料一大差別就很明顯。
 
@@ -92,7 +166,25 @@ Python 用 `0` 起算的索引取單一元素，用 `a[start:stop:step]` 取一�
 
 `if / elif / else`、`for`、`while` 是基本控制流程，Python 用**縮排**而非大括號界定區塊，縮排是語法的一部分而非排版習慣。搭配 `enumerate()` 可同時拿到索引與元素，`zip()` 可把兩個等長序列配對走訪。
 
+{/* @ai-reference
+id: python-control-flow
+file: _references/機器學習實作系列/第2週-Python基礎.pdf
+page: 29
+status: suggested
+excerpt: 複習重點：for 迴圈、range() 函式、if-elif-else 多重分支邏輯、取餘數運算子 %
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第2週-Python基礎.pdf" page={29} status="suggested" excerpt={"複習重點：for 迴圈、range() 函式、if-elif-else 多重分支邏輯、取餘數運算子 %"} client:visible />
+
 真正該練熟的是**列表推導式（list comprehension）**：`[x**2 for x in nums if x > 0]` 等價於開一個空列表、跑迴圈、加條件判斷、再 `append`，但只要一行。資料處理特別偏好它，因為這類動作幾乎都是同一個形狀——「對每一筆做同一件事，並篩掉不要的」。推導式讓程式碼直接長成這個形狀：一眼看到輸出什麼、來源是誰、篩選條件是什麼，不必在迴圈裡追累加變數的狀態。這種「描述結果而非描述步驟」的思路，正是後面 NumPy 向量化運算的預演；同樣寫法也適用於字典與集合推導式。
+
+{/* @ai-reference
+id: python-list-comprehension
+file: _references/機器學習實作系列/第2週-Python基礎.pdf
+page: 31
+status: suggested
+excerpt: 複習重點：import 外部模組、List Comprehension (列表推導式)、max() / min() / sum() 內建函式
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第2週-Python基礎.pdf" page={31} status="suggested" excerpt={"複習重點：import 外部模組、List Comprehension (列表推導式)、max() / min() / sum() 內建函式"} client:visible />
 
 ### 函式與彈性參數：`*args` 與 `**kwargs`
 
@@ -103,6 +195,15 @@ Python 用 `0` 起算的索引取單一元素，用 `a[start:stop:step]` 取一�
 ### 匯入、環境隔離與互動式工作流程
 
 `import numpy` 匯入整個模組並以模組名取用；`import numpy as np` 取一個慣用別名（`np`、`pd`、`plt` 幾乎是社群共識，照著寫別人比較好讀）；`from numpy import array` 只取出特定名稱。少用 `from x import *`——它會把一堆名稱倒進命名空間，同名衝突時很難追。
+
+{/* @ai-reference
+id: python-import-modules
+file: _references/機器學習實作系列/第2週-Python基礎.pdf
+page: 39
+status: suggested
+excerpt: NumPy 資料科學的基石；Pandas 資料分析與操作工具庫；Matplotlib 資料視覺化工具
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第2週-Python基礎.pdf" page={39} status="suggested" excerpt={"NumPy 資料科學的基石；Pandas 資料分析與操作工具庫；Matplotlib 資料視覺化工具"} client:visible />
 
 資料科學專案特別需要**虛擬環境（virtual environment）**，因為套件之間版本相依很緊：不同專案各自綁定不同版本的 NumPy 或深度學習框架，全裝在同一個系統 Python 底下遲早互相踩到。用 `venv` 或 `conda` 為每個專案建獨立環境，再以 `pip install` 裝套件並把清單記成 `requirements.txt`，別人才能重現同一份環境。
 
