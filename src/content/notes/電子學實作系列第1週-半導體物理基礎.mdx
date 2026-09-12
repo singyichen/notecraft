@@ -172,206 +172,297 @@ caption: PN 接面的三個工作區：空乏區寬度隨偏壓改變，決定�
 
 以下依教科書投影片逐節整理，補上前面「教材預習重點」未展開的歷史脈絡、公式與例題數字，寫給完全沒有電子學／物理背景的讀者——每個符號、每個名詞第一次出現都會解釋。
 
-### CH1：微電子學的誕生與基本語言
+### CH1：微電子學的誕生與基本語言（逐頁名詞詳解，中英對照）
 
-#### 真空管時代：又大又短命
+> 教授要求投影片裡每一個名詞都要能講出詳細解釋。以下依投影片出現順序，每個名詞先給**原文英文**，再給完整中文解釋——不只是翻譯，還原投影片的上下文與工程意義，確保沒有名詞被跳過。
 
-在電晶體發明之前，電子訊號的放大與開關靠的是**真空管**——二戰期間（1939–1945）真空管撐起了無線電通訊與雷達系統，戰後也普遍用在音響功率放大器裡。但真空管有兩個致命傷：**壽命有限**（會老化燒壞）、**體積龐大**。世界上第一台「數位」電腦 ENIAC 完全用真空管搭建，因此整間房間才裝得下一台計算機——這也是為什麼下一步「把元件做小」會被稱為一場「大爆炸」。
+#### 章節架構（第 2–3 頁 Contents）
 
-#### 1947：電晶體發明，微電子學的「大爆炸」
+投影片開頭列出本章的完整架構，之後每個小節都會逐一詳解，這裡先對照英文原文記住整體地圖：
 
-貝爾實驗室的 John Bardeen、William Shockley、Walter Brattain 三人在 1947 年做出第一顆**點接觸式電晶體**：用兩根非常靠近的金屬觸點，接觸在一小片鍺（germanium，一種半導體材料）表面上，中間只隔著一道用剃刀片切出的細縫。這個看似克難的裝置，第一次證明半導體元件可以取代真空管做訊號放大——這正是「微電子學」（用半導體元件取代真空管的電子學）的起點。
+- **1.1 Electronics Versus Microelectronics**（電子學 vs. 微電子學）
+- **1.2 Examples of Electronic Systems**（電子系統範例）：**Cellular Telephone**（行動電話）、**Digital Camera**（數位相機）、**Analog Versus Digital**（類比 vs. 數位）
+- **1.3 Basic Concepts**（基本概念）：**Analog and Digital Signals**（類比與數位訊號）、**Analog Circuits**（類比電路）、**Digital Circuits**（數位電路）、**Basic Circuit Theorems**（基本電路定理，即後面的 KCL、KVL）
+- **1.4 Chapter Summary**（本章總結）
 
-#### 積體電路的專利大戰：Kilby vs. Noyce
+#### 真空管時代：又大又短命（第 4–7 頁）
 
-真空管換成電晶體只解決了體積問題的一半——如果要用電晶體搭建像處理器這麼複雜的電路，還是得把成千上萬顆電晶體一根根用導線接起來。**積體電路（IC）**要解決的正是「怎麼把很多元件跟導線都做在同一塊晶片上」。
+- **Electronics（電子學）**：投影片用來跟 Microelectronics 對比的起點詞——泛指一切利用電子元件處理訊號、傳遞能量的技術領域，涵蓋真空管時代到今天的積體電路。
+- **Vacuum tube（真空管）**：一種密封在玻璃管內、利用真空中電子流動來放大或切換訊號的元件。投影片指出真空管 **used for radio communications and radar systems during WWII (1939–1945)**（二戰期間用於無線電通訊與雷達系統），戰後也普遍用在音響功率放大器（**audio power amplifier**）裡。
+- **Finite lifetime（有限的使用壽命）**：真空管的第一個缺點——管內燈絲會隨使用老化，最終燒毀失效，不像固態元件那樣耐用。
+- **The large size of vacuum tubes（真空管的體積龐大）**：第二個缺點。投影片直接用一張「手掌對比圖」把 IC、電晶體與真空管放在一起，體積差距一目了然。
+- **ENIAC（Electronic Numerical Integrator and Computer，電子數值積分器與計算機）**：投影片稱為「世界上第一台『數位』電腦」（**The First "Digital" Computer in the World**，"Digital" 特別加引號），完全用真空管搭建，因此需要整間機房才裝得下。
 
-- **Jack Kilby**（德州儀器，1958 年）：成功把電阻、電容、電晶體整合在同一塊鍺晶片上，但元件之間仍需要用外部金屬「**飛線**」手工連接——量產上不實際。
-- **Robert Noyce**（快捷半導體，1959 年）：用「**平面製程**」把所有元件與導線直接蝕刻、整合在晶片表面上，完全不需要飛線。這才是現代 IC 製造技術真正採用的方向。
-- 不過平面製程本身（在半導體表面長一層氧化層保護，再選擇性蝕刻開孔摻雜）真正的發明人其實是快捷半導體的另一位工程師 **Jean Hoerni**；Noyce 的貢獻是把這個製程手法應用在「整顆積體電路」的接線設計上。
+#### 1947：電晶體發明，微電子學的「大爆炸」（第 8–9 頁）
+
+- **Point-contact transistor（點接觸式電晶體）**：1947 年發明的第一顆電晶體，投影片明確標示這是 **"The 'Big Bang' of Microelectronics"**（微電子學的「大爆炸」）。結構上用兩根非常靠近的金屬觸點，接觸在一小片 **Germanium（鍺）**——一種半導體材料——的表面上，中間隔著一道 **Thin Razor Cut Between E and C**（用剃刀片在射極與集極之間切出的細縫）。
+- **Emitter（射極，E）／Collector（集極，C）／Base（基極，B）**：電晶體的三個接腳名稱，這顆最原始的點接觸式電晶體上已經看得到這三個接點的雛型；Emitter、Collector 靠 **Gold Foil（金箔）**接觸固定在 **Plastic Wedge（塑膠楔形物）**上，Base 則直接接在鍺材料本體。
+- **Germanium（鍺）**：早期電晶體使用的半導體材料（矽要到後來才成為主流），週期表上與矽同屬 IV 族元素。
+- **John Bardeen、William Shockley、Walter Brattain**：貝爾實驗室（**Bell Labs**）三位發明者，1948 年合照被投影片列為電晶體發明的具體佐證（三人也因此共同拿到 1956 年諾貝爾物理獎，屬背景知識，投影片未明講）。
+
+#### 積體電路的專利大戰：Kilby vs. Noyce（第 10–13 頁）
+
+真空管換成電晶體只解決了體積問題的一半——如果要用電晶體搭建複雜電路，還是得把成千上萬顆電晶體一根根用導線接起來。**Integrated Circuit（IC，積體電路）**要解決的正是「怎麼把很多元件跟導線都做在同一塊晶片上」，這裡因此爆發一場專利大戰：
+
+- **Patent War: Texas Instruments vs. Fairchild（專利大戰：德州儀器 vs. 快捷半導體）**：投影片標題直接點名這是一場專利大戰。
+- **Jack Kilby**（**Texas Instruments，德州儀器**，1958 年）：專利名稱 **Miniaturized Electronic Circuits**（小型化電子電路，US Patent 3,138,743）。他成功把電阻、電容、電晶體整合在同一塊鍺晶片上，但投影片明確標出問題所在——**Problem: the flying wire（問題：飛線）**：元件之間仍需要用外部金屬導線手工連接，量產上不實際。
+- **Robert Noyce**（**Fairchild Semiconductor，快捷半導體**，1959 年）：專利名稱 **Semiconductor Device-and-Lead Structure**（半導體元件與接腳結構，US Patent 2,981,877）。投影片標出他的優點——**Pros: the origin of modern IC process (the planar process)**（優點：現代 IC 製程的起源——平面製程）：把所有電路元件與導線都直接整合、蝕刻在晶片平面上，完全不需要外部飛線。專利圖上可見 **Oxide Insulation**（氧化層絕緣）與多層摻雜結構（標示 N、P、N）。
+- **Planar process（平面製程）**：在半導體表面生長一層保護性氧化層，再選擇性蝕刻開孔進行摻雜的製程技術，是現代 IC 量產真正採用的方向。真正發明這個製程的人是快捷半導體的另一位工程師 **Jean Hoerni**（專利名稱 **Method of Manufacturing Semiconductor Devices**，半導體元件製造方法，US Patent 3,025,589）；Noyce 的貢獻是把這個製程手法應用在「整顆積體電路」的接線設計上。
+- **Fairchild Semiconductor（快捷半導體）**：1957–2016 年間營運的公司，是平面製程與 IC 技術的發源地之一。
+- **Intel**：1968 年由包含 Robert Noyce 在內、出身 Fairchild 的人才創立，一直經營至今——說明快捷半導體是後來整個矽谷半導體產業的「母體」之一。
 
 兩人／兩家公司因此打了一場專利大戰——這也是為什麼「誰發明了 IC」在教科書上常常需要同時提到 Kilby 與 Noyce 兩人。
 
-#### 一顆晶片背後的產業鏈
+#### 一顆晶片背後的產業鏈（第 14–17 頁）
 
-投影片用六個步驟濃縮現代 IC 的製造流程：**製作晶圓（矽晶棒切片）→ 光罩曝光 → 蝕刻 → 摻雜 → 測試 → 封裝**。現實世界中，這六步驟是由高度分工的不同公司完成的：
+投影片用六個步驟濃縮現代 IC 的製造流程（**Steps for Making ICs**）：
 
-| 製程階段 | 負責公司（投影片舉例） |
+| 英文步驟 | 中文意義 |
 | --- | --- |
-| 晶圓製造 | 信越化學（ShinEtsu）、SUMCO |
-| 光罩、蝕刻、摻雜、測試 | 台積電（TSMC，晶圓代工） |
-| 測試、封裝 | 日月光（ASE） |
+| Making wafers | 製作晶圓：把矽晶棒（ingot）切成薄圓片 |
+| Masking | 光罩曝光：用光罩在晶圓表面定義電路圖案 |
+| Etching | 蝕刻：用化學方式移除不需要的部分 |
+| Doping | 摻雜：植入雜質原子改變半導體電性 |
+| Testing | 測試：用探針檢驗晶片是否正常 |
+| Packaging | 封裝：把裸晶封裝成可焊接的成品晶片 |
 
-再往上一層，還有 MediaTek、Qualcomm、Apple、NVIDIA 這類**只做設計、不擁有晶圓廠**的「Fabless」公司——牠們把設計圖交給 TSMC 代工、交給 ASE 封測，這就是今天半導體產業「設計—製造—封裝」三段分工的樣貌。
+現實世界中，這六步驟由高度分工的不同公司完成：**ShinEtsu（信越化學工業株式會社）**與 **SUMCO（株式會社 SUMCO）**負責晶圓製造（步驟 1）；**TSMC（台積電）**負責光罩、蝕刻、摻雜、測試（步驟 2–5，即「晶圓代工」的核心製程）；**ASE（日月光半導體）**負責測試與封裝（步驟 5–6）。
 
-#### 例題：沒有 IC 的世界長什麼樣
+再往上一層還有 **IC Design Eco-System（IC 設計生態系）**，分成三個階段：**Design (Fabless)（設計，無晶圓廠模式）→ Fabrication (Foundries)（製造，晶圓代工廠）→ Packaging（封裝）**。
 
-投影片用一道算式具體量化 IC 有多革命性：假設一顆現代處理器內含 1 億顆電晶體，若不整合成 IC、改用每顆體積 3mm×3mm×3mm 的分立電晶體搭建，光是電晶體本身的體積加總起來就要**邊長 1.4 公尺的立方體**（還沒算上導線占用的空間）；訊號要在長達 1.4 公尺的導線間傳遞，速度會極慢；若每顆電晶體 1 美分、1 公克，總成本高達**一百萬美元**、總重量**一百公噸**。這道算式的意義不在數字本身，而在於：把上億顆電晶體壓縮進指甲大小的晶片，是現代電腦處理器能存在的唯一原因。
+- **Fabless**：只做設計、不擁有晶圓廠的公司，投影片舉例 **MediaTek（聯發科）、Realtek（瑞昱）、Qualcomm（高通）、Intel、AMD、Apple、NVIDIA**——牠們把設計圖交給 **Foundry（晶圓代工廠，如 TSMC）**代工、交給封測廠（如 ASE）封裝測試。
+- **Anatomy of Integrated Circuits（積體電路的解剖）**：投影片用實體照片展示 IC 從外部到內部的完整層次——**PCB**（印刷電路板模組）→ 封裝好的晶片（**QFP** 封裝，四邊有金色接腳）→ **Die**（裸晶，晶片內部的矽本體）→ **Bonding pad**（接墊，裸晶邊緣透過細金屬線與外部接腳相連的接點），一路放大到微米（**μm**）等級的顯微走線（投影片範例標示放大倍率 121:1，比例尺 200μm，來源標註 ON Semiconductor 安森美半導體）。
 
-#### 打開手機這個「黑盒子」
+#### 例題：沒有 IC 的世界長什麼樣（第 18–20 頁，Example 1-1）
 
-行動電話的核心工作，是把麥克風收到的語音訊號變成電磁波發射出去（**發射機，TX**），以及把接收到的電磁波還原成喇叭聲音（**接收機，RX**）。中間怎麼做到？
+投影片用一道算式具體量化 IC 有多革命性：假設一顆現代**微處理器（microprocessor）**內含約 **100 million transistors**（1 億顆電晶體），若不整合成 IC、改用每顆體積 **3mm×3mm×3mm** 的 **discrete transistors**（分立式電晶體，即各自獨立封裝、非整合在單一晶片上的電晶體）搭建：
 
-**升頻（up-conversion）**：語音訊號 x(t) 本身頻率很低（人聲頻寬大約在 20kHz 以內），沒辦法有效率地用天線發射，必須先「搬」到高頻。做法是把 x(t) **乘上**一個高頻的餘弦波（載波，carrier，頻率記為 f_C）。這裡有一個訊號處理的基本定理：**時域中兩個訊號相乘，等於頻域中兩者的頻譜做卷積**——語音訊號的頻譜原本集中在 0 附近，載波的頻譜只在 +f_C 與 −f_C 兩點各有一根尖峰，兩者卷積的結果，就是把語音頻譜整個「搬移」到 f_C 附近。這就是為什麼發射機的核心元件是：**乘法器**（做升頻）＋**振盪器**（產生載波）＋**功率放大器**（把訊號功率加大到天線發射需要的程度）。
+- 光是電晶體本身的體積加總就要 **27mm³ × 10⁸**，換算成立方體邊長約 **1.4 公尺（1.4m）**見方——這還沒算上連接導線占用的空間。
+- 訊號必須在長達 1.4 公尺的導線上傳遞，會讓這個分立式處理器運作**極為緩慢（extremely slow）**。
+- 若每顆電晶體成本 **1 cent（1 美分）**、重量 **1g（1 公克）**，總成本高達**一百萬美元（one million dollars）**、總重量**一百公噸（100 tons）**。
 
-**降頻（down-conversion）**：接收機收到的訊號分佈在 ±f_C 附近，要把語音還原出來，做法是反過來再乘上一次同頻率的餘弦波，訊號會被搬回 0 附近（同時也會在 ±2f_C 產生不要的分量，交給**低通濾波器**濾掉）。因為天線收到的訊號通常極其微弱，接收機還需要一顆**低雜訊放大器（LNA）**先把訊號放大、同時盡量不要引入額外雜訊。
+投影片接著留了一題 **Exercise（練習題）**：若每顆電晶體耗散功率為 **10μW**，這個系統總共會消耗多少功率（10μW × 10⁸ = 1000W）？這道算式的意義不在數字本身，而在於：把上億顆電晶體壓縮進指甲大小的晶片，是現代電腦處理器能存在的唯一原因。
 
-投影片給了一道具體例題：手機收到的訊號只有 **20μV**，但要送給喇叭的訊號要有 **50mV**，兩者相差 2500 倍。工程上用**分貝（dB）**表示放大倍率，公式是：
+#### 打開手機這個「黑盒子」：Examples of Electronic Systems — Cellular Telephone（第 21–24 頁）
 
-```
-增益(dB) = 20 × log₁₀(輸出電壓 / 輸入電壓)
-```
+- **Cellular telephone（行動電話）**：投影片指出 **developed in the 1980s and rapidly became popular in the 1990s**（1980 年代開發、1990 年代迅速普及），並列出世代與核心技術對照：**1G(AMPS)**（Advanced Mobile Phone System，類比式行動電話系統）、**2G(GSM)**（Global System for Mobile Communications）、**3G(CDMA)**（Code Division Multiple Access，分碼多重存取）、**4G(OFDM)**（Orthogonal Frequency Division Multiplexing，正交分頻多工）、**5G(Massive MIMO)**（大規模多輸入多輸出天線技術）。
+- **Black box（黑盒子）**：投影片強調 **microelectronics exist in black boxes that process the received and transmitted voice signals**（微電子電路就存在於這些黑盒子內，負責處理收發的語音訊號）——這句話點出後面幾頁要打開「?」方塊，看裡面到底是什麼電路。
+- **Transmitter, TX（發射機）**：把麥克風（**Microphone**）收到的語音訊號處理後，透過天線（**Antenna**）發射出去的路徑。
+- **Receiver, RX（接收機）**：把天線接收到的電磁波處理後，還原成喇叭（**Speaker**）聲音的路徑。
 
-代入得 `20 × log₁₀(50mV / 20μV) ≈ 68 dB`——這說明手機接收機需要極高的放大倍率，才能把微弱的天線訊號變成聽得到的聲音。
+**升頻 Frequency Up-conversion（第 22 頁）**：
 
-#### 數位相機：把光變成一串數字
+- **Voice Signal x(t)（語音訊號）**：麥克風收到的原始類比波形，頻率很低（頻寬大約在 20kHz 以內），沒辦法有效率地用天線發射。
+- **Carrier（載波，A cos(2πf_C t)）**：一個振幅固定、頻率高的餘弦波，`A` 是振幅、`f_C` 是**載波頻率（carrier frequency）**、`t` 是時間。
+- **Up-converted（升頻）**：投影片說明 **voice is "up-converted" by multiplying two sinusoids**（語音訊號透過乘上一個高頻餘弦波而被搬移到高頻）。
+- **Convolution（卷積，符號 "\*"）**：訊號處理的基本定理——**when multiplying two sinusoids in time domain, their spectra are convolved in frequency domain**（時域中兩訊號相乘，等於頻域中兩者頻譜做卷積）。語音頻譜 `X(f)` 原本集中在 0 附近（投影片示意範圍 −20kHz 到 +20kHz），載波的頻譜只在 `+f_C` 與 `−f_C` 兩點各有一根**脈衝（impulse）**，兩者卷積後，輸出頻譜就是把語音頻譜整個搬移到 `±f_C` 附近。
 
-相機的「前端」電路要把光轉成電，靠的是**光電二極體（photodiode）**：光照下去，光電二極體會產生一股與光強度成正比的電流，這股電流對一顆電容充電，電容上的電壓就代表了這個像素接收到的光強度。
+**發射機 Transmitter（第 23 頁）**：
 
-一台 625 萬像素（2500×2500）的相機，如果每個像素都各自配一整套處理電路，整個感光元件會佔用非常大的面積、成本與耗電都會暴增。解法是讓所有像素「**分時共用**」訊號處理電路：把同一「欄」裡全部 2500 個像素的輸出接到同一條共用導線上，但每次只打開其中一個像素的開關，其餘保持關閉——依序切換開關，就能把二維的影像資訊，轉換成一維、隨時間變化的電壓序列。投影片舉了一個具體例子：對著一個黑白交錯的西洋棋棋盤拍照，依序讀出同一欄像素的電壓，畫出來就是一個規律的方波（亮格電壓高、暗格電壓低）。
+- **Multiplier（乘法器，符號 "⊗"）**：把語音訊號與載波相乘、做升頻的電路方塊。
+- **Oscillator（振盪器）**：產生載波訊號（`A cos(2πf_C t)`）餵給乘法器的電路方塊。
+- **Power Amplifier（功率放大器）**：投影片說明 **a power amplifier is added to boost the signal**（加入功率放大器把訊號功率放大），因為天線發射需要足夠的功率才能讓訊號傳得夠遠。
 
-再往下一步，每個像素的電壓是**類比訊號**（可以是任意連續數值），要交給數位電路處理前，得先用**類比數位轉換器（ADC）**數位化。ADC 電路複雜、成本高，所以同樣要在「每欄一顆 ADC（快但貴）」跟「全部共用一顆 ADC（省但要求速度快很多）」之間做權衡——這跟前面像素電路共用的邏輯是同一種取捨思路。
+**接收機 Receiver（第 24 頁）**：
 
-#### 類比與數位：不是兩個世界，是同一條頻譜的兩端
+- **Down-convert（降頻）**：投影片說明 **high frequency is translated to DC by multiplying by f_C**（高頻訊號透過再乘上一次頻率 `f_C` 的訊號，被轉換搬移回接近直流），是升頻的反向操作。降頻後除了在 0 附近還原出原始語音頻譜，也會在 `±2f_C` 產生不要的高頻分量。
+- **Low-Pass Filter（低通濾波器）**：把降頻後在 `±2f_C` 產生的多餘高頻分量濾除，只留下 0 附近還原出的語音頻譜。
+- **Low-Noise Amplifier, LNA（低雜訊放大器）**：投影片說明 **a low-noise amplifier is needed for signal boosting without excessive noise**（需要低雜訊放大器放大微弱的接收訊號，同時不引入過多雜訊），因為天線收到的訊號通常極其微弱。
 
-投影片有一頁把這個觀念講得非常直接：一個 100Mb/s 的方波訊號（每個脈衝寬 10ns）看起來還算方正，但同樣的訊號拉高到 1Gb/s（脈衝寬 1ns）之後，波形的邊緣會變得圓滑、不再是理想的方波，反而更接近一個連續變化的類比波形。**一個運作在極高頻率的數位訊號，其實非常「類比」**——因為在極短的時間內，電路本身的物理特性（電容充放電、放大器的頻寬限制）根本來不及讓電壓瞬間跳變。這也解釋了為什麼放大器的增益不會在所有頻率下都一樣：頻率超過某個界限後，放大器增益會開始**滾降（roll-off）**，這正是限制電路運作速度上限的物理原因。
+**分貝增益 Example 1-3（第 36–37 頁）**：投影片給了一道具體例題——手機收到的訊號只有 **20μV**，但要送給喇叭的訊號要有 **50mV**，兩者相差 2500 倍。
 
-那數位訊號真正的優勢在哪？在於**抗雜訊**。類比訊號一旦疊加雜訊，雜訊就直接、永久地混進訊號本身，因為類比訊號本身可以是任意數值，事後很難分辨「哪段是原訊號、哪段是雜訊」。數位訊號只需要判斷「高」或「低」兩種狀態，只要雜訊幅度沒有大到讓接收端誤判準位，訊號代表的 0 或 1 仍然可以被正確讀出——這也是為什麼邏輯閘（如 NOT、NOR）即使輸入訊號帶有雜訊，輸出仍然能維持乾淨方波的原因：邏輯閘本身有把訊號「重新整形」的能力。
+- **Decibel, dB（分貝）**：工程上表示放大倍率的常用單位，投影片定義 **voltage gain of an amplifier is defined as v_out/v_in and sometimes expressed in decibels (dB) as 20log(v_out/v_in)**（放大器的電壓增益定義為輸出電壓除以輸入電壓，有時以 `20 × log₁₀(v_out/v_in)` 表示為分貝）。
+- 代入本題：`A_V = 20 × log₁₀(50mV / 20μV) ≈ 68dB`——說明手機接收機需要極高的放大倍率，才能把微弱的天線訊號變成聽得到的聲音。投影片接著留一題練習：若增益改為 **50 dB**，輸出擺幅會是多少？
 
-投影片還用一個具體電路證明了邏輯閘可以只靠最基本的類比元件（電阻、開關、電源）實現：一個電阻 R_L 接在電源 V_DD 與輸出節點之間，輸出節點同時接一個由輸入 A 控制的開關到地——A 為高電位時開關導通，把輸出直接拉到地（輸出為低）；A 為低電位時開關斷開，電阻上沒有電流、沒有壓降，輸出直接等於 V_DD（輸出為高）。輸入跟輸出永遠相反，這就是一個 **NOT 閘**最原始的電路實現方式。
+#### 數位相機：把光變成一串數字——Digital Camera（第 25–31 頁）
 
-#### 電路分析的兩條鐵律：KCL 與 KVL
+- **Traditional cameras（傳統相機）**：投影片指出其缺點——拍照後**無即時回饋**、必須謹慎選景避免浪費底片、需攜帶笨重的**底片捲（bulky rolls of film）**、結果只能以**印刷形式（printed form）**取得。
+- **Electronic processing（電子處理）**：數位相機能解決上述問題、並提供傳輸照片、電腦修圖等額外功能的根本原因。
+- **Photodiode（光電二極體）**：相機「前端」把光轉成電的核心元件。投影片說明其運作：光（**Light**）照射到光電二極體，會產生一股與光強度成正比的電流 **I_Diode**，這股電流對電容 **C_L** 充電，電容兩端電壓 **V_out** 就代表接收到的光強度。
+- **Pixel（像素）**：影像感測器上的最小感光單位，每個像素各自包含一顆光電二極體。
+- **Array / Matrix（陣列／矩陣）**：投影片舉例一個 **2500 Columns（欄）× 2500 Rows（列）**的像素陣列，總計 **6.25 million pixels（625 萬像素）**。
+- **Amplifier（放大器）**：陣列中每欄像素訊號在被送往共用輸出線前，先經過放大器放大。
+- **Switch（開關）**：控制每個像素何時把訊號送到共用輸出線的元件。
+- **Time-share（分時共用）**：投影片指出如果每個像素都各自配一整套處理電路，**the overall array occupies a very large area, raising the cost and the power dissipation considerably**（整個陣列會佔用非常大面積，大幅提高成本與功耗），因此必須讓多個像素分時共用訊號處理電路——把同一欄全部像素的輸出接到同一條共用導線，但每次只開啟其中一個像素的開關，其餘保持關閉。
+- **Example 1-2（棋盤例題，第 29 頁）**：對著一個黑白交錯的**西洋棋棋盤（chess board）**拍照，依序讀出同一欄像素的電壓 **V_column**，畫出來就是一個規律的方波（亮格電壓高、暗格電壓低）。
+- **Analog-to-Digital Converter, ADC（類比數位轉換器）**：投影片說明像素電壓是**類比訊號（analog signal）**，可以是範圍內任意連續數值，必須先透過 ADC 數位化才能交給數位電路處理。因為 ADC 電路相對複雜、佔用面積大，投影片討論了三種取捨：每欄各配一顆 ADC（快但貴，2500 顆）、每兩欄共用一顆 ADC（**operate twice as fast**，運作速度要提高一倍）、或全部共用一顆非常高速的 ADC；實務上最佳選擇落在兩個極端之間。
+
+#### 類比與數位：不是兩個世界，是同一條頻譜的兩端（第 32–37 頁）
+
+- **Digital or Analog?**：投影片標題直接點出這頁的核心矛盾。舉例 **x₁(t) operating at 100Mb/s**（脈衝寬 10ns 的方波）與 **x₂(t) operating at 1Gb/s**（脈衝寬 1ns）——後者波形邊緣圓滑，不再是理想方波。
+- **Bit rate（位元率，Mb/s / Gb/s）**：每秒傳輸的位元數，是衡量數位訊號速度的單位。
+- 投影片的核心結論：**"a digital signal operating at very high frequency is very 'analog'"**（運作在極高頻率的數位訊號，其實非常「類比」）——因為在極短時間內，電路本身的物理特性（電容充放電、頻寬限制）來不及讓電壓瞬間跳變。
+- **Analog signal（類比訊號）**：投影片定義的波形 `V(t)`，呈現連續、任意振幅高低變化，沒有固定離散電位準位。
+- **Noise（雜訊）**：投影片對照 `V(t)` 與 `V(t) + Noise`——類比訊號一旦疊加雜訊，雜訊會直接、永久地混入訊號本身，難以事後分辨哪段是原訊號、哪段是雜訊。
+- **Digital signal（數位訊號）**：投影片定義的波形只有兩個電位準位 **ZERO（零）**與 **ONE（一）**，每個位元持續時間標示為 `T`。加上雜訊後，只要雜訊幅度不足以讓接收端誤判準位，訊號代表的 0 或 1 邏輯資訊仍能被正確判讀——這是數位訊號**抗雜訊（noise immunity）**能力的來源。
+- **Analog Processing（類比處理）→ Analog-to-Digital Conversion（類比轉數位轉換）→ Digital Processing and Storage（數位處理與儲存）**：投影片用這三個方塊總結典型系統的訊號處理流程，呼應前面手機與數位相機兩個範例的共同架構。
+- **硬碟訊號範例（第 35 頁）**：投影片舉例從 **Hard Disk（硬碟）**磁頭讀出的訊號，振幅只有約 **3 mV**（約 3 毫伏特），且雜訊很大、形狀不規則，說明類比前端電路常要面對「訊號微弱＋雜訊干擾」的挑戰。
+
+#### 類比電路的符號慣例與頻率響應（第 38–39 頁）
+
+- **Amplifier（放大器）符號**：投影片用三角形符號代表放大器，輸入 **V_in**、輸出 **V_out**。
+- **V_CC**：放大器的正電源供應電壓標示。
+- **Ground（接地）**：電路的參考零電位點，投影片示範放大器電源接線從「完整畫出 V_CC 與接地」到「省略電源軌（**supply rails omitted**）」三種常見畫法，因為讀者通常知道放大器一定需要供電。
+- **Frequency Response（頻率響應）**：投影片提問「**what limits the speed of amplifiers?**」（是什麼限制了放大器的運作速度？），縱軸為 **Amplifier Gain（放大器增益）**，橫軸為 **Frequency（頻率）**。
+- **High-Frequency Roll-off（高頻滾降）**：曲線在超過某個頻率後開始向下彎曲下降的現象——這正是限制放大器（乃至所有類比電路）運作速度上限的物理因素，也是前面「高速數位訊號變得很類比」的根本原因。
+
+#### 數位電路只是「有雜訊容忍度的類比電路」——Digital Circuits（第 40–45 頁）
+
+- 投影片指出 **more than 80% of the microelectronics industry deals with digital circuits**（超過 80% 的微電子產業都與數位電路相關）。
+- **Microprocessors（微處理器）、Memories（記憶體，含 static 靜態與 dynamic 動態）、Digital Signal Processors, DSP（數位訊號處理器）**：投影片列舉的數位電路應用範例。
+- **Combinational circuits（組合邏輯電路）**：由邏輯閘（**gates**）構成，輸出僅取決於當下輸入。
+- **Sequential machines（循序邏輯機器）**：由閂鎖器（**latches**）與正反器（**flipflops**）構成，輸出還與過去狀態（記憶）有關。
+- **NOT Gate（反閘）**：輸入 `A`，輸出 `Y = Ā`（A 取反相）。
+- **NOR Gate（反或閘）**：兩個輸入 `A`、`B`，輸出 `Y = (A+B)‾`（先做 OR 運算再整體取反相）。
+- **Response of a gate to a noisy input（邏輯閘對雜訊輸入的響應）**：投影片用一個雜訊很大的輸入波形接到反閘，提出「輸出會是什麼樣子」的問題——只要雜訊不足以讓輸入跨越邏輯閘的判斷門檻，閘的輸出仍會是乾淨方波，這是數位邏輯閘本身具備「重新整形」（**signal restoration**）能力的具體展示。
+
+**Example 1-4（NOT 閘電路證明，第 42–43 頁）**：投影片用一個具體電路證明邏輯閘可以只靠最基本的類比元件實現——一個負載電阻 **R_L** 接在電源 **V_DD** 與輸出節點 **V_out** 之間，輸出節點同時接一個由輸入 `A` 控制的**開關（switch，S₁）**到地：
+
+- `A` 為高電位時，`S₁` 導通（on），**forcing V_out to zero**（把輸出直接拉到地，V_out 為零）。
+- `A` 為低電位時，`S₁` 保持斷開（off），**drawing no current from R_L**（電阻上沒有電流），根據歐姆定律壓降為零，因此 **V_out = V_DD**（輸出為高）。
+- 結論：**for both logical states at the input, the output assumes the opposite state**（無論輸入是高或低，輸出都呈現相反的邏輯狀態）——證明這個電路實現的正是 NOT（反相）功能。
+
+#### 電路分析的兩條鐵律：Basic Circuit Theorems（第 44–45 頁）
 
 不管電路多複雜，之後所有電路方程式的推導都建立在這兩條定律上：
 
-- **克希荷夫電流定律（KCL）**：流入任一節點的所有電流總和為零。背後的物理意義是電荷守恆——電荷不會在某個點上憑空出現或消失。
-- **克希荷夫電壓定律（KVL）**：沿著任一封閉迴路走一圈，所有元件上的電壓總和為零。背後的物理意義是電位是路徑無關的——繞一圈回到起點，電位變化的總和必然是零。
+- **Kirchoff's Current Law, KCL（克希荷夫電流定律）**：投影片定義 **the sum of all currents flowing into any node is zero**（流入任一**節點（node）**的所有電流總和為零，公式 `ΣI_j = 0`）。背後的物理意義是電荷守恆——電荷不會在某個點上憑空出現或消失。
+- **Kirchoff's Voltage Law, KVL（克希荷夫電壓定律）**：投影片定義 **the sum of all voltages around any loop is zero**（沿著任一封閉**迴路（loop）**走一圈，所有元件上的電壓總和為零，公式 `ΣV_j = 0`）。背後的物理意義是電位是路徑無關的——繞一圈回到起點，電位變化的總和必然是零。
 
-### CH2：半導體物理的定量基礎
+### CH2：半導體物理的定量基礎（逐頁名詞詳解，中英對照）
 
-前面「本週摘要」已經用直覺的方式解釋過矽的共價鍵、摻雜、漂移與擴散、PN 接面三個工作區、逆向崩潰這些概念。這裡把課本投影片裡的**實際公式與數字**補上，讓你知道「文字說的道理」在計算上真正長什麼樣子。
+> 同樣依教授要求，以下依投影片出現順序、每個名詞先給**原文英文**再給完整中文解釋。前面「本週摘要」已經用直覺方式講過矽共價鍵、摻雜、漂移擴散、PN 接面三態、逆向崩潰的道理，這裡把投影片裡每個名詞、每個符號、每道公式與例題數字都攤開來，兩邊互相對照著讀。
 
-#### 本質半導體：n_i 公式與具體數字
+#### 章節架構（第 2 頁 Contents）
 
-半導體、絕緣體、導體的差別在於**能隙（bandgap energy，記為 Eg，單位電子伏特 eV）**——電子要跳出共價鍵、變成自由電子所需要跨過的能量門檻。絕緣體的 Eg 很高（例如鑽石 2.5 eV），導體的 Eg 幾乎是零，半導體則介於中間（矽是 1.12 eV）。
+- **2.1 Semiconductor Materials and Their Properties**（半導體材料與其特性）：**Charge Carriers in Solids**（固體中的電荷載子）、**Modification of Carrier Densities**（載子濃度的調整，即摻雜）、**Transport of Carriers**（載子的傳輸，即漂移與擴散）
+- **2.2 pn Junction**（PN 接面）：**pn Junction in Equilibrium**（平衡態）、**pn Junction Under Reverse Bias**（逆偏）、**pn Junction Under Forward Bias**（順偏）、**I/V Characteristics**（電流電壓特性）
+- **2.3 Reverse Breakdown**（逆向崩潰）：**Zener Breakdown**（齊納崩潰）、**Avalanche Breakdown**（突崩崩潰）
+- **2.4 Chapter Summary**（本章總結）
 
-自由電子的濃度（也就是本質載子濃度，記為 n_i，單位是每立方公分幾顆電子，`electrons/cm³`）與 Eg 之間是指數關係：
+#### 半導體材料基礎：週期表與矽的共價鍵（第 6–8 頁）
 
-```
-n_i = 5.2×10¹⁵ × T^(3/2) × exp(−Eg / (2kT))    [electrons/cm³]
-```
+- **Periodic Table（元素週期表）**：投影片節錄具有 3 到 5 個價電子的元素，分成 **III 族**（**Boron 硼、Aluminum 鋁、Gallium 鎵**）、**IV 族**（**Carbon 碳、Silicon 矽、Germanium 鍺**）、**V 族**（**Phosphorous 磷、Arsenic 砷**），其中 **Si（矽）**是本章最重要的元素。
+- **Valence electrons（價電子）**：原子最外層、參與化學鍵結的電子。投影片指出 **Si has four valence electrons**（矽有四個價電子），因此可與四個鄰近原子形成鍵結。
+- **Covalent bond（共價鍵）**：兩個原子各出一個價電子共用、形成的化學鍵結。矽的四個價電子讓它能跟周圍四個矽原子各形成一個共價鍵，構成穩定的晶格。
+- **Free electron（自由電子）**：投影片說明 **when temperature goes up, electrons in the covalent bond can become free**（溫度升高時，共價鍵中的電子可以變成自由電子）——溫度提供的熱能把電子從鍵結中震出來。
 
-| 符號 | 意義 |
-| --- | --- |
-| T | 絕對溫度（K） |
-| Eg | 能隙能量 |
-| k | 波茲曼常數，1.38×10⁻²³ J/K |
-| exp(…) | 自然指數函數 |
+#### 電子電洞對與本質載子濃度（第 8–12 頁）
 
-代入矽的數字：室溫 300K 下 `n_i ≈ 1.08×10¹⁰ electrons/cm³`；把溫度拉高到 600K，`n_i` 暴增到 `1.54×10¹⁵ electrons/cm³`——溫度只是翻倍，本質載子濃度卻暴增了 5 個數量級，這就是「溫度稍微一動，半導體特性就大幅改變」的量化證據。而矽本身的原子密度高達 `5×10²² atoms/cm³`，室溫下大約每 5 兆顆原子裡才有 1 顆貢獻出自由電子——**純矽在室溫下其實還是個很差的導體**，這正是為什麼一定要摻雜的原因。
+- **Electron-Hole Pair（電子電洞對）**：投影片標題直接點出——**with free electrons breaking off covalent bonds, holes are generated**（自由電子脫離共價鍵後，電洞隨之產生）。
+- **Hole（電洞）**：共價鍵中電子脫離後留下的空位，可以被鄰近電子跳過來填補，效果上等於電洞本身在往反方向移動——投影片用三張時間序列圖（`t=t₁, t=t₂, t=t₃`）展示這個「movement of electron through crystal」（電子在晶體中的移動）如何等效呈現電洞位置的遷移。
+- **Bandgap energy（能隙能量，記為 Eg）**：投影片說明 **Eg determines how much effort is required for an electron to break off a covalent bond and become free**（Eg 決定了讓一個電子脫離共價鍵、變成自由電子所需要的努力／能量）。
+- **electron volt, eV（電子伏特）**：能量單位，投影片定義 **the energy necessary to move one electron across a potential difference of 1V**（讓一個電子通過 1 伏特電位差所需的能量），換算 `1 eV = 1.6×10⁻¹⁹ J`。
+- **Insulators（絕緣體）**：Eg **高**（投影片舉例鑽石 diamond 的 `Eg = 2.5 eV`）。
+- **Conductors（導體）**：Eg **很小**。
+- **Semiconductors（半導體）**：Eg **中等**，典型範圍 **1 eV 到 1.5 eV**（矽是 1.12 eV）。
+- **Intrinsic carrier concentration（本質載子濃度，記為 n_i）**：投影片給出的公式 `n_i = 5.2×10¹⁵ × T^(3/2) × exp(−Eg/2kT)`（單位 electrons/cm³），`T` 是絕對溫度、`k` 是**波茲曼常數（Boltzmann constant）**。投影片指出兩個推論：`Eg ↑ ⟹ n_i ↓`（能隙越大、本質載子濃度越小）；`T → 0, n_i → 0`（溫度趨近絕對零度時本質載子濃度趨近零）。
+- **Example 2-1（第 11 頁）**：計算矽在 **T = 300 K（室溫）**與 **T = 600 K** 下的電子密度——矽的 `Eg = 1.12 eV = 1.792×10⁻¹⁹ J`，代入公式得 `n_i(300K) = 1.08×10¹⁰ electrons/cm³`、`n_i(600K) = 1.54×10¹⁵ electrons/cm³`。矽的原子密度為 `5×10²² atoms/cm³`，投影片結論 **silicon still seems a very poor conductor**（純矽在室溫下仍是很差的導體）——因為每 5×10¹² 個原子中只有大約 1 個電子是自由的。
 
-#### 摻雜之後：質量作用定律與多數／少數載子
+#### 摻雜：Modification of Carrier Densities（第 13–19 頁）
 
-摻雜不會讓本質載子濃度的平方關係失效，這條守恆律寫成公式就是**質量作用定律**：
+- **Intrinsic（本質、純）semiconductor**：未摻雜的純半導體，投影片指出它的問題——**Intrinsic silicon suffering from a very high resistance**（純矽電阻非常高）。
+- **Dopant（摻雜物）／Doping（摻雜）**：投影片說明 **pure Si can be doped with other elements to change its electrical properties**（純矽可摻雜其他元素來改變電性）。
+- **Extrinsic semiconductor（外質半導體）**：摻雜後的半導體，投影片用一句話總結整個摻雜的目的：**Doping: Intrinsic ⇒ Extrinsic（↓ resistance）**（摻雜讓半導體從本質變外質，電阻降低）。
+- **N type（N 型半導體）／Donor（施體）**：投影片舉例 **if Si is doped with P (phosphorous 磷), then it has more electrons, or becomes type N**（矽摻磷後電子變多，成為 N 型）；磷因此被稱為「施體」——因為磷有 5 個價電子，只有 4 個用於共價鍵結，第 5 個電子鬆散附著（**loosely-attached electron**），很容易變成自由電子。
+- **P type（P 型半導體）／Acceptor（受體）**：投影片舉例 **if Si is doped with B (boron 硼), then it has more holes, or becomes type P**（矽摻硼後電洞變多，成為 P 型）；硼因此被稱為「受體」——因為硼只有 3 個價電子，比矽少一個，在共價鍵結構中留下一個空缺（電洞）。
+- **N_D（施體濃度，Donors/cm³）／N_A（受體濃度，Acceptors/cm³）**：投影片摻雜總結圖用來標示每立方公分摻入多少施體或受體原子的符號。
+- **Majority Carrier（多數載子）**：投影片摻雜總結圖標示——N 型半導體裡自由電子是多數載子，P 型半導體裡自由電洞是多數載子。
+- 投影片備註：**either n-type or p-type silicon is electrically neutral**（不論 N 型或 P 型矽，整體上仍是電中性的）——因為摻雜原子本身連同其產生的自由載子，正負電荷總和為零。
 
-```
-n × p = n_i²        （n＝電子濃度，p＝電洞濃度，不論摻雜與否恆成立）
-```
+#### 質量作用定律與多數/少數載子公式（第 17–19 頁）
 
-摻雜之後，N 型與 P 型半導體裡的多數／少數載子濃度可以直接用摻雜濃度估計：
+- **Mass Action Law（質量作用定律）**：投影片給出的核心公式 `n × p = n_i²`——**the product of electron and hole densities is ALWAYS equal to the square of intrinsic electron density regardless of doping levels**（電子與電洞濃度的乘積永遠等於本質載子濃度的平方，不論摻雜程度為何）。
+- **Majority Carriers（多數載子）公式**：N 型中 `n ≈ N_D`（因為 `N_D ≫ n_i`）；P 型中 `p ≈ N_A`（因為 `N_A ≫ n_i`）。
+- **Minority Carriers（少數載子）公式**：N 型中 `p ≈ n_i²/N_D`；P 型中 `n ≈ n_i²/N_A`。
+- **Example 2-3（第 19 頁）**：一片矽均勻摻雜磷原子，摻雜濃度 `N_D = 10¹⁶ electrons/cm³`。因為磷貢獻的自由電子比矽本身熱激發產生的電子（`n_i = 10¹⁰`）多出 10⁶ 倍，可設 `n ≈ N_D = 10¹⁶ electrons/cm³`；代入質量作用定律得 `p ≈ n_i²/N_D = 1.17×10⁴ holes/cm³`。投影片結論：**this example justifies the reason for calling electrons the "majority carriers" and holes the "minority carriers" in an n-type semiconductor**（此例說明了為何電子稱多數載子、電洞稱少數載子——兩者濃度相差 12 個數量級）。
 
-| 半導體類型 | 多數載子 | 少數載子 |
-| --- | --- | --- |
-| N 型（摻磷，濃度 N_D） | n ≈ N_D | p ≈ n_i² / N_D |
-| P 型（摻硼，濃度 N_A） | p ≈ N_A | n ≈ n_i² / N_A |
+#### 漂移：Drift（第一種電荷傳輸機制，第 20–28 頁）
 
-書上一道例題把這個懸殊差距算給你看：一片矽摻磷到 `N_D = 10¹⁶ /cm³`，多數載子（電子）濃度就是 `10¹⁶`；少數載子（電洞）濃度只剩 `p ≈ n_i²/N_D ≈ 1.17×10⁴ /cm³`——兩者相差 12 個數量級。這就是「多數載子」與「少數載子」這兩個名詞的由來：不是誰更重要，是數量真的差了兆兆倍。
+- **Drift（漂移）**：投影片定義——**the process in which charge particles move because of an electric field is called drift**（電荷粒子因電場而移動的過程稱為漂移）。
+- **Mobility（遷移率，記為 μ）**：投影片說明 **charge particles will move at a velocity (v) that is proportional to the electric field, i.e., v = μE, where μ is the mobility**（電荷粒子移動速度與電場成正比，比例常數稱為遷移率）。電洞速度 `v⃗_h = μ_p × E⃗`；電子速度 `v⃗_e = −μ_n × E⃗`（帶負號，因為電子帶負電、移動方向與電場相反）。
+- **Example 2-5（第 21 頁）**：一片長 **1 μm** 的 N 型矽兩端加 **1 V** 電壓，電場 `E = V/L = 10⁶ V/m`，代入矽的電子遷移率 `μ_n = 1350 cm²/(V·s)`，得電子漂移速度 `v_e = 1.35×10⁷ cm/s`；渡越 1 微米所需時間 `Δt = L/v_e = 7.4 ps`（皮秒）。
+- **Drift current（漂移電流，記為 I_p）**：投影片推導——電流等於「若電荷以速度 v m/s 移動，單位時間內通過某截面的電荷量」，公式 `I_p = (v×W×h) × p × q`，`W`、`h` 分別是樣品的寬與高，`q` 是單一電子（或電洞）的電荷量 `1.6×10⁻¹⁹ C`。
+- **Drift current density（漂移電流密度，記為 J）**：通過單位截面積的電流。推導得 `J_p = μ_p × E × p × q`（電洞）、`J_n = μ_n × E × n × q`（電子），**Total drift current density** `J_tot = J_n + J_p = q(μ_n n + μ_p p)E`。
+- **Example 2-6（第 24 頁）**：求電子與電洞漂移電流相等時的濃度關係，推導出對矽而言 `p = 1.68 n_i`、`n = 0.596 n_i`——投影片結論 **since p and n are of the same order as n_i, equal electron and hole drift currents can occur for only a very lightly doped material**（因為 p、n 與 n_i 同數量級，只有非常輕摻雜的材料才會出現電子電洞漂移電流相等）。
+- **Velocity saturation（速度飽和）**：投影片指出先前假設遷移率與電場無關並不精確——**in reality, carrier velocity does not increase linearly with the electric field due to frequent collisions with lattice and eventually saturates at high electric fields, limiting transistor performance**（實際上載子因頻繁與晶格碰撞，速度不會隨電場線性增加，最終在高電場下飽和，限制電晶體效能）。公式：`v(E) = (μ₀/(1+μ₀E/v_sat)) × E`，`μ₀` 是**低電場遷移率（low-field mobility）**、`v_sat` 是**飽和速度**。
+- **Effective mobility, μ(E)（有效遷移率）**：`μ(E) = μ₀/(1+(μ₀/v_sat)×E)`，會隨電場 E 增加而逐漸趨近零。
+- **Example 2-7（第 27 頁）**：長 0.2 μm 元件加 1V，算出 `μ = 0.129μ₀ = 174 cm²/(V·s)`；並求出 `μ` 只比 `μ₀` 低 10% 時對應的最大電壓約 **16.5 mV**——投影片結論 **modern submicron devices experience velocity saturation because they operate at voltages much higher than 16.5 mV**（現代次微米元件因操作電壓遠高於 16.5mV，普遍會遭遇速度飽和）。
 
-#### 漂移電流：從速度到電流密度
+#### 擴散：Diffusion（第二種電荷傳輸機制，第 29–33 頁）
 
-**漂移**是電場推動載子移動。載子的漂移速度 v 與電場 E 成正比，比例常數叫**遷移率（mobility，記為 μ）**：電洞速度 `v = μ_p × E`，電子速度方向與電場相反（因為帶負電）`v = −μ_n × E`。
+- **Diffusion（擴散）**：投影片定義——**charge particles move from a region of high concentration to a region of low concentration**（電荷粒子從高濃度區移向低濃度區），並用**墨水滴入水中（an ink droplet in water）**當生活類比。
+- **Diffusion current（擴散電流）**：投影片說明 **diffusion current is proportional to the gradient of charge (dn/dx) along the direction of current flow**（擴散電流正比於沿電流方向的濃度梯度）。公式 `I_n = A × q × D_n × (dn/dx)`，`D_n` 稱為**擴散係數（diffusion constant）**。總電流密度 `J_n = q×D_n×(dn/dx)`、`J_p = −q×D_p×(dp/dx)`。本質矽的數值：`D_n = 34 cm²/s`、`D_p = 12 cm²/s`。
+- **Example 2-8（第 31 頁）**：電子濃度在 `x=0` 為 `N`、線性降到 `x=L` 為零，求得 `J_n = −qD_n(N/L)`——投影片結論 **the current is constant along the x-axis**（電流沿 x 軸為定值，因為濃度梯度是常數斜率）。
+- **Example 2-9（第 32 頁）**：改為指數濃度梯度 `n(x) = N × exp(−x/L_d)`，`L_d` 為常數，求得 `J_n = (−qD_nN/L_d) × exp(−x/L_d)`——這裡電流密度本身其實會隨 `x` 呈指數衰減（跟線性梯度那題「電流沿 x 軸恆定」不同），讀原始投影片時要留意這個差異。
+- **Einstein's Relation（愛因斯坦關係式）**：投影片指出 **while the underlying physics behind drift and diffusion currents are totally different**（漂移與擴散背後的物理機制完全不同），兩者卻透過這條關係式產生神秘連結：`D_n/μ_n = D_p/μ_p = kT/q`。
+- **Thermal voltage（熱電壓，記為 V_T）**：定義 `V_T ≜ kT/q`，投影片給出室溫數值 **V_T ≈ 26 mV at T = 300 K**——這個數字之後會反覆出現在幾乎所有 PN 接面公式裡。
 
-把「單位時間內通過某個截面的電荷量」寫成公式，就得到**漂移電流密度**（單位面積上的電流，`A/cm²`）：
+#### PN 接面的結構與三個工作區（第 34–35 頁）
 
-```
-J_p = q × μ_p × p × E        （電洞的漂移電流密度）
-J_n = q × μ_n × n × E        （電子的漂移電流密度）
-J_total = q × (μ_n×n + μ_p×p) × E
-```
+- **PN Junction（Diode）（PN 接面／二極體）**：投影片定義——**when N-type and P-type dopants are introduced side-by-side in a semiconductor, a PN junction or a diode is formed**（當 N 型與 P 型摻雜並排引入同一半導體時，就形成 PN 接面，也就是二極體）。
+- **Cathode（陰極）／Anode（陽極）**：二極體電路符號的兩端，符號是一個三角形指向一條直線，箭頭方向由陽極指向陰極。
+- **Diode's Three Operation Regions（二極體三種工作區）**：投影片列出 **equilibrium（平衡態）**、**reverse bias（逆偏）**、**forward bias（順偏）**，並各自對應 **Depletion Region（空乏區）／Built-in Potential（內建電位）**（平衡態）、**Junction Capacitance（接面電容）**（逆偏）、**I/V Characteristics（電流電壓特性）**（順偏）。
 
-其中 q 是單一電子（或電洞）帶的電量，`q = 1.6×10⁻¹⁹ C`（庫倫）。
+#### 平衡態：pn Junction in Equilibrium（第 36–43 頁）
 
-書上一道例題算了具體速度：一片長 1 微米（μm）的矽兩端加 1 伏特電壓，換算出電場 `E = 10⁶ V/m`，代入矽的電子遷移率 `μ_n = 1350 cm²/(V·s)`，得到電子漂移速度高達 `1.35×10⁷ cm/s`——渡越這 1 微米只需要 **7.4 皮秒（ps）**，這個尺度感受一下：比一次眨眼快了一千億倍以上。
-
-但這個「速度正比於電場」的線性關係只在中低電場成立。電場拉得夠高之後，載子頻繁跟晶格碰撞，速度會**飽和**在一個上限值 `v_sat`，不再隨電場繼續上升：
-
-```
-v(E) = μ₀ × E / (1 + μ₀×E / v_sat)
-```
-
-書上例題算出：一個長度只有 0.2 微米的次微米元件，只要兩端電壓超過 **16.5 毫伏特**，遷移率就已經比理想值掉了 10%——現代積體電路的操作電壓遠高於這個門檻，所以「速度飽和」不是理論上的邊緣情況，而是次微米電晶體必然要面對的真實限制。
-
-#### 擴散電流與愛因斯坦關係式
-
-**擴散**是濃度差推動載子移動，跟電場無關，就像墨水滴進水裡自己散開。擴散電流正比於**濃度的梯度**（斜率，`dn/dx`）：
-
-```
-I_n = A × q × D_n × (dn/dx)
-```
-
-`D_n`、`D_p` 分別是電子、電洞的**擴散係數**（本質矽的數值：`D_n = 34 cm²/s`，`D_p = 12 cm²/s`）。如果濃度分布是一條直線（斜率固定），擴散電流沿線處處相等；如果濃度分布是彎的（例如指數衰減），電流大小就會隨位置改變。
-
-漂移靠電場、擴散靠濃度差，兩件事物理上毫不相干，但**愛因斯坦關係式**指出兩者的比例常數之間有固定關係：
-
-```
-D_n / μ_n = D_p / μ_p = kT / q ≜ V_T（熱電壓）
-```
-
-`V_T`（熱電壓，thermal voltage）在室溫（300K）下約等於 **26 毫伏特**——這個數字會反覆出現在後面幾乎所有 PN 接面公式裡，值得先記住。
-
-#### PN 接面的內建電位是怎麼推出來的
-
-「本週摘要」已經解釋過：PN 接面在平衡態時，擴散電流與漂移電流剛好抵消，接面上因此存在一個**內建電位（built-in potential，記為 V₀）**。把這個平衡條件用代數展開（漂移電流密度=擴散電流密度、電場等於電位的負梯度、再對整個空乏區積分），可以推出：
+- 投影片說明平衡態的成因：**because each side of the junction contains an excess of holes or electrons compared to the other side, there exists a large concentration gradient. Therefore, a diffusion current flows across the junction from each side**（接面兩側各有過剩的電洞或電子，存在很大濃度梯度，因此擴散電流從兩側流過接面）。
+- **n_n（n 側電子濃度，Majority）／p_n（n 側電洞濃度，Minority）／p_p（p 側電洞濃度，Majority）／n_p（p 側電子濃度，Minority）**：投影片定義的四個濃度符號，描述接面兩側多數與少數載子的濃度分布。
+- **Depletion Region（空乏區）**：投影片說明——**as free electrons and holes diffuse across the junction, a region of fixed ions is left behind**（自由電子與電洞擴散通過接面後，留下一個由固定離子構成的區域）。投影片用三個時間點展示形成過程：`t=0`（n 區滿是 **Free Electrons**、p 區滿是 **Free Holes**，尚未擴散）→ `t=t₁`（接面附近出現 **Positive Donor Ions（正電施體離子）**與 **Negative Acceptor Ions（負電受體離子）**）→ `t=∞`（離子區域擴大穩定，成為完整的空乏區）。
+- **Built-in field（內建電場）／Drift current（漂移電流，此處由空乏區內建電場驅動）**：投影片說明——**the fixed ions in depletion region create an electric field that results in a drift current**（空乏區內的固定離子產生電場，進而導致漂移電流），電場在接面中心（`x=0`）最強、往兩端空乏區邊界（`−b` 與 `a`）遞減為零。
+- **Equilibrium（平衡）條件**：投影片給出 `I_drift,p + I_diff,p = 0`、`I_drift,n + I_diff,n = 0`——**the drift currents resulting from the electric field exactly cancel the diffusion currents due to the gradients**（電場產生的漂移電流恰好抵消濃度梯度產生的擴散電流），這正是「平衡」兩個字的意義：不是沒有電流在流動，而是兩股大電流打平。
+- **Built-in potential（內建電位，記為 V₀）**：因為接面上存在電場，所以存在一個內建電位。投影片推導：從平衡條件出發，代入電場與電位的關係（`E = −dV/dx`），對空乏區積分後得到 `V(x₁) − V(x₂) = (D_p/μ_p) × ln(p_p/p_n)`；再代入愛因斯坦關係式 `D_p/μ_p = kT/q`，並代入 `p_p = N_A`、`p_n = n_i²/N_D`，最終得到：
 
 ```
 V₀ = V_T × ln(N_A × N_D / n_i²)
 ```
 
-代入一組例題數字：`N_A = 2×10¹⁶ cm⁻³`、`N_D = 4×10¹⁶ cm⁻³`，算出 `V₀ ≈ 768 mV`。而且因為公式裡是**對數**關係，即使摻雜濃度直接增加 10 倍，`V₀` 也只增加 `V_T × ln(10) ≈ 60 mV`——內建電位對摻雜程度是個「弱函數」，不會因為摻雜差個幾倍就大幅跳動。
+- **Example 2-13（第 42 頁）**：`N_A = 2×10¹⁶ cm⁻³`、`N_D = 4×10¹⁶ cm⁻³`，代入得 **V₀ = 768 mV**。
+- **Example 2-14（第 43 頁）**：投影片提問 **V₀ is a weak function of the doping levels**（V₀ 是摻雜濃度的弱函數），若 `N_A` 或 `N_D` 增加一個數量級（10 倍），推導得 `ΔV₀ = V_T × ln(10) = 60 mV`——即使摻雜濃度增加 10 倍，內建電位也只增加約 60mV。
 
-#### 逆偏：電壓控制電容公式與實際應用
+#### 逆偏：pn Junction Under Reverse Bias（第 44–50 頁）
 
-逆偏會讓空乏區變寬——空乏區本質上就是一層不導電的介電層，兩側各自堆著固定電荷離子，這正是一顆電容器的結構。空乏區寬度隨逆偏電壓 `V_R` 改變，電容值也跟著變：
+- **Reverse Bias（逆偏）**：投影片定義——**when the N-type region of a diode is connected to a higher potential than the P-type region, the diode is under reverse bias, which results in wider depletion region and larger built-in electric field**（N 型區接到比 P 型區更高電位時為逆偏，會使空乏區變寬、內建電場變大）。
+- **Voltage-Dependent Capacitor（電壓相依電容）**：投影片說明——**the PN junction can be viewed as a capacitor. By varying V_R, the depletion width changes, changing its capacitance value**（PN 接面可視為電容器；改變逆偏電壓 `V_R` 會改變空乏區寬度，進而改變電容值）。
+- **Junction capacitance（接面電容，記為 C_j）**：公式 `C_j = C_j0/√(1−V_R/V₀)`，`C_j0` 是零偏壓（`V_R=0`）時的電容，另有推導公式 `C_j0 = √[(ε_si×q/2) × (N_A×N_D)/(N_A+N_D) × (1/V₀)]`，`ε_si` 是矽的**介電常數（dielectric constant）**。
+- **Example 2-15（第 47 頁）**：`N_A = 2×10¹⁶ cm⁻³`、`N_D = 9×10¹⁵ cm⁻³`，算得 `V₀ = 730 mV`、`C_j0 = 0.265 fF/μm²`；`V_R = −1V` 時 `C_j = 0.172 fF/μm²`。
+- **Voltage-Controlled Oscillator, VCO（電壓控制振盪器，Example 2-16，第 48–49 頁）**：投影片舉的實際應用——手機內建 **2-GHz oscillator**，頻率由 **LC tank（LC 振盪槽電路）**的共振頻率決定，公式 `f_res = (1/2π) × 1/√(LC)`。若電容用 Example 2-15 的 PN 接面實現（接面面積 2000 μm²），逆偏電壓從 0 變化到 **−2V** 時，算得共振頻率從 2GHz 變化到 **2.78GHz**。
+- **Robotics Application: Infrared Transceivers（機器人應用：紅外線收發器，第 50 頁）**：投影片舉例——機器人用紅外線收發器偵測障礙物：**Transmitter**（發射端）的 **IR LED** 發射紅外線光照向 **Obstacle**（障礙物），**Receiver**（接收端）的 **IR Sensor**（本質是一顆 PN 接面光感測器）接收反射光；光照射到接面時會產生電子電洞對，在外加電場作用下電子與電洞分別被拉往 n 區與 p 區，形成光電流，把間歇性的紅外線光脈衝轉換成對應的電流脈衝。
 
-```
-C_j = C_j0 / √(1 − V_R/V₀)
-```
+#### 順偏：pn Junction Under Forward Bias（第 51–58 頁）
 
-`C_j0` 是零偏壓時的電容值。書上例題把這個公式接到一個實際應用：手機裡一顆 2GHz 的振盪器，靠 LC 振盪槽電路的共振頻率 `f = 1/(2π√(LC))` 決定頻率，如果這顆電容就是一顆逆偏 PN 接面，讓逆偏電壓從 0 變化到 −2V，振盪頻率會從 2GHz 一路變化到 **2.78GHz**——這就是手機頻率合成器「調台」的實際原理：不是換電容，是**用電壓連續調整同一顆電容的值**。
+- **Forward Bias（順偏）**：投影片定義——**when the N-type region of a diode is at a lower potential than the P-type region, the diode is in forward bias. The depletion width is shortened and the built-in electric field decreased**（N 型區電位低於 P 型區時為順偏，空乏區縮短、內建電場減小）。
+- **Minority carriers increase（少數載子濃度增加）**：投影片說明——**under forward bias, minority carriers in each region increase due to the lowering of built-in field/potential**（順偏使內建電場/電位降低，導致兩側少數載子濃度都增加），擴散電流因此增加以供應這些少數載子。
+- **推導**：從 `p_p/p_n = e^(V₀/V_T)` 出發，平衡態 `p_n,e = p_p,e × e^(−V₀/V_T)`；順偏態 `p_n,f = p_p,f × e^(−(V₀−V_F)/V_T)`；因為 `p_p,e ≈ p_p,f ≈ N_A`（外加順偏電壓幾乎不改變多數載子濃度），可得 `p_n,f = e^(V_F/V_T) × p_n,e`——順偏態的少數載子濃度是平衡態的 `e^(V_F/V_T)` 倍，遠大於平衡態值。
+- **Reverse saturation current（逆向飽和電流，記為 I_S）**：把少數載子增加量整理成電流公式後得到：`I_S = A×q×n_i²×(D_n/(N_A×L_n) + D_p/(N_D×L_p))`，`A` 是元件截面積，`L_n`、`L_p` 是電子與電洞的**擴散長度（diffusion lengths）**——少數載子在復合消失前平均能擴散的距離。
+- **Example 2-17（第 55 頁）**：`A = 100 μm²`、`L_n = L_p = 20 μm`，代入 Example 2-13 的摻雜濃度，算得 `I_S ≈ 1.77×10⁻¹⁷ A`——投影片結論 **since I_S is extremely small, the exponential term must be very large values so as to yield a useful amount (e.g., 1 mA)**（因為 I_S 極小，指數項必須非常大才能產生像 1mA 這樣有用的電流）。
+- **Diffusion length（擴散長度）與電流分布**：投影片進一步說明，少數載子濃度分布不應是常數（否則沒有濃度梯度、沒有擴散電流），而是離開空乏區邊界後逐漸衰減，衰減的範圍就對應 `L_p`、`L_n`；順偏下多數載子擴散電流與少數載子擴散電流的總和沿 `x` 軸維持定值：`J = J_n(x) + J_p(x) = constant`。
 
-#### 順偏：二極體方程式是怎麼來的
+#### 二極體方程式：I/V Characteristics（第 59–66 頁）
 
-順偏會降低內建電位、縮窄空乏區，讓兩側的**少數載子**濃度大幅增加——增加的倍數是 `exp(V_F/V_T)`。這股增加的少數載子要靠擴散電流補充，把這個關係整理成電流公式，就是電子學裡最重要的公式之一，**二極體方程式**：
+- **Diode Equation（二極體方程式）**：投影片給出電子學裡最重要的公式之一：
 
 ```
 I_D = I_S × (exp(V_D/V_T) − 1)
 ```
 
-`I_S`（**飽和電流，reverse saturation current**）是一個由摻雜濃度、擴散係數、元件面積決定的極小常數，量級通常在 `10⁻¹⁷ ~ 10⁻¹⁶ A`。正因為 `I_S` 小到這種程度，指數項必須非常巨大才能產生像 1 毫安培這樣「有用」的電流——書上例題具體算出：同一顆二極體兩端電壓從 300mV 加到 800mV，電流會從皮安培（`10⁻¹² A`）等級暴增到微安培（`10⁻⁶ A`）等級，跨了 6 個數量級。
+當 `V_D` 為正且遠大於 `V_T` 時可近似為 `I_D ≈ I_S × exp(V_D/V_T)`。投影片說明——**the current and voltage relationship of a PN junction is exponential in forward bias region, and relatively constant in reverse bias region**（PN 接面的電流電壓關係在順偏區呈指數關係，逆偏區則相對維持定值，接近 `−I_S`）。
 
-這裡有一條電子學裡最常被引用的經驗法則：**二極體電流每增加為 10 倍，兩端電壓大約只需要增加 60 毫伏特**（推導：`ΔV = V_T × ln(10) ≈ 60mV`，跟前面內建電位那條「弱函數」用的是同一個數學關係）。
+- **Example 2-18: Parallel PN Junctions（並聯 PN 接面，第 60–61 頁）**：投影片說明兩個相同接面並聯，等效於一個截面積加倍（`2A`）的單一元件——**equivalence of parallel devices to a larger device**。代入 `I_S = 1.77×10⁻¹⁷ A`，算得 `V_D=300mV` 時總電流 `I_D,tot ≈ 3.63 pA`，`V_D=800mV` 時 `I_D,tot ≈ 816 μA`——電壓只增加 500mV，電流卻跨了約 8 個數量級。
+- **Example 2-19（第 62 頁，60mV 經驗法則）**：投影片提問——電流要增加為原來的 10 倍，`V_D` 需要改變多少？推導 `V_D = V_T × ln(I_D/I_S)`，設 `I_1 = 10×I_D`，得 `ΔV_D = V_T × ln(10) ≈ 59.9 mV`——這是電子學裡非常重要的經驗法則：**二極體電流每增加 10 倍，兩端電壓大約只需增加 60 mV**。
+- **Constant-Voltage Diode Model（定電壓二極體模型，第 63 頁）**：投影片定義——**diode operates as an open circuit if V_D < V_D,on and a constant voltage source of V_D,on if V_D tends to exceed V_D,on**（若 `V_D` 小於開啟電壓 `V_D,on`，二極體視為開路；電壓有超過 `V_D,on` 的趨勢，則視為固定電壓源）。
+- **Example 2-21: Nonlinear vs. Linear Diode Model（非線性 vs. 線性二極體模型，第 64–66 頁）**：一個電壓源 `V_X` 接電阻 `R₁=1kΩ` 再接二極體 `D₁` 的簡單電路，分別用**指數模型**（`I_S=10⁻¹⁶ A`，須用**疊代法（iterative method）**求解，因為 `V_D = V_T×ln(I_X/I_S)` 與 `I_X=(V_X−V_D)/R₁` 互相牽扯）與**定電壓模型**（`V_D,on=800mV`，直接解線性方程式）計算 `V_X=3V` 與 `V_X=1V` 時的電流：指數模型算出 `2.201mA`／`0.258mA`，定電壓模型算出 `2.2mA`／`0.2mA`——兩者結果幾乎一樣準。投影片結論：**this example shows the simplicity provided by a constant-voltage model over an exponential model**（定電壓模型比指數模型簡單得多，指數模型需要疊代法，定電壓模型只需線性方程式）。
 
-#### 定電壓模型：為什麼工程師不會真的去解指數方程式
+#### 生醫應用：Bioengineering Application（第 67 頁）
 
-二極體方程式雖然精確，拿來解電路卻很痛苦——因為電壓跟電流互相牽扯（電壓決定電流，電流又透過電阻壓降影響電壓），必須用**疊代法**一輪一輪猜才能收斂到答案。書上例題實際示範了這個疊代過程，對一顆接了 1kΩ 電阻的二極體算了兩三輪才收斂到穩定值。
+- **Cancer Detection（癌症偵測）**：投影片舉例——**Laser diode（雷射二極體）**產生波長 `λ₁` 的光照射 **Tissue（組織）**，若組織含有癌細胞並含有 **Fluorophore（螢光團）**，會產生新波長 `λ₂`；光線通過 **Optical Filter（光學濾波器）**濾除 `λ₁`、只留下 `λ₂`，再交給 **Photodiode（光電二極體）**轉換成電流 `I_D`，送入 **Amplifier（放大器）**放大輸出——核心元件同樣只是「光電二極體＋放大器」，說明同一套 PN 接面物理換個包裝就能從手機用到醫療設備上。
 
-工程上的解法是改用**定電壓模型**：電壓低於某個開啟電壓 `V_D,on`（矽二極體通常取 0.7~0.8V）時，二極體視為斷路；電壓一旦達到 `V_D,on`，就視為一顆固定電壓源。犧牲一點精度，換來整個電路方程式從非線性變成線性，不用疊代、直接解代數方程式就好。書上例題比較了兩種模型算出的電流：指數模型算出 `2.201mA`，定電壓模型算出 `2.2mA`——兩者幾乎一樣準，但定電壓模型算起來快得多。這正是「本週摘要」結尾說的「用夠好的近似換掉可怕精確解」的具體案例。
+#### 逆向崩潰：Reverse Breakdown（第 68–69 頁）
 
-#### 逆向崩潰的兩種機制：怎麼分辨齊納還是突崩
-
-「本週摘要」已經介紹過崩潰的概念，這裡補上兩種機制在物理圖像上的差異：**齊納崩潰**是空乏區裡的電場強到直接把電子從共價鍵裡「扯斷」（一種量子穿隧效應，不需要碰撞就能直接破壞鍵結）；**突崩崩潰**則是載子被電場加速到極高速度後，去撞擊晶格裡的原子，撞出更多電子電洞對，這些新載子又被加速去撞出更多載子，像雪崩一樣連鎖倍增。兩種機制殊途同歸，結果都是逆偏電壓超過某個崩潰電壓 `V_BD` 後，電流突然暴增。
-
-> 補充應用：投影片還舉了兩個把 PN 接面物理直接用在真實產品的例子——**紅外線收發器**（機器人避障：LED 發射紅外線光脈衝、光電二極體接收反射光轉成電流脈衝，判斷前方有沒有障礙物）與**癌症偵測**（雷射二極體發出波長 λ₁ 的光照射組織，若組織含癌細胞與螢光團會產生新波長 λ₂，經光學濾波器濾除 λ₁ 後，交給光電二極體與放大器讀出）。兩者的核心元件都只是「光電二極體 + 放大器」，說明同一套 PN 接面物理，換個包裝就能從手機用到醫療設備上。
+- **Breakdown（崩潰）**：投影片定義——**when a large reverse bias voltage is applied, breakdown occurs and an enormous current flows through the diode**（施加很大的逆偏電壓時會發生崩潰，並有巨大電流流過二極體）。
+- **Breakdown Voltage（崩潰電壓，記為 V_BD）**：逆偏電壓超過這個特定負值後，電流會突然急遽暴增。
+- **Zener Breakdown（齊納崩潰）**：投影片定義——**a result of the large electric field inside the depletion region that breaks electrons or holes off their covalent bonds**（空乏區內部的強大電場直接把電子或電洞從共價鍵中扯斷）——這是一種量子穿隧式的直接破壞，不需要碰撞。
+- **Avalanche Breakdown（突崩崩潰）**：投影片定義——**a result of electrons or holes colliding with the fixed ions inside the depletion region**（電子或電洞在空乏區內與固定離子碰撞所造成）——載子被電場加速到高速後撞擊晶格原子，撞出更多電子電洞對，這些新載子又被加速去撞出更多載子，像雪崩一樣連鎖倍增。
 
 ## 實作心得
 
