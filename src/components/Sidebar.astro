@@ -2,7 +2,7 @@
 import Icon from "./Icon.astro";
 
 export interface Props {
-  current: "dashboard" | "notes" | "series" | "tags" | "about";
+  current: "dashboard" | "notes" | "series" | "tags" | "about" | "references";
   markersPending: number;
 }
 const { current, markersPending } = Astro.props;
