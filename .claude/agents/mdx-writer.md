@@ -71,7 +71,7 @@ model: haiku
 2. 用 `paragraphAnchor` 找到對應段落，定位到該段落結尾（下一個空行之前）
 3. 檢查該檔案是否已有相同 `id` 的 `@ai-reference` 標記：
    - 沒有 → 在段落結尾插入新標記 + `<PdfRefChip>`（見下方格式）
-   - 有且 `status: suggested` → 原地更新 `page` / `excerpt`，`status` 維持 `suggested`
+   - 有且 `status: suggested` → 原地更新標記註解的 `page` / `excerpt`，**同時**更新下方 `<PdfRefChip>` JSX 的 `page` / `excerpt` props 為相同值；`status` 兩邊都維持 `suggested`。標記註解與 `<PdfRefChip>` 是同一份狀態的兩種呈現，絕不能只改一邊——只改註解會讓讀者看到的 chip 仍顯示舊頁碼、點擊後開錯頁。
    - 有且 `status: confirmed` 或 `status: locked` → **不要修改，跳過這筆**，在回報中註明「已 confirmed/locked，略過」
 4. 若檔案還沒 import 過 `PdfRefChip`，在檔案第一個 `@ai-reference` 標記前面補上：
 
@@ -91,10 +91,12 @@ model: haiku
    status: suggested
    excerpt: <excerpt>
    */}
-   <PdfRefChip file="<pdfFile>" page={<page>} status="suggested" excerpt="<excerpt>" client:visible />
+   <PdfRefChip file="<pdfFile>" page={<page>} status="suggested" excerpt={<JSON.stringify(excerpt)>} client:visible />
    ```
 
-   `excerpt` 帶雙引號時要跳脫成 `\"`；如果 excerpt 裡本來就有雙引號，一併處理。
+   - `excerpt` 作為 JSX 屬性值時一律用 `JSON.stringify(excerpt)` 帶入（`excerpt={"..."}`），不要用字面雙引號字串。反斜線跳脫（`\"`）在 JSX/MDX 屬性裡**不是合法語法**，會讓 MDX 編譯失敗；`JSON.stringify` 才能安全處理引號、換行等字元，與本檔案 `@ai-visualize` 段落的 `prompt={JSON.stringify(prompt)}` 寫法一致。
+   - excerpt 文字本身**不可包含字面 `*/`**——那會提前結束外層 `{/* @ai-reference ... */}` 註解、把後面內容變成可見文字。寫入前若發現 excerpt 含 `*/`，先移除或替換掉再寫入標記與 `<PdfRefChip>`。
+   - `status` 一旦變動（例如作者手動把註解裡的 `suggested` 改成 `confirmed`），`<PdfRefChip status="...">` 的值必須在**同一次編輯**中改成相同值——標記註解與 `<PdfRefChip>` 是同一份狀態的兩種呈現，兩者的 `page` / `excerpt` / `status` 永遠要一致，不可只改其中一個。
 
 ## 輸出格式（PDF 段落關聯）
 
