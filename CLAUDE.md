@@ -53,6 +53,13 @@ status: pending | generated | locked | failed
 */}
 ```
 
+處理流程由作者在 Claude Code 對話中觸發，依序由四個 Subagent 協作：
+
+1. **note-scanner**（haiku, 唯讀）— 掃描 MDX 找出標記區塊、列出孤兒元件
+2. **visualize-planner**（sonnet, 唯讀）— 依 `content-visualize-skill` 決策樹規劃方案
+3. **component-generator**（sonnet, 可寫檔）— 寫元件到 `src/components/generated/<id>.tsx`，跑 `tsc --noEmit` + `astro build` 驗證，失敗自動修最多 3 次
+4. **mdx-writer**（haiku, Edit only）— 在標記區塊下方寫入 `import` 與 JSX、更新 `status`
+
 第二種標記，`@ai-reference`，標出筆記段落與 PDF 原始講義頁碼的關聯：
 
 ```mdx
@@ -63,16 +70,12 @@ page: 12
 status: suggested | confirmed | locked
 excerpt: 如圖 3-2 所示的偏壓電路
 */}
+<PdfRefChip file="_references/電子學實作系列/第一週/Ch 1 - Introduction to Microelectronics.pdf" page={12} status="suggested" excerpt="如圖 3-2 所示的偏壓電路" />
 ```
 
+標記註解與 `<PdfRefChip>` 是同一份狀態的兩種呈現——`page` / `status` 一律同步；作者手動修改註解的 `status`（例如 `suggested` → `confirmed`）時，下方 `<PdfRefChip status="...">` 也要在同一次編輯改成相同值，兩者不可不同步。
+
 流程由 `note-scanner`（擴充）→ `pdf-reference-planner`（新增）→ `mdx-writer`（擴充）三個 subagent 協作：先掃描既有標記、比對段落與 PDF 頁面文字產出建議、寫回標記。`status` 沒有 `pending`/`failed`——AI 通篇比對後主動插入建議（`suggested`），信心不足的段落不插入標記；作者手動把 `status` 改成 `confirmed` 代表頁碼正確，`locked` 永不覆寫，重跑規劃時 `confirmed`/`locked` 一律跳過。完整設計見 docs/superpowers/specs/2026-09-12-pdf-reference-viewer-design.md。
-
-處理流程由作者在 Claude Code 對話中觸發，依序由四個 Subagent 協作：
-
-1. **note-scanner**（haiku, 唯讀）— 掃描 MDX 找出標記區塊、列出孤兒元件
-2. **visualize-planner**（sonnet, 唯讀）— 依 `content-visualize-skill` 決策樹規劃方案
-3. **component-generator**（sonnet, 可寫檔）— 寫元件到 `src/components/generated/<id>.tsx`，跑 `tsc --noEmit` + `astro build` 驗證，失敗自動修最多 3 次
-4. **mdx-writer**（haiku, Edit only）— 在標記區塊下方寫入 `import` 與 JSX、更新 `status`
 
 ### 處理規則
 
