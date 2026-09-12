@@ -1,0 +1,18 @@
+---
+// src/pages/references/index.astro
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import PageHead from "@/components/PageHead.astro";
+import ReferencesLibrary from "@/components/islands/ReferencesLibrary.tsx";
+import { listReferenceTree, type ReferenceFolder } from "@/lib/references";
+
+const tree = await listReferenceTree();
+
+function countPdfs(folder: ReferenceFolder): number {
+  return folder.pdfs.length + folder.folders.reduce((acc, f) => acc + countPdfs(f), 0);
+}
+const totalPdfs = countPdfs(tree);
+---
+<BaseLayout title="原始講義" current="references" description="瀏覽課程原始 PDF 講義與手冊">
+  <PageHead eyebrow="REFERENCES" title="原始講義" sub={`共 ${totalPdfs} 份 PDF`} />
+  <ReferencesLibrary client:load tree={tree} />
+</BaseLayout>
