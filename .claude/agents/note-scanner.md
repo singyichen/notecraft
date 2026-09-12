@@ -30,7 +30,19 @@ model: haiku
    */}
    ```
 
-3. 解析每個區塊的四個欄位（id、type、prompt、status）
+   同時掃描第二種標記，`@ai-reference`（段落與 PDF 頁碼的關聯，見 docs/superpowers/specs/2026-09-12-pdf-reference-viewer-design.md）：
+
+   ```mdx
+   {/* @ai-reference
+   id: <kebab-case-id>
+   file: <相對於 notesDir 的 PDF 路徑，含 _references/ 前綴>
+   page: <頁碼>
+   status: suggested | confirmed | locked
+   excerpt: <選填，PDF 該頁的文字片段>
+   */}
+   ```
+
+3. 解析每個 `@ai-visualize` 區塊的四個欄位（id、type、prompt、status），以及每個 `@ai-reference` 區塊的欄位（id、file、page、status、excerpt）
 4. **偵測標記是否被 code fence 包住**：若 `{/* @ai-visualize` 上一行是 ```` ``` ```` 或 ```` ```mdx ````、且 `*/}` 下一行是對應的關閉 ``` `，代表該標記被圍欄包住。這類標記若狀態為 `generated` 卻仍留著圍欄，prompt 會原樣外露給讀者——請在回報中以 `fenced: yes` 標註，提醒主 Agent 寫回時要拆圍欄。
 5. 若同一檔案內有 `id` 重複，標註為錯誤但繼續處理
 6. 若有區塊格式錯亂（例如缺欄位），標註為錯誤但繼續處理
@@ -57,6 +69,13 @@ model: haiku
 | component file | id |
 | --- | --- |
 | src/components/generated/old-flow.tsx | old-flow |
+
+## PDF References
+| file | id | pdf file | page | status |
+| --- | --- | --- | --- | --- |
+| notes/電子學實作系列第1週....mdx | bjt-bias-1 | _references/電子學實作系列/第一週/Ch 1 - Introduction to Microelectronics.pdf | 12 | suggested |
+
+（沒有 @ai-reference 標記就不用列這節。）
 
 ## Locked / Failed / Errors
 （若有則列出，並附上錯誤訊息或檔案路徑）

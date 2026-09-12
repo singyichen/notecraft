@@ -4,12 +4,13 @@ import "katex/dist/katex.min.css";
 import Sidebar from "@/components/Sidebar.astro";
 import Icon from "@/components/Icon.astro";
 import ToastHost from "@/components/islands/ToastHost.tsx";
+import PdfViewerDrawer from "@/components/islands/PdfViewerDrawer.tsx";
 import { getAllNotes, parseMarkers } from "@/lib/notes";
 
 export interface Props {
   title: string;
   description?: string;
-  current: "dashboard" | "notes" | "series" | "tags" | "about";
+  current: "dashboard" | "notes" | "series" | "tags" | "about" | "references";
 }
 const { title, description, current } = Astro.props;
 
@@ -63,6 +64,7 @@ const markersPending = notes
         </div>
       </div>
       <ToastHost client:idle />
+      <PdfViewerDrawer client:only="react" />
     </div>
     <style is:global>
       .nc-page-wrap {

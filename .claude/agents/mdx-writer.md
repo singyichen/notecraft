@@ -21,6 +21,17 @@ model: haiku
 - `clientDirective`：`client:visible` 或省略
 - `newStatus`：`generated` 或 `failed`
 
+## 輸入（第二種：PDF 段落關聯）
+
+主 Agent 也可能給你一份「PDF Reference 待寫回清單」（來自 pdf-reference-planner），每筆包含：
+
+- `file`：MDX 檔路徑
+- `paragraphAnchor`：段落開頭的前 20 字左右，用來定位插入點（找該段落結尾）
+- `id`：標記區塊的 id
+- `pdfFile`：相對於 notesDir 的 PDF 路徑（含 `_references/` 前綴）
+- `page`：建議頁碼
+- `excerpt`：該頁文字片段
+
 ## 工作流程
 
 對每一筆，執行：
@@ -51,6 +62,49 @@ model: haiku
      - `prompt` 以 `JSON.stringify(prompt)` 的結果作為 JSX 屬性值（`prompt={"...\n..."}`），安全處理換行 / 引號 / 反引號；外框會以此提供「複製提示詞」按鈕。
 5. 若標記區塊上下方已有同名的 import，請 in-place 更新而非重複插入
 6. 若 `newStatus` 為 `failed`，則只更新 status，不插入 import / JSX
+
+## 工作流程（PDF 段落關聯）
+
+對每一筆「PDF Reference 待寫回清單」項目，執行：
+
+1. Read 該 MDX 檔
+2. 用 `paragraphAnchor` 找到對應段落，定位到該段落結尾（下一個空行之前）
+3. 檢查該檔案是否已有相同 `id` 的 `@ai-reference` 標記：
+   - 沒有 → 在段落結尾插入新標記 + `<PdfRefChip>`（見下方格式）
+   - 有且 `status: suggested` → 原地更新標記註解的 `page` / `excerpt`，**同時**更新下方 `<PdfRefChip>` JSX 的 `page` / `excerpt` props 為相同值；`status` 兩邊都維持 `suggested`。標記註解與 `<PdfRefChip>` 是同一份狀態的兩種呈現，絕不能只改一邊——只改註解會讓讀者看到的 chip 仍顯示舊頁碼、點擊後開錯頁。
+   - 有且 `status: confirmed` 或 `status: locked` → **不要修改，跳過這筆**，在回報中註明「已 confirmed/locked，略過」
+4. 若檔案還沒 import 過 `PdfRefChip`，在檔案第一個 `@ai-reference` 標記前面補上：
+
+   ```mdx
+   import PdfRefChip from '@/components/islands/PdfRefChip.tsx'
+   ```
+
+   （每個檔案只需一次；已存在就不要重複插入）
+
+5. 插入格式：
+
+   ```mdx
+   {/* @ai-reference
+   id: <id>
+   file: <pdfFile>
+   page: <page>
+   status: suggested
+   excerpt: <excerpt>
+   */}
+   <PdfRefChip file="<pdfFile>" page={<page>} status="suggested" excerpt={<JSON.stringify(excerpt)>} client:visible />
+   ```
+
+   - `excerpt` 作為 JSX 屬性值時一律用 `JSON.stringify(excerpt)` 帶入（`excerpt={"..."}`），不要用字面雙引號字串。反斜線跳脫（`\"`）在 JSX/MDX 屬性裡**不是合法語法**，會讓 MDX 編譯失敗；`JSON.stringify` 才能安全處理引號、換行等字元，與本檔案 `@ai-visualize` 段落的 `prompt={JSON.stringify(prompt)}` 寫法一致。
+   - excerpt 文字本身**不可包含字面 `*/`**——那會提前結束外層 `{/* @ai-reference ... */}` 註解、把後面內容變成可見文字。寫入前若發現 excerpt 含 `*/`，先移除或替換掉再寫入標記與 `<PdfRefChip>`。
+   - `status` 一旦變動（例如作者手動把註解裡的 `suggested` 改成 `confirmed`），`<PdfRefChip status="...">` 的值必須在**同一次編輯**中改成相同值——標記註解與 `<PdfRefChip>` 是同一份狀態的兩種呈現，兩者的 `page` / `excerpt` / `status` 永遠要一致，不可只改其中一個。
+
+## 輸出格式（PDF 段落關聯）
+
+```
+## PDF Reference writeback
+- notes/電子學實作系列第1週....mdx :: bjt-bias-1 → 新增標記，對應 p.12
+- notes/電子學實作系列第1週....mdx :: existing-id → 已 confirmed，略過
+```
 
 ### 範例：marker 原本在 code fence 內，generated 後拆 fence
 
@@ -97,3 +151,4 @@ MDX 註解 `{/* ... */}` 不會渲染，讀者看不到 prompt；note-scanner �
 - 不要動到不屬於本次清單的標記區塊
 - 不要創建新檔；只能編輯既有 MDX
 - 不要嘗試判斷元件好不好用 —— 你只是寫回器
+- 不要覆寫 `status: confirmed` 或 `status: locked` 的 `@ai-reference` 標記
