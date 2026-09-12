@@ -193,15 +193,13 @@ import EcWeek1PnJunction from '@/components/generated/ec-week1-pn-junction'
 - 2.2 PN 接面二極體：平衡／逆偏／順偏三區、空乏區、內建電位、電壓相依電容、指數 IV 特性、定電壓模型
 - 2.3 逆向崩潰：齊納崩潰與突崩崩潰
 
-## 教材精讀：CH1 與 CH2 逐節詳解
+## CH1：微電子學的誕生與基本語言（逐頁名詞詳解，中英對照）
 
 以下依教科書投影片逐節整理，補上前面「教材預習重點」未展開的歷史脈絡、公式與例題數字，寫給完全沒有電子學／物理背景的讀者——每個符號、每個名詞第一次出現都會解釋。
 
-### CH1：微電子學的誕生與基本語言（逐頁名詞詳解，中英對照）
-
 > 教授要求投影片裡每一個名詞都要能講出詳細解釋。以下依投影片出現順序，每個名詞先給**原文英文**，再給完整中文解釋——不只是翻譯，還原投影片的上下文與工程意義，確保沒有名詞被跳過。
 
-#### 章節架構（第 2–3 頁 Contents）
+### 章節架構（第 2–3 頁 Contents）
 
 投影片開頭列出本章的完整架構，之後每個小節都會逐一詳解，這裡先對照英文原文記住整體地圖：
 
@@ -210,7 +208,7 @@ import EcWeek1PnJunction from '@/components/generated/ec-week1-pn-junction'
 - **1.3 Basic Concepts**（基本概念）：**Analog and Digital Signals**（類比與數位訊號）、**Analog Circuits**（類比電路）、**Digital Circuits**（數位電路）、**Basic Circuit Theorems**（基本電路定理，即後面的 KCL、KVL）
 - **1.4 Chapter Summary**（本章總結）
 
-#### 真空管時代：又大又短命（第 4–7 頁）
+### 真空管時代：又大又短命（第 4–7 頁）
 
 - **Electronics（電子學）**：投影片用來跟 Microelectronics 對比的起點詞——泛指一切利用電子元件處理訊號、傳遞能量的技術領域，涵蓋真空管時代到今天的積體電路。
 - **Microelectronics（微電子學）**：課堂上特別強調的差異是**小型化（miniaturization）與積體化（integration）**。實驗桌上的離散二極體或 BJT 看得見、摸得到，IC 裡對應的元件則被縮小並大量整合在同一塊晶片上；尺度雖不同，背後使用的是同一套元件物理與電路觀念。
@@ -235,7 +233,7 @@ import EcWeek1PnJunction from '@/components/generated/ec-week1-pn-junction'
 
 *IC、電晶體、真空管的體積對比——真空管的「又大」是相對於後兩者而言。*
 
-#### 1947：電晶體發明，微電子學的「大爆炸」（第 8–9 頁）
+### 1947：電晶體發明，微電子學的「大爆炸」（第 8–9 頁）
 
 - **Point-contact transistor（點接觸式電晶體）**：1947 年發明的第一顆電晶體，投影片明確標示這是 **"The 'Big Bang' of Microelectronics"**（微電子學的「大爆炸」）。結構上用兩根非常靠近的金屬觸點，接觸在一小片 **Germanium（鍺）**——一種半導體材料——的表面上，中間隔著一道 **Thin Razor Cut Between E and C**（用剃刀片在射極與集極之間切出的細縫）。
 - **Emitter（射極，E）／Collector（集極，C）／Base（基極，B）**：電晶體的三個接腳名稱，這顆最原始的點接觸式電晶體上已經看得到這三個接點的雛型；Emitter、Collector 靠 **Gold Foil（金箔）**接觸固定在 **Plastic Wedge（塑膠楔形物）**上，Base 則直接接在鍺材料本體。
@@ -250,7 +248,7 @@ import EcWeek1PnJunction from '@/components/generated/ec-week1-pn-junction'
 
 *電晶體的三位發明者，1948 年攝於貝爾實驗室。*
 
-#### 積體電路的專利大戰：Kilby vs. Noyce（第 10–13 頁）
+### 積體電路的專利大戰：Kilby vs. Noyce（第 10–13 頁）
 
 真空管換成電晶體只解決了體積問題的一半——如果要用電晶體搭建複雜電路，還是得把成千上萬顆電晶體一根根用導線接起來。**Integrated Circuit（IC，積體電路）**要解決的正是「怎麼把很多元件跟導線都做在同一塊晶片上」，這裡因此爆發一場專利大戰：
 
@@ -301,7 +299,7 @@ import EcWeek1PnJunction from '@/components/generated/ec-week1-pn-junction'
 
 *把兩張專利的剖面圖疊在一起看：重點是接點怎麼被引出來，不是晶片內部有沒有分層——這正是上面「常見誤解」要澄清的地方。*
 
-#### 一顆晶片背後的產業鏈（第 14–17 頁）
+### 一顆晶片背後的產業鏈（第 14–17 頁）
 
 投影片用六個步驟濃縮現代 IC 的製造流程（**Steps for Making ICs**）：
 
@@ -328,7 +326,7 @@ import EcWeek1PnJunction from '@/components/generated/ec-week1-pn-junction'
 
 > **老師強調的產業對照**：若把上表看成一條接力賽，晶圓代工的代表是 **TSMC**，封裝與測試的代表則有 **ASE（日月光）**。公司名稱的重點不是背名單，而是看懂同一顆 IC 從晶圓製造到封測，會跨過不同專業分工。
 
-##### 為什麼「只做代工」能成為一種商業模式
+#### 為什麼「只做代工」能成為一種商業模式
 
 早期常見的是 **IDM（Integrated Device Manufacturer，整合元件製造商）**：像課堂舉的 Intel、TI，由同一家公司設計產品、投資晶圓廠、生產，再封裝與銷售。這種模式的困難在於，製程世代越先進，設備與廠房的固定投資越高；若自家產品的訂單不能填滿產線，昂貴設備閒置，每顆晶片分攤到的成本就會上升。可用一個簡化式建立直覺：
 
@@ -410,7 +408,7 @@ import EcWeek1IcEcosystem from '@/components/generated/ec-week1-ic-ecosystem'
 
 *Fairchild 晶片的裸晶顯微照片，可與前面 Kilby／Noyce 的專利圖對照，看實際量產出來的晶片長什麼樣子。*
 
-#### 例題：沒有 IC 的世界長什麼樣（第 18–20 頁，Example 1-1）
+### 例題：沒有 IC 的世界長什麼樣（第 18–20 頁，Example 1-1）
 
 投影片用一道算式具體量化 IC 有多革命性：假設一顆現代**微處理器（microprocessor）**內含約 **100 million transistors**（1 億顆電晶體），若不整合成 IC、改用每顆體積 **3mm×3mm×3mm** 的 **discrete transistors**（分立式電晶體，即各自獨立封裝、非整合在單一晶片上的電晶體）搭建：
 
@@ -420,7 +418,7 @@ import EcWeek1IcEcosystem from '@/components/generated/ec-week1-ic-ecosystem'
 
 投影片接著留了一題 **Exercise（練習題）**：若每顆電晶體耗散功率為 **10μW**，這個系統總共會消耗多少功率（10μW × 10⁸ = 1000W）？這道算式的意義不在數字本身，而在於：把上億顆電晶體壓縮進指甲大小的晶片，是現代電腦處理器能存在的唯一原因。
 
-#### 打開手機這個「黑盒子」：Examples of Electronic Systems — Cellular Telephone（第 21–24 頁）
+### 打開手機這個「黑盒子」：Examples of Electronic Systems — Cellular Telephone（第 21–24 頁）
 
 - **Cellular telephone（行動電話）**：投影片指出 **developed in the 1980s and rapidly became popular in the 1990s**（1980 年代開發、1990 年代迅速普及），並列出世代與核心技術對照：**1G(AMPS)**（Advanced Mobile Phone System，類比式行動電話系統）、**2G(GSM)**（Global System for Mobile Communications）、**3G(CDMA)**（Code Division Multiple Access，分碼多重存取）、**4G(OFDM)**（Orthogonal Frequency Division Multiplexing，正交分頻多工）、**5G(Massive MIMO)**（大規模多輸入多輸出天線技術）。
 - **Black box（黑盒子）**：投影片強調 **microelectronics exist in black boxes that process the received and transmitted voice signals**（微電子電路就存在於這些黑盒子內，負責處理收發的語音訊號）——這句話點出後面幾頁要打開「?」方塊，看裡面到底是什麼電路。
@@ -467,7 +465,7 @@ import EcWeek1IcEcosystem from '@/components/generated/ec-week1-ic-ecosystem'
 - **Decibel, dB（分貝）**：工程上表示放大倍率的常用單位，投影片定義 **voltage gain of an amplifier is defined as v_out/v_in and sometimes expressed in decibels (dB) as 20log(v_out/v_in)**（放大器的電壓增益定義為輸出電壓除以輸入電壓，有時以 `20 × log₁₀(v_out/v_in)` 表示為分貝）。
 - 代入本題：`A_V = 20 × log₁₀(50mV / 20μV) ≈ 68dB`——說明手機接收機需要極高的放大倍率，才能把微弱的天線訊號變成聽得到的聲音。投影片接著留一題練習：若增益改為 **50 dB**，輸出擺幅會是多少？
 
-#### 數位相機：把光變成一串數字——Digital Camera（第 25–31 頁）
+### 數位相機：把光變成一串數字——Digital Camera（第 25–31 頁）
 
 - **Traditional cameras（傳統相機）**：投影片指出其缺點——拍照後**無即時回饋**、必須謹慎選景避免浪費底片、需攜帶笨重的**底片捲（bulky rolls of film）**、結果只能以**印刷形式（printed form）**取得。
 - **Electronic processing（電子處理）**：數位相機能解決上述問題、並提供傳輸照片、電腦修圖等額外功能的根本原因。
@@ -492,7 +490,7 @@ import EcWeek1IcEcosystem from '@/components/generated/ec-week1-ic-ecosystem'
 
 *兩欄共用一顆 ADC 的具體接法——這就是「每欄各配一顆 ADC」與「全部共用一顆」之間的折衷做法。*
 
-#### 類比與數位：不是兩個世界，是同一條頻譜的兩端（第 32–37 頁）
+### 類比與數位：不是兩個世界，是同一條頻譜的兩端（第 32–37 頁）
 
 - **Digital or Analog?**：投影片標題直接點出這頁的核心矛盾。舉例 **x₁(t) operating at 100Mb/s**（脈衝寬 10ns 的方波）與 **x₂(t) operating at 1Gb/s**（脈衝寬 1ns）——後者波形邊緣圓滑，不再是理想方波。
 
@@ -525,7 +523,7 @@ import EcWeek1IcEcosystem from '@/components/generated/ec-week1-ic-ecosystem'
 
 *硬碟磁頭讀出的訊號只有約 3mV、形狀雜亂——這是類比前端電路必須面對的真實訊號樣貌。*
 
-#### 類比電路的符號慣例與頻率響應（第 38–39 頁）
+### 類比電路的符號慣例與頻率響應（第 38–39 頁）
 
 - **Amplifier（放大器）符號**：投影片用三角形符號代表放大器，輸入 **V_in**、輸出 **V_out**。
 - **V_CC**：放大器的正電源供應電壓標示。
@@ -541,7 +539,7 @@ import EcWeek1IcEcosystem from '@/components/generated/ec-week1-ic-ecosystem'
 
 *放大器增益的高頻滾降：頻率超過某個界限後，增益開始下降。*
 
-#### 數位電路只是「有雜訊容忍度的類比電路」——Digital Circuits（第 40–45 頁）
+### 數位電路只是「有雜訊容忍度的類比電路」——Digital Circuits（第 40–45 頁）
 
 - 投影片指出 **more than 80% of the microelectronics industry deals with digital circuits**（超過 80% 的微電子產業都與數位電路相關）。
 - **Microprocessors（微處理器）、Memories（記憶體，含 static 靜態與 dynamic 動態）、Digital Signal Processors, DSP（數位訊號處理器）**：投影片列舉的數位電路應用範例。
@@ -570,7 +568,7 @@ import EcWeek1IcEcosystem from '@/components/generated/ec-week1-ic-ecosystem'
 - `A` 為低電位時，`S₁` 保持斷開（off），**drawing no current from R_L**（電阻上沒有電流），根據歐姆定律壓降為零，因此 **V_out = V_DD**（輸出為高）。
 - 結論：**for both logical states at the input, the output assumes the opposite state**（無論輸入是高或低，輸出都呈現相反的邏輯狀態）——證明這個電路實現的正是 NOT（反相）功能。
 
-#### 電路分析的兩條鐵律：Basic Circuit Theorems（第 44–45 頁）
+### 電路分析的兩條鐵律：Basic Circuit Theorems（第 44–45 頁）
 
 不管電路多複雜，之後所有電路方程式的推導都建立在這兩條定律上：
 
@@ -586,11 +584,11 @@ import EcWeek1IcEcosystem from '@/components/generated/ec-week1-ic-ecosystem'
 
 *KVL：沿著封閉迴路走一圈，所有元件上的電壓加總起來也是零。*
 
-### CH2：半導體物理的定量基礎（逐頁名詞詳解，中英對照）
+## CH2：半導體物理的定量基礎（逐頁名詞詳解，中英對照）
 
 > 同樣依教授要求，以下依投影片出現順序、每個名詞先給**原文英文**再給完整中文解釋。前面「本週摘要」已經用直覺方式講過矽共價鍵、摻雜、漂移擴散、PN 接面三態、逆向崩潰的道理，這裡把投影片裡每個名詞、每個符號、每道公式與例題數字都攤開來，兩邊互相對照著讀。
 
-#### 章節架構（第 2 頁 Contents）
+### 章節架構（第 2 頁 Contents）
 
 - **2.1 Semiconductor Materials and Their Properties**（半導體材料與其特性）：**Charge Carriers in Solids**（固體中的電荷載子）、**Modification of Carrier Densities**（載子濃度的調整，即摻雜）、**Transport of Carriers**（載子的傳輸，即漂移與擴散）
 - **2.2 pn Junction**（PN 接面）：**pn Junction in Equilibrium**（平衡態）、**pn Junction Under Reverse Bias**（逆偏）、**pn Junction Under Forward Bias**（順偏）、**I/V Characteristics**（電流電壓特性）
@@ -601,7 +599,7 @@ import EcWeek1IcEcosystem from '@/components/generated/ec-week1-ic-ecosystem'
 
 *要看懂 PN 接面的 I-V 特性，得先懂固體中的載子行為、怎麼調整載子濃度、以及載子怎麼移動——這三段正好對應本章的路線。*
 
-#### 半導體材料基礎：週期表與矽的共價鍵（第 6–8 頁）
+### 半導體材料基礎：週期表與矽的共價鍵（第 6–8 頁）
 
 - **Periodic Table（元素週期表）**：投影片節錄具有 3 到 5 個價電子的元素，分成 **III 族**（**Boron 硼、Aluminum 鋁、Gallium 鎵**）、**IV 族**（**Carbon 碳、Silicon 矽、Germanium 鍺**）、**V 族**（**Phosphorous 磷、Arsenic 砷**），其中 **Si（矽）**是本章最重要的元素。
 
@@ -617,7 +615,7 @@ import EcWeek1IcEcosystem from '@/components/generated/ec-week1-ic-ecosystem'
 *矽的共價鍵結構：從單一原子、到晶格、到自由電子脫離鍵結的過程。*
 - **Free electron（自由電子）**：投影片說明 **when temperature goes up, electrons in the covalent bond can become free**（溫度升高時，共價鍵中的電子可以變成自由電子）——溫度提供的熱能把電子從鍵結中震出來。
 
-#### 電子電洞對與本質載子濃度（第 8–12 頁）
+### 電子電洞對與本質載子濃度（第 8–12 頁）
 
 - **Electron-Hole Pair（電子電洞對）**：投影片標題直接點出——**with free electrons breaking off covalent bonds, holes are generated**（自由電子脫離共價鍵後，電洞隨之產生）。
 - **Hole（電洞）**：共價鍵中電子脫離後留下的空位，可以被鄰近電子跳過來填補，效果上等於電洞本身在往反方向移動——投影片用三張時間序列圖（`t=t₁, t=t₂, t=t₃`）展示這個「movement of electron through crystal」（電子在晶體中的移動）如何等效呈現電洞位置的遷移。
@@ -633,7 +631,7 @@ import EcWeek1IcEcosystem from '@/components/generated/ec-week1-ic-ecosystem'
 - **Intrinsic carrier concentration（本質載子濃度，記為 n_i）**：投影片給出的公式 `n_i = 5.2×10¹⁵ × T^(3/2) × exp(−Eg/2kT)`（單位 electrons/cm³），`T` 是絕對溫度、`k` 是**波茲曼常數（Boltzmann constant）**。投影片指出兩個推論：`Eg ↑ ⟹ n_i ↓`（能隙越大、本質載子濃度越小）；`T → 0, n_i → 0`（溫度趨近絕對零度時本質載子濃度趨近零）。
 - **Example 2-1（第 11 頁）**：計算矽在 **T = 300 K（室溫）**與 **T = 600 K** 下的電子密度——矽的 `Eg = 1.12 eV = 1.792×10⁻¹⁹ J`，代入公式得 `n_i(300K) = 1.08×10¹⁰ electrons/cm³`、`n_i(600K) = 1.54×10¹⁵ electrons/cm³`。矽的原子密度為 `5×10²² atoms/cm³`，投影片結論 **silicon still seems a very poor conductor**（純矽在室溫下仍是很差的導體）——因為每 5×10¹² 個原子中只有大約 1 個電子是自由的。
 
-#### 摻雜：Modification of Carrier Densities（第 13–19 頁）
+### 摻雜：Modification of Carrier Densities（第 13–19 頁）
 
 - **Intrinsic（本質、純）semiconductor**：未摻雜的純半導體，投影片指出它的問題——**Intrinsic silicon suffering from a very high resistance**（純矽電阻非常高）。
 - **Dopant（摻雜物）／Doping（摻雜）**：投影片說明 **pure Si can be doped with other elements to change its electrical properties**（純矽可摻雜其他元素來改變電性）。
@@ -648,14 +646,14 @@ import EcWeek1IcEcosystem from '@/components/generated/ec-week1-ic-ecosystem'
 
 *摻雜總結：本質半導體摻入五價的磷變 N 型、摻入三價的硼變 P 型，各自的多數載子一目了然。*
 
-#### 質量作用定律與多數/少數載子公式（第 17–19 頁）
+### 質量作用定律與多數/少數載子公式（第 17–19 頁）
 
 - **Mass Action Law（質量作用定律）**：投影片給出的核心公式 `n × p = n_i²`——**the product of electron and hole densities is ALWAYS equal to the square of intrinsic electron density regardless of doping levels**（電子與電洞濃度的乘積永遠等於本質載子濃度的平方，不論摻雜程度為何）。
 - **Majority Carriers（多數載子）公式**：N 型中 `n ≈ N_D`（因為 `N_D ≫ n_i`）；P 型中 `p ≈ N_A`（因為 `N_A ≫ n_i`）。
 - **Minority Carriers（少數載子）公式**：N 型中 `p ≈ n_i²/N_D`；P 型中 `n ≈ n_i²/N_A`。
 - **Example 2-3（第 19 頁）**：一片矽均勻摻雜磷原子，摻雜濃度 `N_D = 10¹⁶ electrons/cm³`。因為磷貢獻的自由電子比矽本身熱激發產生的電子（`n_i = 10¹⁰`）多出 10⁶ 倍，可設 `n ≈ N_D = 10¹⁶ electrons/cm³`；代入質量作用定律得 `p ≈ n_i²/N_D = 1.17×10⁴ holes/cm³`。投影片結論：**this example justifies the reason for calling electrons the "majority carriers" and holes the "minority carriers" in an n-type semiconductor**（此例說明了為何電子稱多數載子、電洞稱少數載子——兩者濃度相差 12 個數量級）。
 
-#### 漂移：Drift（第一種電荷傳輸機制，第 20–28 頁）
+### 漂移：Drift（第一種電荷傳輸機制，第 20–28 頁）
 
 - **Drift（漂移）**：投影片定義——**the process in which charge particles move because of an electric field is called drift**（電荷粒子因電場而移動的過程稱為漂移）。
 
@@ -675,7 +673,7 @@ import EcWeek1IcEcosystem from '@/components/generated/ec-week1-ic-ecosystem'
 - **Effective mobility, μ(E)（有效遷移率）**：`μ(E) = μ₀/(1+(μ₀/v_sat)×E)`，會隨電場 E 增加而逐漸趨近零。
 - **Example 2-7（第 27 頁）**：長 0.2 μm 元件加 1V，算出 `μ = 0.129μ₀ = 174 cm²/(V·s)`；並求出 `μ` 只比 `μ₀` 低 10% 時對應的最大電壓約 **16.5 mV**——投影片結論 **modern submicron devices experience velocity saturation because they operate at voltages much higher than 16.5 mV**（現代次微米元件因操作電壓遠高於 16.5mV，普遍會遭遇速度飽和）。
 
-#### 擴散：Diffusion（第二種電荷傳輸機制，第 29–33 頁）
+### 擴散：Diffusion（第二種電荷傳輸機制，第 29–33 頁）
 
 - **Diffusion（擴散）**：投影片定義——**charge particles move from a region of high concentration to a region of low concentration**（電荷粒子從高濃度區移向低濃度區），並用**墨水滴入水中（an ink droplet in water）**當生活類比。
 
@@ -702,7 +700,7 @@ import EcWeek1IcEcosystem from '@/components/generated/ec-week1-ic-ecosystem'
 - **Einstein's Relation（愛因斯坦關係式）**：投影片指出 **while the underlying physics behind drift and diffusion currents are totally different**（漂移與擴散背後的物理機制完全不同），兩者卻透過這條關係式產生神秘連結：`D_n/μ_n = D_p/μ_p = kT/q`。
 - **Thermal voltage（熱電壓，記為 V_T）**：定義 `V_T ≜ kT/q`，投影片給出室溫數值 **V_T ≈ 26 mV at T = 300 K**——這個數字之後會反覆出現在幾乎所有 PN 接面公式裡。
 
-#### PN 接面的結構與三個工作區（第 34–35 頁）
+### PN 接面的結構與三個工作區（第 34–35 頁）
 
 - **PN Junction（Diode）（PN 接面／二極體）**：投影片定義——**when N-type and P-type dopants are introduced side-by-side in a semiconductor, a PN junction or a diode is formed**（當 N 型與 P 型摻雜並排引入同一半導體時，就形成 PN 接面，也就是二極體）。
 - **Cathode（陰極）／Anode（陽極）**：二極體電路符號的兩端，符號是一個三角形指向一條直線，箭頭方向由陽極指向陰極。
@@ -716,7 +714,7 @@ import EcWeek1IcEcosystem from '@/components/generated/ec-week1-ic-ecosystem'
 
 *二極體三個工作區的路線圖：平衡態先建立空乏區與內建電位的概念，逆偏、順偏各自延伸出接面電容與 I-V 特性。*
 
-#### 平衡態：pn Junction in Equilibrium（第 36–43 頁）
+### 平衡態：pn Junction in Equilibrium（第 36–43 頁）
 
 - 投影片說明平衡態的成因：**because each side of the junction contains an excess of holes or electrons compared to the other side, there exists a large concentration gradient. Therefore, a diffusion current flows across the junction from each side**（接面兩側各有過剩的電洞或電子，存在很大濃度梯度，因此擴散電流從兩側流過接面）。
 - **n_n（n 側電子濃度，Majority）／p_n（n 側電洞濃度，Minority）／p_p（p 側電洞濃度，Majority）／n_p（p 側電子濃度，Minority）**：投影片定義的四個濃度符號，描述接面兩側多數與少數載子的濃度分布。
@@ -748,7 +746,7 @@ V₀ = V_T × ln(N_A × N_D / n_i²)
 - **Example 2-13（第 42 頁）**：`N_A = 2×10¹⁶ cm⁻³`、`N_D = 4×10¹⁶ cm⁻³`，代入得 **V₀ = 768 mV**。
 - **Example 2-14（第 43 頁）**：投影片提問 **V₀ is a weak function of the doping levels**（V₀ 是摻雜濃度的弱函數），若 `N_A` 或 `N_D` 增加一個數量級（10 倍），推導得 `ΔV₀ = V_T × ln(10) = 60 mV`——即使摻雜濃度增加 10 倍，內建電位也只增加約 60mV。
 
-#### 逆偏：pn Junction Under Reverse Bias（第 44–50 頁）
+### 逆偏：pn Junction Under Reverse Bias（第 44–50 頁）
 
 - **Reverse Bias（逆偏）**：投影片定義——**when the N-type region of a diode is connected to a higher potential than the P-type region, the diode is under reverse bias, which results in wider depletion region and larger built-in electric field**（N 型區接到比 P 型區更高電位時為逆偏，會使空乏區變寬、內建電場變大）。
 
@@ -778,7 +776,7 @@ V₀ = V_T × ln(N_A × N_D / n_i²)
 
 *紅外線收發器：核心就是一顆 PN 接面光感測器，把光脈衝轉換成電流脈衝來判斷前方有沒有障礙物。*
 
-#### 順偏：pn Junction Under Forward Bias（第 51–58 頁）
+### 順偏：pn Junction Under Forward Bias（第 51–58 頁）
 
 - **Forward Bias（順偏）**：投影片定義——**when the N-type region of a diode is at a lower potential than the P-type region, the diode is in forward bias. The depletion width is shortened and the built-in electric field decreased**（N 型區電位低於 P 型區時為順偏，空乏區縮短、內建電場減小）。
 
@@ -803,7 +801,7 @@ V₀ = V_T × ln(N_A × N_D / n_i²)
 
 *順偏下 J_n 與 J_p 沿 x 軸此消彼長，但兩者相加的總電流密度維持定值。*
 
-#### 二極體方程式：I/V Characteristics（第 59–66 頁）
+### 二極體方程式：I/V Characteristics（第 59–66 頁）
 
 - **Diode Equation（二極體方程式）**：投影片給出電子學裡最重要的公式之一：
 
@@ -836,7 +834,7 @@ I_D = I_S × (exp(V_D/V_T) − 1)
 
 一個電壓源 `V_X` 接電阻 `R₁=1kΩ` 再接二極體 `D₁` 的簡單電路，分別用**指數模型**（`I_S=10⁻¹⁶ A`，須用**疊代法（iterative method）**求解，因為 `V_D = V_T×ln(I_X/I_S)` 與 `I_X=(V_X−V_D)/R₁` 互相牽扯）與**定電壓模型**（`V_D,on=800mV`，直接解線性方程式）計算 `V_X=3V` 與 `V_X=1V` 時的電流：指數模型算出 `2.201mA`／`0.258mA`，定電壓模型算出 `2.2mA`／`0.2mA`——兩者結果幾乎一樣準。投影片結論：**this example shows the simplicity provided by a constant-voltage model over an exponential model**（定電壓模型比指數模型簡單得多，指數模型需要疊代法，定電壓模型只需線性方程式）。
 
-#### 生醫應用：Bioengineering Application（第 67 頁）
+### 生醫應用：Bioengineering Application（第 67 頁）
 
 - **Cancer Detection（癌症偵測）**：投影片舉例——**Laser diode（雷射二極體）**產生波長 `λ₁` 的光照射 **Tissue（組織）**，若組織含有癌細胞並含有 **Fluorophore（螢光團）**，會產生新波長 `λ₂`；光線通過 **Optical Filter（光學濾波器）**濾除 `λ₁`、只留下 `λ₂`，再交給 **Photodiode（光電二極體）**轉換成電流 `I_D`，送入 **Amplifier（放大器）**放大輸出——核心元件同樣只是「光電二極體＋放大器」，說明同一套 PN 接面物理換個包裝就能從手機用到醫療設備上。
 
@@ -844,7 +842,7 @@ I_D = I_S × (exp(V_D/V_T) − 1)
 
 *癌症偵測應用：核心元件同樣是光電二極體＋放大器，跟手機接收機用的是同一套 PN 接面物理。*
 
-#### 逆向崩潰：Reverse Breakdown（第 68–69 頁）
+### 逆向崩潰：Reverse Breakdown（第 68–69 頁）
 
 - **Breakdown（崩潰）**：投影片定義——**when a large reverse bias voltage is applied, breakdown occurs and an enormous current flows through the diode**（施加很大的逆偏電壓時會發生崩潰，並有巨大電流流過二極體）。
 - **Breakdown Voltage（崩潰電壓，記為 V_BD）**：逆偏電壓超過這個特定負值後，電流會突然急遽暴增。
