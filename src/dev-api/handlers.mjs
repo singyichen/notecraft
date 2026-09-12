@@ -2,8 +2,21 @@
 // 都能直接 import。若後續要新增 API 或動路徑安全規則，只改這一份。
 
 import { promises as fs } from "node:fs";
+import { createRequire } from "node:module";
 import path from "node:path";
 import matter from "gray-matter";
+
+// pdfjs-dist 的 cmaps/ 與 standard_fonts/ 是解析 PDF（CJK CMap、非嵌入標準字型）必要的靜態
+// 資料，跟 notesRoot 無關，是這個 app 自己（不是使用者 notesDir）的一部分，所以不用
+// notesRoot 範圍的安全檢查，只走固定路徑。用 require.resolve 找實際安裝位置——本檔會隨
+// npm 套件（notecraftapp）一起發布，pdfjs-dist 有沒有被 hoist 到更上層 node_modules
+// 無法預先假設，require.resolve 沿用 Node 標準模組解析（逐層往上找 node_modules）。
+const require = createRequire(import.meta.url);
+const PDFJS_DIR = path.dirname(require.resolve("pdfjs-dist/package.json"));
+const PDFJS_STATIC_DIRS = {
+  "/pdfjs-cmaps/": path.join(PDFJS_DIR, "cmaps"),
+  "/pdfjs-standard-fonts/": path.join(PDFJS_DIR, "standard_fonts"),
+};
 
 // ── 路徑決策 & 安全檢查 ────────────────────────────────────────────────
 
@@ -188,6 +201,41 @@ async function handleNotesAsset(notesRoot, urlPath, res) {
     res.statusCode = 400;
     return res.end(e.message);
   }
+  try {
+    const stat = await fs.stat(abs);
+    if (!stat.isFile()) {
+      res.statusCode = 404;
+      return res.end("not a file");
+    }
+    const ext = path.extname(abs).toLowerCase();
+    const type = MIME_MAP[ext] ?? "application/octet-stream";
+    const data = await fs.readFile(abs);
+    res.setHeader("content-type", type);
+    res.setHeader("cache-control", "no-cache");
+    return res.end(data);
+  } catch {
+    res.statusCode = 404;
+    return res.end("not found");
+  }
+}
+
+// pdfjs-dist 的 cmaps/ 與 standard_fonts/ 靜態目錄——與 handleNotesAsset 不同，這裡的
+// baseDir 是固定的 app 內部路徑（不是使用者提供的 notesRoot），所以不需要 assertSafePath
+// 的 symlink / notesRoot 範圍檢查，只需擋掉基本的路徑逃逸（`..`）。
+async function handlePdfjsStaticAsset(baseDir, prefix, urlPath, res) {
+  const raw = urlPath.slice(prefix.length).split("?")[0].split("#")[0];
+  let relPath;
+  try {
+    relPath = decodeURIComponent(raw);
+  } catch {
+    res.statusCode = 400;
+    return res.end("bad url");
+  }
+  if (relPath.includes("\0") || relPath.split(/[\\/]/).includes("..")) {
+    res.statusCode = 400;
+    return res.end("bad url");
+  }
+  const abs = path.join(baseDir, relPath);
   try {
     const stat = await fs.stat(abs);
     if (!stat.isFile()) {
@@ -441,6 +489,25 @@ export function localhostOnly(req) {
 
 export async function tryHandleAssetsRequest(cwd, notesRoot, req, res) {
   const url = req.url || "";
+
+  for (const [prefix, baseDir] of Object.entries(PDFJS_STATIC_DIRS)) {
+    if (!url.startsWith(prefix)) continue;
+    // 跟其餘 dev-only route 一致，統一只綁 localhost（雖然這裡的內容不是 notesRoot 範圍的
+    // 使用者資料，沒有真正的洩漏風險，維持一致性比較不容易漏想）。
+    if (!localhostOnly(req)) {
+      res.statusCode = 403;
+      res.end("localhost only");
+      return true;
+    }
+    try {
+      await handlePdfjsStaticAsset(baseDir, prefix, url, res);
+    } catch (e) {
+      res.statusCode = 500;
+      res.end(e && e.message ? e.message : "internal error");
+    }
+    return true;
+  }
+
   if (!url.startsWith("/notes-assets/")) return false;
   if (!localhostOnly(req)) {
     res.statusCode = 403;
