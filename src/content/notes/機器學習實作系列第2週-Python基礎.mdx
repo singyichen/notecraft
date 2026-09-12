@@ -1,9 +1,9 @@
 ---
 title: "機器學習實作系列：第 2 週 - PLA 與 Python 基礎"
-description: "感知器學習演算法（PLA）的模型、訓練規則與收斂定理，以及 Python 基礎：變數與型別、容器、索引切片、控制流程、函式與環境管理。"
+description: "感知器學習演算法（PLA）的模型、線性代數基礎、訓練規則、收斂定理與多元分類延伸；Python 基礎涵蓋型別、容器、控制流程、檔案與例外處理、物件導向；並完整實作一個物件導向的 Perceptron 類別，訓練在 Iris 資料集上。"
 tags: ["機器學習實作系列"]
 createdAt: "2026-09-14"
-updatedAt: "2026-09-14"
+updatedAt: "2026-09-13"
 ---
 
 # 第 2 週：PLA 與 Python 基礎
@@ -12,9 +12,32 @@ updatedAt: "2026-09-14"
 
 ## PLA：感知器學習演算法（Perceptron Learning Algorithm）
 
+### 生物神經元的啟發與人工神經元的發展
+
+人工神經元的設計，源頭確實是對生物神經元的簡化模仿。生物神經元透過**樹突（dendrites）**接收其他神經元傳來的訊號，訊號在**細胞核（cell nucleus）**整合後，沿著包著**髓鞘（myelin sheath）**的**軸突（axon）**傳遞出去，最後由**軸突末梢（axon terminals）**把訊號傳給下一顆神經元——這是一整條「輸入 → 整合 → 輸出」的鏈路。
+
+![生物神經元結構圖：左側多個輸入訊號經樹突進入細胞核，訊號沿包覆髓鞘的軸突傳遞，最後由軸突末梢輸出](/note-images/ml-week2/01-biological-neuron.jpeg)
+
+*生物神經元的簡化結構：樹突收訊號、細胞核整合、軸突傳遞、軸突末梢輸出——人工神經元的「輸入加權加總、超過閾值才輸出」正是對這條鏈路的數學簡化。*
+
+- **McCulloch-Pitts (MCP) neuron（1943）**：最早把神經細胞模型化為一個簡單邏輯閘的嘗試——多個訊號在樹突匯集後整合進細胞本體，若累積訊號超過某個閾值，就從軸突送出一個輸出訊號，輸出僅有二元（binary）兩種狀態。
+- **Perceptron（1953／通稱 1958 年發表）**：F. Rosenblatt 在 MCP 神經元的基礎上，進一步提出了**感知器學習規則（perceptron learning rule）**——不只是模型化神經元怎麼運作，還定義了一套讓權重能從資料中自動學到的演算法，這正是本週要學的 PLA。
+
 ### 感知器模型：向生物神經元借的一個決策規則
 
-感知器（Perceptron）是最早、也最簡單的一種監督式學習分類器，由 Frank Rosenblatt 於 1958 年提出，靈感來自生物神經元「輸入訊號加總、超過閾值才會發射」的機制。給定一筆樣本的特徵向量 x，感知器先算出**加權總和（net input）**`z = w·x + b`——w 是每個特徵的權重（weights），b 是偏差項（bias unit），兩者合稱第 1 週定義過的**可訓練參數（trainable parameters）**。接著把 z 丟進一個**階梯函數（step function）**：z ≥ 0 輸出 +1，否則輸出 −1。這個階梯函數就是第 1 週術語表提到的**激活函數（activation function）**最原始的版本——雖然現代神經網路幾乎不再用它（不可微分，無法配合梯度下降），但它是理解「線性模型 + 非線性判斷」這個組合的起點。
+感知器（Perceptron）是最早、也最簡單的一種監督式學習分類器，由 Frank Rosenblatt 於 1958 年提出，靈感來自生物神經元「輸入訊號加總、超過閾值才會發射」的機制。給定一筆樣本的特徵向量 x，感知器先算出**加權總和（net input）**：
+
+$$
+z = w_1x_1 + w_2x_2 + \dots + w_mx_m + b = \boldsymbol{w}^T\boldsymbol{x} + b
+$$
+
+w 是每個特徵的權重（weights），b 是偏差項（bias unit），兩者合稱第 1 週定義過的**可訓練參數（trainable parameters）**；把權重寫成行向量 $\boldsymbol{w}^T = [w_1, w_2, \dots, w_m]$、特徵寫成行向量 $\boldsymbol{x} = [x_1, x_2, \dots, x_m]^T$，兩者的內積 $\boldsymbol{w}^T\boldsymbol{x}$ 就是加總的緊湊寫法。接著把 z 丟進一個**階梯函數（step function）**：
+
+$$
+\sigma(z) = \begin{cases} 1 & \text{if } z \geq 0 \\ 0 & \text{otherwise} \end{cases}
+$$
+
+（原始定義裡門檻是 $z - \theta \gtrless 0$，$\theta$ 是閾值；把 bias unit 定義成 $b = -\theta$ 代入後，判斷式就簡化成上面「$z \geq 0$」這個更常用的形式。）這個階梯函數就是第 1 週術語表提到的**激活函數（activation function）**最原始的版本——雖然現代神經網路幾乎不再用它（不可微分，無法配合梯度下降），但它是理解「線性模型 + 非線性判斷」這個組合的起點。
 
 import PdfRefChip from '@/components/islands/PdfRefChip.tsx'
 
@@ -27,7 +50,11 @@ excerpt: z = w1x1+...+wmxm+b = wTx+b；bias unit b(=−θ) included，decision f
 */}
 <PdfRefChip file="_references/機器學習實作系列/第2週-Python基礎.pdf" page={7} status="suggested" excerpt={"z = w1x1+...+wmxm+b = wTx+b；bias unit b(=−θ) included，decision function σ(z)"} client:visible />
 
-從幾何角度看，`w·x + b = 0` 這個方程式定義了一個**超平面（hyperplane）**——在二維特徵空間裡就是一條直線。w 是這條線的法向量（決定傾斜方向），b 決定它離原點多遠。這條線把特徵空間切成兩半，落在哪一半就對應哪一個類別；感知器的訓練目標，就是找出一組能把兩類樣本正確切開的 w 與 b。
+從幾何角度看，$\boldsymbol{w}^T\boldsymbol{x} + b = 0$ 這個方程式定義了一個**超平面（hyperplane）**——在二維特徵空間裡就是一條直線。w 是這條線的法向量（決定傾斜方向），b 決定它離原點多遠。這條線把特徵空間切成兩半，落在哪一半就對應哪一個類別；感知器的訓練目標，就是找出一組能把兩類樣本正確切開的 w 與 b。
+
+![左圖：階梯函數 σ(z) 對 z 的圖形，z 大於等於 0 輸出 1（藍色）、z 小於 0 輸出 0（紅色）；右圖：二維特徵空間 x1-x2 的散佈圖，藍色方塊為 Class 1（σ(z) 大於等於 0）、紅色圓點為 Class 0（σ(z) 小於 0），一條虛線 Decision boundary 把兩類分開](/note-images/ml-week2/02-decision-boundary-scatter.jpeg)
+
+*階梯函數把連續的 z 值切成兩個類別；映射到特徵空間，這條切割線就是圖中那條決策邊界（decision boundary）——感知器訓練的目標就是找到能把兩類樣本正確分開的這條線。*
 
 {/* @ai-reference
 id: pla-decision-boundary
@@ -38,6 +65,47 @@ excerpt: The perceptron can be used to discriminate between two classes separabl
 */}
 <PdfRefChip file="_references/機器學習實作系列/第2週-Python基礎.pdf" page={8} status="suggested" excerpt={"The perceptron can be used to discriminate between two classes separable by a linear decision boundary"} client:visible />
 
+### 線性代數基礎：把感知器公式看懂需要的最小工具箱
+
+`z = wTx + b` 這個式子裡的 `wT`（轉置）與內積運算，背後是一套線性代數記號。這套記號之後會在 NumPy 陣列運算、Pandas 資料表操作裡反覆出現，值得先在這裡把最小工具箱建好。
+
+- **矩陣（matrix）**：一個二維的元素陣列，用大寫粗體字母表示（例如 **A**、**B**、**C**）。一個 $m \times n$ 矩陣有 $m$ 列（rows）、$n$ 行（columns），$a_{jk}$ 表示第 $j$ 列、第 $k$ 行的元素：
+
+$$
+\mathbf{A} = [a_{jk}] = \begin{bmatrix} a_{11} & a_{12} & \cdots & a_{1n} \\ a_{21} & a_{22} & \cdots & a_{2n} \\ \vdots & \vdots & \ddots & \vdots \\ a_{m1} & a_{m2} & \cdots & a_{mn} \end{bmatrix}
+$$
+
+- **向量（vector）**：一維陣列，也就是只有一列或一行的矩陣，用小寫粗體字母表示（例如 **a**、**b**、**c**）。列向量（row vector）與行向量（column vector）分別長這樣：
+
+$$
+\mathbf{a} = \begin{bmatrix} a_1 & a_2 & \cdots & a_n \end{bmatrix}, \qquad \mathbf{b} = \begin{bmatrix} b_1 \\ b_2 \\ \vdots \\ b_m \end{bmatrix}
+$$
+
+  感知器公式裡的 $\boldsymbol{w}$、$\boldsymbol{x}$ 就是這種行向量——$m$ 個特徵、$m$ 個權重，各自排成一行。
+
+- **方陣（square matrix）**：列數與行數相等（$m=n$）的矩陣，例如 $3\times3$ 的 $\begin{bmatrix} a_{11} & a_{12} & a_{13} \\ a_{21} & a_{22} & a_{23} \\ a_{31} & a_{32} & a_{33} \end{bmatrix}$；矩陣與向量的元素不一定要是常數，也可以是函式，例如 $\begin{bmatrix} e^{-x} & 2x^2 \\ e^{6x} & 4x \end{bmatrix}$。
+- **矩陣轉置（matrix transpose，記為上標 T）**：把矩陣的列變行、行變列。
+
+![矩陣轉置的定義：若 A 為一個 2×3 矩陣，AT 則是把列與行互換後的 3×2 矩陣](/note-images/ml-week2/03-matrix-transpose-def.png)
+
+*矩陣轉置：$\mathbf{A}$ 的第 $j$ 列、第 $k$ 行元素，轉置後變成 $\mathbf{A}^T$ 的第 $k$ 列、第 $j$ 行——列與行對調。*
+
+![更多轉置範例：多個矩陣轉置前後的對照，以及列向量轉置變column vector、column vector轉置變回列向量的例子](/note-images/ml-week2/04-matrix-transpose-examples.png)
+
+*轉置是可逆操作：一個列向量轉置後變成行向量，再轉置一次就變回原本的列向量——這正是感知器公式裡 $\boldsymbol{w}^T$ 把行向量 $\boldsymbol{w}$ 轉成列向量、才能跟另一個行向量 $\boldsymbol{x}$ 做內積的原因。*
+
+- **矩陣乘法（matrix multiplication）**：$m\times n$ 矩陣乘上 $n\times p$ 矩陣得到 $m\times p$ 矩陣——中間的維度 $n$ 必須相等，乘法規則是「左邊矩陣的某一列」逐項乘上「右邊矩陣的某一行」再加總，結果放進輸出矩陣對應的位置。
+
+![矩陣乘法 AB 的圖解：左矩陣的一整列（藍色橫向箭頭）與右矩陣的一整行（藍色縱向箭頭）逐項相乘後加總，填入輸出矩陣對應的格子；例如 c23 = 4×3+0×7+2×1 = 14](/note-images/ml-week2/05-matrix-multiplication.png)
+
+*矩陣乘法的具體算法：輸出矩陣裡第 2 列第 3 行的元素 $c_{23}$，就是左矩陣第 2 列與右矩陣第 3 行逐項相乘再加總的結果——這也是為什麼 $\mathbf{AB}$ 定義了、但 $\mathbf{BA}$（維度對不起來）就不一定有定義。*
+
+- **列向量與行向量的乘積**：一個 $1\times n$ 列向量乘上 $n\times 1$ 行向量得到一個純量（$1\times1$）；反過來，行向量乘列向量則得到一個 $n\times n$ 矩陣——這正是 $\boldsymbol{w}^T\boldsymbol{x}$（列向量乘行向量，得純量）跟 $\boldsymbol{x}\boldsymbol{w}^T$（行向量乘列向量，得矩陣）差異的來源，感知器的加權總和用的是前者。
+
+![列向量乘行向量得到純量 [3 6 1][1 2 4]ᵀ=[19]，行向量乘列向量得到 3×3 矩陣](/note-images/ml-week2/06-row-column-vector-products.png)
+
+*同樣兩個向量，「列乘行」得到一個數字（純量），「行乘列」卻得到一整個矩陣——感知器的 $\boldsymbol{w}^T\boldsymbol{x}$ 用的是前一種寫法，算出來才會是單一個 net input 數值 $z$。*
+
 ### 訓練規則：PLA 怎麼一步步找到那條線
 
 PLA 是一個線上（online）、逐筆更新的迭代演算法：
@@ -45,7 +113,13 @@ PLA 是一個線上（online）、逐筆更新的迭代演算法：
 1. 把權重 w 與偏差 b 初始化為 0（或隨機小值）
 2. 逐一檢查每一筆訓練樣本 (x, y)（y 是真實標籤，+1 或 −1）：
    - 若目前的 w、b 能正確分類這筆樣本，不做任何更新，繼續看下一筆
-   - 若分類錯誤，依更新規則調整參數：`w ← w + η·y·x`、`b ← b + η·y`（η 是學習率，最基本版本可以直接設 η = 1）
+   - 若分類錯誤，依更新規則調整參數：
+
+$$
+w \leftarrow w + \eta \cdot y \cdot x, \qquad b \leftarrow b + \eta \cdot y
+$$
+
+     （η 是學習率，最基本版本可以直接設 η = 1）
 3. 重複整個資料集（一輪稱為一個 epoch，第 1 週定義過），直到某一輪完全沒有誤判樣本為止
 
 {/* @ai-reference
@@ -57,7 +131,21 @@ excerpt: Δwj = η(y(i)−ŷ(i))xj(i)，Δb = η(y(i)−ŷ(i))；wj := wj+Δwj, 
 */}
 <PdfRefChip file="_references/機器學習實作系列/第2週-Python基礎.pdf" page={16} status="suggested" excerpt={"Δwj = η(y(i)−ŷ(i))xj(i)，Δb = η(y(i)−ŷ(i))；wj := wj+Δwj, b := b+Δb"} client:visible />
 
-更新規則背後的直覺很直白：如果一個正樣本（y = +1）被誤判成負類，代表目前的決策邊界「離它太近、把它推錯邊了」，於是把 w 往這個樣本的方向調——`w + y·x` 會讓下一次算出來的 `w·x` 變大，讓這個樣本更容易被判成正類；負樣本被誤判的道理相反。PLA 不會一次把邊界調到完美，而是每次只用「一筆答錯的樣本」推它一小步，逐步修正。
+更新規則背後的直覺很直白：如果一個正樣本（y = +1）被誤判成負類，代表目前的決策邊界「離它太近、把它推錯邊了」，於是把 w 往這個樣本的方向調——$w + y \cdot x$ 會讓下一次算出來的 $w \cdot x$ 變大，讓這個樣本更容易被判成正類；負樣本被誤判的道理相反。PLA 不會一次把邊界調到完美，而是每次只用「一筆答錯的樣本」推它一小步，逐步修正。
+
+具體看兩種情況——**分類正確時完全不更新**：
+
+$$
+\hat{y}=y \implies \Delta w = \eta(y-\hat{y})x = 0, \qquad \Delta b = \eta(y-\hat{y}) = 0
+$$
+
+**分類錯誤時才推一步**，例如把某個特徵值 $x_j=1.5$ 的樣本誤判成 0（正確應為 1）：
+
+$$
+\Delta w_j = \eta(1-0)(1.5) = 1.5, \qquad \Delta b = \eta(1-0) = 1
+$$
+
+$w_j$ 與 $b$ 都會被往「讓下一次 $z$ 更正的方向」調高，讓這筆樣本下次更容易被正確判成 1——這就是「用答錯的樣本推一小步」在數字上實際發生的事。
 
 {/* @ai-reference
 id: pla-update-intuition
@@ -67,6 +155,12 @@ status: suggested
 excerpt: we would increase the corresponding weights and bias unit so that the net input z would be more positive
 */}
 <PdfRefChip file="_references/機器學習實作系列/第2週-Python基礎.pdf" page={18} status="suggested" excerpt={"we would increase the corresponding weights and bias unit so that the net input z would be more positive"} client:visible />
+
+把「預測」與「更新」兩條路徑畫在一起，就是感知器完整的一輪運作：
+
+![感知器架構圖：輸入特徵 x1...xm 與偏差 b 各自乘上權重後匯入 Σ 節點算出淨輸入 z，經過閾值函數輸出預測類別 ŷ；ŷ 與真實標籤 y 比較得到 Error，再回頭更新權重與偏差——上半部標示為 Update，下半部標示為 Prediction](/note-images/ml-week2/07-perceptron-architecture.png)
+
+*下半部「Prediction」：特徵與偏差乘上權重、加總成淨輸入 z、經閾值函數輸出預測 ŷ；上半部「Update」：把 ŷ 與真實標籤 y 的誤差（Error）回頭拿去調整權重與偏差——這一整圈就是 PLA 逐筆訓練的完整迴路。*
 
 ### 收斂定理與線性可分的限制
 
@@ -81,6 +175,10 @@ excerpt: Convergence is only guaranteed if the two classes are linearly separabl
 */}
 <PdfRefChip file="_references/機器學習實作系列/第2週-Python基礎.pdf" page={20} status="suggested" excerpt={"Convergence is only guaranteed if the two classes are linearly separable"} client:visible />
 
+![三張散佈圖對照：左圖 Linearly separable，一條直線就能完全分開兩類；中圖與右圖 Not linearly separable，任何一條直線都無法完全分開，需要非線性邊界（虛線 Nonlinear boundary）才能正確分類](/note-images/ml-week2/08-linearly-separable.png)
+
+*左：存在一條直線能完全分開兩類，PLA 保證收斂。中、右：兩類樣本交錯或包夾在一起，找不到任何一條直線能完全分開，PLA 會永遠找不到「整輪都不誤判」的參數。*
+
 但反過來，如果資料**不是線性可分**（例如經典的 XOR 問題：兩類樣本呈對角交錯排列，任何一條直線都切不開），PLA 會永遠找不到能讓整輪都不誤判的參數，陷入無窮迴圈、不斷更新卻不收斂。1969 年 Marvin Minsky 與 Seymour Papert 在《*Perceptrons*》一書中正式指出這個侷限，是感知器研究一度停滯（第一次 AI 寒冬的起點之一）的關鍵原因；也正是這個侷限，催生了後面用**多層感知器（Multilayer Perceptron, MLP）**疊加非線性 activation function 來處理非線性可分問題的路線——呼應第 10 週要學的多層神經網路與深度學習。
 
 {/* @ai-reference
@@ -91,6 +189,18 @@ status: suggested
 excerpt: If the two classes are not linearly separable, the perceptron would never stop updating the weights
 */}
 <PdfRefChip file="_references/機器學習實作系列/第2週-Python基礎.pdf" page={21} status="suggested" excerpt={"If the two classes are not linearly separable, the perceptron would never stop updating the weights"} client:visible />
+
+實務上遇到不保證線性可分的資料，會設定明確的「停止訓練」準則，而不是讓演算法無限跑下去：**最大 epoch 數（maximum number of epochs）**，或**容忍誤判數的門檻**（例如「本輪誤判數低於某個值就當作收斂」）。
+
+### 多元分類的延伸：One-versus-All
+
+感知器天生是**二元分類器（binary classifier）**，只能判斷「是」或「不是」某一類。要處理**多元分類（multi-class classification）**，最常見的作法是 **One-versus-All（OvA，又稱 One-versus-Rest, OvR）**：
+
+1. 幫每一個類別各訓練一個獨立的二元分類器——如果總共有 $k$ 個類別，就要訓練 $k$ 個分類器
+2. 訓練第 $i$ 個分類器時，把「屬於類別 $i$」的樣本當成正類（label 1），其餘所有類別的樣本一律當成負類
+3. 預測新樣本時，把它丟進全部 $k$ 個分類器分別預測，取信心最高（most confident）的那個分類器所代表的類別作為最終答案——對感知器而言，信心的量測方式是取**淨輸入 $z$ 絕對值最大**的那一個分類器
+
+這個策略的好處是不需要重新設計演算法本身，只要用同一套二元分類器訓練 $k$ 次、預測時比較 $k$ 個 $z$ 值即可，後面第 6 週的 scikit-learn 分類器也會用到同樣的策略處理多類別問題。
 
 ### PLA 與課程其他概念的連結
 
@@ -141,6 +251,25 @@ excerpt: 複習重點：input() 處理、float() 型別轉換、** 算術運算�
 */}
 <PdfRefChip file="_references/機器學習實作系列/第2週-Python基礎.pdf" page={25} status="suggested" excerpt={"複習重點：input() 處理、float() 型別轉換、** 算術運算子、F-string 格式化字串"} client:visible />
 
+**練習：計算圓面積**——提示使用者輸入一圓的半徑（字串），轉換為浮點數，算出面積後輸出「The area of a circle with radius [R] is [Area]」，其中 Area 需四捨五入至小數點後兩位；若輸入非數字要能捕捉錯誤：
+
+```python
+import math
+
+r_str = input("Enter radius: ")
+try:
+    radius = float(r_str)
+    area = math.pi * (radius ** 2)
+    print(f"The area of a circle with radius {radius} is {area:.2f}")
+except ValueError:
+    print("Please enter a valid number.")
+```
+
+```text
+Enter radius: 5
+The area of a circle with radius 5.0 is 78.54
+```
+
 ### 四種內建容器：先問「要不要改、要不要順序、要不要查得快」
 
 Python 的四種基本容器差別不在「能裝什麼」，而在「你打算怎麼用它」。**列表（list）**是可變的有序序列，適合會一直增刪的暫存區——逐行讀檔時把解析結果 `append` 進去就是典型用法。**元組（tuple）**是不可變的有序序列，適合表示「一組固定的東西」，例如圖片的形狀 `(28, 28)`；因為不可變，它還能當字典的鍵。**字典（dict）**是鍵值對映射，適合「用名字查東西」，例如把欄位名對應到那一欄資料。**集合（set）**只裝不重複的元素、不保證順序，適合去重與取交集——想知道兩份名單重疊多少，`set(a) & set(b)` 一行就好。
@@ -153,6 +282,27 @@ status: suggested
 excerpt: 複習重點：set 去重特性、list 轉換、字典的鍵值對操作與 get() 方法
 */}
 <PdfRefChip file="_references/機器學習實作系列/第2週-Python基礎.pdf" page={27} status="suggested" excerpt={"複習重點：set 去重特性、list 轉換、字典的鍵值對操作與 get() 方法"} client:visible />
+
+**練習：去重與計數**——給定清單 `data = [1, 2, 2, 3, 4, 4, 4, 5]`，分別移除重複項、計算每個數字出現的次數並存入字典：
+
+```python
+data = [1, 2, 2, 3, 4, 4, 4, 5]
+# 1. 移除重複
+unique_data = list(set(data))
+
+# 2. 計算次數
+counts = {}
+for item in data:
+    counts[item] = counts.get(item, 0) + 1
+
+print(f"Unique: {unique_data}")
+print(f"Counts: {counts}")
+```
+
+```text
+Unique: [1, 2, 3, 4, 5]
+Counts: {1: 1, 2: 2, 3: 1, 4: 3, 5: 1}
+```
 
 判斷法很簡單：要「按位置取用」就用 list／tuple，要「按名字取用」就用 dict，只在乎「有沒有這個成員」就用 set。dict 與 set 背後是雜湊表，查找幾乎與資料量無關；list 的 `in` 要從頭掃到尾，資料一大差別就很明顯。
 
@@ -175,6 +325,24 @@ excerpt: 複習重點：for 迴圈、range() 函式、if-elif-else 多重分支�
 */}
 <PdfRefChip file="_references/機器學習實作系列/第2週-Python基礎.pdf" page={29} status="suggested" excerpt={"複習重點：for 迴圈、range() 函式、if-elif-else 多重分支邏輯、取餘數運算子 %"} client:visible />
 
+**練習：FizzBuzz**——印出 1 到 20 之間的數字，但 3 的倍數印 "Fizz"、5 的倍數印 "Buzz"、同時是 3 和 5 的倍數印 "FizzBuzz"：
+
+```python
+for i in range(1, 21):
+    if i % 3 == 0 and i % 5 == 0:
+        print("FizzBuzz", end=" - ")
+    elif i % 3 == 0:
+        print("Fizz", end=" - ")
+    elif i % 5 == 0:
+        print("Buzz", end=" - ")
+    else:
+        print(i, end=" - ")
+```
+
+```text
+1 - 2 - Fizz - 4 - Buzz - Fizz - 7 - 8 - Fizz - Buzz - 11 - Fizz - 13 - 14 - FizzBuzz - 16 - 17 - Fizz - 19 - Buzz -
+```
+
 真正該練熟的是**列表推導式（list comprehension）**：`[x**2 for x in nums if x > 0]` 等價於開一個空列表、跑迴圈、加條件判斷、再 `append`，但只要一行。資料處理特別偏好它，因為這類動作幾乎都是同一個形狀——「對每一筆做同一件事，並篩掉不要的」。推導式讓程式碼直接長成這個形狀：一眼看到輸出什麼、來源是誰、篩選條件是什麼，不必在迴圈裡追累加變數的狀態。這種「描述結果而非描述步驟」的思路，正是後面 NumPy 向量化運算的預演；同樣寫法也適用於字典與集合推導式。
 
 {/* @ai-reference
@@ -185,6 +353,74 @@ status: suggested
 excerpt: 複習重點：import 外部模組、List Comprehension (列表推導式)、max() / min() / sum() 內建函式
 */}
 <PdfRefChip file="_references/機器學習實作系列/第2週-Python基礎.pdf" page={31} status="suggested" excerpt={"複習重點：import 外部模組、List Comprehension (列表推導式)、max() / min() / sum() 內建函式"} client:visible />
+
+**練習：亂數與內建函式**——用 `random` 模組生成 5 個 1 到 100 之間的隨機整數，並用內建函式找出最大值、最小值與總和：
+
+```python
+import random
+
+nums = [random.randint(1, 100) for _ in range(5)]
+print(f"List: {nums}")
+print(f"Max: {max(nums)}, Min: {min(nums)}, Sum: {sum(nums)}")
+```
+
+```text
+List: [80, 33, 31, 51, 5]
+Max: 80, Min: 5, Sum: 200
+```
+
+### 檔案存取、os 模組與例外處理
+
+資料科學程式碼經常需要跟檔案系統打交道：檢查資料夾在不在、建立輸出目錄、列出裡面有哪些檔案。`os.path.exists()` 判斷路徑是否存在，`os.makedirs()` 建立資料夾（可一次建立多層），`os.listdir()` 列出資料夾內容；把這些操作包進 `try...except` 捕捉權限或系統錯誤，是比較穩健的寫法。
+
+**練習**：檢查當前目錄下是否存在 `test_dir` 資料夾，若無則建立它，若有則列出裡面所有檔案，並加入例外處理捕捉權限錯誤：
+
+```python
+import os
+
+target = "test_dir"
+try:
+    if not os.path.exists(target):
+        os.makedirs(target)
+        print(f"Created {target}")
+    else:
+        files = os.listdir(target)
+        print(f"Files in {target}: {files}")
+except OSError as e:
+    print(f"OS error: {e}")
+```
+
+```text
+Created test_dir
+```
+
+```text
+Files in test_dir: ['hello.py', 'test1.py']
+```
+
+第一次執行會走「建立資料夾」分支，之後重複執行才會走「列出檔案」分支——這也是 `try...except` 在檔案操作裡的典型用法：把「可能因環境不同而失敗」的操作包起來，而不是假設它一定成功。
+
+### 物件導向程式設計基礎：類別、`__init__` 與 `self`
+
+**類別（class）**把資料（屬性）與操作資料的邏輯（方法）綁在一起。`__init__` 是**建構子（constructor）**，物件被建立（instantiate）的當下自動呼叫，用來初始化屬性；`self` 是方法的第一個參數，代表「呼叫這個方法的物件實例本身」，Python 不會自動幫你傳，但呼叫端也不用手動給——`obj.method()` 背後其實是 `Class.method(obj)`。
+
+**練習**：定義一個類別 `Point`，具有座標屬性 $x, y$，並包含一個方法 `distance_from_origin()` 計算該點到原點的距離 $\sqrt{x^2+y^2}$：
+
+```python
+class Point:
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
+
+    def distance_from_origin(self):
+        return (self.x**2 + self.y**2)**0.5
+
+
+p = Point(3, 4)
+print(f"Distance: {p.distance_from_origin()}")  # 輸出 5.0
+```
+
+這個小例子已經涵蓋物件導向最核心的四件事：**類別定義**（把 Point 這個概念包成一個型別）、**`__init__` 初始化**（建立物件當下就決定好 x、y）、**`self` 參數**（方法透過 self 存取這個物件自己的屬性）、**物件實例化與方法呼叫**（`p = Point(3, 4)` 建立實例，`p.distance_from_origin()` 呼叫它的方法）——後面第 6 週要用的 scikit-learn 分類器、本週稍後要自己寫的 `Perceptron` 類別，用的都是同一套骨架。
 
 ### 函式與彈性參數：`*args` 與 `**kwargs`
 
@@ -288,6 +524,193 @@ status: generated
 <GeneratedFrame id="ml-week2-container-table" type="table" prompt={"用表格速查四種容器的有序性、可變性、可重複性與查找成本。"} caption={"四種內建容器的速查表：有序、可變、可重複與查找成本，一列掃完就能決定用哪個。"}>
   <MlWeek2ContainerTable />
 </GeneratedFrame>
+
+## 訓練一個感知器模型：完整實作
+
+前面把 PLA 的理論、Python 的基礎語法都拆開講完了，這節把兩者合起來，動手寫一個真正能訓練、預測的 `Perceptron` 類別，並套用到真實資料集上。
+
+### 任務目標：物件導向的 Perceptron API
+
+目標是做出一個**物件導向的感知器 API**：`fit(X, y)` 負責從資料學習（訓練），`predict(X)` 負責對新資料做預測。這個「先 `fit` 再 `predict`」的介面設計不是隨便選的——它正是 scikit-learn 幾乎所有模型共用的介面慣例，先在這裡用感知器練熟這個介面，後面第 6 週接觸 scikit-learn 時就完全不陌生。訓練與驗證用的資料集是**Iris（鳶尾花）資料集**。
+
+### 匯入套件與模組
+
+```python
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+from matplotlib.colors import ListedColormap
+```
+
+- **NumPy**：資料科學的基石，Pandas 與 SciPy 等均建構於其上，提供高效能的 N 維陣列（ndarray）物件及向量化運算。
+- **Pandas**：資料分析與操作工具庫，提供高效能且易用的資料結構，專門用於處理表格化資料。
+- **Matplotlib**：資料視覺化工具，提供高品質的 2D 與 3D 圖表。
+
+### 建立 Perceptron 類別
+
+```python
+# 1.
+# An object-oriented perceptron API
+class Perceptron:
+    """Perceptron classifier."""
+
+    def __init__(self, eta=0.01, n_iter=50, random_state=1):
+        self.eta = eta
+        self.n_iter = n_iter
+        self.random_state = random_state
+
+    def fit(self, X, y):
+        """Fit training data."""
+        rgen = np.random.RandomState(self.random_state)
+        self.w_ = rgen.normal(loc=0.0, scale=0.01, size=X.shape[1])
+        self.b_ = np.float64(0.)
+
+        self.errors_ = []
+
+        for _ in range(self.n_iter):
+            errors = 0
+            for xi, target in zip(X, y):
+                update = self.eta * (target - self.predict(xi))
+                self.w_ += update * xi
+                self.b_ += update
+                errors += int(update != 0.0)
+            self.errors_.append(errors)
+        return self
+
+    def net_input(self, X):
+        """Calculate net input"""
+        return X @ self.w_ + self.b_
+
+    def predict(self, X):
+        """Return class label after unit step"""
+        return (self.net_input(X) >= 0.0).astype(int)
+```
+
+`__init__` 只儲存超參數（`eta` 學習率、`n_iter` 訓練輪數、`random_state` 隨機種子），不做任何運算——真正的學習邏輯都在 `fit` 裡：先用 `rgen.normal(loc=0.0, scale=0.01, ...)` 把權重初始化成接近 0 的小隨機數，`errors_` 記錄每個 epoch 的誤判次數；核心的雙層迴圈，外層跑 `n_iter` 個 epoch，內層用 `zip(X, y)` 逐筆走訪樣本，對每筆樣本算出 `update = η(target - predict(xi))`——分類正確時 `update` 為 0（權重不變），分類錯誤時 `update` 非零，直接依比例調整 `w_` 與 `b_`，這正是前面 PLA 更新規則 $\Delta w = \eta(y-\hat{y})x$、$\Delta b = \eta(y-\hat{y})$ 的程式碼版本。`net_input` 用 `X @ self.w_ + self.b_`（`@` 是矩陣乘法運算子）算出 $z = \boldsymbol{w}^T\boldsymbol{x}+b$，`predict` 把 `net_input` 丟進判斷式 `>= 0.0` 再轉成整數，就是階梯函數 $\sigma(z)$ 的程式碼版本。
+
+### 權重為什麼不建議初始化為零
+
+初始權重向量刻意設成接近 0 的小隨機數 $\sim N(0, 0.01)$，而不是直接全部設成 0——雖然設成 0 在數學上也「能跑」，但**不建議**這麼做：因為權重全 0 時，學習率 $\eta$ 只會影響權重向量的**大小（scale）**，不會影響它的**方向（direction）**，等於白白浪費了學習率這個超參數原本該有的調節能力。具體來看兩種學習率 $\eta_A$、$\eta_B$ 從同樣的零初始權重出發：
+
+$$
+\begin{aligned}
+w_1^A &= 0 + \eta_A \cdot \text{error}_1 \cdot x_1 = \eta_A \cdot (\text{error}_1 \cdot x_1) \\
+w_1^B &= 0 + \eta_B \cdot \text{error}_1 \cdot x_1 = \eta_B \cdot (\text{error}_1 \cdot x_1)
+\end{aligned}
+$$
+
+累積到第二步依然如此：
+
+$$
+\begin{aligned}
+w_2^A &= w_1^A + \eta_A \cdot \text{error}_2 \cdot x_2 = \eta_A \cdot [(\text{error}_1 \cdot x_1) + (\text{error}_2 \cdot x_2)] \\
+w_2^B &= w_1^B + \eta_B \cdot \text{error}_2 \cdot x_2 = \eta_B \cdot [(\text{error}_1 \cdot x_1) + (\text{error}_2 \cdot x_2)]
+\end{aligned}
+$$
+
+兩條路徑最終的權重向量方向完全一樣，只差一個純量倍率——這就是「零初始化時學習率只影響尺度、不影響方向」的具體證明，也是為什麼慣例上會用小隨機數而非全零。
+
+### 載入 Iris 資料集
+
+只考慮 Iris 資料集裡的兩個類別（setosa、versicolor），並只選兩個特徵維度（sepal length、petal length）方便視覺化決策邊界——不過感知器規則本身並不限制只能用兩個維度。
+
+```python
+# 2.
+# Reading-in the Iris data
+s = 'iris.data'
+df = pd.read_csv(s, header=None, encoding='utf-8')
+
+# Target array: select 2 classes only
+# setosa (class '0') and versicolor (class '1')
+y = df.iloc[0:100, 4].to_numpy()
+y = np.where(y == 'Iris-setosa', 0, 1)
+
+# Feature matrix: select 2 features only
+# sepal length and petal length
+X = df.iloc[0:100, [0, 2]].to_numpy()
+
+# plot data
+plt.scatter(X[:50, 0], X[:50, 1],
+            color='red', marker='o', label='Setosa')
+plt.scatter(X[50:100, 0], X[50:100, 1],
+            color='blue', marker='s', label='Versicolor')
+plt.xlabel('Sepal length [cm]')
+plt.ylabel('Petal length [cm]')
+plt.legend(loc='upper left')
+plt.show()
+```
+
+![Iris 資料集散佈圖：橫軸 Sepal length，縱軸 Petal length，紅色圓點為 Setosa（集中在左下角）、藍色方塊為 Versicolor（分布在右上方），兩群在圖上明顯分開](/note-images/ml-week2/09-iris-scatter-plot.png)
+
+*兩個類別在這兩個特徵維度上明顯分開——這正是「一條線性決策邊界應該足以分開 setosa 與 versicolor」的視覺證據。*
+
+### 訓練模型與訓練曲線
+
+```python
+# 3.
+# Training the perceptron model on the Iris dataset
+ppn = Perceptron(eta=0.1, n_iter=10)
+ppn.fit(X, y)
+
+plt.plot(range(1, len(ppn.errors_) + 1), ppn.errors_, marker='o')
+plt.xlabel('Epochs')
+plt.ylabel('Number of updates')
+plt.show()
+```
+
+![兩張訓練曲線對照：左圖 η=0.1，誤判數從 2 波動上升到 3 後快速下降、第 6 輪起歸零；右圖 η=0.001，誤判數呈鋸齒狀緩慢下降、第 8 輪起歸零](/note-images/ml-week2/10-training-curve-eta-01.png)
+
+*η=0.1 時的訓練曲線：誤判數在前幾輪還會上下震盪，但第 6 個 epoch 起完全歸零——資料線性可分，PLA 確實收斂了。*
+
+![η=0.001 時的訓練曲線，同樣最終收斂到誤判數 0，但曲線形狀與 η=0.1 那組不同](/note-images/ml-week2/11-training-curve-eta-0001.png)
+
+*η=0.001（學習率小很多）的訓練曲線：一樣能收斂到誤判數 0，但每次更新的步伐比較小，曲線震盪的細節跟 η=0.1 那組不同——呼應收斂定理只保證「一定會收斂」，不保證收斂路徑或步數。*
+
+### 決策邊界視覺化
+
+```python
+# 4.
+# Visualization of the decision boundary
+# A utility function for plotting decision regions
+def plot_decision_regions(X, y, classifier, resolution=0.02):
+    # setup marker generator and color map
+    markers = ('o', 's', '^', 'v', '<')
+    colors = ('red', 'blue', 'lightgreen', 'gray', 'cyan')
+    cmap = ListedColormap(colors[:len(np.unique(y))])
+
+    # plot the decision surface
+    x1_min, x1_max = X[:, 0].min() - 1, X[:, 0].max() + 1
+    x2_min, x2_max = X[:, 1].min() - 1, X[:, 1].max() + 1
+    xx1, xx2 = np.meshgrid(np.arange(x1_min, x1_max, resolution),
+                            np.arange(x2_min, x2_max, resolution))
+    lab = classifier.predict(np.array([xx1.ravel(), xx2.ravel()]).T)
+    lab = lab.reshape(xx1.shape)
+    plt.contourf(xx1, xx2, lab, alpha=0.3, cmap=cmap)
+    plt.xlim(xx1.min(), xx1.max())
+    plt.ylim(xx2.min(), xx2.max())
+
+    # plot class examples
+    for idx, cl in enumerate(np.unique(y)):
+        plt.scatter(x=X[y == cl, 0],
+                    y=X[y == cl, 1],
+                    alpha=0.8,
+                    c=colors[idx],
+                    marker=markers[idx],
+                    label=f'Class {cl}',
+                    edgecolor='black')
+
+plot_decision_regions(X, y, classifier=ppn)
+plt.xlabel('Sepal length [cm]')
+plt.ylabel('Petal length [cm]')
+plt.legend(loc='upper left')
+plt.show()
+```
+
+`plot_decision_regions` 的核心手法是**網格掃描（meshgrid）**：在整個特徵平面上打出一片密集的網格點，把每個網格點都丟給訓練好的分類器 `predict`，再用 `contourf` 把預測結果畫成一片片色塊——色塊的分界線，就是分類器實際學到的決策邊界。
+
+![最終的決策邊界視覺化：粉紅色區域對應 Class 0（紅色圓點 Setosa）、淺紫色區域對應 Class 1（藍色方塊 Versicolor），一條斜直線把兩片色塊分開，恰好把所有樣本正確分類](/note-images/ml-week2/12-decision-boundary-final.png)
+
+*訓練好的感知器學到的決策邊界：整個特徵平面被切成兩片色塊，所有訓練樣本都落在跟自己類別相符的色塊裡——資料線性可分、PLA 收斂、決策邊界完全正確分類，三件事在這張圖裡同時得到印證。*
 
 ## 實作心得
 
