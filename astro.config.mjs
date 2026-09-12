@@ -9,6 +9,7 @@ import remarkNotecraftCodeblock from "./src/lib/remark-notecraft-codeblock.ts";
 import remarkNotecraftNotesAssets from "./src/lib/remark-notecraft-notes-assets.ts";
 import { GENERATED_COMPONENT_PACKAGE_WHITELIST } from "./src/lib/generated-component-whitelist.ts";
 import devApi from "./src/dev-api/integration.ts";
+import notesAssetsBuildCopy from "./src/lib/notes-assets-build-copy.ts";
 
 // v2 Q3 + Bug fix: `.notecraft/` 資料夾**放在 userCwd**（使用者專案根、與 .claude/ 同層），
 // 不放在 notesDir——因為 subagent 從 project root 跑並寫到 cwd 下的 .notecraft/，
@@ -35,6 +36,7 @@ export default defineConfig({
     react(),
     tailwind({ applyBaseStyles: false }),
     devApi(),
+    notesAssetsBuildCopy(),
   ],
   vite: {
     // NOTECRAFT_VERIFY_BUILD=1 時（元件生成流程的 `astro build` 驗證）改用獨立 cacheDir，
