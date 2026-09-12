@@ -24,6 +24,10 @@ export default function PdfViewerDrawer() {
   const [numPages, setNumPages] = useState(0);
   const [scale, setScale] = useState(1);
   const [loading, setLoading] = useState(false);
+  const [loadError, setLoadError] = useState(false);
+  // 每次成功載入新文件就 +1；畫面繪製 effect 靠這個值判斷「文件本身」是否換了一份，
+  // 不能只靠 page / scale / numPages（兩份不同文件很可能剛好頁碼、頁數都相同）。
+  const [docVersion, setDocVersion] = useState(0);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const docRef = useRef<PDFDocumentProxy | null>(null);
   const renderTaskRef = useRef<RenderTask | null>(null);
@@ -64,13 +68,24 @@ export default function PdfViewerDrawer() {
     if (!open || !file) return;
     let cancelled = false;
     setLoading(true);
+    setLoadError(false);
     const task = pdfjsLib.getDocument({ url: pdfAssetUrl(file) });
-    task.promise.then((doc) => {
-      if (cancelled) return;
-      docRef.current = doc;
-      setNumPages(doc.numPages);
-      setLoading(false);
-    });
+    task.promise
+      .then((doc) => {
+        if (cancelled) return;
+        docRef.current = doc;
+        setNumPages(doc.numPages);
+        setLoading(false);
+        setDocVersion((v) => v + 1);
+      })
+      .catch(() => {
+        // 檔案不存在 / 404 / 格式錯誤等情況：不能讓 rejection 被吞掉、loading 卡死，
+        // 要讓使用者看到明確的失敗狀態而不是永遠轉圈圈。
+        if (cancelled) return;
+        docRef.current = null;
+        setLoading(false);
+        setLoadError(true);
+      });
     return () => {
       cancelled = true;
       task.destroy();
@@ -103,7 +118,7 @@ export default function PdfViewerDrawer() {
       cancelled = true;
       renderTaskRef.current?.cancel();
     };
-  }, [page, scale, numPages, open]);
+  }, [page, scale, numPages, open, docVersion]);
 
   const goPrev = () => setPage((p) => Math.max(1, p - 1));
   const goNext = () => setPage((p) => Math.min(numPages || p, p + 1));
@@ -208,6 +223,10 @@ export default function PdfViewerDrawer() {
               {loading ? (
                 <div style={{ textAlign: "center", padding: "60px 0", color: "var(--text-muted)", fontSize: 13 }}>
                   載入中…
+                </div>
+              ) : loadError ? (
+                <div style={{ textAlign: "center", padding: "60px 0", color: "var(--text-muted)", fontSize: 13 }}>
+                  PDF 載入失敗，請確認檔案是否存在。
                 </div>
               ) : (
                 <canvas ref={canvasRef} style={{ display: "block", margin: "0 auto", boxShadow: "var(--shadow-md)" }} />
