@@ -114,6 +114,8 @@ const AGENT_NAMES = [
   'visualize-planner',
   'component-generator',
   'mdx-writer',
+  // PDF 講義對照：note-scanner／mdx-writer 已擴充支援，這裡補上新增的第三個 subagent
+  'pdf-reference-planner',
   // 簡報管線（content-present）：與上述四個完全隔離
   'present-planner',
   'slide-generator',

@@ -40,6 +40,7 @@
     "src/data/series.ts",
     "src/dev-api/",
     "src/env.d.ts",
+    "scripts/pdf-extract-text.mjs",
     "src/layouts/",
     "src/lib/",
     "src/pages/",
