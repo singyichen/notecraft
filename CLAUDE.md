@@ -9,6 +9,7 @@
 - **UI**：React（僅用於 AI 生成的互動元件）+ TailwindCSS
 - **動畫 / 互動**：`motion`（Framer Motion，npm 套件名即 `motion`，**勿與舊 motion.js 混淆**）
 - **圖表**：`recharts`（標準圖表）、`d3`（非標準）、手寫 SVG（流程 / 時序 / 架構圖優先）
+- **PDF 檢視**：`pdfjs-dist`（瀏覽器端側邊抽屜檢視器 + Node legacy build 供 subagent 抽取頁面文字）
 - **搜尋**：`pagefind`（build 階段索引）
 - **部署**：Netlify 靜態部署，**無 Function、無執行時 API**
 - **Node ^22.x、TypeScript**
@@ -18,17 +19,20 @@
 ```
 src/
 ├── content/notes/              MDX 筆記原始檔
+│   └── _references/             原始 PDF 講義（跟著 notesDir 走，dev/build 都以 /notes-assets/<相對路徑> 存取）
 ├── components/generated/        AI 生成的視覺化元件（一個 id 對應一個 .tsx）
 ├── pages/
 │   ├── api/                    dev-only API routes（POST /api/notes、tags 相關）
+│   ├── references/             PDF 講義庫瀏覽頁
 │   └── notes/[slug].astro      筆記檢視頁
 └── ...
 .claude/
-├── agents/                     四個 Subagent 設定檔
+├── agents/                     五個 Subagent 設定檔
 │   ├── note-scanner.md
 │   ├── visualize-planner.md
 │   ├── component-generator.md
-│   └── mdx-writer.md
+│   ├── mdx-writer.md
+│   └── pdf-reference-planner.md
 └── skills/
     └── content-visualize/SKILL.md
 ```
@@ -49,6 +53,20 @@ status: pending | generated | locked | failed
 */}
 ```
 
+第二種標記，`@ai-reference`，標出筆記段落與 PDF 原始講義頁碼的關聯：
+
+```mdx
+{/* @ai-reference
+id: bjt-bias-1
+file: _references/電子學實作系列/第一週/Ch 1 - Introduction to Microelectronics.pdf
+page: 12
+status: suggested | confirmed | locked
+excerpt: 如圖 3-2 所示的偏壓電路
+*/}
+```
+
+流程由 `note-scanner`（擴充）→ `pdf-reference-planner`（新增）→ `mdx-writer`（擴充）三個 subagent 協作：先掃描既有標記、比對段落與 PDF 頁面文字產出建議、寫回標記。`status` 沒有 `pending`/`failed`——AI 通篇比對後主動插入建議（`suggested`），信心不足的段落不插入標記；作者手動把 `status` 改成 `confirmed` 代表頁碼正確，`locked` 永不覆寫，重跑規劃時 `confirmed`/`locked` 一律跳過。完整設計見 docs/superpowers/specs/2026-09-12-pdf-reference-viewer-design.md。
+
 處理流程由作者在 Claude Code 對話中觸發，依序由四個 Subagent 協作：
 
 1. **note-scanner**（haiku, 唯讀）— 掃描 MDX 找出標記區塊、列出孤兒元件
@@ -64,6 +82,7 @@ status: pending | generated | locked | failed
 - 驗證未通過前**不寫回 MDX**，避免引用到壞元件
 - 只有含互動 / 動畫時加 `client:visible`；純靜態 SVG 不加
 - `GeneratedFrame` 的元件本體外面那層 `data-nc-viz-body` 是「放大檢視」的搬移目標，**不可拿掉**（見 [VizZoom.tsx](src/components/islands/VizZoom.tsx)）
+- `@ai-reference` 標記的 `status: confirmed`／`status: locked` 永不覆寫；重新規劃時只補新段落或更新既有 `suggested` 標記
 
 ### 元件白名單
 
