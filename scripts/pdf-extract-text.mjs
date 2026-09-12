@@ -4,6 +4,15 @@
 import { getDocument } from "pdfjs-dist/legacy/build/pdf.mjs";
 import path from "node:path";
 
+// pdfjs-dist 的 legacy Node build 執行期會呼叫 Promise.withResolvers()，這是 Node 22.13 才有的
+// API；在較舊的 Node（例如 20.x）上會炸出一個沒有上下文的 pdfjs 內部 stack trace，看不出真正原因。
+// 先在這裡擋下來給明確訊息。
+if (typeof Promise.withResolvers !== "function") {
+  throw new Error(
+    `pdfjs-dist 需要 Node ≥22.13（目前 ${process.version}）—— 請先 nvm use 22 或改用 Node 22`,
+  );
+}
+
 const [, , pdfPathArg] = process.argv;
 if (!pdfPathArg) {
   console.error("Usage: node scripts/pdf-extract-text.mjs <path-to-pdf>");

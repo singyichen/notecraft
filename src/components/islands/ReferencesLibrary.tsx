@@ -73,7 +73,9 @@ function FolderSection({
               <span style={{ fontSize: 13.5, fontWeight: 700, color: "var(--text-strong)", lineHeight: 1.4 }}>
                 {pdf.name}
               </span>
-              <span style={{ fontSize: 12, color: "var(--text-muted)" }}>{pdf.numPages} 頁</span>
+              <span style={{ fontSize: 12, color: "var(--text-muted)" }}>
+                {pdf.numPages > 0 ? `${pdf.numPages} 頁` : "— 頁"}
+              </span>
             </button>
           ))}
         </div>
