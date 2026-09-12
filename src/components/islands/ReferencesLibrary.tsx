@@ -19,7 +19,13 @@ export default function ReferencesLibrary({ tree }: ReferencesLibraryProps) {
     );
   }
 
-  return <FolderSection folder={tree} depth={0} onOpen={open} />;
+  return (
+    <>
+      {/* 檔案列 hover 高亮用 class（不是逐列 state），比照檔案總管的簡單列表樣式 */}
+      <style>{`.nc-ref-file-row:hover { background: var(--surface-sunken); }`}</style>
+      <FolderSection folder={tree} depth={0} onOpen={open} />
+    </>
+  );
 }
 
 function FolderSection({
@@ -74,31 +80,39 @@ function FolderSection({
       {showChildren && (
         <>
           {folder.pdfs.length > 0 && (
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))", gap: 14, marginBottom: 8 }}>
+            <div style={{ display: "flex", flexDirection: "column", marginBottom: 4 }}>
               {folder.pdfs.map((pdf) => (
                 <button
                   key={pdf.relPath}
                   type="button"
                   onClick={() => onOpen(pdf)}
+                  className="nc-ref-file-row"
                   style={{
                     display: "flex",
-                    flexDirection: "column",
+                    alignItems: "center",
                     gap: 8,
-                    alignItems: "flex-start",
-                    padding: 16,
-                    border: "1px solid var(--border-subtle)",
-                    borderRadius: "var(--radius-lg)",
-                    background: "var(--surface-card)",
-                    boxShadow: "var(--shadow-card)",
+                    width: "100%",
+                    padding: "6px 10px 6px 27px",
+                    border: "none",
+                    borderRadius: "var(--radius-sm)",
+                    background: "none",
                     cursor: "pointer",
                     textAlign: "left",
                   }}
                 >
-                  <FileText size={20} style={{ color: "var(--blue-600)" }} />
-                  <span style={{ fontSize: 13.5, fontWeight: 700, color: "var(--text-strong)", lineHeight: 1.4 }}>
+                  <FileText size={15} style={{ color: "var(--blue-600)", flex: "none" }} />
+                  <span
+                    style={{
+                      fontSize: 13.5,
+                      color: "var(--text-strong)",
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      whiteSpace: "nowrap",
+                    }}
+                  >
                     {pdf.name}
                   </span>
-                  <span style={{ fontSize: 12, color: "var(--text-muted)" }}>
+                  <span style={{ marginLeft: "auto", flex: "none", fontSize: 12, color: "var(--text-muted)" }}>
                     {pdf.numPages > 0 ? `${pdf.numPages} 頁` : "— 頁"}
                   </span>
                 </button>
