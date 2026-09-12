@@ -5,7 +5,12 @@ import { ChevronLeft, ChevronRight, Minus, Plus, X } from "lucide-react";
 import { pdfAssetUrl } from "@/lib/references-url";
 import type { PDFDocumentLoadingTask, PDFDocumentProxy, RenderTask } from "pdfjs-dist";
 
-const WIDTH = 560;
+const DEFAULT_WIDTH = 560;
+const MIN_WIDTH = 420;
+// 內容區左右各 16px padding（見下方 contentRef 那層的 style），算抽屜寬度要扣掉這兩份
+const CONTENT_PADDING = 16;
+// 抽屜最寬不能吃光視窗——留一截讓筆記正文還看得到、還能捲動
+const VIEWPORT_MARGIN = 80;
 const MIN_SCALE = 0.6;
 const MAX_SCALE = 2.4;
 const SCALE_STEP = 0.2;
@@ -47,14 +52,15 @@ export default function PdfViewerDrawer() {
   // 每次成功載入新文件就 +1；畫面繪製 effect 靠這個值判斷「文件本身」是否換了一份，
   // 不能只靠 page / scale / numPages（兩份不同文件很可能剛好頁碼、頁數都相同）。
   const [docVersion, setDocVersion] = useState(0);
+  // 抽屜寬度依「當前這份 PDF 在 100% 縮放下的原生寬度」算出來，而不是固定值——
+  // 這樣預設 100% 就能完整顯示整頁，不用使用者自己縮小。每份新文件重算一次。
+  const [drawerWidth, setDrawerWidth] = useState(DEFAULT_WIDTH);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const contentRef = useRef<HTMLDivElement | null>(null);
   const docRef = useRef<PDFDocumentProxy | null>(null);
   const renderTaskRef = useRef<RenderTask | null>(null);
-  // 換文件時重置：讓每份新開的 PDF 第一次都自動縮到「跟抽屜一樣寬」，
-  // 而不是照 PDF 原生的 pt 尺寸（常比 560px 的抽屜寬，得手動縮小才看得到全頁）。
-  // 使用者開始手動縮放後，同一份文件內翻頁不再重算，維持使用者選的縮放。
-  const autoFitDoneRef = useRef(false);
+  // 換文件時重置：確保 drawerWidth 只在每份新文件第一次渲染時算一次，
+  // 同一份文件內翻頁、手動縮放都不應該讓抽屜寬度再跳動。
+  const widthSetRef = useRef(false);
 
   const close = useCallback(() => setOpen(false), []);
 
@@ -105,7 +111,7 @@ export default function PdfViewerDrawer() {
       .then((doc) => {
         if (cancelled || !doc) return;
         docRef.current = doc;
-        autoFitDoneRef.current = false;
+        widthSetRef.current = false;
         setNumPages(doc.numPages);
         setLoading(false);
         setDocVersion((v) => v + 1);
@@ -135,16 +141,15 @@ export default function PdfViewerDrawer() {
     doc.getPage(clampedPage).then((pdfPage) => {
       if (cancelled) return;
 
-      // 第一次畫這份文件：算出「跟抽屜內容寬度貼齊」的縮放比例，取代預設的 100%
-      // （PDF 原生 pt 尺寸常比 560px 的抽屜寬，100% 會被裁掉、得手動縮小才看得到全頁）。
-      // setScale 觸發下一輪 effect 重跑，才用算出來的比例真的畫，這一輪先跳過。
-      if (!autoFitDoneRef.current) {
-        autoFitDoneRef.current = true;
+      // 第一次畫這份文件：量出 100% 縮放下的原生寬度，把抽屜撐到剛好完整顯示整頁，
+      // 而不是讓頁面被固定寬度的抽屜裁掉。夾在 [MIN_WIDTH, 視窗寬度 - 留白] 之間，
+      // 避免極窄或超寬的頁面把抽屜擠得太小或吃光整個畫面。
+      if (!widthSetRef.current) {
+        widthSetRef.current = true;
         const natural = pdfPage.getViewport({ scale: 1 });
-        const available = (contentRef.current?.clientWidth ?? natural.width + 32) - 32; // 扣掉左右各 16px padding
-        const fitScale = Math.min(MAX_SCALE, Math.max(MIN_SCALE, available / natural.width));
-        setScale(+fitScale.toFixed(2));
-        return;
+        const desired = natural.width + CONTENT_PADDING * 2;
+        const maxAllowed = Math.max(MIN_WIDTH, window.innerWidth - VIEWPORT_MARGIN);
+        setDrawerWidth(Math.round(Math.min(Math.max(desired, MIN_WIDTH), maxAllowed)));
       }
 
       const context = canvas.getContext("2d");
@@ -186,17 +191,18 @@ export default function PdfViewerDrawer() {
             key="drawer"
             role="dialog"
             aria-label={`PDF 檢視：${fileName}`}
-            initial={{ x: WIDTH }}
+            initial={{ x: drawerWidth }}
             animate={{ x: 0 }}
-            exit={{ x: WIDTH }}
+            exit={{ x: drawerWidth }}
             transition={{ duration: reducedMotion ? 0 : 0.28, ease: [0.16, 1, 0.3, 1] }}
             style={{
               position: "fixed",
               top: 0,
               right: 0,
               bottom: 0,
-              width: WIDTH,
+              width: drawerWidth,
               maxWidth: "100vw",
+              transition: reducedMotion ? "none" : "width 220ms var(--ease-out, ease-out)",
               zIndex: 900,
               display: "flex",
               flexDirection: "column",
@@ -254,7 +260,6 @@ export default function PdfViewerDrawer() {
             </div>
 
             <div
-              ref={contentRef}
               style={{
                 flex: "1 1 auto",
                 minHeight: 0,
