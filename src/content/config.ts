@@ -2,12 +2,10 @@ import { defineCollection, z } from "astro:content";
 import { glob } from "astro/loaders";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
+import { resolveNotesDir } from "../lib/notes-dir";
 
 // P1: 支援 NOTECRAFT_NOTES_DIR 讓 viewer 讀外部絕對路徑；沒設就走原本的 src/content/notes/
-const envDir = process.env.NOTECRAFT_NOTES_DIR;
-const notesDir = envDir
-  ? path.resolve(envDir)
-  : path.resolve(process.cwd(), "src/content/notes");
+const notesDir = resolveNotesDir();
 
 // glob loader 的 base 若為絕對路徑必須是 file URL：內部走 new URL(base, root)，
 // Windows 的 "D:\..." 會被當成 scheme「d:」解析，導致 fileURLToPath 丟 "The URL must be of scheme file"。
