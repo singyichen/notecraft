@@ -281,12 +281,21 @@ import EcWeek1PnJunction from '@/components/generated/ec-week1-pn-junction'
 ![Jean Hoerni 平面製程專利圖，展示晶圓上均勻分佈元件位置的俯視圖與氧化層剖面圖](/note-images/ec-week1-ch1/11-hoerni-patent.png)
 
 *Jean Hoerni 的平面製程專利（US Patent 3,025,589）：真正發明「表面生長氧化層、選擇性蝕刻摻雜」這套製程的人。*
+
+![Jean Hoerni 的黑白肖像照片，戴眼鏡、手拿鉛筆](/note-images/ec-week1-ch1/24-hoerni-portrait.jpeg)
+
+*Jean Hoerni：真正發明平面製程的人，教科書上常被 Kilby／Noyce 的名氣蓋過。*
+
 - **Fairchild Semiconductor（快捷半導體）**：1957–2016 年間營運的公司，是平面製程與 IC 技術的發源地之一。
 - **Intel**：1968 年由包含 Robert Noyce 在內、出身 Fairchild 的人才創立，一直經營至今——說明快捷半導體是後來整個矽谷半導體產業的「母體」之一。
 
 兩人／兩家公司因此打了一場專利大戰——這也是為什麼「誰發明了 IC」在教科書上常常需要同時提到 Kilby 與 Noyce 兩人。可以把爭議拆成兩個問題來看：**Kilby 較早做出可工作的單片積體電路原型；Noyce 的表面金屬互連方案則解決了關鍵的製造問題，成為現代平面 IC 更直接的技術路線。**所以「較早實現」與「更接近後來量產製程」並不互相排斥。
 
 > **常見誤解｜平面製程不是把所有結構壓成完全相同的高度**：N、P、N 等摻雜區仍存在深度與立體結構；「平面」主要指製程從晶圓表面進行，並讓金屬互連沿著絕緣層表面圖案化。比較兩張圖時，應看的是**接點能否由表面金屬層規則連接**，而不是只看晶片內部有沒有上下層。
+
+![Kilby 專利（上）與 Noyce 專利（下）的剖面圖直接對照，皆標示多層 N/P 摻雜結構](/note-images/ec-week1-ch1/25-kilby-noyce-cross-section.png)
+
+*把兩張專利的剖面圖疊在一起看：重點是接點怎麼被引出來，不是晶片內部有沒有分層——這正是上面「常見誤解」要澄清的地方。*
 
 #### 一顆晶片背後的產業鏈（第 14–17 頁）
 
@@ -352,9 +361,15 @@ prompt: |
   字級與間距，箭頭方向由左至右；配色沿用 notecraft-design 的 token，不要
   硬編色碼；公司名稱這種 3 個以上的並列項目排成清楚的直向列表或小卡片，
   避免擠成一段文字。
-status: pending
+status: generated
 caption: IC 設計生態系的三段分工：Fabless 只做設計、Foundry 負責製造、封測廠負責封裝測試；Intel 是同時擁有設計與製造能力的傳統 IDM，不是典型 fabless。
 */}
+
+import EcWeek1IcEcosystem from '@/components/generated/ec-week1-ic-ecosystem'
+
+<GeneratedFrame id="ec-week1-ic-ecosystem" type="diagram" prompt={"重繪投影片「IC Design Eco-System」這張圖：三個階段的水平流程圖，\nDesign (Fabless) → Fabrication (Foundries) → Packaging，兩個箭頭串接。\n每個階段畫一個圓角矩形標題方塊，方塊底下列出該階段代表公司的「文字名稱」\n（不要重繪任何公司商標／Logo，一律用純文字排版）：\n- Design (Fabless)：MediaTek、Realtek、Qualcomm、AMD、Apple、NVIDIA\n- Fabrication (Foundries)：TSMC\n- Packaging：ASE\n另外用一顆獨立的小標籤或註記標出 Intel，並附一行小字說明「傳統 IDM，\n同時擁有設計與製造，不是典型 fabless」，避免讀者誤把 Intel 歸類成單純\nfabless 公司。\n視覺要求：手寫 SVG 流程圖，不引入圖表函式庫；三個階段方塊用一致的圓角、\n字級與間距，箭頭方向由左至右；配色沿用 notecraft-design 的 token，不要\n硬編色碼；公司名稱這種 3 個以上的並列項目排成清楚的直向列表或小卡片，\n避免擠成一段文字。"} caption="IC 設計生態系的三段分工：Fabless 只做設計、Foundry 負責製造、封測廠負責封裝測試；Intel 是同時擁有設計與製造能力的傳統 IDM，不是典型 fabless。">
+  <EcWeek1IcEcosystem />
+</GeneratedFrame>
 
 - **Anatomy of Integrated Circuits（積體電路的解剖）**：投影片用實體照片展示 IC 從外部到內部的完整層次——**PCB**（印刷電路板模組）→ 封裝好的晶片（**QFP** 封裝，四邊有金色接腳）→ **Die**（裸晶，晶片內部的矽本體）→ **Bonding pad**（接墊，裸晶邊緣透過細金屬線與外部接腳相連的接點），一路放大到微米（**μm**）等級的顯微走線（投影片範例標示放大倍率 121:1，比例尺 200μm，來源標註 ON Semiconductor 安森美半導體）。
 
@@ -378,6 +393,14 @@ caption: IC 設計生態系的三段分工：Fabless 只做設計、Foundry 負�
 ![一顆解封裝的晶片，可見中央的矽裸晶（die）與周圍呈放射狀排列的金色打線（bonding wire）](/note-images/ec-week1-ch1/15-packaged-chip-bonding-wires.jpeg)
 
 *打開封裝後看到的裸晶與打線：中央深色方塊是 die，向外輻射的細金線就是 bonding wire，把 die 邊緣的 bonding pad 接到外部接腳。*
+
+![一顆完整裸晶的顯微照片，可見晶片邊緣排列的接墊與內部複雜的電路走線](/note-images/ec-week1-ch1/26-die-micrograph.jpeg)
+
+*裸晶（die）的完整顯微照片：邊緣一圈是 bonding pad，內部密密麻麻的走線就是實際電路。*
+
+![裸晶局部的更高倍率顯微照片，標示放大倍率 121:1、比例尺 200μm，畫面左上角有 ON Semi 標誌](/note-images/ec-week1-ch1/27-die-micrograph-121x.jpeg)
+
+*放大到 121 倍、比例尺只有 200μm 的局部顯微照片——這就是投影片說的「微米級顯微走線」實際長什麼樣子。*
 
 ![Fairchild 晶片的顯微照片，圓形晶粒上有重複排列的電路區塊與金色走線](/note-images/ec-week1-ch1/12-fairchild-die-photo.jpeg)
 
@@ -464,11 +487,17 @@ caption: IC 設計生態系的三段分工：Fabless 只做設計、Foundry 負�
 - 投影片的核心結論：**"a digital signal operating at very high frequency is very 'analog'"**（運作在極高頻率的數位訊號，其實非常「類比」）——因為在極短時間內，電路本身的物理特性（電容充放電、頻寬限制）來不及讓電壓瞬間跳變。
 - **Analog signal（類比訊號）**：投影片定義的波形 `V(t)`，呈現連續、任意振幅高低變化，沒有固定離散電位準位。
 - **Noise（雜訊）**：投影片對照 `V(t)` 與 `V(t) + Noise`——類比訊號一旦疊加雜訊，雜訊會直接、永久地混入訊號本身，難以事後分辨哪段是原訊號、哪段是雜訊。
+
+![類比訊號 V(t) 與疊加雜訊後 V(t)+Noise 的波形對照](/note-images/ec-week1-ch1/21-analog-digital-noise.jpeg)
+
+*(a) 類比訊號，(b) 雜訊疊加後永久混入訊號本身、難以分辨哪段是原訊號。*
+
 - **Digital signal（數位訊號）**：投影片定義的波形只有兩個電位準位 **ZERO（零）**與 **ONE（一）**，每個位元持續時間標示為 `T`。加上雜訊後，只要雜訊幅度不足以讓接收端誤判準位，訊號代表的 0 或 1 邏輯資訊仍能被正確判讀——這是數位訊號**抗雜訊（noise immunity）**能力的來源。
 
-![類比訊號與數位訊號分別疊加雜訊前後的波形對照](/note-images/ec-week1-ch1/21-analog-digital-noise.jpeg)
+![數位訊號 V(t)（標示 ZERO、ONE、位元週期 T）與疊加雜訊後 V(t)+Noise 的波形對照](/note-images/ec-week1-ch1/23-digital-signal-noise.png)
 
-*類比訊號疊加雜訊後永久失真；數位訊號只要雜訊沒有大到跨越判斷門檻，0/1 資訊仍能正確讀出。*
+*(a) 數位訊號只有 ZERO／ONE 兩個準位，(b) 疊加雜訊後波形變雜亂，但只要雜訊沒有大到跨越判斷門檻，0/1 資訊仍能正確讀出——這就是數位訊號的抗雜訊能力。*
+
 - **Analog Processing（類比處理）→ Analog-to-Digital Conversion（類比轉數位轉換）→ Digital Processing and Storage（數位處理與儲存）**：投影片用這三個方塊總結典型系統的訊號處理流程，呼應前面手機與數位相機兩個範例的共同架構。
 - **硬碟訊號範例（第 35 頁）**：投影片舉例從 **Hard Disk（硬碟）**磁頭讀出的訊號，振幅只有約 **3 mV**（約 3 毫伏特），且雜訊很大、形狀不規則，說明類比前端電路常要面對「訊號微弱＋雜訊干擾」的挑戰。
 
@@ -492,7 +521,16 @@ caption: IC 設計生態系的三段分工：Fabless 只做設計、Foundry 負�
 - **Sequential machines（循序邏輯機器）**：由閂鎖器（**latches**）與正反器（**flipflops**）構成，輸出還與過去狀態（記憶）有關。
 - **NOT Gate（反閘）**：輸入 `A`，輸出 `Y = Ā`（A 取反相）。
 - **NOR Gate（反或閘）**：兩個輸入 `A`、`B`，輸出 `Y = (A+B)‾`（先做 OR 運算再整體取反相）。
+
+![NOT Gate 與 NOR Gate 的電路符號，分別標示輸入輸出與布林表示式](/note-images/ec-week1-ch1/28-not-nor-gate-symbols.png)
+
+*NOT 閘（`Y = Ā`）與 NOR 閘（`Y = (A+B)‾`）的標準符號。*
+
 - **Response of a gate to a noisy input（邏輯閘對雜訊輸入的響應）**：投影片用一個雜訊很大的輸入波形接到反閘，提出「輸出會是什麼樣子」的問題——只要雜訊不足以讓輸入跨越邏輯閘的判斷門檻，閘的輸出仍會是乾淨方波，這是數位邏輯閘本身具備「重新整形」（**signal restoration**）能力的具體展示。
+
+![一個雜訊很大的輸入波形接到 NOT 閘符號，輸出端標示問號](/note-images/ec-week1-ch1/29-gate-noisy-input.jpeg)
+
+*投影片留下的問題：輸入這麼雜訊的波形，NOT 閘的輸出會是什麼樣子？（答案：只要雜訊沒有跨越判斷門檻，輸出仍是乾淨方波。）*
 
 **Example 1-4（NOT 閘電路證明，第 42–43 頁）**：投影片用一個具體電路證明邏輯閘可以只靠最基本的類比元件實現——一個負載電阻 **R_L** 接在電源 **V_DD** 與輸出節點 **V_out** 之間，輸出節點同時接一個由輸入 `A` 控制的**開關（switch，S₁）**到地：
 
@@ -644,6 +682,10 @@ V₀ = V_T × ln(N_A × N_D / n_i²)
 - **Example 2-15（第 47 頁）**：`N_A = 2×10¹⁶ cm⁻³`、`N_D = 9×10¹⁵ cm⁻³`，算得 `V₀ = 730 mV`、`C_j0 = 0.265 fF/μm²`；`V_R = −1V` 時 `C_j = 0.172 fF/μm²`。
 - **Voltage-Controlled Oscillator, VCO（電壓控制振盪器，Example 2-16，第 48–49 頁）**：投影片舉的實際應用——手機內建 **2-GHz oscillator**，頻率由 **LC tank（LC 振盪槽電路）**的共振頻率決定，公式 `f_res = (1/2π) × 1/√(LC)`。若電容用 Example 2-15 的 PN 接面實現（接面面積 2000 μm²），逆偏電壓從 0 變化到 **−2V** 時，算得共振頻率從 2GHz 變化到 **2.78GHz**。
 - **Robotics Application: Infrared Transceivers（機器人應用：紅外線收發器，第 50 頁）**：投影片舉例——機器人用紅外線收發器偵測障礙物：**Transmitter**（發射端）的 **IR LED** 發射紅外線光照向 **Obstacle**（障礙物），**Receiver**（接收端）的 **IR Sensor**（本質是一顆 PN 接面光感測器）接收反射光；光照射到接面時會產生電子電洞對，在外加電場作用下電子與電洞分別被拉往 n 區與 p 區，形成光電流，把間歇性的紅外線光脈衝轉換成對應的電流脈衝。
+
+![機器人紅外線收發器系統圖：(a) 發射端 IR LED 對障礙物發光、接收端 IR Sensor 接收反射光 (b) PN 接面光感測器運作原理，光照使電子電洞對分別被拉往 n、p 區 (c) 發射的間歇 IR 光脈衝與感測器產生的對應電流脈衝波形](/note-images/ec-week1-ch2/17-ir-transceiver-application.png)
+
+*紅外線收發器：核心就是一顆 PN 接面光感測器，把光脈衝轉換成電流脈衝來判斷前方有沒有障礙物。*
 
 #### 順偏：pn Junction Under Forward Bias（第 51–58 頁）
 
