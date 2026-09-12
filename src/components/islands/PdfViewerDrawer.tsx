@@ -2,17 +2,36 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence, useReducedMotion } from "motion/react";
 import { ChevronLeft, ChevronRight, Minus, Plus, X } from "lucide-react";
-import * as pdfjsLib from "pdfjs-dist";
-import pdfWorkerUrl from "pdfjs-dist/build/pdf.worker.min.mjs?url";
 import { pdfAssetUrl } from "@/lib/references-url";
-import type { PDFDocumentProxy, RenderTask } from "pdfjs-dist";
-
-pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorkerUrl;
+import type { PDFDocumentLoadingTask, PDFDocumentProxy, RenderTask } from "pdfjs-dist";
 
 const WIDTH = 560;
 const MIN_SCALE = 0.6;
 const MAX_SCALE = 2.4;
 const SCALE_STEP = 0.2;
+
+// cmaps / standard_fonts 由 build（notes-assets-build-copy.ts）與 dev（dev-api/handlers.mjs）
+// 各自複製 / 服務到這兩個固定路徑，供 pdf.js 解析 CJK CMap（如 GBK-EUC-H）與非嵌入標準字型。
+const CMAP_URL = "/pdfjs-cmaps/";
+const STANDARD_FONT_DATA_URL = "/pdfjs-standard-fonts/";
+
+// pdfjs-dist 打包後約 441 KB。PdfViewerDrawer 以 client:only 掛在 BaseLayout，會出現在
+// 每一頁，若在檔案頂層靜態 import 會讓完全沒用到 PDF 的頁面也在首次載入時抓下這包 JS。
+// 改成惰性動態 import，只有讀者第一次觸發 nc-pdf-open 才真正載入 pdfjs 與它的 worker；
+// 用模組層的 promise cache 確保多次開啟只載入一次。
+let pdfjsLibPromise: Promise<typeof import("pdfjs-dist")> | null = null;
+function loadPdfjs() {
+  if (!pdfjsLibPromise) {
+    pdfjsLibPromise = Promise.all([
+      import("pdfjs-dist"),
+      import("pdfjs-dist/build/pdf.worker.min.mjs?url"),
+    ]).then(([lib, worker]) => {
+      lib.GlobalWorkerOptions.workerSrc = worker.default;
+      return lib;
+    });
+  }
+  return pdfjsLibPromise;
+}
 
 type OpenDetail = { file: string; page: number };
 
@@ -55,11 +74,8 @@ export default function PdfViewerDrawer() {
       close();
     };
     window.addEventListener("keydown", onKey, true);
-    const prevOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
     return () => {
       window.removeEventListener("keydown", onKey, true);
-      document.body.style.overflow = prevOverflow;
     };
   }, [open, close]);
 
@@ -67,12 +83,22 @@ export default function PdfViewerDrawer() {
   useEffect(() => {
     if (!open || !file) return;
     let cancelled = false;
+    let task: PDFDocumentLoadingTask | null = null;
     setLoading(true);
     setLoadError(false);
-    const task = pdfjsLib.getDocument({ url: pdfAssetUrl(file) });
-    task.promise
+    loadPdfjs()
+      .then((lib) => {
+        if (cancelled) return undefined;
+        task = lib.getDocument({
+          url: pdfAssetUrl(file),
+          cMapUrl: CMAP_URL,
+          cMapPacked: true,
+          standardFontDataUrl: STANDARD_FONT_DATA_URL,
+        });
+        return task.promise;
+      })
       .then((doc) => {
-        if (cancelled) return;
+        if (cancelled || !doc) return;
         docRef.current = doc;
         setNumPages(doc.numPages);
         setLoading(false);
@@ -88,7 +114,7 @@ export default function PdfViewerDrawer() {
       });
     return () => {
       cancelled = true;
-      task.destroy();
+      task?.destroy();
       docRef.current = null;
     };
   }, [open, file]);
@@ -131,18 +157,8 @@ export default function PdfViewerDrawer() {
       {open && (
         <>
           <motion.div
-            key="scrim"
-            onClick={close}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: reducedMotion ? 0 : 0.2, ease: [0.16, 1, 0.3, 1] }}
-            style={{ position: "fixed", inset: 0, zIndex: 890, background: "rgba(15,23,42,0.35)" }}
-          />
-          <motion.div
             key="drawer"
             role="dialog"
-            aria-modal="true"
             aria-label={`PDF 檢視：${fileName}`}
             initial={{ x: WIDTH }}
             animate={{ x: 0 }}
