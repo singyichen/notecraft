@@ -1,0 +1,4 @@
+interface:
+  display_name: "Lecture to Notes"
+  short_description: "Merge classroom sources into existing course notes"
+  default_prompt: "Use $lecture-to-notes to integrate these classroom materials into my existing course note."
