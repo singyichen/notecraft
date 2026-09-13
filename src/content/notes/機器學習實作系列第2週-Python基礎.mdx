@@ -14,7 +14,7 @@ updatedAt: "2026-09-13"
 
 ### 生物神經元的啟發與人工神經元的發展
 
-人工神經元的設計，源頭確實是對生物神經元的簡化模仿。生物神經元透過**樹突（dendrites）**接收其他神經元傳來的訊號，訊號在**細胞核（cell nucleus）**整合後，沿著包著**髓鞘（myelin sheath）**的**軸突（axon）**傳遞出去，最後由**軸突末梢（axon terminals）**把訊號傳給下一顆神經元——這是一整條「輸入 → 整合 → 輸出」的鏈路。
+人工神經元的設計，源頭確實是對生物神經元的簡化模仿。生物神經元透過**樹突（dendrites）** 接收其他神經元傳來的訊號，訊號在**細胞核（cell nucleus）** 整合後，沿著包著**髓鞘（myelin sheath）** 的**軸突（axon）** 傳遞出去，最後由**軸突末梢（axon terminals）** 把訊號傳給下一顆神經元——這是一整條「輸入 → 整合 → 輸出」的鏈路。
 
 ![生物神經元結構圖：左側多個輸入訊號經樹突進入細胞核，訊號沿包覆髓鞘的軸突傳遞，最後由軸突末梢輸出](/note-images/ml-week2/01-biological-neuron.jpeg)
 
@@ -37,7 +37,7 @@ $$
 \sigma(z) = \begin{cases} 1 & \text{if } z \geq 0 \\ 0 & \text{otherwise} \end{cases}
 $$
 
-（原始定義裡門檻是 $z - \theta \gtrless 0$，$\theta$ 是閾值；把 bias unit 定義成 $b = -\theta$ 代入後，判斷式就簡化成上面「$z \geq 0$」這個更常用的形式。）這個階梯函數就是第 1 週術語表提到的**激活函數（activation function）**最原始的版本——雖然現代神經網路幾乎不再用它（不可微分，無法配合梯度下降），但它是理解「線性模型 + 非線性判斷」這個組合的起點。
+（原始定義裡門檻是 $z - \theta \gtrless 0$，$\theta$ 是閾值；把 bias unit 定義成 $b = -\theta$ 代入後，判斷式就簡化成上面「$z \geq 0$」這個更常用的形式。）這個階梯函數就是第 1 週術語表提到的**激活函數（activation function）** 最原始的版本——雖然現代神經網路幾乎不再用它（不可微分，無法配合梯度下降），但它是理解「線性模型 + 非線性判斷」這個組合的起點。
 
 import PdfRefChip from '@/components/islands/PdfRefChip.tsx'
 
@@ -179,7 +179,7 @@ excerpt: Convergence is only guaranteed if the two classes are linearly separabl
 
 *左：存在一條直線能完全分開兩類，PLA 保證收斂。中、右：兩類樣本交錯或包夾在一起，找不到任何一條直線能完全分開，PLA 會永遠找不到「整輪都不誤判」的參數。*
 
-但反過來，如果資料**不是線性可分**（例如經典的 XOR 問題：兩類樣本呈對角交錯排列，任何一條直線都切不開），PLA 會永遠找不到能讓整輪都不誤判的參數，陷入無窮迴圈、不斷更新卻不收斂。1969 年 Marvin Minsky 與 Seymour Papert 在《*Perceptrons*》一書中正式指出這個侷限，是感知器研究一度停滯（第一次 AI 寒冬的起點之一）的關鍵原因；也正是這個侷限，催生了後面用**多層感知器（Multilayer Perceptron, MLP）**疊加非線性 activation function 來處理非線性可分問題的路線——呼應第 10 週要學的多層神經網路與深度學習。
+但反過來，如果資料**不是線性可分**（例如經典的 XOR 問題：兩類樣本呈對角交錯排列，任何一條直線都切不開），PLA 會永遠找不到能讓整輪都不誤判的參數，陷入無窮迴圈、不斷更新卻不收斂。1969 年 Marvin Minsky 與 Seymour Papert 在《*Perceptrons*》一書中正式指出這個侷限，是感知器研究一度停滯（第一次 AI 寒冬的起點之一）的關鍵原因；也正是這個侷限，催生了後面用**多層感知器（Multilayer Perceptron, MLP）** 疊加非線性 activation function 來處理非線性可分問題的路線——呼應第 10 週要學的多層神經網路與深度學習。
 
 {/* @ai-reference
 id: pla-convergence-not-separable
@@ -204,7 +204,7 @@ excerpt: If the two classes are not linearly separable, the perceptron would nev
 
 ### PLA 與課程其他概念的連結
 
-PLA 的逐筆更新規則，其實是第 1 週定義過的**隨機梯度下降（SGD）**的一個特例：可以把它理解成對「感知器損失（perceptron loss，只計算被誤判樣本的 −y·(w·x+b)）」做次梯度下降——每次只看一筆誤判樣本、算一次梯度方向、立刻更新，形式上跟 SGD「每次只用一筆樣本更新」的精神一致。差別在於 PLA 用的階梯函數不可微分，嚴格來說沒有一個處處可微的 loss function 可以套標準梯度下降，這也是下一週要學的 **Adaline** 出現的原因——Adaline 把階梯函數換成連續的線性輸出，改用均方誤差（MSE）當 loss function，就能用真正的梯度下降訓練，是從 PLA 到現代神經網路之間承先啟後的一步。
+PLA 的逐筆更新規則，其實是第 1 週定義過的**隨機梯度下降（SGD）** 的一個特例：可以把它理解成對「感知器損失（perceptron loss，只計算被誤判樣本的 −y·(w·x+b)）」做次梯度下降——每次只看一筆誤判樣本、算一次梯度方向、立刻更新，形式上跟 SGD「每次只用一筆樣本更新」的精神一致。差別在於 PLA 用的階梯函數不可微分，嚴格來說沒有一個處處可微的 loss function 可以套標準梯度下降，這也是下一週要學的 **Adaline** 出現的原因——Adaline 把階梯函數換成連續的線性輸出，改用均方誤差（MSE）當 loss function，就能用真正的梯度下降訓練，是從 PLA 到現代神經網路之間承先啟後的一步。
 
 {/* @ai-visualize
 id: ml-week2-pla-training
@@ -272,7 +272,14 @@ The area of a circle with radius 5.0 is 78.54
 
 ### 四種內建容器：先問「要不要改、要不要順序、要不要查得快」
 
-Python 的四種基本容器差別不在「能裝什麼」，而在「你打算怎麼用它」。**列表（list）**是可變的有序序列，適合會一直增刪的暫存區——逐行讀檔時把解析結果 `append` 進去就是典型用法。**元組（tuple）**是不可變的有序序列，適合表示「一組固定的東西」，例如圖片的形狀 `(28, 28)`；因為不可變，它還能當字典的鍵。**字典（dict）**是鍵值對映射，適合「用名字查東西」，例如把欄位名對應到那一欄資料。**集合（set）**只裝不重複的元素、不保證順序，適合去重與取交集——想知道兩份名單重疊多少，`set(a) & set(b)` 一行就好。
+Python 的四種基本容器差別不在「能裝什麼」，而在「你打算怎麼用它」：
+
+| 容器 | 特性 | 適合場景 | 範例 |
+| --- | --- | --- | --- |
+| 列表（list） | 可變的有序序列 | 會一直增刪的暫存區 | 逐行讀檔時把解析結果 `append` 進去 |
+| 元組（tuple） | 不可變的有序序列 | 表示「一組固定的東西」；因為不可變，還能當字典的鍵 | 圖片的形狀 `(28, 28)` |
+| 字典（dict） | 鍵值對映射 | 「用名字查東西」 | 把欄位名對應到那一欄資料 |
+| 集合（set） | 只裝不重複的元素、不保證順序 | 去重與取交集 | 想知道兩份名單重疊多少，`set(a) & set(b)` 一行就好 |
 
 {/* @ai-reference
 id: python-containers-dedup
@@ -402,7 +409,7 @@ Files in test_dir: ['hello.py', 'test1.py']
 
 ### 物件導向程式設計基礎：類別、`__init__` 與 `self`
 
-**類別（class）**把資料（屬性）與操作資料的邏輯（方法）綁在一起。`__init__` 是**建構子（constructor）**，物件被建立（instantiate）的當下自動呼叫，用來初始化屬性；`self` 是方法的第一個參數，代表「呼叫這個方法的物件實例本身」，Python 不會自動幫你傳，但呼叫端也不用手動給——`obj.method()` 背後其實是 `Class.method(obj)`。
+**類別（class）** 把資料（屬性）與操作資料的邏輯（方法）綁在一起。`__init__` 是**建構子（constructor）**，物件被建立（instantiate）的當下自動呼叫，用來初始化屬性；`self` 是方法的第一個參數，代表「呼叫這個方法的物件實例本身」，Python 不會自動幫你傳，但呼叫端也不用手動給——`obj.method()` 背後其實是 `Class.method(obj)`。
 
 **練習**：定義一個類別 `Point`，具有座標屬性 $x, y$，並包含一個方法 `distance_from_origin()` 計算該點到原點的距離 $\sqrt{x^2+y^2}$：
 
@@ -424,7 +431,7 @@ print(f"Distance: {p.distance_from_origin()}")  # 輸出 5.0
 
 ### 函式與彈性參數：`*args` 與 `**kwargs`
 
-用 `def` 定義函式、把重複邏輯收成一個名字，是讓分析程式碼不變成一坨的第一步。**參數預設值（default argument）**讓呼叫端只在需要時才覆寫，例如 `def load(path, sep=",")` 平常寫 `load("data.csv")` 就好。經典陷阱：預設值只在定義時算一次，別拿可變物件當預設值，慣例是寫 `None` 再於函式內建立。
+用 `def` 定義函式、把重複邏輯收成一個名字，是讓分析程式碼不變成一坨的第一步。**參數預設值（default argument）** 讓呼叫端只在需要時才覆寫，例如 `def load(path, sep=",")` 平常寫 `load("data.csv")` 就好。經典陷阱：預設值只在定義時算一次，別拿可變物件當預設值，慣例是寫 `None` 再於函式內建立。
 
 `*args` 把多餘的位置參數收成 tuple，`**kwargs` 把多餘的關鍵字參數收成 dict。它們在資料科學程式碼中隨處可見，因為套件常要「把使用者給的額外設定原封不動轉交給底層函式」——自己包一個繪圖函式時把 `**kwargs` 丟給 matplotlib，使用者就能沿用它原本所有參數。呼叫端也能反過來用 `*`／`**` 把既有的 list、dict 拆開餵進函式（unpacking）。
 
