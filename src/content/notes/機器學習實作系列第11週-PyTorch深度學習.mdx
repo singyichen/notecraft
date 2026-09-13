@@ -24,7 +24,7 @@ import MlWeek11TrainingLoop from '@/components/generated/ml-week11-training-loop
 
 ### 餵資料：Dataset 定義一筆，DataLoader 決定怎麼發
 
-手刻階段資料就是一個大矩陣，訓練迴圈裡自己切片、自己洗牌。PyTorch 把這件事拆成兩個角色：`Dataset` 只回答兩個問題——總共幾筆、第 i 筆長什麼樣；`DataLoader` 則負責發料——批次多大、每個 epoch 要不要重新洗牌（shuffle）、最後不滿一批要不要丟掉。拆開的價值要在資料不是現成矩陣時才顯現：教材用一個貓狗圖片資料夾示範，`__getitem__` 被呼叫的當下才真的打開那張 jpg、縮成 80×120、轉成 tensor。磁碟上有一萬張圖，記憶體裡永遠只有當下這一批——像餐廳一道一道出餐，而不是把整鍋菜端上桌。MNIST、CelebA 這類常見資料集則由 `torchvision.datasets` 直接給你現成的 Dataset。
+手刻階段資料就是一個大矩陣，訓練迴圈裡自己切片、自己洗牌。PyTorch 把這件事拆成兩個角色：`Dataset` 只回答兩個問題——總共幾筆、第 $i$ 筆長什麼樣；`DataLoader` 則負責發料——批次多大、每個 epoch 要不要重新洗牌（shuffle）、最後不滿一批要不要丟掉。拆開的價值要在資料不是現成矩陣時才顯現：教材用一個貓狗圖片資料夾示範，`__getitem__` 被呼叫的當下才真的打開那張 jpg、縮成 80×120、轉成 tensor。磁碟上有一萬張圖，記憶體裡永遠只有當下這一批——像餐廳一道一道出餐，而不是把整鍋菜端上桌。MNIST、CelebA 這類常見資料集則由 `torchvision.datasets` 直接給你現成的 Dataset。
 
 ### 疊層與激活函數：模型是可巢狀的積木
 
@@ -32,7 +32,7 @@ import MlWeek11TrainingLoop from '@/components/generated/ml-week11-training-loop
 
 ### autograd：帳是怎麼記、怎麼往回推的
 
-`z = (a − b) × 2 + c` 這樣一條式子，PyTorch 執行時不只算出數字，還順手把它記成一張**計算圖（computation graph）**：節點是張量與運算，邊是「誰由誰算出來」。這張圖是動態的，在你真的跑一次前向傳播的那一刻才被建起來，所以中間寫 `if` 與 `for` 都照樣被記錄，也隨時能 print 中間值來看。`loss.backward()` 做的事，就是從圖的終點（loss 這個純量）沿著邊往回走，每經過一個運算就套用該運算的微分規則、把局部導數乘進去——鏈鎖律的自動化版本，也就是 **`autograd`（automatic differentiation，自動微分）**。走完之後，每個 `requires_grad=True` 的張量上就多出一個 `.grad`。它不像數值微分用差分近似，也不像符號微分要先推出整條導數公式，而是照實際執行過的順序機械地連乘，因此精確、成本跟前向傳播同一個量級。兩個細節要記牢：梯度是累加的，不歸零就會把上一批的混進來；而 `backward()` 之後計算圖預設會被釋放，同一張圖不能回推兩次。
+$z = (a - b) \times 2 + c$ 這樣一條式子，PyTorch 執行時不只算出數字，還順手把它記成一張**計算圖（computation graph）**：節點是張量與運算，邊是「誰由誰算出來」。這張圖是動態的，在你真的跑一次前向傳播的那一刻才被建起來，所以中間寫 `if` 與 `for` 都照樣被記錄，也隨時能 print 中間值來看。`loss.backward()` 做的事，就是從圖的終點（loss 這個純量）沿著邊往回走，每經過一個運算就套用該運算的微分規則、把局部導數乘進去——鏈鎖律的自動化版本，也就是 **`autograd`（automatic differentiation，自動微分）**。走完之後，每個 `requires_grad=True` 的張量上就多出一個 `.grad`。它不像數值微分用差分近似，也不像符號微分要先推出整條導數公式，而是照實際執行過的順序機械地連乘，因此精確、成本跟前向傳播同一個量級。兩個細節要記牢：梯度是累加的，不歸零就會把上一批的混進來；而 `backward()` 之後計算圖預設會被釋放，同一張圖不能回推兩次。
 
 ### 三種抽象層級：Sequential、自訂 Module、Lightning
 
