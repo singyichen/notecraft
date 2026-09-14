@@ -160,6 +160,44 @@ test("publishNoteFile 送出 PUT，body 帶 base64 內容、sha、branch", async
   assert.equal(base64ToUtf8(payload.content), "新內容");
 });
 
+test("githubFetch 送出的 headers 包含 Authorization 與 Content-Type", async () => {
+  let capturedInit: RequestInit | undefined;
+  globalThis.fetch = (async (_url: string, init?: RequestInit) => {
+    capturedInit = init;
+    return jsonResponse(200, { content: { sha: "new-sha" } });
+  }) as typeof fetch;
+
+  await publishNoteFile(config, "src/content/notes/week2.mdx", "內容", "sha", "msg");
+  const headers = capturedInit?.headers as Record<string, string>;
+  assert.equal(headers.Authorization, "Bearer fake-token");
+  assert.equal(headers["Content-Type"], "application/json");
+});
+
+test("fetchNoteFile 帶 filePath 時直接用該路徑、不做 .mdx/.md 猜測", async () => {
+  const calls: string[] = [];
+  globalThis.fetch = (async (url: string) => {
+    calls.push(url);
+    return jsonResponse(200, { content: btoa("---\ntitle: t\n---\nbody"), sha: "real-sha" });
+  }) as typeof fetch;
+
+  const result = await fetchNoteFile(config, "week2", "src/content/notes/機器學習實作系列第2週-Python基礎.mdx");
+  assert.equal(result.path, "src/content/notes/機器學習實作系列第2週-Python基礎.mdx");
+  assert.equal(result.sha, "real-sha");
+  assert.equal(calls.length, 1);
+});
+
+test("fetchNoteFile 帶 filePath 但 404 時丟 GithubNotFoundError，訊息帶正確路徑", async () => {
+  globalThis.fetch = (async () => jsonResponse(404, { message: "Not Found" })) as typeof fetch;
+  await assert.rejects(
+    () => fetchNoteFile(config, "week2", "src/content/notes/真實檔名.mdx"),
+    (err: unknown) => {
+      assert.ok(err instanceof GithubNotFoundError);
+      assert.match((err as Error).message, /真實檔名\.mdx/);
+      return true;
+    },
+  );
+});
+
 test("publishNoteFile 收到 409 時丟 GithubConflictError", async () => {
   globalThis.fetch = (async () => jsonResponse(409, { message: "conflict" })) as typeof fetch;
   await assert.rejects(

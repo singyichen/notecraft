@@ -73,7 +73,7 @@ export default function OnlineEditorSettingsForm({ initial, onClose, onSaved }: 
           </label>
           <div style={notice}>
             <ShieldCheck size={15} style={{ flex: "none", marginTop: 1 }} />
-            此 token 只會存在這個瀏覽器裡，只會直接送到 GitHub API，不會送到 NoteCraft 或其他任何伺服器；換裝置需要重新貼一次。
+            此 token 只會存在這個瀏覽器裡，只會直接送到 GitHub API，不會送到 NoteCraft 或其他任何伺服器；換裝置需要重新貼一次；建議設定過期時間並只給單一 repo 的 Contents 權限。
           </div>
           {error && <div style={errorBox}>{error}</div>}
           <div style={{ display: "flex", justifyContent: "space-between", gap: 10, marginTop: 4 }}>

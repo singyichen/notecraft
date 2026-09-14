@@ -1,18 +1,21 @@
 import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { Pencil, Settings } from "lucide-react";
 import { loadSettings, type OnlineEditSettings } from "@/lib/online-edit-settings";
 import OnlineEditorSettingsForm from "./OnlineEditorSettingsForm";
 import OnlineEditorPanel from "./OnlineEditorPanel";
 
-type Props = { slug: string; noteTitle: string };
+type Props = { slug: string; noteTitle: string; filePath?: string };
 
-export default function OnlineEditor({ slug, noteTitle }: Props) {
+export default function OnlineEditor({ slug, noteTitle, filePath }: Props) {
   const [settings, setSettings] = useState<OnlineEditSettings | null>(null);
   const [showSettings, setShowSettings] = useState(false);
   const [editing, setEditing] = useState(false);
+  const [slotEl, setSlotEl] = useState<HTMLElement | null>(null);
 
   useEffect(() => {
     setSettings(loadSettings());
+    setSlotEl(document.getElementById("nc-online-editor-slot"));
   }, []);
 
   useEffect(() => {
@@ -31,6 +34,11 @@ export default function OnlineEditor({ slug, noteTitle }: Props) {
           <Settings size={15} /> 設定線上編輯
         </button>
       )}
+      {settings && (
+        <button onClick={() => setShowSettings(true)} style={settingsBtn} aria-label="線上編輯設定">
+          <Settings size={15} />
+        </button>
+      )}
       {showSettings && (
         <OnlineEditorSettingsForm
           initial={settings}
@@ -41,9 +49,18 @@ export default function OnlineEditor({ slug, noteTitle }: Props) {
           }}
         />
       )}
-      {editing && settings && (
-        <OnlineEditorPanel slug={slug} noteTitle={noteTitle} settings={settings} onClose={() => setEditing(false)} />
-      )}
+      {editing && settings && slotEl
+        ? createPortal(
+            <OnlineEditorPanel
+              slug={slug}
+              noteTitle={noteTitle}
+              filePath={filePath}
+              settings={settings}
+              onClose={() => setEditing(false)}
+            />,
+            slotEl,
+          )
+        : null}
     </>
   );
 }
@@ -63,4 +80,17 @@ const triggerBtn: React.CSSProperties = {
   fontWeight: 700,
   cursor: "pointer",
   whiteSpace: "nowrap",
+};
+
+const settingsBtn: React.CSSProperties = {
+  display: "inline-flex",
+  alignItems: "center",
+  justifyContent: "center",
+  width: 34,
+  height: 34,
+  borderRadius: 999,
+  border: "1px solid var(--border-default)",
+  background: "#fff",
+  color: "var(--neutral-500)",
+  cursor: "pointer",
 };

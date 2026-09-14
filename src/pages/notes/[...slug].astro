@@ -120,7 +120,7 @@ const toc = headings.filter((h) => h.depth === 2).map((h) => ({ id: h.slug, labe
             </a>
           )}
           {!isDev && (
-            <OnlineEditor client:idle slug={note.id} noteTitle={note.data.title} />
+            <OnlineEditor client:idle slug={note.id} noteTitle={note.data.title} filePath={note.filePath} />
           )}
           {isDev && pendingIds.length > 0 && (
             <RegenerateButton client:idle slug={note.id} pendingIds={pendingIds} />
@@ -145,6 +145,8 @@ const toc = headings.filter((h) => h.depth === 2).map((h) => ({ id: h.slug, labe
           ))}
         </div>
       )}
+
+      <div id="nc-online-editor-slot"></div>
 
       <div id="nc-note-content" class="nc-prose" data-pagefind-body>
         <Content />

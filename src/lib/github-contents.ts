@@ -105,12 +105,20 @@ async function githubFetch(url: string, config: RepoConfig, init: RequestInit = 
       Accept: "application/vnd.github+json",
       Authorization: `Bearer ${config.token}`,
       "X-GitHub-Api-Version": "2022-11-28",
+      "Content-Type": "application/json",
       ...(init.headers ?? {}),
     },
   });
 }
 
-export async function fetchNoteFile(config: RepoConfig, slug: string): Promise<FetchedNote> {
+export async function fetchNoteFile(config: RepoConfig, slug: string, filePath?: string): Promise<FetchedNote> {
+  if (filePath) {
+    const res = await githubFetch(`${apiUrl(config, filePath)}?ref=${encodeURIComponent(config.branch)}`, config);
+    if (res.status === 404) throw new GithubNotFoundError(filePath);
+    if (!res.ok) throw new GithubApiError(res.status, await res.text());
+    const json = (await res.json()) as { content: string; sha: string };
+    return { raw: base64ToUtf8(json.content), sha: json.sha, path: filePath };
+  }
   for (const ext of [".mdx", ".md"]) {
     const path = notePath(config, slug, ext);
     const res = await githubFetch(`${apiUrl(config, path)}?ref=${encodeURIComponent(config.branch)}`, config);

@@ -17,6 +17,7 @@ import type { OnlineEditSettings } from "@/lib/online-edit-settings";
 type Props = {
   slug: string;
   noteTitle: string;
+  filePath?: string;
   settings: OnlineEditSettings;
   onClose: () => void;
 };
@@ -26,7 +27,7 @@ type LoadState =
   | { phase: "error"; message: string }
   | { phase: "ready"; path: string; sha: string; frontmatter: string; originalBody: string };
 
-export default function OnlineEditorPanel({ slug, noteTitle, settings, onClose }: Props) {
+export default function OnlineEditorPanel({ slug, noteTitle, filePath, settings, onClose }: Props) {
   const [state, setState] = useState<LoadState>({ phase: "loading" });
   const [bodyDraft, setBodyDraft] = useState("");
   const [commitMessage, setCommitMessage] = useState(`更新《${noteTitle}》內文`);
@@ -35,7 +36,7 @@ export default function OnlineEditorPanel({ slug, noteTitle, settings, onClose }
 
   useEffect(() => {
     let cancelled = false;
-    fetchNoteFile(settings, slug)
+    fetchNoteFile(settings, slug, filePath)
       .then((file) => {
         if (cancelled) return;
         const { frontmatter, body } = splitFrontmatter(file.raw);
@@ -55,10 +56,14 @@ export default function OnlineEditorPanel({ slug, noteTitle, settings, onClose }
     return () => {
       cancelled = true;
     };
-  }, [settings, slug]);
+  }, [settings, slug, filePath]);
 
   const publish = async () => {
     if (state.phase !== "ready") return;
+    if (!commitMessage.trim()) {
+      setPublishError("請填寫 commit message");
+      return;
+    }
     const before = extractRefs(state.originalBody);
     const after = extractRefs(bodyDraft);
     const removed = diffRemovedRefs(before, after);
