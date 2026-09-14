@@ -2,21 +2,28 @@ import { useEffect, useState } from "react";
 import { Pencil, Settings } from "lucide-react";
 import { loadSettings, type OnlineEditSettings } from "@/lib/online-edit-settings";
 import OnlineEditorSettingsForm from "./OnlineEditorSettingsForm";
+import OnlineEditorPanel from "./OnlineEditorPanel";
 
 type Props = { slug: string; noteTitle: string };
 
 export default function OnlineEditor({ slug, noteTitle }: Props) {
   const [settings, setSettings] = useState<OnlineEditSettings | null>(null);
   const [showSettings, setShowSettings] = useState(false);
+  const [editing, setEditing] = useState(false);
 
   useEffect(() => {
     setSettings(loadSettings());
   }, []);
 
+  useEffect(() => {
+    const el = document.getElementById("nc-note-content");
+    if (el) el.style.display = editing ? "none" : "";
+  }, [editing]);
+
   return (
     <>
       {settings ? (
-        <button onClick={() => setShowSettings(true)} style={triggerBtn}>
+        <button onClick={() => setEditing(true)} style={triggerBtn}>
           <Pencil size={15} /> 線上編輯
         </button>
       ) : (
@@ -33,6 +40,9 @@ export default function OnlineEditor({ slug, noteTitle }: Props) {
             setShowSettings(false);
           }}
         />
+      )}
+      {editing && settings && (
+        <OnlineEditorPanel slug={slug} noteTitle={noteTitle} settings={settings} onClose={() => setEditing(false)} />
       )}
     </>
   );
