@@ -7,6 +7,7 @@ import RegenerateButton from "@/components/islands/RegenerateButton.tsx";
 import DeleteNoteButton from "@/components/islands/DeleteNoteButton.tsx";
 import FavoriteButton from "@/components/islands/FavoriteButton.tsx";
 import GenerateDeckButton from "@/components/islands/GenerateDeckButton.tsx";
+import OnlineEditor from "@/components/islands/OnlineEditor.tsx";
 import ReadingControl from "@/components/islands/ReadingControl.tsx";
 import DonePrompt from "@/components/islands/DonePrompt.tsx";
 import SeriesNav from "@/components/islands/SeriesNav.tsx";
@@ -118,6 +119,9 @@ const toc = headings.filter((h) => h.depth === 2).map((h) => ({ id: h.slug, labe
               <Icon name="edit" size={15} /> 以 VS Code 編輯
             </a>
           )}
+          {!isDev && (
+            <OnlineEditor client:idle slug={note.id} noteTitle={note.data.title} />
+          )}
           {isDev && pendingIds.length > 0 && (
             <RegenerateButton client:idle slug={note.id} pendingIds={pendingIds} />
           )}
@@ -142,7 +146,7 @@ const toc = headings.filter((h) => h.depth === 2).map((h) => ({ id: h.slug, labe
         </div>
       )}
 
-      <div class="nc-prose" data-pagefind-body>
+      <div id="nc-note-content" class="nc-prose" data-pagefind-body>
         <Content />
       </div>
 
