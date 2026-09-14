@@ -115,6 +115,55 @@ $V_R = -1\text{V}$ 時 $C_j = ...$        ← 中文移到數學模式外
 C_j(V_R=-1\text{V}) = ...                ← 或者用下標描述代替中文插入
 ```
 
+## 重要陷阱：清單項目裡的 `$$` 區塊縮排不足會打斷整個清單
+
+`$$...$$` display math 區塊如果寫在**清單項目（`1.`／`-`）裡面**（例如「推導步驟」本身就是某個有序清單項目的內容），這個區塊的 `$$` 起始行、公式本體、結尾 `$$`，**縮排都必須對齊該清單項目的內容欄位**，否則 remark 會把它判定為縮排不足、直接跳出清單——不只斷開這個項目，後面所有清單項目都會被打斷。
+
+更危險的是：清單斷開後，如果緊接著的下一個清單標記不是從 `1.` 開始（例如是 `3.`），CommonMark 規定**有序清單只有起始數字為 1 時才能打斷前一個段落**，於是這個 `3.` 不會被當成新的清單項目，而是被解析成純文字、直接黏進前一段落——肉眼看起來就是「這一點沒有編號、跟上一行擠在一起」的跑版。這個陷阱不會讓 `astro build` 失敗（純文字沒有語法錯誤），只會默默跑版，所以必須肉眼核對渲染結果，不能只看 build 有沒有過。
+
+錯誤示範（`$$` 沒有縮排，導致第 2 項的巢狀 bullet、以及後面的第 3 項全部脫離清單）：
+
+```mdx
+2. 逐一檢查每一筆訓練樣本：
+   - 若分類錯誤，依更新規則調整參數：
+
+$$
+w \leftarrow w + \eta \cdot y \cdot x
+$$
+
+3. 重複整個資料集，直到收斂為止
+```
+
+正確做法（`$$` 縮排對齊到清單項目的內容欄位，這裡是巢狀 bullet `- ` 的內容欄位）：
+
+```mdx
+2. 逐一檢查每一筆訓練樣本：
+   - 若分類錯誤，依更新規則調整參數：
+
+     $$
+     w \leftarrow w + \eta \cdot y \cdot x
+     $$
+
+3. 重複整個資料集，直到收斂為止
+```
+
+判斷該縮排幾格：數清單標記＋一個空格的寬度——有序清單 `2. ` 是 3 格，巢狀 bullet `   - ` （在 3 格縮排的清單項目底下）則是 3+2=5 格，`$$` 要縮排到跟公式所屬那一層清單的內容欄位對齊。不確定縮排是否正確時，可以用 remark 解析後檢查是否仍是單一個 list 節點：
+
+```bash
+node -e "
+import('unified').then(async ({unified}) => {
+  const remarkParse = (await import('remark-parse')).default;
+  const remarkMath = (await import('remark-math')).default;
+  const fs = await import('fs');
+  const md = fs.readFileSync(process.argv[1], 'utf-8');
+  const tree = unified().use(remarkParse).use(remarkMath).parse(md);
+  console.log(tree.children.map(c => c.type + (c.type==='list' ? \`(\${c.children.length} items)\` : '')).join(' -> '));
+});
+" /path/to/snippet.md
+```
+
+如果輸出出現 `list -> math -> ... -> paragraph` 這種清單被切成好幾段的結果，就代表縮排有問題；正確時應該只有一個 `list` 節點。
+
 ## 驗證
 
 寫完後一定要跑一次 build，確認沒有 KaTeX 解析錯誤（而不是只看有沒有 `$` 符號）：

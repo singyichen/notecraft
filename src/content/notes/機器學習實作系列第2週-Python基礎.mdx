@@ -123,9 +123,9 @@ PLA 是一個線上（online）、逐筆更新的迭代演算法：
    - 若目前的 $\boldsymbol{w}$、$b$ 能正確分類這筆樣本，不做任何更新，繼續看下一筆
    - 若分類錯誤，依更新規則調整參數：
 
-$$
-w \leftarrow w + \eta \cdot y \cdot x, \qquad b \leftarrow b + \eta \cdot y
-$$
+     $$
+     w \leftarrow w + \eta \cdot y \cdot x, \qquad b \leftarrow b + \eta \cdot y
+     $$
 
      （$\eta$ 是學習率，最基本版本可以直接設 $\eta = 1$）
 3. 重複整個資料集（一輪稱為一個 epoch，第 1 週定義過），直到某一輪完全沒有誤判樣本為止
