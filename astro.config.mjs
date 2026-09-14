@@ -61,8 +61,20 @@ export default defineConfig({
     // 生成元件常用的 client 相依預先打包,避免 dev 期間被「按需發現」後觸發
     // 重新最佳化、換掉 ?v= hash，導致進行中的 dynamic import 取到舊 hash 而 404
     //（症狀：Failed to fetch dynamically imported module）。
+    // pdfjs-dist 也惰性動態 import（見 PdfViewerDrawer.tsx），同樣要預先打包，
+    // 否則讀者第一次開 PDF 抽屜時才觸發 Vite 重新 optimize，
+    // 撞上暫時性的 504 Outdated Optimize Dep（症狀：PDF 載入失敗，請確認檔案是否存在）。
     optimizeDeps: {
-      include: ["react", "react-dom", "motion/react", "lucide-react", "clsx", "recharts", "d3"],
+      include: [
+        "react",
+        "react-dom",
+        "motion/react",
+        "lucide-react",
+        "clsx",
+        "recharts",
+        "d3",
+        "pdfjs-dist",
+      ],
     },
   },
   markdown: {

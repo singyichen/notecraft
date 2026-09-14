@@ -30,10 +30,20 @@ function loadPdfjs() {
     pdfjsLibPromise = Promise.all([
       import("pdfjs-dist"),
       import("pdfjs-dist/build/pdf.worker.min.mjs?url"),
-    ]).then(([lib, worker]) => {
-      lib.GlobalWorkerOptions.workerSrc = worker.default;
-      return lib;
-    });
+    ])
+      .then(([lib, worker]) => {
+        lib.GlobalWorkerOptions.workerSrc = worker.default;
+        return lib;
+      })
+      .catch((err) => {
+        // 不快取失敗結果：dev 期間 pdfjs-dist 若還沒被 Vite 預先 optimize，
+        // 第一次動態 import 可能撞上「Outdated Optimize Dep」的暫時性 504；
+        // 若把這個 rejected promise 存進模組層 cache，之後每次開任何 PDF
+        // 都會直接吃到同一個已失敗的 promise，永久卡在「載入失敗」，
+        // 跟檔案本身存不存在無關。清掉 cache 讓下一次開啟能重新 import。
+        pdfjsLibPromise = null;
+        throw err;
+      });
   }
   return pdfjsLibPromise;
 }
