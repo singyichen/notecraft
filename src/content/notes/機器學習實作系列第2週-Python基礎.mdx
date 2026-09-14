@@ -727,7 +727,188 @@ plt.show()
 
 *訓練好的感知器學到的決策邊界：整個特徵平面被切成兩片色塊，所有訓練樣本都落在跟自己類別相符的色塊裡——資料線性可分、PLA 收斂、決策邊界完全正確分類，三件事在這張圖裡同時得到印證。*
 
-## 實作心得
+## 作業一：Adaline SGD 員工特徵分類（實作作業）
+
+前面的 `Perceptron` 是課堂示範，這節整理正式交出的作業——把感知器的階梯輸出換成 Adaline 的線性輸出、訓練規則換成 SGD 梯度下降，套用到一份真實情境的員工資料上，實際跑出可比較的結果。
+
+### 作業說明
+
+**目的**：使用 **Adaline SGD** 分類模型，測試不同特徵組合，觀察哪一項能力指標對科技公司篩選「優秀員工」最具鑑別度。作業明確要求**不使用 scikit-learn**，訓練演算法（權重更新、損失計算）必須自己實作。
+
+**任務需求**：
+
+1. **資料切分**：依原始順序切分，前 200 筆為訓練集、後 100 筆為測試集（不能隨機切分）
+2. **特徵組合**：每次只用 2 種特徵（4 選 2 共 6 組），再加上「全部 4 個特徵」一組，總共訓練 7 個模型
+3. **訓練技巧**：特徵縮放（標準化）、資料隨機打散（shuffle）、嘗試不同學習率或自適應學習率、調整訓練輪次（epochs），盡量把測試正確率調到最好
+4. **關鍵限制**：標準化所需的平均值與標準差**只能用訓練集計算**，再套用到訓練集與測試集，確保測試集是完全未看過的資料
+
+**預期輸出**：
+
+- **預期結果 1**：7 種特徵組合的測試正確率，依高到低排序並整理成鑑別度結論
+- **預期結果 2**：針對每個雙特徵組合，畫出決策邊界區域與測試集樣本分佈的視覺化
+
+### 資料：tech_employees.csv
+
+某科技公司記錄了 300 位員工的「四項新進人員能力／條件」檢定結果（特徵），以及員工在職一年後的表現（標籤）：
+
+| 欄位 | 型別 / 範圍 | 說明 |
+| --- | --- | --- |
+| `Language_Skill` | float，$[0.0, 5.0]$ | 語文能力 |
+| `Math_Skill` | int，$[0, 100]$ | 數理能力 |
+| `Coding_Skill` | int，$[1, 10]$ | 程式能力 |
+| `Health_Condition` | float，$[-1.0, 1.0]$ | 健康條件 |
+| `Performance_Label` | $\{0, 1\}$ | 標籤：0 = 普通，1 = 優秀 |
+
+四項特徵的數值範圍差異很大（例如 `Math_Skill` 是 0–100、`Health_Condition` 是 −1–1），這正是特徵縮放（標準化）在這份作業裡不可省略的原因——範圍相差太多的特徵直接餵進線性模型，數值大的特徵會不成比例地主導 net input。300 筆樣本依原始順序切成前 200 筆訓練、後 100 筆測試，訓練/測試標籤分佈皆無嚴重失衡（約各半），majority-class baseline 僅 0.51，可作為檢驗模型是否真的學到東西的對照基準。
+
+### 訓練與評估流程
+
+整份作業的流程是「一組特徵組合跑一輪標準化 + 訓練 + 評估」，重複 7 次後再彙整排序，並額外用最佳組合對比固定學習率與自適應學習率：
+
+{/* @ai-visualize
+id: ml-week2-assignment1-pipeline
+type: diagram
+prompt: |
+  畫出 Adaline SGD 作業的完整訓練與評估流程圖（手寫 SVG，若步驟有先後關係，
+  可考慮加上逐步播放/點擊推進的 motion 讓讀者一步步走查）。
+
+  整體結構：一個外層迴圈（跑 7 種特徵組合），迴圈內是「標準化 → 訓練 →
+  評估」的固定流程，迴圈結束後彙整排序，再從最佳組合延伸出三個並行的
+  輸出分支。
+
+  節點與流程（依序）：
+  1. 起點：tech_employees.csv，300 筆員工樣本（4 項特徵 + 1 個標籤）
+  2. 依原始順序切分：前 200 筆 Train／後 100 筆 Test（強調「依原始順序、
+     非隨機」）
+  3. 進入迴圈：7 種特徵組合依序處理（4 選 2 共 6 組 + 全部 4 個特徵 1 組）
+  4. 標準化：StandardScaler.fit(Train) —— 只用訓練集算 mean／std
+  5. 套用同一組統計值 transform 到 Train 與 Test（強調「同一組值」，
+     避免資料洩漏）
+  6. AdalineSGD.fit —— 訓練時每個 epoch 重新打散（shuffle）資料，並可選
+     自適應學習率 η_t = η_0/(1+αt)
+  7. predict(Test)，計算 Accuracy，並記錄該組合的 losses_（每個 epoch
+     的平均損失）
+  8. 迴圈回到步驟 3，直到 7 種組合都跑完
+  9. 7 種組合全部完成後，依 Accuracy 高到低排序，產出：
+     - 排序報告 assignment1_results.txt（含特徵鑑別度結論）
+     - 取正確率最佳的組合，重新訓練「固定學習率」與「自適應學習率」
+       兩個版本並對比 → assignment1_adaptive_vs_fixed.png
+  10. 另外兩個分支（可從步驟 7 的「記錄結果」節點拉出，跟步驟 9 平行）：
+      - 針對每個雙特徵組合畫決策邊界圖（meshgrid + 上色），彙整成
+        assignment1_decision_boundaries.png（6 張子圖）
+      - 疊圖 7 條 loss 收斂曲線 → assignment1_loss_curves.png
+
+  視覺要求：
+  - 用不同形狀或顏色區分「輸入資料」「處理步驟」「迴圈節點」「暫存結果」
+    「落地輸出檔案」五種節點類型，並附小圖例
+  - 清楚標示「迴圈跑 7 次」與「三個輸出分支平行於彙整排序之後／記錄結果
+    之後」這兩個結構特徵，不要畫成單純的直線流程
+  - 配色使用 notecraft-design 的 token
+caption: Adaline SGD 作業的完整訓練與評估流程：7 種特徵組合各自跑「標準化 → 訓練 → 評估」，彙整排序後再分出決策邊界、loss 曲線、學習率對比三個輸出分支。
+status: pending
+*/}
+
+### 數學原理
+
+這份作業的數學骨幹可以拆成六個層次，每一層都直接對應程式碼裡的一段實作。
+
+**1. 線性代數——net input（線性組合 / 超平面）**
+
+模型核心是特徵向量與權重向量的內積加上偏差項：
+
+$$
+z = \boldsymbol{w}^T\boldsymbol{x} + b = w_1x_1 + w_2x_2 + \dots + w_nx_n + b
+$$
+
+跟前面 PLA 用的是同一個 net input 公式——這代表用一個超平面（雙特徵組合時就是一條直線）切分特徵空間，也是為什麼每個雙特徵組合畫出來的決策邊界是一條直線分開兩色區域。
+
+**2. 統計學——標準化（Z-score / Standardization）**
+
+把不同量級的特徵（例如 `Math_Skill` 0–100、`Health_Condition` −1–1）轉成同一個尺度：
+
+$$
+x_{\text{std}} = \frac{x-\mu}{\sigma}
+$$
+
+其中 $\mu$、$\sigma$ 只能用**訓練集**計算，再套用到訓練集與測試集本身——這是避免資料洩漏（data leakage）的統計原則，也是這份作業裡最容易失誤的地方。
+
+**3. 微積分——損失函數與梯度下降（Gradient Descent）**
+
+Adaline 用平方誤差當損失函數 $L=(y-\hat y)^2$，對權重取偏微分（chain rule）後得到更新式：
+
+$$
+\begin{aligned}
+\frac{\partial L}{\partial w} &= -2x(y-\hat y) \\
+w &\leftarrow w - \eta \cdot \frac{\partial L}{\partial w} = w + \eta \cdot 2x(y-\hat y) \\
+b &\leftarrow b + \eta \cdot 2(y-\hat y)
+\end{aligned}
+$$
+
+SGD 的「S」代表每次只用**一筆樣本**估計梯度（而非全部資料的 batch gradient descent），屬於隨機近似（stochastic approximation）——這也是 `AdalineSGD._update_weights` 逐筆呼叫、而不是先算完一整個 epoch 的平均梯度再更新一次的原因。
+
+**4. 數列 / 函數——自適應學習率**
+
+自適應學習率是隨 epoch $t$ 遞增而遞減的反比衰減函數：
+
+$$
+\eta_t = \frac{\eta_0}{1+\alpha t}
+$$
+
+目的是讓訓練前期步伐大、後期步伐小以穩定收斂，對應在 loss 曲線圖上會看到「先陡降、後平緩」的形狀。
+
+**5. 分類決策——閾值函數（Step Function）**
+
+連續輸出 $z$ 透過 Heaviside 階梯函數轉成離散類別：
+
+$$
+\hat y =
+\begin{cases}
+1 & z \geq 0.5 \\
+0 & z < 0.5
+\end{cases}
+$$
+
+$z=0.5$ 這條界線在幾何上就是決策邊界方程式 $\boldsymbol{w}^T\boldsymbol{x}+b=0.5$——注意這裡的閾值是 $0.5$ 而非 PLA 那節用的 $0$，因為 Adaline 的標籤是 $\{0,1\}$、輸出直接對應機率式的中點，跟 PLA 用 $\{-1,+1\}$ 標籤、閾值取 $0$ 是同一個「線性輸出二值化」的概念，只是標籤編碼不同、門檻位置跟著平移。
+
+**6. 基礎統計——正確率（Accuracy）**
+
+$$
+\text{Accuracy} = \frac{\text{正確筆數}}{\text{總筆數}}
+$$
+
+屬於比例估計（proportion estimate），可以拿 majority-class baseline（本次資料約 0.51）當統計對照組，用來檢驗模型是否真的學到東西，而非隨機亂猜。
+
+整體來說，這份作業的數學骨幹就是「線性代數（內積定義超平面）+ 微積分（梯度下降最小化平方誤差）+ 統計（標準化與正確率）」三件事的組合，難度落在機器學習入門等級，不涉及矩陣分解或機率分布推導等更進階的數學。
+
+### 結果
+
+7 種特徵組合的測試正確率，依高到低排序：
+
+| 排名 | 特徵組合 | 測試正確率 |
+| --- | --- | --- |
+| 1 | Math_Skill & Coding_Skill | 0.84 |
+| 2 | All Four Features | 0.83 |
+| 3 | Language_Skill & Coding_Skill | 0.79 |
+| 4 | Coding_Skill & Health_Condition | 0.75 |
+| 5 | Language_Skill & Math_Skill | 0.61 |
+| 6 | Language_Skill & Health_Condition | 0.61 |
+| 7 | Math_Skill & Health_Condition | 0.61 |
+
+以「包含該特徵之組合平均正確率」排序特徵鑑別度：**Coding_Skill（0.80）> Math_Skill（0.72）> Language_Skill（0.71）> Health_Condition（0.70）**——`Coding_Skill` 鑑別度最高、`Math_Skill` 次之，跟作業投影片給的預期結果趨勢一致。全部 7 組正確率皆高於 0.51 的 baseline，確認模型確實有學到東西。
+
+![6 張決策邊界圖排成 2×3 網格，每張對應一個雙特徵組合，標題分別為 Language_Skill & Math_Skill、Language_Skill & Coding_Skill、Language_Skill & Health_Condition、Math_Skill & Coding_Skill、Math_Skill & Health_Condition、Coding_Skill & Health_Condition；每張圖以粉紅／淺紫兩色區塊表示 Class 0／Class 1 的決策區域，疊加測試集樣本點（紅圓點與藍方塊），座標軸皆標註 standardized](/note-images/ml-week2/15-assignment1-decision-boundaries.png)
+
+*6 個雙特徵組合的決策邊界：`Math_Skill & Coding_Skill` 這張兩色區塊分得最乾淨、樣本點幾乎都落在對應顏色那一側；`Language_Skill & Health_Condition` 這幾張兩色區塊交錯明顯，對應到它們較低的測試正確率——決策邊界的「乾淨程度」跟正確率排名是吻合的。*
+
+![一張折線圖，橫軸 Epochs、縱軸 Mean Squared Error (loss)，7 條顏色不同的曲線分別對應 7 種特徵組合，全部曲線隨 epoch 增加而下降並趨於平緩；Math_Skill & Coding_Skill 與 All Four Features 兩條收斂到最低的 loss，Language_Skill & Health_Condition 收斂 loss 最高](/note-images/ml-week2/16-assignment1-loss-curves.png)
+
+*7 種特徵組合的 loss 收斂曲線疊圖：`Math_Skill & Coding_Skill` 與 `All Four Features` 收斂到最低 loss，`Language_Skill & Health_Condition` 收斂 loss 最高——跟正確率排名（0.84／0.83 最高，0.61 最低）互相印證，loss 越低、正確率越高。*
+
+![一張折線圖，橫軸 Epochs、縱軸 Mean Squared Error (loss)，兩條曲線對比同一個最佳特徵組合 Math_Skill & Coding_Skill 下，固定學習率 eta=0.01（acc=0.81）與自適應學習率（acc=0.84）的收斂過程，自適應學習率曲線中後段的 loss 略低且較平穩](/note-images/ml-week2/17-assignment1-adaptive-vs-fixed.png)
+
+*固定學習率與自適應學習率的對比（皆用正確率最高的 `Math_Skill & Coding_Skill` 組合）：自適應學習率（測試正確率 0.84）優於固定學習率（0.81），且中後段 loss 更低、更穩定——驗證了自適應學習率 $\eta_t=\eta_0/(1+\alpha t)$「前期步伐大、後期步伐小」的設計確實帶來更好的收斂結果。*
+
+### 實作心得
 
 **做了什麼**：
 
