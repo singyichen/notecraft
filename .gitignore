@@ -14,3 +14,6 @@ src/content/notes/private/
 
 # 課程錄音／音檔（大檔，不進 git）
 recordings/
+
+# Subagent-driven-development 工作區（ledger / brief / review 暫存，不進 git）
+.superpowers/

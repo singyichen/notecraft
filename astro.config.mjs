@@ -12,6 +12,7 @@ import remarkNotecraftNotesAssets from "./src/lib/remark-notecraft-notes-assets.
 import { GENERATED_COMPONENT_PACKAGE_WHITELIST } from "./src/lib/generated-component-whitelist.ts";
 import devApi from "./src/dev-api/integration.ts";
 import notesAssetsBuildCopy from "./src/lib/notes-assets-build-copy.ts";
+import { detectGithubRepoHint } from "./src/lib/detect-github-repo.mjs";
 
 // v2 Q3 + Bug fix: `.notecraft/` 資料夾**放在 userCwd**（使用者專案根、與 .claude/ 同層），
 // 不放在 notesDir——因為 subagent 從 project root 跑並寫到 cwd 下的 .notecraft/，
@@ -41,6 +42,9 @@ export default defineConfig({
     notesAssetsBuildCopy(),
   ],
   vite: {
+    define: {
+      "import.meta.env.PUBLIC_NOTECRAFT_REPO_HINT": JSON.stringify(detectGithubRepoHint()),
+    },
     // NOTECRAFT_VERIFY_BUILD=1 時（元件生成流程的 `astro build` 驗證）改用獨立 cacheDir，
     // 避免跟同時在跑的 `astro dev` 共用 node_modules/.vite，兩邊互相 invalidate
     // 導致瀏覽器載到不一致的 React 模組副本（症狀：island 全部 "Cannot read properties of null (reading useState)"）。

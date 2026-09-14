@@ -67,7 +67,7 @@ Netlify 偵測到新 commit → 自動重新 build + 部署（沿用現有 CI �
 
 ### 4.3 安全性揭露
 
-設定畫面明確寫出：「此 token 只會存在你目前這個瀏覽器裡，不會送到 NoteCraft 以外的任何伺服器；換裝置需要重新貼一次；建議設定過期時間並只給單一 repo 的 Contents 權限。」
+設定畫面明確寫出：「此 token 只會存在你目前這個瀏覽器裡，只會直接送到 GitHub API，不會送到 NoteCraft 或其他任何伺服器；換裝置需要重新貼一次；建議設定過期時間並只給單一 repo 的 Contents 權限。」
 
 ## 5. 編輯 UI：`OnlineEditor` island
 
