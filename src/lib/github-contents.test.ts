@@ -81,3 +81,89 @@ test("diffRemovedRefs 只回報被刪掉的 id，不回報新增的", () => {
   assert.deepEqual(removed.markerIds, ["b"]);
   assert.deepEqual(removed.importIds, ["a"]);
 });
+
+import {
+  fetchNoteFile,
+  publishNoteFile,
+  GithubNotFoundError,
+  GithubConflictError,
+  GithubApiError,
+  type RepoConfig,
+} from "./github-contents.ts";
+
+const config: RepoConfig = {
+  owner: "singyichen",
+  repo: "notecraft",
+  branch: "main",
+  pathPrefix: "src/content/notes",
+  token: "fake-token",
+};
+
+function jsonResponse(status: number, body: unknown): Response {
+  return new Response(JSON.stringify(body), { status });
+}
+
+test("fetchNoteFile 先試 .mdx，成功就回傳 raw/sha/path", async () => {
+  const calls: string[] = [];
+  globalThis.fetch = (async (url: string) => {
+    calls.push(url);
+    return jsonResponse(200, { content: btoa("---\ntitle: t\n---\nbody"), sha: "abc123" });
+  }) as typeof fetch;
+
+  const result = await fetchNoteFile(config, "week2");
+  assert.equal(result.sha, "abc123");
+  assert.equal(result.path, "src/content/notes/week2.mdx");
+  assert.match(calls[0], /contents\/src\/content\/notes\/week2\.mdx\?ref=main$/);
+});
+
+test("fetchNoteFile 在 .mdx 404 時改試 .md", async () => {
+  const calls: string[] = [];
+  globalThis.fetch = (async (url: string) => {
+    calls.push(url);
+    if (url.endsWith(".mdx?ref=main")) return jsonResponse(404, { message: "Not Found" });
+    return jsonResponse(200, { content: btoa("---\ntitle: t\n---\nbody"), sha: "def456" });
+  }) as typeof fetch;
+
+  const result = await fetchNoteFile(config, "week2");
+  assert.equal(result.path, "src/content/notes/week2.md");
+  assert.equal(calls.length, 2);
+});
+
+test("fetchNoteFile 兩個副檔名都 404 時丟 GithubNotFoundError", async () => {
+  globalThis.fetch = (async () => jsonResponse(404, { message: "Not Found" })) as typeof fetch;
+  await assert.rejects(() => fetchNoteFile(config, "missing"), GithubNotFoundError);
+});
+
+test("fetchNoteFile 非 404 的錯誤丟 GithubApiError", async () => {
+  globalThis.fetch = (async () => jsonResponse(500, { message: "boom" })) as typeof fetch;
+  await assert.rejects(() => fetchNoteFile(config, "week2"), (err: unknown) => {
+    assert.ok(err instanceof GithubApiError);
+    assert.equal((err as GithubApiError).status, 500);
+    return true;
+  });
+});
+
+test("publishNoteFile 送出 PUT，body 帶 base64 內容、sha、branch", async () => {
+  let capturedInit: RequestInit | undefined;
+  globalThis.fetch = (async (_url: string, init?: RequestInit) => {
+    capturedInit = init;
+    return jsonResponse(200, { content: { sha: "new-sha" } });
+  }) as typeof fetch;
+
+  const result = await publishNoteFile(config, "src/content/notes/week2.mdx", "新內容", "old-sha", "更新內文");
+  assert.equal(result.sha, "new-sha");
+  assert.equal(capturedInit?.method, "PUT");
+  const payload = JSON.parse(capturedInit!.body as string);
+  assert.equal(payload.sha, "old-sha");
+  assert.equal(payload.branch, "main");
+  assert.equal(payload.message, "更新內文");
+  assert.equal(base64ToUtf8(payload.content), "新內容");
+});
+
+test("publishNoteFile 收到 409 時丟 GithubConflictError", async () => {
+  globalThis.fetch = (async () => jsonResponse(409, { message: "conflict" })) as typeof fetch;
+  await assert.rejects(
+    () => publishNoteFile(config, "p.mdx", "x", "sha", "msg"),
+    GithubConflictError,
+  );
+});
