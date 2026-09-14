@@ -730,29 +730,16 @@ Expected: 全部 5 個 test 都 `ok`。
 import { detectGithubRepoHint } from "./src/lib/detect-github-repo.mjs";
 ```
 
-找到現有的 `vite: { ... }` 物件（含 `server`、`resolve`、`optimizeDeps` 等 key），在同一層加入 `define`：
+找到現有的 `vite: {` 這一行（後面接著一段解釋 `NOTECRAFT_VERIFY_BUILD` 的註解、`...(process.env.NOTECRAFT_VERIFY_BUILD && ...)`、`server`、`resolve`、`optimizeDeps`）。**只在 `vite: {` 這一行正下方插入 `define` 這個 key，不要動、不要重寫這個物件裡任何既有的 key 或註解**（那些註解記錄了非顯而易見的踩坑原因，刪掉會丟失資訊）：
 
 ```js
     vite: {
       define: {
         "import.meta.env.PUBLIC_NOTECRAFT_REPO_HINT": JSON.stringify(detectGithubRepoHint()),
       },
-      ...(process.env.NOTECRAFT_VERIFY_BUILD && { cacheDir: "node_modules/.vite-verify" }),
-      server: {
-        host: "127.0.0.1",
-        ...(notesDir && { fs: { allow: [process.cwd(), notesDir, ...(userCwd ? [userCwd] : [])] } }),
-      },
-      resolve: {
-        alias: { "@notes": notecraftDir },
-        dedupe: notesDir ? [...GENERATED_COMPONENT_PACKAGE_WHITELIST] : [],
-      },
-      optimizeDeps: {
-        include: ["react", "react-dom", "motion/react", "lucide-react", "clsx", "recharts", "d3"],
-      },
-    },
 ```
 
-（只新增 `define` 這個 key，其餘既有 key 原樣保留。）
+也就是把原本緊接在 `vite: {` 後面的那行（`// NOTECRAFT_VERIFY_BUILD=1 時...` 註解）往後推,`define` 這個 key 插在最前面,其餘所有內容（含所有註解、`server`/`resolve`/`optimizeDeps`）原封不動保留在 `define` 之後。
 
 - [ ] **Step 6: 幫 `PUBLIC_NOTECRAFT_REPO_HINT` 補上型別**
 
