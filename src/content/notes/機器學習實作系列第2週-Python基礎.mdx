@@ -39,6 +39,14 @@ $$
 
 （原始定義裡門檻是 $z - \theta \gtrless 0$，$\theta$ 是閾值；把 bias unit 定義成 $b = -\theta$ 代入後，判斷式就簡化成上面「$z \geq 0$」這個更常用的形式。）這個階梯函數就是第 1 週術語表提到的**激活函數（activation function）** 最原始的版本——雖然現代神經網路幾乎不再用它（不可微分，無法配合梯度下降），但它是理解「線性模型 + 非線性判斷」這個組合的起點。
 
+![感知器示意圖疊加紅色標注：w 標在樹突/細胞本體表示權重、θ 標在髓鞘軸突段表示閾值、{0,1} 標在軸突末梢輸出端表示輸出集合，底部以 σ(z) 括號標示整條路徑對應到決策函數](/note-images/ml-week2/13-neuron-weight-threshold-mapping.png)
+
+*把數學符號對應回生物神經元的位置：$\boldsymbol{w}$（權重）對應樹突接收訊號的強度、$\theta$（閾值）對應軸突段「是否發射」的門檻、$\{0,1\}$ 對應軸突末梢輸出的二元訊號——$\sigma(z)$ 這個決策函數，就是整條輸入到輸出路徑的數學化。*
+
+![同一張感知器示意圖改成 bias unit 版本標注：θ 改標成 0（門檻簡化為 z≥0）、+b 標在細胞核位置表示偏差項，{0,1} 仍標在輸出端](/note-images/ml-week2/14-neuron-bias-mapping.png)
+
+*代入 $b = -\theta$ 之後，圖上的標注也跟著換：軸突段的「閾值 $\theta$」變成單純的門檻 $0$，細胞核多標了一個 $+b$——對應公式裡新增的偏差項，判斷式因此簡化成 $z \geq 0$。*
+
 import PdfRefChip from '@/components/islands/PdfRefChip.tsx'
 
 {/* @ai-reference
