@@ -805,8 +805,14 @@ prompt: |
     之後」這兩個結構特徵，不要畫成單純的直線流程
   - 配色使用 notecraft-design 的 token
 caption: Adaline SGD 作業的完整訓練與評估流程：7 種特徵組合各自跑「標準化 → 訓練 → 評估」，彙整排序後再分出決策邊界、loss 曲線、學習率對比三個輸出分支。
-status: pending
+status: generated
 */}
+
+import MlWeek2Assignment1Pipeline from '@/components/generated/ml-week2-assignment1-pipeline'
+
+<GeneratedFrame id="ml-week2-assignment1-pipeline" type="diagram" prompt={"畫出 Adaline SGD 作業的完整訓練與評估流程圖（手寫 SVG，若步驟有先後關係，\n可考慮加上逐步播放/點擊推進的 motion 讓讀者一步步走查）。\n\n整體結構：一個外層迴圈（跑 7 種特徵組合），迴圈內是「標準化 → 訓練 →\n評估」的固定流程，迴圈結束後彙整排序，再從最佳組合延伸出三個並行的\n輸出分支。\n\n節點與流程（依序）：\n1. 起點：tech_employees.csv，300 筆員工樣本（4 項特徵 + 1 個標籤）\n2. 依原始順序切分：前 200 筆 Train／後 100 筆 Test（強調「依原始順序、\n   非隨機」）\n3. 進入迴圈：7 種特徵組合依序處理（4 選 2 共 6 組 + 全部 4 個特徵 1 組）\n4. 標準化：StandardScaler.fit(Train) —— 只用訓練集算 mean／std\n5. 套用同一組統計值 transform 到 Train 與 Test（強調「同一組值」，\n   避免資料洩漏）\n6. AdalineSGD.fit —— 訓練時每個 epoch 重新打散（shuffle）資料，並可選\n   自適應學習率 η_t = η_0/(1+αt)\n7. predict(Test)，計算 Accuracy，並記錄該組合的 losses_（每個 epoch\n   的平均損失）\n8. 迴圈回到步驟 3，直到 7 種組合都跑完\n9. 7 種組合全部完成後，依 Accuracy 高到低排序，產出：\n   - 排序報告 assignment1_results.txt（含特徵鑑別度結論）\n   - 取正確率最佳的組合，重新訓練「固定學習率」與「自適應學習率」\n     兩個版本並對比 → assignment1_adaptive_vs_fixed.png\n10. 另外兩個分支（可從步驟 7 的「記錄結果」節點拉出，跟步驟 9 平行）：\n    - 針對每個雙特徵組合畫決策邊界圖（meshgrid + 上色），彙整成\n      assignment1_decision_boundaries.png（6 張子圖）\n    - 疊圖 7 條 loss 收斂曲線 → assignment1_loss_curves.png\n\n視覺要求：\n- 用不同形狀或顏色區分「輸入資料」「處理步驟」「迴圈節點」「暫存結果」\n  「落地輸出檔案」五種節點類型，並附小圖例\n- 清楚標示「迴圈跑 7 次」與「三個輸出分支平行於彙整排序之後／記錄結果\n  之後」這兩個結構特徵，不要畫成單純的直線流程\n- 配色使用 notecraft-design 的 token"} caption="Adaline SGD 作業的完整訓練與評估流程：7 種特徵組合各自跑「標準化 → 訓練 → 評估」，彙整排序後再分出決策邊界、loss 曲線、學習率對比三個輸出分支。">
+  <MlWeek2Assignment1Pipeline client:visible />
+</GeneratedFrame>
 
 ### 數學原理
 
