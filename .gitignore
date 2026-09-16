@@ -12,6 +12,16 @@ tmp/
 # 私有筆記：不進 git、不 publish 到 Netlify（含內部基礎架構手冊與其截圖）
 src/content/notes/private/
 
+# 聯和趨動內部專案提案系列（隱藏）：筆記本體已移至上方 private/，這裡另外排除其專屬的
+# 已生成元件與簡報 deck —— 原始碼內嵌完整提案內容，且 deck 的 /present/<slug> 路由
+# 是直接讀 deck 檔產生（不看筆記是否存在），不排除的話正式站仍會外洩。
+src/components/generated/trendlink-內部客戶與業務流程整合系統提案草稿.deck.tsx
+src/components/generated/proposal-summary.tsx
+src/components/generated/background-painpoint-evolution.tsx
+src/components/generated/module-service-support-matrix.tsx
+src/components/generated/solution-architecture-comparison.tsx
+src/components/generated/cost-estimate-comparison.tsx
+
 # 課程錄音／音檔（大檔，不進 git）
 recordings/
 

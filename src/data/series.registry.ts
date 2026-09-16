@@ -107,9 +107,11 @@ export const SERIES: SeriesDef[] = [
     description: "提案系列：展示於公司內部相關專案的提案，作為個人經歷的紀錄。",
     accent: "navy",
     icon: "bookOpen",
+    // 章節皆為 private 筆記（src/content/notes/private/，已於 .gitignore 排除）：
+    // 本機 dev 看得到；正式站因筆記不存在，此系列會被「零章節即略過」的判斷濾掉。
     slugs: [
-      "trendlink-內部客戶與業務流程整合系統提案草稿",
-      "trendlink-ai-入門工作坊提案草稿",
+      "private/trendlink-內部客戶與業務流程整合系統提案草稿",
+      "private/trendlink-ai-入門工作坊提案草稿",
     ],
   },
   {
