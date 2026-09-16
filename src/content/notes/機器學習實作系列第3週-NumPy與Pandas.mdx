@@ -1,22 +1,885 @@
 ---
-title: "機器學習實作系列：第 3 週 - NumPy 與 Pandas"
-description: ""
+title: "機器學習實作系列：第 3 週 - Adaline 與 NumPy、Pandas"
+description: "Adaline（自適應線性神經元）的模型架構、可微分的均方誤差損失、梯度下降與隨機梯度下降的推導、特徵縮放；NumPy 向量矩陣運算與廣播機制、Pandas 表格資料處理；並在 Iris 資料集上實作 AdalineGD 與 AdalineSGD，比較加上特徵縮放前後的收斂表現。"
 tags: ["機器學習實作系列"]
 createdAt: "2026-09-21"
-updatedAt: "2026-09-21"
+updatedAt: "2026-09-16"
 ---
 
+import PdfRefChip from '@/components/islands/PdfRefChip.tsx'
 import GeneratedFrame from '@/components/GeneratedFrame.astro'
 import MlWeek3TwoLayers from '@/components/generated/ml-week3-two-layers'
 import MlWeek3Pipeline from '@/components/generated/ml-week3-pipeline'
 
-# 第 3 週：NumPy 與 Pandas
+# 第 3 週：Adaline 與 NumPy、Pandas
 
-*Scientific Computing and Data Analysis in Python: NumPy and Pandas*
+*Adaline & NumPy, Pandas*
 
-> 本週參考：[《Python Data Science Handbook》](/notes/python-data-science-handbook)
+> 本週參考：[《Python Data Science Handbook》](/notes/python-data-science-handbook)（NumPy／Pandas 部分）
 
-## 本週摘要
+## Adaline：從感知器到可微分的損失函數
+
+[第 2 週](/notes/機器學習實作系列第2週-python基礎)的 PLA 用一條「答對不動、答錯才推一步」的規則更新權重，這條規則本身無法回答「這次錯得多離譜」；Adaline（Adaptive Linear Neuron，自適應線性神經元，1960）把這件事變成一個**連續、可微分的損失函數最小化問題**，也因此第一次真正用得上微積分裡的梯度下降——這是後面所有神經網路（包含第 10 週的多層神經網路）共用的優化骨架的起點。
+
+### 為什麼要改良 PLA：從「對或錯」到「差多少」
+
+PLA 的更新規則只看「這筆樣本目前分類對不對」，答對完全不更新、答錯才用固定方向推一步；它沒有一個可以量化「模型現在有多差」的數字，因此也沒辦法問「往哪個方向調整，損失下降最快」——沒有損失函數就沒有梯度可以下降。Adaline 保留感知器同一組可訓練參數（權重 $\boldsymbol{w}$ 與偏差 $b$）與同一個淨輸入公式 $z=\boldsymbol{w}^T\boldsymbol{x}+b$，但做了兩個關鍵修改：
+
+- 在淨輸入 $z$ 之後接上一段**線性激活函數（linear activation function）** 用來計算損失、更新權重
+- 只有在**最終預測**時才套用閾值函數把連續值二值化，權重更新完全不經過這段閾值
+
+{/* @ai-reference
+id: adaline-improvement-on-pla
+file: _references/機器學習實作系列/第3週-Adaline與NumPy Pandas.pdf
+page: 4
+status: suggested
+excerpt: Adaline (自適應線性神經元) algorithm (1960)：An improvement on PLA，Define and minimize a continuous loss function，Update weights based on a linear activation function
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第3週-Adaline與NumPy Pandas.pdf" page={4} status="suggested" excerpt={"Adaline (自適應線性神經元) algorithm (1960)：An improvement on PLA，Define and minimize a continuous loss function，Update weights based on a linear activation function"} client:visible />
+
+### 模型架構：淨輸入不變，新增一段線性激活
+
+Adaline 的線性激活函數其實就是**恆等函數（identity function）**，直接把淨輸入原封不動地輸出：
+
+$$
+\sigma(z) = z
+$$
+
+真正的類別預測 $\hat y$ 要到**訓練規則算完之後**才會用到一個閾值函數，把連續值 $\sigma(z)$ 二值化：
+
+$$
+T(\sigma(z)) = \begin{cases} 1 & \sigma(z) \geq 0.5 \\ 0 & \text{otherwise} \end{cases}
+$$
+
+注意這裡的門檻是 $0.5$，跟 PLA 用 $\{-1,+1\}$ 標籤、閾值取 $z\geq0$ 不是同一條線——Adaline 的標籤是 $\{0,1\}$，$\sigma(z)$ 訓練後會落在 0、1 附近，門檻自然落在兩者中點。
+
+{/* @ai-reference
+id: adaline-linear-activation
+file: _references/機器學習實作系列/第3週-Adaline與NumPy Pandas.pdf
+page: 5
+status: suggested
+excerpt: Linear activation function：Simply the identity function of the net input，Still use a threshold function to make the final prediction，T(σ(z)) = 1 if σ(z)≥0.5 else 0
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第3週-Adaline與NumPy Pandas.pdf" page={5} status="suggested" excerpt={"Linear activation function：Simply the identity function of the net input，Still use a threshold function to make the final prediction，T(σ(z)) = 1 if σ(z)≥0.5 else 0"} client:visible />
+
+![Perceptron 與 Adaptive Linear Neuron (Adaline) 架構對照圖：上半部 Perceptron，輸入 x1...xm 與偏差 b 各自乘上權重匯入 Σ 節點算出淨輸入，直接經過閾值函數輸出預測 ŷ，ŷ 與真實標籤 y 比較得到 Error 後回頭更新權重；下半部 Adaline，Σ 節點輸出的淨輸入函式先經過一段紅色標示的「Activation function (here: identity)」，這段線性激活的輸出同時送去跟真實標籤 y 比較算 Error（用於權重更新）、也送進閾值函數得到最終預測類別 ŷ](/note-images/ml-week3/01-perceptron-vs-adaline-architecture.jpeg)
+
+*兩張圖唯一的差異就是紅色圈起來的那一段：Perceptron 用真實標籤直接跟「閾值化後的預測類別」比較誤差；Adaline 則是用真實標籤跟「閾值化之前、線性激活的連續值」比較誤差——這正是 PLA 只能給「對/錯」、Adaline 卻能給「差多少」的架構差異來源。*
+
+{/* @ai-reference
+id: adaline-vs-perceptron-comparison
+file: _references/機器學習實作系列/第3週-Adaline與NumPy Pandas.pdf
+page: 7
+status: suggested
+excerpt: Perceptron compares the true class labels to the predicted class labels；Adaline compares the true class labels with the linear activation function's continuous valued output
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第3週-Adaline與NumPy Pandas.pdf" page={7} status="suggested" excerpt={"Perceptron compares the true class labels to the predicted class labels；Adaline compares the true class labels with the linear activation function's continuous valued output"} client:visible />
+
+### 損失函數：均方誤差（MSE）——可微分、凸函數
+
+Adaline 用**均方誤差（Mean Squared Error, MSE）** 當損失函數，衡量真實標籤與線性激活輸出之間的落差：
+
+$$
+L(\boldsymbol{w}, b) = \frac{1}{n}\sum_{i=1}^n \left(y^{(i)} - \sigma(z^{(i)})\right)^2
+$$
+
+（$n$ 是樣本總數）這個損失函數有兩個對優化至關重要的性質：**可微分（differentiable）**——每一點都能算出斜率，才有梯度可以下降；**凸函數（convex）**——整個損失曲面只有一個全域最低點，沒有其他局部低谷會把梯度下降騙走，這也是為什麼下一節的梯度下降對 Adaline 保證收斂到全域最小值。
+
+{/* @ai-reference
+id: adaline-mse-loss
+file: _references/機器學習實作系列/第3週-Adaline與NumPy Pandas.pdf
+page: 6
+status: suggested
+excerpt: Loss function：Mean Squared Error (MSE) between the calculated outcomes and the true class labels，differentiable function，convex function
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第3週-Adaline與NumPy Pandas.pdf" page={6} status="suggested" excerpt={"Loss function：Mean Squared Error (MSE) between the calculated outcomes and the true class labels，differentiable function，convex function"} client:visible />
+
+### 梯度與梯度下降的直覺
+
+**梯度（gradient）** 是一個可微分多元函數 $f(\boldsymbol{w})$ 對每個參數的偏微分排成的向量，它指向這個函數在當前這一點**上升最快**的方向；反過來，**負梯度**就是下降最快的方向。
+
+$$
+\nabla f(\boldsymbol{w}) = \left[\frac{\partial f}{\partial w_1}, \frac{\partial f}{\partial w_2}, \dots, \frac{\partial f}{\partial w_m}\right]^T
+$$
+
+{/* @ai-reference
+id: gradient-definition
+file: _references/機器學習實作系列/第3週-Adaline與NumPy Pandas.pdf
+page: 8
+status: suggested
+excerpt: The gradient of a differentiable multivariate function f(w) is a vector of its partial derivatives；a vector that points in the direction of the steepest ascent
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第3週-Adaline與NumPy Pandas.pdf" page={8} status="suggested" excerpt={"The gradient of a differentiable multivariate function f(w) is a vector of its partial derivatives；a vector that points in the direction of the steepest ascent"} client:visible />
+
+用 $f(x,y)=x^2+y^2$ 這個最簡單的凸函數具體看梯度長什麼樣：
+
+![f(x,y)=x²+y² 的等高線圖疊加梯度向量場：同心圓等高線由內而外數值遞增，紅色箭頭在每一點都垂直指向等高線、往圓心以外的方向發散，越靠外圈箭頭越長](/note-images/ml-week3/02-gradient-field-visualization.png)
+
+*紅色箭頭是 $\nabla f=(2x,2y)$ 在各點的方向與長度：每支箭頭都垂直於當下所在的等高線、指向數值增加最快的方向，且離圓心越遠箭頭越長（梯度的量值本身也隨位置變化）——這就是「梯度指向上升最快方向」在圖上的樣子；梯度下降走的是這些箭頭的反方向。*
+
+有了梯度，**梯度下降（Gradient Descent, GD）** 就是一個迭代演算法：從一個初始點出發，每一步都沿著當前位置梯度的反方向走一小步，直到逼近損失函數的全域最低點。
+
+![單一權重 w 的損失曲線 L(w)，一個藍色實心圓點標示初始權重的位置，黑色虛線是該點的切線斜率（標示為 Gradient），黑色箭頭序列沿著曲線往低處遞減，最終逼近標示為「Global cost minimum, J_min(w)」的曲線最低點](/note-images/ml-week3/03-gradient-descent-idea.png)
+
+*為了方便視覺化，這裡只畫一個權重 $w$ 的損失曲線：初始權重在半山腰，當下的梯度（虛線切線的斜率）是正的，往負梯度方向走一小步、損失就往下降一點，重複幾步後逼近全域最低點——多個權重時，同樣的邏輯發生在更高維的損失曲面上，只是無法直接畫出來。*
+
+{/* @ai-reference
+id: gradient-descent-idea
+file: _references/機器學習實作系列/第3週-Adaline與NumPy Pandas.pdf
+page: 10
+status: suggested
+excerpt: Gradient Descent (GD)：An iterative algorithm for minimizing a differentiable multivariate function；take repeated appropriate steps in the opposite direction of the gradient
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第3週-Adaline與NumPy Pandas.pdf" page={10} status="suggested" excerpt={"Gradient Descent (GD)：An iterative algorithm for minimizing a differentiable multivariate function；take repeated appropriate steps in the opposite direction of the gradient"} client:visible />
+
+### 梯度下降的更新規則與推導
+
+把梯度下降的直覺寫成精確的更新規則：每一輪把參數往負梯度方向移動，移動的步伐大小由**學習率（learning rate）** $\eta$ 控制：
+
+$$
+\boldsymbol{w} := \boldsymbol{w} + \Delta\boldsymbol{w}, \qquad b := b + \Delta b
+$$
+
+$$
+\Delta\boldsymbol{w} = -\eta\nabla_{\boldsymbol{w}}L(\boldsymbol{w}, b), \qquad \Delta b = -\eta\nabla_b L(\boldsymbol{w}, b)
+$$
+
+拆開成每個權重 $w_j$（$j=1,2,\dots,m$）各自的偏微分，用鏈式法則（chain rule）把 $L$ 對 $w_j$ 的偏微分，沿著 $L\to\sigma(z)\to z\to w_j$ 這條路徑拆開：
+
+$$
+\begin{aligned}
+\frac{\partial L}{\partial w_j} &= \frac{\partial}{\partial w_j}\left[\frac{1}{n}\sum_i\left(y^{(i)}-\sigma(z^{(i)})\right)^2\right] \\
+&= \frac{1}{n}\sum_i 2\left(y^{(i)}-\sigma(z^{(i)})\right)\cdot\left(-\frac{\partial \sigma(z^{(i)})}{\partial w_j}\right) \\
+&= -\frac{2}{n}\sum_i\left(y^{(i)}-\sigma(z^{(i)})\right)x_j^{(i)}
+\end{aligned}
+$$
+
+其中最後一步用到 $\sigma(z)=z$（恆等函數，微分為 1）以及 $z^{(i)}=\sum_k w_k x_k^{(i)}+b$ 對 $w_j$ 的偏微分就是 $x_j^{(i)}$。同樣的推導對 $b$ 做一次（$\partial z/\partial b=1$）：
+
+$$
+\frac{\partial L}{\partial b} = -\frac{2}{n}\sum_i\left(y^{(i)}-\sigma(z^{(i)})\right)
+$$
+
+代回更新規則，得到 Adaline 全批次梯度下降的具體更新式：
+
+$$
+\Delta w_j = \eta\cdot\frac{2}{n}\sum_i\left(y^{(i)}-\sigma(z^{(i)})\right)x_j^{(i)}, \qquad \Delta b = \eta\cdot\frac{2}{n}\sum_i\left(y^{(i)}-\sigma(z^{(i)})\right)
+$$
+
+（有些教材把損失函數定義成 $L=\frac{1}{2n}\sum(\cdot)^2$，多除一個 2 純粹是為了讓平方項微分出來的 2 被約掉、算式好看一點；用哪一種寫法都不影響梯度指向哪個方向、也不影響收斂到同一個最小值，差別只在於等效學習率被縮放了一半，這裡採用跟下一節程式碼實作完全一致的 $L=\frac{1}{n}\sum(\cdot)^2$ 寫法，避免公式與程式碼對不起來。）
+
+{/* @ai-reference
+id: gd-update-rule
+file: _references/機器學習實作系列/第3週-Adaline與NumPy Pandas.pdf
+page: 11
+status: suggested
+excerpt: w:=w+Δw, b:=b+Δb；Δw=−η∇wL(w,b), Δb=−η∇bL(w,b)（negative gradient multiplied by the learning rate）
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第3週-Adaline與NumPy Pandas.pdf" page={11} status="suggested" excerpt={"w:=w+Δw, b:=b+Δb；Δw=−η∇wL(w,b), Δb=−η∇bL(w,b)（negative gradient multiplied by the learning rate）"} client:visible />
+
+{/* @ai-reference
+id: gd-chain-rule-derivation
+file: _references/機器學習實作系列/第3週-Adaline與NumPy Pandas.pdf
+page: 12
+status: suggested
+excerpt: Derivation of the partial derivative (Chain Rule)：∂L/∂wj = −(2/n)Σ(y(i)−σ(z(i)))xj(i)
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第3週-Adaline與NumPy Pandas.pdf" page={12} status="suggested" excerpt={"Derivation of the partial derivative (Chain Rule)：∂L/∂wj = −(2/n)Σ(y(i)−σ(z(i)))xj(i)"} client:visible />
+
+### Full-batch GD 的性質與限制
+
+這個更新規則每一步都要用**整個訓練資料集**算出梯度後才更新一次參數，因此又稱為**全批次梯度下降（full batch gradient descent）**——跟 PLA 逐筆增量更新（每看一筆樣本就可能更新一次）形成對比。在資料量到百萬筆等級的大規模資料集上，全批次 GD 每走一步都要掃過全部資料算梯度，計算成本相當可觀，這正是後面 SGD、mini-batch GD 要解決的問題。
+
+{/* @ai-reference
+id: gd-full-batch-notes
+file: _references/機器學習實作系列/第3週-Adaline與NumPy Pandas.pdf
+page: 13
+status: suggested
+excerpt: Also referred to as full batch gradient descent；the weight update is calculated based on all examples in the training dataset
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第3週-Adaline與NumPy Pandas.pdf" page={13} status="suggested" excerpt={"Also referred to as full batch gradient descent；the weight update is calculated based on all examples in the training dataset"} client:visible />
+
+### 學習率是超參數：太大發散、太小太慢
+
+學習率 $\eta$ 決定每一步走多遠，它不是模型從資料學出來的參數，而是訓練前就要人為指定的**超參數（hyperparameter）**，選得好不好直接決定訓練成不成功：
+
+![兩張損失曲線並排對照：左圖標題 Initial weight 到 Global loss minimum，L(w) 曲線平滑往下降到最低點附近趨於平緩；右圖同樣的凸函數曲線上，箭頭在曲線兩側來回跳動、一次比一次跳得更遠更高，完全沒有靠近最低點](/note-images/ml-week3/04-learning-rate-too-large.png)
+
+*左：學習率選得恰當，損失沿曲線平滑遞減、逐步逼近全域最小值。右：學習率太大，每一步都跨過最低點跳到曲線另一側，而且因為當下的斜率（梯度）比原本更陡，下一步跳得比上一步更遠——不是收斂變慢，而是直接發散（越訓練損失越大）。*
+
+{/* @ai-reference
+id: gd-learning-rate-issue
+file: _references/機器學習實作系列/第3週-Adaline與NumPy Pandas.pdf
+page: 15
+status: suggested
+excerpt: Issue on learning rate η：Well-chosen v.s. too-large；too-large it overshoots the global minimum and even diverge
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第3週-Adaline與NumPy Pandas.pdf" page={15} status="suggested" excerpt={"Issue on learning rate η：Well-chosen v.s. too-large；too-large it overshoots the global minimum and even diverge"} client:visible />
+
+反過來，學習率太小雖然不會發散，但每一步只往下降一點點，需要非常多輪（epoch）才能收斂到接近最低點，訓練時間拉得很長。學習率（以及訓練輪次 epoch 數等）統稱**超參數（hyperparameters）**，實務上通常需要一些嘗試（experimentation）才能找到讓收斂又快又穩的數值。
+
+{/* @ai-reference
+id: gd-hyperparameters
+file: _references/機器學習實作系列/第3週-Adaline與NumPy Pandas.pdf
+page: 16
+status: suggested
+excerpt: Learning rate (and number of epochs, etc.) are the so-called hyperparameters；in practice, it requires some experimentation to find a good learning rate
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第3週-Adaline與NumPy Pandas.pdf" page={16} status="suggested" excerpt={"Learning rate (and number of epochs, etc.) are the so-called hyperparameters；in practice, it requires some experimentation to find a good learning rate"} client:visible />
+
+### 隨機梯度下降（SGD）：逐筆更新、更快收斂、支援線上學習
+
+**隨機梯度下降（Stochastic Gradient Descent, SGD）** 把「每一步都要算完整個資料集的梯度」換成「每看一筆樣本就用這一筆估計梯度、立刻更新一次參數」——對單一樣本 $(x^{(i)}, y^{(i)})$：
+
+$$
+\Delta w_j = \eta\left(y^{(i)}-\sigma(z^{(i)})\right)x_j^{(i)}, \qquad \Delta b = \eta\left(y^{(i)}-\sigma(z^{(i)})\right)
+$$
+
+{/* @ai-reference
+id: sgd-per-sample-update
+file: _references/機器學習實作系列/第3週-Adaline與NumPy Pandas.pdf
+page: 17
+status: suggested
+excerpt: Stochastic GD (SGD)：Update parameters incrementally for each training example；converges faster (than GD) because of more frequent weight updates；support online learning
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第3週-Adaline與NumPy Pandas.pdf" page={17} status="suggested" excerpt={"Stochastic GD (SGD)：Update parameters incrementally for each training example；converges faster (than GD) because of more frequent weight updates；support online learning"} client:visible />
+
+因為更新頻率高出很多，SGD 通常比全批次 GD 收斂更快，也因此天然支援**線上學習（online learning）**——新資料一筆一筆進來就能即時更新模型，不必等整批資料收集齊全再重新訓練一次。要注意的是每一輪（epoch）開始前**必須把訓練資料重新打散（shuffle）**，否則資料原本的排列順序（例如同一類別的樣本恰好排在一起）會讓參數更新落入規律的循環、無法真正收斂。
+
+因為每一步只看一筆樣本，SGD 走的路徑比全批次 GD 顛簸得多，損失曲面看起來更「吵雜（noisy）」——但這反而是優點：對於非凸（non-convex）的損失函數（例如後面多層神經網路的損失曲面），這種雜訊有機會幫助跳出較淺的局部最小值。實務上 SGD 也常搭配隨訓練過程遞減的**自適應學習率（adaptive learning rate）**，而不是固定一個 $\eta$ 用到底（[第 2 週作業一](/notes/機器學習實作系列第2週-python基礎)用的 $\eta_t=\eta_0/(1+\alpha t)$ 就是一種常見寫法）。
+
+![一個吵雜、非凸的 3D 損失曲面圖，橫軸 Parameter X、縱軸 Parameter Y、高度為 Loss Value，曲面上有多個高低起伏的波峰波谷，紅色 X 標記全域最小值 Global Minimum 的位置](/note-images/ml-week3/05-sgd-noisy-error-surface.jpeg)
+
+*示意一個有多個局部低谷的非凸損失曲面：全批次 GD 沿著平滑的梯度方向走，一旦掉進距離起點最近的局部低谷就會停在那裡；SGD 每一步的方向帶有雜訊、不完全跟著平均梯度走，因此有機會「跳出」較淺的局部最小值、繼續往更低的全域最小值移動。*
+
+{/* @ai-reference
+id: sgd-noisy-surface
+file: _references/機器學習實作系列/第3週-Adaline與NumPy Pandas.pdf
+page: 19
+status: suggested
+excerpt: Error surface is noisier than in GD；SGD can escape shallow local minima of nonlinear loss functions；learning rate is often replaced by an adaptive learning rate that decreases over time
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第3週-Adaline與NumPy Pandas.pdf" page={19} status="suggested" excerpt={"Error surface is noisier than in GD；SGD can escape shallow local minima of nonlinear loss functions；learning rate is often replaced by an adaptive learning rate that decreases over time"} client:visible />
+
+### Mini-batch GD：介於兩者之間的折衷
+
+**Mini-batch 梯度下降**是全批次 GD 與 SGD 的折衷：不是每次只用 1 筆樣本、也不是每次用全部樣本，而是每次用一小批（例如 32、64、128 筆——習慣取 2 的次方數）估計梯度。它可以理解成「把全批次 GD 套用在資料的一個小子集上」，好處是把 SGD 裡逐筆的 for 迴圈換成向量化運算，同時兼顧計算效率與訓練過程的穩定性；批次大小（batch size）本身也是一個需要調整的超參數。
+
+### 特徵縮放：為什麼 GD 需要它
+
+原始特徵常常落在完全不同的數值範圍——$[0,1]$、$[-1,1]$、$[0,255]$、甚至沒有固定上下界——數值範圍大的特徵會在淨輸入 $z=\boldsymbol{w}^T\boldsymbol{x}+b$ 裡不成比例地主導計算結果。許多依賴距離計算或梯度的 ML 演算法都需要某種**特徵縮放（feature scaling）**才能訓練得好，梯度下降正是其中之一。
+
+{/* @ai-reference
+id: feature-scaling-why
+file: _references/機器學習實作系列/第3週-Adaline與NumPy Pandas.pdf
+page: 21
+status: suggested
+excerpt: Original features may have different ranges of distribution；features with larger numeric values would dominate the learning process；GD is one of the algorithms that require feature scaling
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第3週-Adaline與NumPy Pandas.pdf" page={21} status="suggested" excerpt={"Original features may have different ranges of distribution；features with larger numeric values would dominate the learning process；GD is one of the algorithms that require feature scaling"} client:visible />
+
+最常見的特徵縮放方法是**標準化（standardization）**：把每個特徵的平均值移到 0、標準差縮放成 1（unit variance）——注意標準化不會讓原始資料的分布變成常態分布，它只調整數值的位置與尺度，不改變分布的形狀：
+
+$$
+x_j' = \frac{x_j - \mu_j}{\sigma_j}, \qquad j = 1, 2, \dots, m
+$$
+
+{/* @ai-reference
+id: standardization-formula
+file: _references/機器學習實作系列/第3週-Adaline與NumPy Pandas.pdf
+page: 22
+status: suggested
+excerpt: Standardization shifts the mean of each feature to zero, each feature has a standard deviation of 1 (unit variance)；standardization does not make the original dataset normally distributed
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第3週-Adaline與NumPy Pandas.pdf" page={22} status="suggested" excerpt={"Standardization shifts the mean of each feature to zero, each feature has a standard deviation of 1 (unit variance)；standardization does not make the original dataset normally distributed"} client:visible />
+
+特徵縮放真正的價值在於讓訓練變得穩定：如果不同特徵的數值尺度差很多，一個對某個權重更新合適的學習率，對另一個尺度差很多的權重可能太大或太小——想同時用一個學習率把所有權重都調到剛剛好，幾乎不可能。
+
+![兩組損失等高線圖並排：左圖兩軸為 w2、w1，橢圓形等高線傾斜且拉得很長，一支箭頭在等高線間來回震盪逼近標示為 Global loss minimum 的中心；右圖同樣兩軸 w2、w1，等高線是同心圓形狀，箭頭直接沿最短路徑逼近中心，標題為 Zero mean and unit variance](/note-images/ml-week3/06-feature-scaling-loss-contour.png)
+
+*左：特徵縮放前，不同權重方向上損失曲面的陡峭程度差很多，等高線被拉成細長的橢圓，梯度下降容易在窄的那個方向來回震盪、收斂路徑曲折。右：標準化之後兩個特徵同尺度，等高線變成同心圓，梯度剛好指向圓心，一步就能走一條接近直線的收斂路徑——這正是前面 Adaline 訓練實作「未特徵縮放時模型完全學不到東西，縮放後大幅改善」背後的幾何原因。*
+
+{/* @ai-reference
+id: feature-scaling-balanced-training
+file: _references/機器學習實作系列/第3週-Adaline與NumPy Pandas.pdf
+page: 23
+status: suggested
+excerpt: Feature scaling helps balanced and stable model training；if the features are on vastly different scales, a learning rate that works well for updating one weight might be too large or too small for other weights
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第3週-Adaline與NumPy Pandas.pdf" page={23} status="suggested" excerpt={"Feature scaling helps balanced and stable model training；if the features are on vastly different scales, a learning rate that works well for updating one weight might be too large or too small for other weights"} client:visible />
+
+實作上直接用 NumPy 的 `mean()`、`std()` 就能完成標準化，不需要額外套件：
+
+```python
+X_std = np.copy(X)
+X_std[:, 0] = (X[:, 0] - X[:, 0].mean()) / X[:, 0].std()
+X_std[:, 1] = (X[:, 1] - X[:, 1].mean()) / X[:, 1].std()
+```
+
+{/* @ai-reference
+id: standardization-numpy
+file: _references/機器學習實作系列/第3週-Adaline與NumPy Pandas.pdf
+page: 24
+status: suggested
+excerpt: Standardization via the NumPy methods：mean()、std()
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第3週-Adaline與NumPy Pandas.pdf" page={24} status="suggested" excerpt={"Standardization via the NumPy methods：mean()、std()"} client:visible />
+
+## Adaline 訓練實作：GD 與 SGD 在 Iris 資料集上的對照
+
+理論講完之後，投影片把 Adaline 實際實作出來、套用在 [第 2 週](/notes/機器學習實作系列第2週-python基礎)訓練過感知器的同一份 Iris 資料集上——PLA 換成 Adaline，只需要把權重更新規則從「答錯才推一步」換成「用 MSE 損失的梯度下降」，順便對比全批次 GD 與 SGD、以及有無特徵縮放的差異。
+
+{/* @ai-reference
+id: adaline-training-mission
+file: _references/機器學習實作系列/第3週-Adaline與NumPy Pandas.pdf
+page: 52
+status: suggested
+excerpt: Implement the Adaline in Python：The PLA and Adaline are very similar，simple modifications to the perceptron implementation；weight and bias parameters are now updated by minimizing the MSE loss function
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第3週-Adaline與NumPy Pandas.pdf" page={52} status="suggested" excerpt={"Implement the Adaline in Python：The PLA and Adaline are very similar，simple modifications to the perceptron implementation；weight and bias parameters are now updated by minimizing the MSE loss function"} client:visible />
+
+### AdalineGD：Full-batch 梯度下降實作
+
+```python
+class AdalineGD:
+    """ADAptive LInear NEuron classifier.
+
+    Parameters
+    ------------
+    eta : float
+      Learning rate (between 0.0 and 1.0)
+    n_iter : int
+      Passes over the training dataset.
+    random_state : int
+      Random number generator seed for random weight
+      initialization.
+
+    Attributes
+    -----------
+    w_ : 1d-array
+      Weights after fitting.
+    b_ : Scalar
+      Bias unit after fitting.
+    losses_ : list
+      Mean squared error loss function values in each epoch.
+
+    """
+
+    def __init__(self, eta=0.01, n_iter=50, random_state=1):
+        self.eta = eta
+        self.n_iter = n_iter
+        self.random_state = random_state
+
+    def fit(self, X, y):
+        """ Fit training data.
+
+        Parameters
+        ----------
+        X : {array-like}, shape = [n_examples, n_features]
+          Training vectors, where n_examples is the number of examples and
+          n_features is the number of features.
+        y : array-like, shape = [n_examples]
+          Target values.
+
+        Returns
+        -------
+        self : object
+
+        """
+        rgen = np.random.RandomState(self.random_state)
+        self.w_ = rgen.normal(loc=0.0, scale=0.01, size=X.shape[1])
+        self.b_ = np.float64(0.)
+        self.losses_ = []
+
+        for i in range(self.n_iter):
+            net_input = self.net_input(X)
+            # Please note that the "activation" method has no effect
+            # in the code since it is simply an identity function. We
+            # could write `output = self.net_input(X)` directly instead.
+            # The purpose of the activation is more conceptual, i.e.,
+            # in the case of logistic regression (as we will see later),
+            # we could change it to a sigmoid function to implement a
+            # logistic regression classifier.
+            output = self.activation(net_input)
+            errors = (y - output)
+            self.w_ += self.eta * 2.0 * (X.T @ errors) / X.shape[0]
+            self.b_ += self.eta * 2.0 * errors.mean()
+            loss = (errors**2).mean()
+            self.losses_.append(loss)
+        return self
+
+    def net_input(self, X):
+        """Calculate net input"""
+        return X @ self.w_ + self.b_
+
+    def activation(self, X):
+        """Compute linear activation"""
+        return X
+
+    def predict(self, X):
+        """Return class label after unit step"""
+        return (self.activation(self.net_input(X)) >= 0.5).astype(int)
+```
+
+`self.w_ += self.eta * 2.0 * (X.T @ errors) / X.shape[0]` 這一行就是前面推導的 $\Delta w_j=\eta\cdot\frac{2}{n}\sum_i(y^{(i)}-\sigma(z^{(i)}))x_j^{(i)}$ 向量化寫法：`X.T @ errors` 一次算出所有特徵維度的加總、除以 `X.shape[0]`（樣本數 $n$）取平均，比 PLA 逐筆更新快上許多；`self.losses_` 記錄的是每個 epoch 結束後的 MSE，用來畫訓練曲線（loss curve）。`activation()` 這個方法在程式碼裡其實沒有實質效果（就是把輸入原封不動傳回去），保留它純粹是為了跟之後要學的邏輯迴歸（把這裡換成 sigmoid 函式）共用同一套程式碼骨架。
+
+{/* @ai-reference
+id: adalinegd-fit-vectorized
+file: _references/機器學習實作系列/第3週-Adaline與NumPy Pandas.pdf
+page: 54
+status: suggested
+excerpt: self.w_ += self.eta * 2.0 * (X.T @ errors) / X.shape[0]；self.b_ += self.eta * 2.0 * errors.mean()（vectorized implementation of gradient descent update, see p.11）
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第3週-Adaline與NumPy Pandas.pdf" page={54} status="suggested" excerpt={"self.w_ += self.eta * 2.0 * (X.T @ errors) / X.shape[0]；self.b_ += self.eta * 2.0 * errors.mean()（vectorized implementation of gradient descent update, see p.11）"} client:visible />
+
+### 訓練曲線：學習率的影響
+
+把 `AdalineGD` 套到 Iris 資料集（跟第 2 週一樣取 setosa／versicolor 兩類、萼片長度與花瓣長度兩個特徵），分別用 $\eta=0.1$ 與 $\eta=0.0001$ 訓練 15 個 epoch：
+
+![兩張損失曲線並排：左圖標題 Adaline GD - Learning rate 0.1，縱軸 log(Mean squared error)，曲線隨 Epochs 增加從約 0 一路陡升到 23 以上，明顯發散；右圖標題 Adaline GD - Learning rate 0.0001，縱軸 Mean squared error，曲線從 0.435 緩慢下降到 0.381，下降幅度很小](/note-images/ml-week3/11-loss-curve-eta-comparison.png)
+
+*左圖 $\eta=0.1$：損失（取 log 之後）隨 epoch 遞增而暴增，對應前面「學習率太大會發散」的理論——這裡還沒做特徵縮放，原始特徵的數值範圍本身就偏大，讓有效步伐更容易超出安全範圍。右圖 $\eta=0.0001$：損失確實在下降，但一輪只降一點點，15 個 epoch 遠遠不夠收斂，對應「學習率太小收斂太慢」。*
+
+{/* @ai-reference
+id: adalinegd-eta-comparison
+file: _references/機器學習實作系列/第3週-Adaline與NumPy Pandas.pdf
+page: 59
+status: suggested
+excerpt: Two different types of convergence problems：Too-large learning rate（overshoot the global minimum, diverge）；Too-small learning rate（require a very large number of epochs to converge）
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第3週-Adaline與NumPy Pandas.pdf" page={59} status="suggested" excerpt={"Two different types of convergence problems：Too-large learning rate（overshoot the global minimum, diverge）；Too-small learning rate（require a very large number of epochs to converge）"} client:visible />
+
+兩種學習率都沒有訓練出能用的模型，反映在決策邊界上就是完全分不開兩個類別：
+
+![散佈圖，橫軸 Sepal length [cm]、縱軸 Petal length [cm]，紅色圓點（Class 0）與藍色方塊（Class 1）兩群樣本本身位置分得很開，但整張圖背景全部被染成同一種粉紅色（未能切出任何藍色決策區域），標題 Adaline GD - without feature scaling](/note-images/ml-week3/12-decision-boundary-without-scaling.png)
+
+*沒有做特徵縮放時，不管學習率怎麼調，模型都沒能學出一條能把兩色樣本分開的決策邊界——整張圖背景只有一種顏色，代表模型對任何輸入都預測同一個類別，完全沒有學到東西。這正是下一節要處理的特徵縮放問題所導致的。*
+
+### 加上特徵縮放：GD 收斂大幅改善
+
+把兩個特徵都做前面「特徵縮放」一節提到的標準化之後，同樣的 GD 演算法、學習率調到 $\eta=0.5$，收斂狀況完全不同：
+
+![折線圖，橫軸 Epochs、縱軸 Mean squared error，標題 Adaline GD - with feature scaling (Learning rate 0.5)，曲線從約 0.5 在前幾個 epoch 快速陡降，之後趨於平緩收斂到接近 0](/note-images/ml-week3/13-gd-loss-curve-with-scaling.png)
+
+*同樣是全批次 GD，加上特徵縮放後學習率可以放大到 0.5 而不發散：損失在前幾輪快速下降、之後平緩收斂到接近 0——跟前一節「未縮放時 $\eta=0.1$ 就發散」形成強烈對比，特徵縮放讓可用的學習率範圍變大、收斂也變快。*
+
+![散佈圖，橫軸 Sepal length [standardized]、縱軸 Petal length [standardized]，標題 Adaline GD - with feature scaling，背景清楚分成左下粉紅色區域與右上淺紫色區域，紅色圓點（Class 0）都落在粉紅色區域內、藍色方塊（Class 1）都落在淺紫色區域內，兩色交界是一條由左下往右上延伸的直線](/note-images/ml-week3/14-gd-decision-boundary-with-scaling.png)
+
+*特徵縮放之後，模型學出一條乾淨的線性決策邊界，兩類樣本完全落在各自顏色的區域內——跟前一節「未縮放時整張圖只有一種顏色」對照，特徵縮放不是錦上添花的小技巧，而是這個模型能不能學到東西的關鍵前提。*
+
+{/* @ai-reference
+id: gd-with-scaling-loss-curve
+file: _references/機器學習實作系列/第3週-Adaline與NumPy Pandas.pdf
+page: 60
+status: suggested
+excerpt: GD with Feature Scaling：Feature scaling using standardization，loss curve converges smoothly
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第3週-Adaline與NumPy Pandas.pdf" page={60} status="suggested" excerpt={"GD with Feature Scaling：Feature scaling using standardization，loss curve converges smoothly"} client:visible />
+
+### AdalineSGD：逐筆更新與線上學習
+
+```python
+class AdalineSGD:
+    """ADAptive LInear NEuron classifier.
+
+    Parameters
+    ------------
+    eta : float
+      Learning rate (between 0.0 and 1.0)
+    n_iter : int
+      Passes over the training dataset.
+    shuffle : bool (default: True)
+      Shuffles training data every epoch if True to prevent cycles.
+    random_state : int
+      Random number generator seed for random weight
+      initialization.
+
+    Attributes
+    -----------
+    w_ : 1d-array
+      Weights after fitting.
+    b_ : Scalar
+      Bias unit after fitting.
+    losses_ : list
+      Mean squared error loss function value averaged over all
+      training examples in each epoch.
+
+    """
+
+    def __init__(self, eta=0.01, n_iter=10, shuffle=True, random_state=None):
+        self.eta = eta
+        self.n_iter = n_iter
+        self.w_initialized = False
+        self.shuffle = shuffle
+        self.random_state = random_state
+
+    def fit(self, X, y):
+        """ Fit training data.
+
+        Parameters
+        ----------
+        X : {array-like}, shape = [n_examples, n_features]
+          Training vectors, where n_examples is the number of examples and
+          n_features is the number of features.
+        y : array-like, shape = [n_examples]
+          Target values.
+
+        Returns
+        -------
+        self : object
+
+        """
+        self._initialize_weights(X.shape[1])
+        self.losses_ = []
+        for i in range(self.n_iter):
+            if self.shuffle:
+                X, y = self._shuffle(X, y)
+            losses = []
+            for xi, target in zip(X, y):
+                losses.append(self._update_weights(xi, target))
+            avg_loss = np.mean(losses)
+            self.losses_.append(avg_loss)
+        return self
+
+    def partial_fit(self, X, y):
+        """Fit training data without reinitializing the weights"""
+        if not self.w_initialized:
+            self._initialize_weights(X.shape[1])
+        if y.ravel().shape[0] > 1:
+            for xi, target in zip(X, y):
+                self._update_weights(xi, target)
+        else:
+            self._update_weights(X, y)
+        return self
+
+    def _shuffle(self, X, y):
+        """Shuffle training data"""
+        r = self.rgen.permutation(len(y))
+        return X[r], y[r]
+
+    def _initialize_weights(self, m):
+        """Initialize weights to small random numbers"""
+        self.rgen = np.random.RandomState(self.random_state)
+        self.w_ = self.rgen.normal(loc=0.0, scale=0.01, size=m)
+        self.b_ = np.float64(0.)
+        self.w_initialized = True
+
+    def _update_weights(self, xi, target):
+        """Apply Adaline learning rule to update the weights"""
+        output = self.activation(self.net_input(xi))
+        error = (target - output)
+        self.w_ += self.eta * 2.0 * xi * (error)
+        self.b_ += self.eta * 2.0 * error
+        loss = error**2
+        return loss
+
+    def net_input(self, X):
+        """Calculate net input"""
+        return X @ self.w_ + self.b_
+
+    def activation(self, X):
+        """Compute linear activation"""
+        return X
+
+    def predict(self, X):
+        """Return class label after unit step"""
+        return (self.activation(self.net_input(X)) >= 0.5).astype(int)
+```
+
+跟 `AdalineGD` 對照，`net_input`、`activation`、`predict` 三個方法完全沒變（同一套模型架構），真正的差異在 `fit`：外層 `for i in range(self.n_iter)` 仍然是跑 `n_iter` 個 epoch，但每個 epoch 一開始先呼叫 `self._shuffle(X, y)` 重新打散資料，再用內層 `for xi, target in zip(X, y)` **逐筆**呼叫 `_update_weights`，一筆樣本更新一次參數；`_update_weights` 裡的更新式 `self.w_ += self.eta * 2.0 * xi * error` 正是前面推導的單筆樣本梯度下降。`partial_fit` 是特別為線上學習設計的方法——呼叫它不會重新初始化權重（跟 `fit` 不同），可以在模型已經訓練過的基礎上，用新進來的一筆或多筆資料繼續更新，例如 `ada_sgd.partial_fit(X_std[0, :], y[0])` 就是拿第一筆資料做一次線上更新。
+
+{/* @ai-reference
+id: adalinesgd-fit-loop
+file: _references/機器學習實作系列/第3週-Adaline與NumPy Pandas.pdf
+page: 62
+status: suggested
+excerpt: for i in range(self.n_iter): if self.shuffle: X, y = self._shuffle(X, y)；for xi, target in zip(X, y): losses.append(self._update_weights(xi, target))
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第3週-Adaline與NumPy Pandas.pdf" page={62} status="suggested" excerpt={"for i in range(self.n_iter): if self.shuffle: X, y = self._shuffle(X, y)；for xi, target in zip(X, y): losses.append(self._update_weights(xi, target))"} client:visible />
+
+{/* @ai-reference
+id: adalinesgd-partial-fit
+file: _references/機器學習實作系列/第3週-Adaline與NumPy Pandas.pdf
+page: 63
+status: suggested
+excerpt: def partial_fit(self, X, y)：Fit training data without reinitializing the weights（used for online learning）；ada_sgd.partial_fit(X_std[0, :], y[0])
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第3週-Adaline與NumPy Pandas.pdf" page={63} status="suggested" excerpt={"def partial_fit(self, X, y)：Fit training data without reinitializing the weights（used for online learning）；ada_sgd.partial_fit(X_std[0, :], y[0])"} client:visible />
+
+同樣在標準化後的資料上訓練，SGD 用 $\eta=0.01$：
+
+![折線圖，橫軸 Epochs、縱軸 Average loss，標題 Adaline SGD - with feature scaling (Learning rate 0.01)，曲線從約 0.135 在第 2 個 epoch 就急速降到接近 0.02，之後緩慢趨於平緩收斂到略低於 0.02](/note-images/ml-week3/15-sgd-loss-curve-with-scaling.png)
+
+*SGD 在第 1、2 個 epoch 就幾乎降到收斂水準附近——因為每看一筆樣本就更新一次參數，同樣是「一個 epoch」，SGD 已經做了 $n$ 次更新，全批次 GD 卻只做了 1 次，這正是 SGD 通常收斂更快的原因。*
+
+![散佈圖，橫軸 Sepal length [standardized]、縱軸 Petal length [standardized]，標題 Adaline SGD - with feature scaling，背景一樣分成左下粉紅色、右上淺紫色兩區域，紅色圓點與藍色方塊分別落在對應顏色區域內，決策邊界斜率與前面 GD 版本非常接近](/note-images/ml-week3/16-sgd-decision-boundary-with-scaling.png)
+
+*SGD 訓練出來的決策邊界跟前面 GD 版本幾乎重合——兩種優化方法只是「怎麼走到最低點」的路徑不同，因為損失函數是凸函數、只有一個全域最小值，兩者最終收斂到的參數（以及對應的決策邊界）自然非常接近。*
+
+{/* @ai-reference
+id: adalinesgd-loss-curve
+file: _references/機器學習實作系列/第3週-Adaline與NumPy Pandas.pdf
+page: 64
+status: suggested
+excerpt: SGD with Feature Scaling：loss curve，Average loss decreases rapidly within the first few epochs
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第3週-Adaline與NumPy Pandas.pdf" page={64} status="suggested" excerpt={"SGD with Feature Scaling：loss curve，Average loss decreases rapidly within the first few epochs"} client:visible />
+
+## NumPy：向量、矩陣與廣播的課堂練習
+
+後面「NumPy 與 Pandas 概念整理」一節把 NumPy／Pandas 的核心概念講過一輪，這裡先補上投影片實際跑過的程式範例與課堂練習，銜接「概念」跟「手上敲得出來的程式碼」。
+
+### 向量與矩陣：形狀的陷阱
+
+一維陣列 `shape=(3,)` **既不是列向量、也不是行向量**——它跟 `shape=(3,1)`、`shape=(1,3)` 這兩種明確標出列數／欄數的二維陣列（矩陣）是三種不同的形狀，混用會在做矩陣運算時踩到廣播或維度不匹配的坑。如果特定的矩陣運算需要一個明確的欄向量（column vector），要用 `np.array([[1], [2], [3]])` 顯式建立 `shape=(3,1)` 的陣列，不能只靠 `shape=(3,)` 的一維陣列頂替。
+
+{/* @ai-reference
+id: numpy-shape-3-vs-3-1
+file: _references/機器學習實作系列/第3週-Adaline與NumPy Pandas.pdf
+page: 29
+status: suggested
+excerpt: A shape of (3,) is NOT the same as (3, 1) or (1, 3). The former is a rank-1 array (sequence), while the latter two are rank-2 matrices (explicit rows/columns)
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第3週-Adaline與NumPy Pandas.pdf" page={29} status="suggested" excerpt={"A shape of (3,) is NOT the same as (3, 1) or (1, 3). The former is a rank-1 array (sequence), while the latter two are rank-2 matrices (explicit rows/columns)"} client:visible />
+
+投影片的 Example 1 示範了向量／矩陣的基本建立方式與屬性：
+
+```python
+import numpy as np
+from scipy import linalg
+
+# 1. 定義向量 (Vector)
+# 一維陣列通常被視為列向量或行向量的基礎
+vec = np.array([1, 2, 3])
+print("向量內容:", vec)
+print("向量維度 (Dimension):", vec.ndim)   # 輸出 1
+print("向量形狀 (Shape):", vec.shape)      # 輸出 (3,)
+
+# 2. 定義矩陣 (Matrix)
+# 使用巢狀列表建立 2x3 矩陣
+mat = np.array([
+    [1, 2, 3],
+    [4, 5, 6]
+])
+print("\n2x3 矩陣:\n", mat)
+print("矩陣維度 (Dimension):", mat.ndim)   # 輸出 2
+print("矩陣形狀 (Shape):", mat.shape)      # 輸出 (2, 3)
+
+# 3. 特殊矩陣建立
+zeros_mat = np.zeros((2, 2))     # 2x2 全零矩陣
+ones_mat = np.ones((3, 2))       # 3x2 全一矩陣
+identity_mat = np.eye(3)         # 3x3 單位矩陣（對角線為 1)
+print("\n單位矩陣:\n", identity_mat)
+
+# 4. 指定資料型別 (Data Types)
+# 預設通常是浮點數或根據輸入判定，也可以手動指定
+float_vec = np.array([1, 2, 3], dtype='float64')
+print("\n浮點數向量型別:", float_vec.dtype)  # 輸出 float64
+
+# 5. --- SciPy Note ---
+# SciPy functions usually take NumPy arrays as input.
+# For example, checking the norm (magnitude) of a vector:
+v_norm = linalg.norm(vec)
+print(f"\nNorm of the vector: {v_norm:.2f}")  # 輸出 3.74
+```
+
+{/* @ai-reference
+id: numpy-example1-vector-matrix
+file: _references/機器學習實作系列/第3週-Adaline與NumPy Pandas.pdf
+page: 31
+status: suggested
+excerpt: Example 1 sample code (03_1.py)：np.array 建立向量／矩陣、ndim、shape、np.zeros/np.ones/np.eye、dtype 指定、scipy.linalg.norm()
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第3週-Adaline與NumPy Pandas.pdf" page={31} status="suggested" excerpt={"Example 1 sample code (03_1.py)：np.array 建立向量／矩陣、ndim、shape、np.zeros/np.ones/np.eye、dtype 指定、scipy.linalg.norm()"} client:visible />
+
+### 元素級運算與矩陣乘法：np.dot 與 np.matmul
+
+NumPy 的基本算術運算子（`+`、`*`）都是**逐元素（element-wise）** 進行的——`A * B` 兩個矩陣相乘，算出來的是對應位置元素各自相乘，**不是**線性代數課本教的矩陣乘法。真正的矩陣乘法要用專門的運算子或函式：
+
+| 運算類型 | 運算子／函式 | 說明 |
+| --- | --- | --- |
+| 加法 | `+` 或 `np.add()` | 兩個相同形狀陣列對應元素相加 |
+| 純量乘法 | `*` | 陣列每個元素乘上同一個數 |
+| 轉置 | `.T` | 轉置後的檢視（view），對一維陣列沒有效果 |
+| 內積 | `np.dot()` | 計算兩個向量的內積 |
+| 矩陣乘法 | `@`（= `np.matmul()`）或 `np.dot()` | 標準矩陣乘法 |
+
+{/* @ai-reference
+id: numpy-operations-table
+file: _references/機器學習實作系列/第3週-Adaline與NumPy Pandas.pdf
+page: 34
+status: suggested
+excerpt: Common Functions and Operators：Addition (+ or np.add())、Scalar Mult. (*)、Transpose (.T)、Dot Product (np.dot())、Matrix Mult. (@ = np.matmul() or np.dot())
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第3週-Adaline與NumPy Pandas.pdf" page={34} status="suggested" excerpt={"Common Functions and Operators：Addition (+ or np.add())、Scalar Mult. (*)、Transpose (.T)、Dot Product (np.dot())、Matrix Mult. (@ = np.matmul() or np.dot())"} client:visible />
+
+`np.dot()` 跟 `np.matmul()`（等於 `@`）在處理**二維矩陣**時完全等價；差異出現在三維以上的高維陣列（張量）——`np.matmul()`（或 `@`）能正確處理「一批矩陣」的批次矩陣乘法（broadcasting batches of matrices），例如形狀 `(10, 3, 4) @ (4, 5)` 會得到 `(10, 3, 5)`（10 個 `3×4` 矩陣各自乘上同一個 `4×5` 矩陣），這正是深度學習框架處理一個 batch 資料時的標準寫法，`np.dot()` 在高維情境下的行為則不同，因此高維時建議統一用 `np.matmul()` 或 `@`。
+
+{/* @ai-reference
+id: numpy-dot-vs-matmul
+file: _references/機器學習實作系列/第3週-Adaline與NumPy Pandas.pdf
+page: 35
+status: suggested
+excerpt: For 2D Matrices they are identical；for higher dimensions (3D+ Tensor), np.matmul (or @) is preferred（handles "batches" of matrices correctly）；(10, 3, 4) @ (4, 5) → (10, 3, 5)
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第3週-Adaline與NumPy Pandas.pdf" page={35} status="suggested" excerpt={"For 2D Matrices they are identical；for higher dimensions (3D+ Tensor), np.matmul (or @) is preferred（handles \"batches\" of matrices correctly）；(10, 3, 4) @ (4, 5) → (10, 3, 5)"} client:visible />
+
+投影片的 Example 2 具體示範了逐元素運算跟矩陣乘法的差異：
+
+```python
+import numpy as np
+
+# Define two 2x2 matrices
+A = np.array([[1, 2], [3, 4]])
+B = np.array([[5, 6], [7, 8]])
+
+# --- 1. Matrix Addition ---
+# Condition: Dimensions must be the same
+# OR compatible for Broadcasting.
+add_result = A + B
+print("Matrix Addition (A + B):\n", add_result)
+
+# --- 2. Scalar Multiplication ---
+# Multiplies every element by the constant.
+scalar = 10
+scalar_result = A * scalar
+print(f"\nScalar Multiplication ({scalar} * A):\n", scalar_result)
+
+# --- 3. Element-wise Multiplication (Caution!) ---
+# This is NOT standard matrix multiplication. It multiplies position by position.
+element_wise = A * B
+print("\nElement-wise Multiplication (A * B):\n", element_wise)
+
+# --- 4. Standard Matrix Multiplication ---
+# This follows the linear algebra rule (rows of A times columns of B).
+# Condition: Number of columns in A must equal number of rows in B.
+C = np.array([[1, 0, 1], [0, 1, 0]])  # 2x3 Matrix
+matrix_mult = A @ C   # Preferred modern syntax
+# Alternative: np.matmul(A, C) or np.dot(A, C)
+print("\nMatrix Multiplication (A @ C, results in 2x3):\n", matrix_mult)
+
+# --- 5. Vector Dot Product ---
+v = np.array([1, 2, 3])
+w = np.array([4, 5, 6])
+dot_product = np.dot(v, w)  # 1*4 + 2*5 + 3*6 = 32
+print(f"\nVector Dot Product (v · w): {dot_product}")
+```
+
+{/* @ai-reference
+id: numpy-example2-operations
+file: _references/機器學習實作系列/第3週-Adaline與NumPy Pandas.pdf
+page: 36
+status: suggested
+excerpt: Example 2 sample code (03_2.py)：Matrix Addition、Scalar Multiplication、Element-wise Multiplication (Caution!)、Standard Matrix Multiplication (A @ C)、Vector Dot Product (np.dot)
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第3週-Adaline與NumPy Pandas.pdf" page={36} status="suggested" excerpt={"Example 2 sample code (03_2.py)：Matrix Addition、Scalar Multiplication、Element-wise Multiplication (Caution!)、Standard Matrix Multiplication (A @ C)、Vector Dot Product (np.dot)"} client:visible />
+
+### 廣播規則與三個例子
+
+後面「NumPy 與 Pandas 概念整理」一節會再講一次廣播的直覺，這裡先補上投影片的正式規則與圖解。NumPy 比較兩個陣列的形狀時，**從最右邊（trailing）的維度開始往左**逐一比較，兩個維度只有在**相等**或**其中一個是 1** 時才相容；輸入陣列不需要有相同的維度數，結果陣列的維度數等於輸入中較大的那個，缺少的維度視為 1，每個維度的大小取輸入中較大的那個值；只要有任何一個維度既不相等、也不是 1，就會丟出 `ValueError`。
+
+![兩組廣播範例並排：左邊 a(3) 是 [1,2,3]、b(1) 是純量 2 被 stretch 拉伸成 [2,2,2]，相乘結果 result(3) 是 [2,4,6]；右邊 a(4×3) 是 4 列 3 欄的矩陣、b(3) 是 [1,2,3] 沿著列的方向 stretch 拉伸成 4 份，相加後 result(4×3) 每一列都加上同一組 [1,2,3]](/note-images/ml-week3/07-broadcasting-basic-examples.jpeg)
+
+*兩種常見的廣播情境：純量（或長度 1 的維度）被「拉伸」成跟另一個陣列相同的形狀，再逐元素運算——這個拉伸只是概念上的比喻，NumPy 實際上不會真的複製記憶體，只是重複讀取同一份資料。*
+
+{/* @ai-reference
+id: numpy-broadcasting-rules
+file: _references/機器學習實作系列/第3週-Adaline與NumPy Pandas.pdf
+page: 39
+status: suggested
+excerpt: NumPy compares shapes element-wise starting with the trailing dimension；two dimensions are compatible when they are equal, or one of them is 1；otherwise a ValueError exception is thrown
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第3週-Adaline與NumPy Pandas.pdf" page={39} status="suggested" excerpt={"NumPy compares shapes element-wise starting with the trailing dimension；two dimensions are compatible when they are equal, or one of them is 1；otherwise a ValueError exception is thrown"} client:visible />
+
+不符合規則時會直接報錯，例如 `shape=(4,3)` 跟 `shape=(4,)` 相加：從最右邊比較，`3` 跟 `4` 兩者既不相等、也沒有一方是 1，廣播失敗：
+
+![NumPy Broadcasting 不相容範例：a 為 4×3 矩陣、b 為長度 4 的一維陣列，兩條黃色箭頭分別指向 a 的欄數 3 與 b 的長度 4，中間標示 mismatch，並用兩條交叉的對角線劃過兩個陣列示意無法運算，標題 Incompatible (3 ≠ 4)](/note-images/ml-week3/08-broadcasting-incompatible-shapes.jpeg)
+
+*`a` 的最後一維是 3（欄數）、`b` 的唯一一維是 4，兩者不相等、也沒有任何一方是 1，廣播規則判定不相容，直接丟出 `ValueError`——跟前一張圖 `b(3)` 能跟 `a(4,3)` 相容的差別，就差在這唯一的一個數字對不對得上。*
+
+{/* @ai-reference
+id: numpy-broadcasting-incompatible
+file: _references/機器學習實作系列/第3週-Adaline與NumPy Pandas.pdf
+page: 41
+status: suggested
+excerpt: Incompatible (3 ≠ 4)：a (4x3) 與 b (4) 相加，trailing dimension 3 與 4 不相等、也不是 1，broadcasting 失敗
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第3週-Adaline與NumPy Pandas.pdf" page={41} status="suggested" excerpt={"Incompatible (3 ≠ 4)：a (4x3) 與 b (4) 相加，trailing dimension 3 與 4 不相等、也不是 1，broadcasting 失敗"} client:visible />
+
+`np.newaxis` 是一個索引運算子，用來在陣列裡插入一個長度為 1 的新軸，藉此讓原本形狀不相容的兩個陣列變得可以廣播：
+
+```python
+>>> import numpy as np
+>>> a = np.array([0.0, 10.0, 20.0, 30.0])
+>>> b = np.array([1.0, 2.0, 3.0])
+>>> a[:, np.newaxis] + b        # a.shape = (4,) → (4,1)
+array([[ 1.,  2.,  3.],
+       [11., 12., 13.],
+       [21., 22., 23.],
+       [31., 32., 33.]])
+```
+
+![np.newaxis 廣播範例：左側程式碼區塊示範 a[:, np.newaxis] + b 把形狀 (4,) 的 a 插入新軸變成 (4,1)，輸出一個 4×3 的結果矩陣；右側示意圖 a(4×1) 沿著欄方向 stretch 拉伸成 4×3、b(3) 沿著列方向 stretch 拉伸成 4×3，相加後得到 result(4×3)](/note-images/ml-week3/09-np-newaxis-broadcasting.jpeg)
+
+*`a[:, np.newaxis]` 把形狀 `(4,)` 的一維陣列變成 `(4,1)` 的二維陣列（欄向量），這時候再跟 `shape=(3,)` 的 `b` 相加，兩者從最右邊比較：`1` 對 `3`（相容，`1` 會被拉伸）、`4` 對「缺少的維度視為 1」（相容），廣播成功、結果是 `(4,3)`——這正是下一節歐幾里得距離練習用到的關鍵技巧：刻意插入一個新軸，讓兩組點集合能夠兩兩配對廣播。*
+
+{/* @ai-reference
+id: numpy-newaxis
+file: _references/機器學習實作系列/第3週-Adaline與NumPy Pandas.pdf
+page: 42
+status: suggested
+excerpt: np.newaxis：an index operator used to insert a new axis to an array；a.shape = (4,) → (4,1)；a[:, np.newaxis] + b
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第3週-Adaline與NumPy Pandas.pdf" page={42} status="suggested" excerpt={"np.newaxis：an index operator used to insert a new axis to an array；a.shape = (4,) → (4,1)；a[:, np.newaxis] + b"} client:visible />
+
+### 課堂練習：兩點集合間的歐幾里得距離
+
+**題目**：給定兩組二維座標點集 $A$（形狀 $(3,2)$）與 $B$（形狀 $(5,2)$），請利用廣播計算清單 $A$ 中每一點到清單 $B$ 中每一點的**歐幾里得距離（Euclidean Distance, L2 norm）**，輸出應為一個形狀 $(3,5)$ 的距離矩陣。複習重點：`np.newaxis`、`np.linalg.norm()`。
+
+{/* @ai-reference
+id: numpy-exercise-euclidean-distance
+file: _references/機器學習實作系列/第3週-Adaline與NumPy Pandas.pdf
+page: 43
+status: suggested
+excerpt: 給定兩組二維座標點集 A(3,2) 與 B(5,2)，請利用 Broadcasting 計算清單 A 中每一點到清單 B 中每一點的歐幾里得距離，輸出應為一個 shape=(3,5) 的距離矩陣；複習重點：np.newaxis, np.linalg.norm()
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第3週-Adaline與NumPy Pandas.pdf" page={43} status="suggested" excerpt={"給定兩組二維座標點集 A(3,2) 與 B(5,2)，請利用 Broadcasting 計算清單 A 中每一點到清單 B 中每一點的歐幾里得距離，輸出應為一個 shape=(3,5) 的距離矩陣；複習重點：np.newaxis, np.linalg.norm()"} client:visible />
+
+這題如果寫成雙層 `for` 迴圈（外層跑 $A$ 的 3 個點、內層跑 $B$ 的 5 個點）完全可以做出來，但正是後面「該用哪一個？向量化思維為什麼會改變寫法」那節想強調的：改成「對整個陣列做什麼」而不是「對每一點做什麼」，才是這裡真正要練的技巧。關鍵是用 `np.newaxis` 讓 $A$ 多插入一個維度，逼兩組點兩兩配對：
+
+```python
+A[:, np.newaxis, :].shape   # (3, 2)  →  (3, 1, 2)
+B.shape                     # (5, 2)  （不用改，直接參與廣播）
+(A[:, np.newaxis, :] - B).shape   # 廣播成 (3, 5, 2)：A 的第 i 點與 B 的第 j 點的座標差
+```
+
+`A[:, np.newaxis, :]` 把 $A$ 的形狀從 $(3,2)$ 變成 $(3,1,2)$，跟 $B$ 的 $(5,2)$ 相減時，NumPy 從最右邊比較：`2` 對 `2`（相等）、`1` 對 `5`（`1` 被拉伸成 5）、`3` 對「缺少維度視為 1」（拉伸成 3）——廣播結果是 $(3,5,2)$，也就是「$A$ 的第 $i$ 點與 $B$ 的第 $j$ 點在兩個座標軸上各自的差」排成的立方體。接著只要在最後一個軸（座標軸這一維，`axis=-1` 或 `axis=2`）上取 `np.linalg.norm()`，就能把每一組座標差壓成一個距離純量，得到形狀 $(3,5)$ 的距離矩陣：
+
+```python
+import numpy as np
+
+A = np.array([[0, 1], [2, 3], [4, 5]])          # shape (3, 2)
+B = np.array([[0, 1], [2, 3], [4, 5], [6, 7], [8, 9]])  # shape (5, 2)
+
+diff = A[:, np.newaxis, :] - B      # shape (3, 5, 2)
+dist_matrix = np.linalg.norm(diff, axis=-1)   # shape (3, 5)
+print(dist_matrix)
+```
+
+![程式輸出畫面：左側 Matrix A 為 [[0 1] [2 3] [4 5]]，中間 Matrix B 為 [[0 1] [2 3] [4 5] [6 7] [8 9]]，右側 Distance Matrix of Shape (3, 5) 輸出一個 3×5 的浮點數矩陣，對角線附近數值為 0，往右上角數值遞增到最大約 11.31](/note-images/ml-week3/10-broadcasting-exercise-euclidean.jpeg)
+
+*輸出矩陣第一列（$A$ 的第 0 點到 $B$ 各點的距離）第一個數字是 0——因為 $A$ 的第 0 點 $(0,1)$ 跟 $B$ 的第 0 點 $(0,1)$ 座標完全相同；矩陣裡沿著主對角線方向的數字明顯偏小，因為這幾組點集本身是等差排列、索引越接近的點座標也越接近。全程沒有寫任何一層 `for` 迴圈，`(3,1,2)` 與 `(5,2)` 的廣播一次算出所有 $3\times5=15$ 組點對的距離。*
+
+{/* @ai-reference
+id: numpy-exercise-solution
+file: _references/機器學習實作系列/第3週-Adaline與NumPy Pandas.pdf
+page: 44
+status: suggested
+excerpt: 參考解答 (03_3.py)：A[:, np.newaxis, :] - B 廣播成 (3,5,2)，再用 np.linalg.norm(axis=-1) 壓成 (3,5) 距離矩陣
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第3週-Adaline與NumPy Pandas.pdf" page={44} status="suggested" excerpt={"參考解答 (03_3.py)：A[:, np.newaxis, :] - B 廣播成 (3,5,2)，再用 np.linalg.norm(axis=-1) 壓成 (3,5) 距離矩陣"} client:visible />
+
+## NumPy 與 Pandas 概念整理
 
 ### 陣列（ndarray）：放棄彈性換速度
 
@@ -28,7 +891,7 @@ Python 的 list 存的是一排指標，元素散在記憶體各處、各自帶�
 
 ### 廣播、布林遮罩、花式索引：三種不寫迴圈的取值法
 
-廣播（broadcasting）讓形狀不同的陣列直接運算：先在較小者的形狀左邊補 1，再把長度為 1 的維度延展對齊，若某維兩邊既不相等也不是 1 就報錯。延展只是概念上的，不會真的複製一大塊記憶體，所以「每欄各自減掉自己的平均」可以寫成一行 `X - X.mean(axis=0)`。
+廣播（broadcasting）讓形狀不同的陣列直接運算：先在較小者的形狀左邊補 1，再把長度為 1 的維度延展對齊，若某維兩邊既不相等也不是 1 就報錯（完整規則與圖解見前面「廣播規則與三個例子」一節）。延展只是概念上的，不會真的複製一大塊記憶體，所以「每欄各自減掉自己的平均」可以寫成一行 `X - X.mean(axis=0)`。
 
 布林遮罩（boolean masking）建立在「比較運算子也是 ufunc」上：`temps > 30` 回傳的是逐格比較的布林陣列，把它丟回中括號 `temps[temps > 30]` 就取出所有符合條件的元素，再 `sum()` 一下就知道幾天超過 30 度。組合條件要用 `&`、`|`、`~`，不能用 `and`／`or`。
 
@@ -36,7 +899,7 @@ Python 的 list 存的是一排指標，元素散在記憶體各處、各自帶�
 
 ### 從陣列到表格：`Series`、`DataFrame` 與缺失值
 
-NumPy 假設資料是整齊的數字方陣，真實資料卻長得像報表：有欄名、各欄型別不同、還缺了幾格。`Series` 可以想成「多了一條明確索引的一維陣列」，索引不必是 0、1、2，可以是會員 ID 或日期；`DataFrame` 則是一組共用同一條索引、對齊排好的 `Series`，所以 `df['sales']` 拿到的是一整欄而不是一列。當索引本身就是整數時，`s[1]` 到底指標籤還是位置？`.loc`／`.iloc` 就是為消除這個歧義而生：`.loc` 一律走標籤且切片含尾端，`.iloc` 一律走位置且不含尾端。缺失值（missing data）以 `NaN` 與 `None` 兩種哨兵值表示；`NaN` 會傳染，而且整數欄一旦出現缺值會整欄升格成浮點數。實務三動作：`isnull()` 找出來、`dropna()` 丟掉、`fillna()` 補上固定值或前後值。
+NumPy 假設資料是整齊的數字方陣，真實資料卻長得像報表：有欄名、各欄型別不同、還缺了幾格。`Series` 可以想成「多了一條明確索引的一維陣列」，用 `pd.Series(data, index=...)` 建立，`data` 可以是 list、dict、ndarray 或純量，`index` 是一串軸標籤，索引不必是 0、1、2，可以是會員 ID 或日期；用 `Series.to_numpy()` 可以隨時轉回 ndarray。`DataFrame` 則是一組共用同一條索引、對齊排好的 `Series`（想成「一系列對齊的 Series」），建立時用 `pd.DataFrame(data, index=..., columns=...)`，`data` 可以是 Series、dict、list of dicts 或 ndarray，`columns` 額外指定欄名；同樣有 `DataFrame.to_numpy()` 轉回 ndarray。所以 `df['sales']` 拿到的是一整欄而不是一列。當索引本身就是整數時，`s[1]` 到底指標籤還是位置？`.loc`／`.iloc` 就是為消除這個歧義而生：`.loc` 一律走標籤且切片含尾端，`.iloc` 一律走位置且不含尾端。缺失值（missing data）以 `NaN` 與 `None` 兩種哨兵值表示；`NaN` 會傳染，而且整數欄一旦出現缺值會整欄升格成浮點數。實務三動作：`isnull()` 找出來、`dropna()` 丟掉、`fillna()` 補上固定值或前後值。
 
 ### 拼接、合併、分組、樞紐與時間序列
 
@@ -46,7 +909,7 @@ NumPy 假設資料是整齊的數字方陣，真實資料卻長得像報表：�
 
 判斷其實很直接：資料若是同一種型別、沒有欄名、你關心的是數學運算——像素矩陣、特徵矩陣、距離矩陣——用 NumPy；若有欄名、各欄型別不同、有缺值、要按鍵合併或分組，那是 Pandas 的場子。實務上兩者是接力：Pandas 讀檔、清缺值、合併、分組算出特徵，最後 `.to_numpy()` 把整理好的表格交給 scikit-learn，而它內部又回到 NumPy 的向量化運算。也因為 `DataFrame` 底下就是 ndarray，前面學的廣播、遮罩、聚合會在 Pandas 裡原封不動再用一次。
 
-真正改變寫法的是向量化思維。寫迴圈的人想的是「對每一筆資料做什麼」，向量化要你改成「對整個欄位做什麼」——不是「跑過每一列、金額大於一千就記下來」，而是「先做出一個布林遮罩，再用它切出子表」。換來的是快（跑在編譯過的程式碼裡）、短（一行取代十行，出錯空間也少），以及最重要的：你開始用集合而不是逐筆在描述問題，而這正是後面所有機器學習套件的 API 說話的方式。當你發現自己在對 `DataFrame` 逐列跑 `for` 迴圈，那通常就是個訊號——這裡應該有個遮罩、廣播或 groupby 的寫法。
+真正改變寫法的是向量化思維。寫迴圈的人想的是「對每一筆資料做什麼」，向量化要你改成「對整個欄位做什麼」——不是「跑過每一列、金額大於一千就記下來」，而是「先做出一個布林遮罩，再用它切出子表」。換來的是快（跑在編譯過的程式碼裡）、短（一行取代十行，出錯空間也少），以及最重要的：你開始用集合而不是逐筆在描述問題，而這正是後面所有機器學習套件的 API 說話的方式。當你發現自己在對 `DataFrame` 逐列跑 `for` 迴圈，那通常就是個訊號——這裡應該有個遮罩、廣播或 groupby 的寫法；前面「課堂練習：兩點集合間的歐幾里得距離」一節把雙層 `for` 迴圈換成一次廣播，就是這個訊號最具體的例子。
 
 > 延伸閱讀：[《Python Data Science Handbook》Part 2: Introduction to NumPy](https://jakevdp.github.io/PythonDataScienceHandbook/02.00-introduction-to-numpy.html)、[Part 3: Data Manipulation with Pandas](https://jakevdp.github.io/PythonDataScienceHandbook/03.00-introduction-to-pandas.html)（上文為獨立整理與舉例，非該書內容改寫）
 
@@ -122,6 +985,26 @@ status: generated
 <GeneratedFrame id="ml-week3-pipeline" type="diagram" prompt={"一條資料管線：前段 Pandas 清理與組裝，後段 NumPy 與模型訓練。"} caption={"一條資料處理管線：前段由 Pandas 清理與組裝，.to_numpy() 之後交棒給 NumPy 與模型。"}>
   <MlWeek3Pipeline />
 </GeneratedFrame>
+
+## 作業一（Classwork）：與第 2 週同一份作業
+
+第 3 週投影片最後的「Classwork／Assignment #1」重提的是**同一份作業**——用 Adaline SGD 分類模型，測試 `tech_employees.csv` 裡 4 種員工能力指標的不同組合，找出哪個指標對篩選「優秀員工」最具鑑別度。完整的題目說明、資料欄位、切分規則、數學推導（含這裡剛學過的 GD／SGD 更新式、標準化公式）、以及 7 種特徵組合實際跑出來的正確率排序與三張結果圖，都寫在[第 2 週筆記的「作業一：Adaline SGD 員工特徵分類」](/notes/機器學習實作系列第2週-python基礎)，這裡不重複整篇貼一次，只補第 3 週投影片新增的重點：
+
+- **自適應學習率**（見前面「隨機梯度下降（SGD）」一節提到的 $\eta_t=\eta_0/(1+\alpha t)$）被列為作業建議嘗試的訓練技巧之一，對應第 2 週結果裡「自適應學習率（0.84）優於固定學習率（0.81）」的實測結論
+- 「預期結果 2」明確要求針對每個雙特徵組合，個別畫出決策邊界區域與測試集樣本分佈——第 2 週的結果圖把全部 6 組畫成一張 2×3 網格方便對照，是同一個要求的呈現方式
+
+{/* @ai-reference
+id: assignment1-classwork-recap
+file: _references/機器學習實作系列/第3週-Adaline與NumPy Pandas.pdf
+page: 66
+status: suggested
+excerpt: Assignment #1 目的：使用 Adaline SGD 分類模型，透過測試不同的特徵組合，觀察何種能力指標對科技公司篩選「優秀員工」最具鑑別度（與第2週作業一為同一份作業）
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第3週-Adaline與NumPy Pandas.pdf" page={66} status="suggested" excerpt={"Assignment #1 目的：使用 Adaline SGD 分類模型，透過測試不同的特徵組合，觀察何種能力指標對科技公司篩選「優秀員工」最具鑑別度（與第2週作業一為同一份作業）"} client:visible />
+
+![6 張決策邊界圖排成 2×3 網格，每張對應一個雙特徵組合，標題分別為 Language_Skill & Math_Skill、Language_Skill & Coding_Skill、Language_Skill & Health_Condition、Math_Skill & Coding_Skill、Math_Skill & Health_Condition、Coding_Skill & Health_Condition；每張圖以粉紅／淺紫兩色區塊表示 Class 0／Class 1 的決策區域，疊加測試集樣本點（紅圓點與藍方塊），座標軸皆標註 standardized](/note-images/ml-week3/17-assignment-decision-boundary-grid.png)
+
+*「預期結果 2」的範例呈現：`Coding_Skill & Health_Condition`（右下）兩色區塊幾乎垂直切開、分得最乾淨，`Coding_Skill & Math_Skill`（左下）次之——跟第 2 週結果「`Coding_Skill` 鑑別度最高、`Math_Skill` 次之」的排序吻合；細節與完整正確率數字見第 2 週筆記。*
 
 ## 教材預習重點
 
