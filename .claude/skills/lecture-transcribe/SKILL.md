@@ -98,6 +98,9 @@ python3 .claude/skills/lecture-transcribe/scripts/transcribe.py \
 ```bash
 # MDX 可編譯（去掉 frontmatter 後用 @mdx-js/mdx 編譯，或直接 astro build）
 npx astro check 2>&1 | tail -5
+
+# 補完的粗體術語有沒有漏補空格（見上方「補進對應段落」的規則）
+grep -noP '[)）]\*\*(?![\s\p{P}\p{S}])' <筆記路徑>
 ```
 
 確認 `import`／`<GeneratedFrame>` 的行數與位置跟改前一致（`grep -n "^import\|^<GeneratedFrame\|^{/\*"` 前後比對），再寫回原檔。完成時用幾句話向作者列出補了哪些類別的內容，並提醒可刪除的中間檔（`.wav`、半成品 `.opus`）。接著進入第三段。

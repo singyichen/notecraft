@@ -20,7 +20,7 @@ import MlWeek11TrainingLoop from '@/components/generated/ml-week11-training-loop
 
 ### 框架接手的第一件事：tensor
 
-第 10 週用 numpy 手刻多層感知器，最累的不是前向傳播，而是自己推導每一層的梯度。PyTorch 的起點很樸素——把 `ndarray` 換成 **tensor（張量）**：`torch.tensor()` 建立、`.reshape()` 改形狀、`torch.matmul()` 相乘、`torch.cat()` 與 `torch.stack()` 接合或堆疊，這些 **tensor 操作（tensor operations）**幾乎可以照著 numpy 的直覺用。真正的差別在兩處：tensor 能整包搬上 GPU，同一段矩陣乘法一行都不改就換了執行硬體；更關鍵的是它帶一個 `requires_grad` 開關，打開之後，這個張量參與的每一次運算都會被記帳。numpy 陣列算完就算完了，tensor 算完還留著「我是怎麼被算出來的」——這份帳就是後面自動微分的全部基礎。
+第 10 週用 numpy 手刻多層感知器，最累的不是前向傳播，而是自己推導每一層的梯度。PyTorch 的起點很樸素——把 `ndarray` 換成 **tensor（張量）**：`torch.tensor()` 建立、`.reshape()` 改形狀、`torch.matmul()` 相乘、`torch.cat()` 與 `torch.stack()` 接合或堆疊，這些 **tensor 操作（tensor operations）** 幾乎可以照著 numpy 的直覺用。真正的差別在兩處：tensor 能整包搬上 GPU，同一段矩陣乘法一行都不改就換了執行硬體；更關鍵的是它帶一個 `requires_grad` 開關，打開之後，這個張量參與的每一次運算都會被記帳。numpy 陣列算完就算完了，tensor 算完還留著「我是怎麼被算出來的」——這份帳就是後面自動微分的全部基礎。
 
 ### 餵資料：Dataset 定義一筆，DataLoader 決定怎麼發
 

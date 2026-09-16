@@ -24,7 +24,7 @@ import PdfRefChip from '@/components/islands/PdfRefChip.tsx'
 
 > **課堂補充｜「應用」電子學的意思**：老師說明，課堂仍會講必要的理論，但理論不是終點；真正的重點是理解後走進實驗室操作，知道元件如何被實際使用。整門課會把**基本元件、電路分析與設計、系統層次的整體規劃**串在一起，而不是只停留在公式推導。
 
-老師也用實驗中的元件尺度區分 **Electronics（電子學）**與 **Microelectronics（微電子學）**：微電子學特別關心元件的小型化與積體化；本課一開始仍會使用肉眼可見、可以拿取與接線的 **discrete components（離散元件）**，例如二極體與 BJT，但它們的物理觀念會一路延伸到 IC 內部的微小元件。
+老師也用實驗中的元件尺度區分 **Electronics（電子學）** 與 **Microelectronics（微電子學）**：微電子學特別關心元件的小型化與積體化；本課一開始仍會使用肉眼可見、可以拿取與接線的 **discrete components（離散元件）**，例如二極體與 BJT，但它們的物理觀念會一路延伸到 IC 內部的微小元件。
 
 ### 教科書與參考書
 
@@ -90,7 +90,7 @@ excerpt: 自由電子脫離共價鍵時會產生電洞，電洞可被其他自�
 */}
 <PdfRefChip file="_references/電子學實作系列/第一週/Ch 2 - Basic Physics of Semiconductors.pdf" page={8} status="suggested" excerpt={"自由電子脫離共價鍵時會產生電洞，電洞可被其他自由電子填補"} client:visible />
 
-要把電子震出鍵結需要多少能量，由**能隙（bandgap energy，$E_g$）**決定。能隙與自由電子密度之間是**指數關係**，這帶來一個實務上很煩人的後果：**溫度只要動一點，本質載子濃度就會大幅改變**——這也是為什麼後面所有電路都必須設計偏壓網路來抵抗溫度漂移，而不是直接依賴元件的絕對參數。
+要把電子震出鍵結需要多少能量，由**能隙（bandgap energy，$E_g$）** 決定。能隙與自由電子密度之間是**指數關係**，這帶來一個實務上很煩人的後果：**溫度只要動一點，本質載子濃度就會大幅改變**——這也是為什麼後面所有電路都必須設計偏壓網路來抵抗溫度漂移，而不是直接依賴元件的絕對參數。
 
 {/* @ai-reference
 id: bandgap-ni-temp
@@ -103,9 +103,9 @@ excerpt: 能隙 Eg 決定電子脫離共價鍵所需的能量，Eg 越大本質�
 
 ### 摻雜：用百萬分之一的雜質換取數量級的導電度
 
-純矽（本質半導體）的載子太少，導電度太低，做不出有用的元件。**摻雜（doping）**就是刻意混入極微量的其他元素來改變載子濃度：
+純矽（本質半導體）的載子太少，導電度太低，做不出有用的元件。**摻雜（doping）** 就是刻意混入極微量的其他元素來改變載子濃度：
 
-- 摻入**磷（P）**這類五價元素：多出來的第五個價電子沒有鍵結對象，很容易游離成自由電子。電子變成多數載子，稱為 **N 型**。
+- 摻入**磷（P）** 這類五價元素：多出來的第五個價電子沒有鍵結對象，很容易游離成自由電子。電子變成多數載子，稱為 **N 型**。
 
 {/* @ai-reference
 id: doping-n-p-type
@@ -116,7 +116,7 @@ excerpt: 摻入磷等五價元素會多出電子形成 N 型半導體，磷稱�
 */}
 <PdfRefChip file="_references/電子學實作系列/第一週/Ch 2 - Basic Physics of Semiconductors.pdf" page={14} status="suggested" excerpt={"摻入磷等五價元素會多出電子形成 N 型半導體，磷稱為施體"} client:visible />
 
-- 摻入**硼（B）**這類三價元素：少一個電子去湊共價鍵，等於憑空製造一個空位。電洞變成多數載子，稱為 **P 型**。
+- 摻入**硼（B）** 這類三價元素：少一個電子去湊共價鍵，等於憑空製造一個空位。電洞變成多數載子，稱為 **P 型**。
 
 這裡有一條貫穿全課的守恆律：**不管怎麼摻雜，電子濃度與電洞濃度的乘積永遠等於本質載子濃度的平方**。摻雜不是「憑空生出載子」，而是**把天平往一邊壓**——把電子撐多，電洞就會被壓少，而且是被壓到讓乘積維持不變的程度。所以 N 型材料裡不是沒有電洞，只是電洞成了少數載子；而後面會看到，**電晶體的整個工作原理恰恰建立在這些「少數載子」身上**，不是多數載子。
 
@@ -133,7 +133,7 @@ excerpt: 電子濃度與電洞濃度的乘積恆等於本質電子濃度的平�
 
 電流只有兩種來源，整門課從頭到尾就這兩種：
 
-**漂移（drift）**是電場推的。加上電場，帶電粒子沿著電場方向被加速，達到一個與電場強度成正比的平均速度。這就是歐姆定律在微觀尺度的樣貌。不過這個正比關係只在中低電場成立——電場大到一定程度後速度會**飽和**，不再隨電場上升，這件事在後面短通道 MOS 電晶體那裡會回來咬人。
+**漂移（drift）** 是電場推的。加上電場，帶電粒子沿著電場方向被加速，達到一個與電場強度成正比的平均速度。這就是歐姆定律在微觀尺度的樣貌。不過這個正比關係只在中低電場成立——電場大到一定程度後速度會**飽和**，不再隨電場上升，這件事在後面短通道 MOS 電晶體那裡會回來咬人。
 
 {/* @ai-reference
 id: drift-mechanism
@@ -144,7 +144,7 @@ excerpt: 電場推動帶電粒子移動的過程稱為漂移，速度與電場�
 */}
 <PdfRefChip file="_references/電子學實作系列/第一週/Ch 2 - Basic Physics of Semiconductors.pdf" page={20} status="suggested" excerpt={"電場推動帶電粒子移動的過程稱為漂移，速度與電場成正比"} client:visible />
 
-**擴散（diffusion）**是濃度差推的，跟電場無關。載子從高濃度區往低濃度區散開，就像一滴墨水滴進清水裡會自己散均勻——即使完全沒有外加電場也照樣發生。擴散電流的大小正比於**濃度的梯度**（斜率），不是濃度本身：濃度分布若是一條直線，梯度固定，擴散電流就處處相等；濃度分布若是彎的，電流就會隨位置變化。
+**擴散（diffusion）** 是濃度差推的，跟電場無關。載子從高濃度區往低濃度區散開，就像一滴墨水滴進清水裡會自己散均勻——即使完全沒有外加電場也照樣發生。擴散電流的大小正比於**濃度的梯度**（斜率），不是濃度本身：濃度分布若是一條直線，梯度固定，擴散電流就處處相等；濃度分布若是彎的，電流就會隨位置變化。
 
 {/* @ai-reference
 id: diffusion-mechanism
@@ -216,7 +216,7 @@ excerpt: 二極體在低於導通電壓時視為斷路，超過時視為定電�
 
 ### 逆向崩潰：齊納與突崩
 
-逆偏電壓大到某個程度，電流會突然暴衝，稱為**崩潰**。機制有兩種：**齊納崩潰**是空乏區的強電場直接把電子從共價鍵中拉出來；**突崩（avalanche）**是被加速的載子撞擊晶格離子、撞出更多載子，再一起去撞別人，像雪崩一樣連鎖放大。
+逆偏電壓大到某個程度，電流會突然暴衝，稱為**崩潰**。機制有兩種：**齊納崩潰**是空乏區的強電場直接把電子從共價鍵中拉出來；**突崩（avalanche）** 是被加速的載子撞擊晶格離子、撞出更多載子，再一起去撞別人，像雪崩一樣連鎖放大。
 
 {/* @ai-reference
 id: reverse-breakdown-zener-avalanche
@@ -389,7 +389,7 @@ status: confirmed
 <PdfRefChip file="_references/電子學實作系列/第一週/Ch 1 - Introduction to Microelectronics.pdf" page={8} status="confirmed" client:visible />
 
 - **Point-contact transistor（點接觸式電晶體）**：1947 年發明的第一顆電晶體，投影片明確標示這是 **"The 'Big Bang' of Microelectronics"**（微電子學的「大爆炸」）。結構上用兩根非常靠近的金屬觸點，接觸在一小片 **Germanium（鍺）**——一種半導體材料——的表面上，中間隔著一道 **Thin Razor Cut Between E and C**（用剃刀片在射極與集極之間切出的細縫）。
-- **Emitter（射極，E）／Collector（集極，C）／Base（基極，B）**：電晶體的三個接腳名稱，這顆最原始的點接觸式電晶體上已經看得到這三個接點的雛型；Emitter、Collector 靠 **Gold Foil（金箔）**接觸固定在 **Plastic Wedge（塑膠楔形物）**上，Base 則直接接在鍺材料本體。
+- **Emitter（射極，E）／Collector（集極，C）／Base（基極，B）**：電晶體的三個接腳名稱，這顆最原始的點接觸式電晶體上已經看得到這三個接點的雛型；Emitter、Collector 靠 **Gold Foil（金箔）** 接觸固定在 **Plastic Wedge（塑膠楔形物）** 上，Base 則直接接在鍺材料本體。
 - **Germanium（鍺）**：早期電晶體使用的半導體材料（矽要到後來才成為主流），週期表上與矽同屬 IV 族元素。
 - **John Bardeen、William Shockley、Walter Brattain**：貝爾實驗室（**Bell Labs**）三位發明者，1948 年合照被投影片列為電晶體發明的具體佐證（三人也因此共同拿到 1956 年諾貝爾物理獎，屬背景知識，投影片未明講）。
 
@@ -411,7 +411,7 @@ status: confirmed
 */}
 <PdfRefChip file="_references/電子學實作系列/第一週/Ch 1 - Introduction to Microelectronics.pdf" page={10} status="confirmed" client:visible />
 
-真空管換成電晶體只解決了體積問題的一半——如果要用電晶體搭建複雜電路，還是得把成千上萬顆電晶體一根根用導線接起來。**Integrated Circuit（IC，積體電路）**要解決的正是「怎麼把很多元件跟導線都做在同一塊晶片上」，這裡因此爆發一場專利大戰：
+真空管換成電晶體只解決了體積問題的一半——如果要用電晶體搭建複雜電路，還是得把成千上萬顆電晶體一根根用導線接起來。**Integrated Circuit（IC，積體電路）** 要解決的正是「怎麼把很多元件跟導線都做在同一塊晶片上」，這裡因此爆發一場專利大戰：
 
 - **Patent War: Texas Instruments vs. Fairchild（專利大戰：德州儀器 vs. 快捷半導體）**：投影片標題直接點名這是一場專利大戰。
 
@@ -429,7 +429,7 @@ status: confirmed
 
 *Kilby 的專利圖（US Patent 3,138,743）：元件與接線都畫在同一塊基板上，但接法仍是三維飛線。*
 
-- **Robert Noyce**（**Fairchild Semiconductor，快捷半導體**，1959 年）：專利名稱 **Semiconductor Device-and-Lead Structure**（半導體元件與接腳結構，US Patent 2,981,877）。投影片標出他的優點——**Pros: the origin of modern IC process (the planar process)**（優點：現代 IC 製程的起源——平面製程）：利用表面的 **Oxide Insulation（氧化層絕緣）**承載金屬互連，並經由氧化層開孔接到元件區域。連接大致在同一表面完成，不再靠一根根懸空飛線，因此更接近現代 IC 的製程與量產邏輯。專利圖上也可見多層摻雜結構（標示 N、P、N）。
+- **Robert Noyce**（**Fairchild Semiconductor，快捷半導體**，1959 年）：專利名稱 **Semiconductor Device-and-Lead Structure**（半導體元件與接腳結構，US Patent 2,981,877）。投影片標出他的優點——**Pros: the origin of modern IC process (the planar process)**（優點：現代 IC 製程的起源——平面製程）：利用表面的 **Oxide Insulation（氧化層絕緣）** 承載金屬互連，並經由氧化層開孔接到元件區域。連接大致在同一表面完成，不再靠一根根懸空飛線，因此更接近現代 IC 的製程與量產邏輯。專利圖上也可見多層摻雜結構（標示 N、P、N）。
 
 ![Noyce/Fairchild IC 顯微照片，圓形晶圓局部上有金色導線圖案](/note-images/ec-week1-ch1/09-noyce-ic-photo.jpeg)
 
@@ -487,11 +487,11 @@ status: confirmed
 
 > **課堂補充｜從石英到 IC，不是把石頭切薄而已**：老師把完整流程串成「矽原料純化 → 長出單晶晶棒 → 切片、研磨成晶圓 → 光罩與蝕刻形成圖案 → Doping（摻雜）調整不同區域的電性 → 測試 → 封裝」。其中摻雜就是加入受控的微量雜質，讓原本的矽在指定位置形成不同電性，後面才有辦法做出電晶體。
 
-老師描述的長晶方式，是把一小段**種晶（seed crystal）**接觸熔融矽，再一邊旋轉、一邊慢慢往上拉，讓矽原子依種晶的排列延伸成圓柱狀的**單晶晶棒（single-crystal ingot）**；這通常稱為 **Czochralski process（CZ 法，柴可拉斯基法）**。晶棒能否穩定長得更粗，會受純度、晶體排列與製程控制影響，所以早期常見的二吋、三吋晶圓，也反映當時能穩定製造的晶棒尺寸。課堂提到，早年臺灣嘗試長晶時，即使能把晶體拉起來，若品質或粗細不穩定，仍不能算成功。
+老師描述的長晶方式，是把一小段**種晶（seed crystal）** 接觸熔融矽，再一邊旋轉、一邊慢慢往上拉，讓矽原子依種晶的排列延伸成圓柱狀的**單晶晶棒（single-crystal ingot）**；這通常稱為 **Czochralski process（CZ 法，柴可拉斯基法）**。晶棒能否穩定長得更粗，會受純度、晶體排列與製程控制影響，所以早期常見的二吋、三吋晶圓，也反映當時能穩定製造的晶棒尺寸。課堂提到，早年臺灣嘗試長晶時，即使能把晶體拉起來，若品質或粗細不穩定，仍不能算成功。
 
 切下來的晶圓還要經過研磨、拋光與清洗，表面才會變得非常平坦、平滑，外觀近似小型化妝鏡。半導體實驗或相關專題有時能看到小尺寸晶圓或製程剩料；這個生活化比喻可用來記住：**晶圓不是普通矽片，而是對純度、晶向、平坦度與潔淨度都有嚴格要求的製程基板。**（長晶與晶圓加工流程可對照 [SUMCO 的晶圓製造說明](https://www.sumcosi.com/english/products/process/)。）
 
-現實世界中，這六步驟由高度分工的不同公司完成：**ShinEtsu（信越化學工業株式會社）**與 **SUMCO（株式會社 SUMCO）**負責晶圓製造（步驟 1）；**TSMC（台積電）**負責光罩、蝕刻、摻雜、測試（步驟 2–5，即「晶圓代工」的核心製程）；**ASE（日月光半導體）**負責測試與封裝（步驟 5–6）。
+現實世界中，這六步驟由高度分工的不同公司完成：**ShinEtsu（信越化學工業株式會社）** 與 **SUMCO（株式會社 SUMCO）** 負責晶圓製造（步驟 1）；**TSMC（台積電）** 負責光罩、蝕刻、摻雜、測試（步驟 2–5，即「晶圓代工」的核心製程）；**ASE（日月光半導體）** 負責測試與封裝（步驟 5–6）。
 
 > **老師強調的產業對照**：若把上表看成一條接力賽，晶圓代工的代表是 **TSMC**，封裝與測試的代表則有 **ASE（日月光）**。公司名稱的重點不是背名單，而是看懂同一顆 IC 從晶圓製造到封測，會跨過不同專業分工。
 
@@ -503,16 +503,16 @@ status: confirmed
 平均製造成本 ≈ 固定成本 ÷ 實際產出數量 + 每顆晶片的變動成本
 ```
 
-**TSMC 的 pure-play foundry（專業晶圓代工）**則只專注替客戶生產，不設計或販售會與客戶競爭的自有晶片產品。這個選擇同時解決兩個問題：
+**TSMC 的 pure-play foundry（專業晶圓代工）** 則只專注替客戶生產，不設計或販售會與客戶競爭的自有晶片產品。這個選擇同時解決兩個問題：
 
 1. **產能利用率（capacity utilization）**：匯集多家 IC 設計公司的訂單，比只靠單一公司的產品線更有機會填滿產能；利用率提高後，固定成本可以由更多晶片分攤。
 2. **客戶信任（customer trust）**：若代工廠本身也銷售 CPU 或其他競爭產品，客戶可能擔心設計資訊在公司內部流向產品部門，或擔心產能優先留給代工廠自己的產品。專業代工承諾不與客戶競爭，降低了這層顧慮。
 
-多家公司帶來的訂單與較高產能利用率，使代工廠更有能力持續投資下一代製程；反過來，製程進步又吸引更多客戶，形成累積效果。IC 設計公司則可以成為 **fabless company（無晶圓廠公司）**，把資本與人才集中在電路與產品設計，不必各自興建晶圓廠。晶圓完成後，再把封裝、測試交給 **OSAT（Outsourced Semiconductor Assembly and Test，委外半導體封裝測試）**公司，日月光就是課堂中的代表。這正是「設計、製造、封測」逐步專業分工的邏輯。（TSMC 對自身專業代工與不和客戶競爭原則的說明，可見其[公司年報](https://investor.tsmc.com/static/annualReports/2023/english/index.html)。）
+多家公司帶來的訂單與較高產能利用率，使代工廠更有能力持續投資下一代製程；反過來，製程進步又吸引更多客戶，形成累積效果。IC 設計公司則可以成為 **fabless company（無晶圓廠公司）**，把資本與人才集中在電路與產品設計，不必各自興建晶圓廠。晶圓完成後，再把封裝、測試交給 **OSAT（Outsourced Semiconductor Assembly and Test，委外半導體封裝測試）** 公司，日月光就是課堂中的代表。這正是「設計、製造、封測」逐步專業分工的邏輯。（TSMC 對自身專業代工與不和客戶競爭原則的說明，可見其[公司年報](https://investor.tsmc.com/static/annualReports/2023/english/index.html)。）
 
 再往上一層還有 **IC Design Eco-System（IC 設計生態系）**，分成三個階段：**Design (Fabless)（設計，無晶圓廠模式）→ Fabrication (Foundries)（製造，晶圓代工廠）→ Packaging（封裝）**。
 
-- **Fabless**：只做設計、不擁有晶圓廠的公司，例如 **MediaTek（聯發科）、Realtek（瑞昱）、Qualcomm（高通）、AMD、Apple、NVIDIA**；它們把設計交給 **Foundry（晶圓代工廠，如 TSMC）**生產，再交給封測廠（如 ASE）封裝測試。課堂另以 **Intel** 對照傳統 IDM：它長期同時擁有產品設計與製造能力，不能簡化成典型的純 fabless 公司。
+- **Fabless**：只做設計、不擁有晶圓廠的公司，例如 **MediaTek（聯發科）、Realtek（瑞昱）、Qualcomm（高通）、AMD、Apple、NVIDIA**；它們把設計交給 **Foundry（晶圓代工廠，如 TSMC）** 生產，再交給封測廠（如 ASE）封裝測試。課堂另以 **Intel** 對照傳統 IDM：它長期同時擁有產品設計與製造能力，不能簡化成典型的純 fabless 公司。
 
 {/* @ai-visualize
 id: ec-week1-ic-ecosystem
@@ -544,7 +544,7 @@ import EcWeek1IcEcosystem from '@/components/generated/ec-week1-ic-ecosystem'
 
 - **Anatomy of Integrated Circuits（積體電路的解剖）**：投影片用實體照片展示 IC 從外部到內部的完整層次——**PCB**（印刷電路板模組）→ 封裝好的晶片（**QFP** 封裝，四邊有金色接腳）→ **Die**（裸晶，晶片內部的矽本體）→ **Bonding pad**（接墊，裸晶邊緣透過細金屬線與外部接腳相連的接點），一路放大到微米（**μm**）等級的顯微走線（投影片範例標示放大倍率 121:1，比例尺 200μm，來源標註 ON Semiconductor 安森美半導體）。
 
-> **尺寸與良率的課堂直覺**：老師回顧約二十至二十五年前開始談 **System on Chip（SoC，系統單晶片）**時，約 $1.5\text{ cm} \times 1.5\text{ cm}$ 的大晶粒就會引起良率疑慮；課堂當下則以約 $3\text{ cm} \times 3\text{ cm}$ 的晶粒說明今日可製造尺寸已經放大。直覺上，晶粒面積越大，同一片晶圓可切出的顆數越少，而且單顆晶粒碰到缺陷的機率越高，因此良率通常更難維持。
+> **尺寸與良率的課堂直覺**：老師回顧約二十至二十五年前開始談 **System on Chip（SoC，系統單晶片）** 時，約 $1.5\text{ cm} \times 1.5\text{ cm}$ 的大晶粒就會引起良率疑慮；課堂當下則以約 $3\text{ cm} \times 3\text{ cm}$ 的晶粒說明今日可製造尺寸已經放大。直覺上，晶粒面積越大，同一片晶圓可切出的顆數越少，而且單顆晶粒碰到缺陷的機率越高，因此良率通常更難維持。
 
 老師接著把晶粒尺寸與單一元件所占面積放在一起，估算一顆 IC 可以容納的元件數量。若先忽略走線、記憶體陣列以外的電路與晶片邊緣，可以用下面的理想化關係抓數量級：
 
@@ -555,7 +555,7 @@ import EcWeek1IcEcosystem from '@/components/generated/ec-week1-ic-ecosystem'
 
 這個估算的重點不是得到一個精確答案，而是看懂微縮的威力：若元件的長、寬都縮成原來的 $1/k$，單顆占用面積理想上會縮成 $1/k^2$，同樣面積可容納的數量便可能提高到約 $k^2$ 倍。實際 IC 還必須保留金屬互連、接觸孔、隔離區、電源網路與輸入輸出區域，因此不能單用「晶粒面積 ÷ 最小製程節點平方」當成真正的電晶體數量。這段語音未完整留下投影片所用的單一元件尺寸，故不在此補寫未確認的數值結果。
 
-> **常見誤解｜公分與奈米在量不同東西**：這裡的 $3\text{ cm} \times 3\text{ cm}$ 是 **die size（晶粒外形尺寸）**；常聽到的「幾奈米」則是 **process node（製程節點）**的世代名稱。前者描述整顆晶片有多寬、多長，後者描述製造技術世代，不能把「三公分見方的晶粒」寫成「三乘三奈米的晶片」。
+> **常見誤解｜公分與奈米在量不同東西**：這裡的 $3\text{ cm} \times 3\text{ cm}$ 是 **die size（晶粒外形尺寸）**；常聽到的「幾奈米」則是 **process node（製程節點）** 的世代名稱。前者描述整顆晶片有多寬、多長，後者描述製造技術世代，不能把「三公分見方的晶粒」寫成「三乘三奈米的晶片」。
 
 ![一塊實際的 PCB 模組，上面焊有多顆晶片與連接器](/note-images/ec-week1-ch1/14-pcb-module-example.jpeg)
 
@@ -587,9 +587,9 @@ status: confirmed
 */}
 <PdfRefChip file="_references/電子學實作系列/第一週/Ch 1 - Introduction to Microelectronics.pdf" page={18} status="confirmed" client:visible />
 
-投影片用一道算式具體量化 IC 有多革命性：假設一顆現代**微處理器（microprocessor）**內含約 **100 million transistors**（1 億顆電晶體），若不整合成 IC、改用每顆體積 **3mm×3mm×3mm** 的 **discrete transistors**（分立式電晶體，即各自獨立封裝、非整合在單一晶片上的電晶體）搭建：
+投影片用一道算式具體量化 IC 有多革命性：假設一顆現代**微處理器（microprocessor）** 內含約 **100 million transistors**（1 億顆電晶體），若不整合成 IC、改用每顆體積 **3mm×3mm×3mm** 的 **discrete transistors**（分立式電晶體，即各自獨立封裝、非整合在單一晶片上的電晶體）搭建：
 
-- 光是電晶體本身的體積加總就要 **27mm³ × 10⁸**，換算成立方體邊長約 **1.4 公尺（1.4m）**見方——這還沒算上連接導線占用的空間。
+- 光是電晶體本身的體積加總就要 **27mm³ × 10⁸**，換算成立方體邊長約 **1.4 公尺（1.4m）** 見方——這還沒算上連接導線占用的空間。
 - 訊號必須在長達 1.4 公尺的導線上傳遞，會讓這個分立式處理器運作**極為緩慢（extremely slow）**。
 - 若每顆電晶體成本 **1 cent（1 美分）**、重量 **1g（1 公克）**，總成本高達**一百萬美元（one million dollars）**、總重量**一百公噸（100 tons）**。
 
@@ -666,7 +666,7 @@ status: confirmed
 */}
 <PdfRefChip file="_references/電子學實作系列/第一週/Ch 1 - Introduction to Microelectronics.pdf" page={25} status="confirmed" client:visible />
 
-- **Traditional cameras（傳統相機）**：投影片指出其缺點——拍照後**無即時回饋**、必須謹慎選景避免浪費底片、需攜帶笨重的**底片捲（bulky rolls of film）**、結果只能以**印刷形式（printed form）**取得。
+- **Traditional cameras（傳統相機）**：投影片指出其缺點——拍照後**無即時回饋**、必須謹慎選景避免浪費底片、需攜帶笨重的**底片捲（bulky rolls of film）**、結果只能以**印刷形式（printed form）** 取得。
 - **Electronic processing（電子處理）**：數位相機能解決上述問題、並提供傳輸照片、電腦修圖等額外功能的根本原因。
 - **Photodiode（光電二極體）**：相機「前端」把光轉成電的核心元件。投影片說明其運作：光（**Light**）照射到光電二極體，會產生一股與光強度成正比的電流 **$I_{Diode}$**，這股電流對電容 **$C_L$** 充電，電容兩端電壓 **$V_{out}$** 就代表接收到的光強度。
 
@@ -674,11 +674,11 @@ status: confirmed
 
 *光照射光電二極體產生電流，對電容充電，電容電壓代表接收到的光強度；右圖是整個像素陣列的排列方式。*
 - **Pixel（像素）**：影像感測器上的最小感光單位，每個像素各自包含一顆光電二極體。
-- **Array / Matrix（陣列／矩陣）**：投影片舉例一個 **2500 Columns（欄）× 2500 Rows（列）**的像素陣列，總計 **6.25 million pixels（625 萬像素）**。
+- **Array / Matrix（陣列／矩陣）**：投影片舉例一個 **2500 Columns（欄）× 2500 Rows（列）** 的像素陣列，總計 **6.25 million pixels（625 萬像素）**。
 - **Amplifier（放大器）**：陣列中每欄像素訊號在被送往共用輸出線前，先經過放大器放大。
 - **Switch（開關）**：控制每個像素何時把訊號送到共用輸出線的元件。
 - **Time-share（分時共用）**：投影片指出如果每個像素都各自配一整套處理電路，**the overall array occupies a very large area, raising the cost and the power dissipation considerably**（整個陣列會佔用非常大面積，大幅提高成本與功耗），因此必須讓多個像素分時共用訊號處理電路——把同一欄全部像素的輸出接到同一條共用導線，但每次只開啟其中一個像素的開關，其餘保持關閉。
-- **Example 1-2（棋盤例題，第 29 頁）**：對著一個黑白交錯的**西洋棋棋盤（chess board）**拍照，依序讀出同一欄像素的電壓 **$V_{column}$**，畫出來就是一個規律的方波（亮格電壓高、暗格電壓低）。
+- **Example 1-2（棋盤例題，第 29 頁）**：對著一個黑白交錯的**西洋棋棋盤（chess board）** 拍照，依序讀出同一欄像素的電壓 **$V_{column}$**，畫出來就是一個規律的方波（亮格電壓高、暗格電壓低）。
 
 ![西洋棋棋盤照片、感測電路示意圖，以及讀出的 V_column 方波波形](/note-images/ec-week1-ch1/20-chessboard-example.jpeg)
 
@@ -713,7 +713,7 @@ status: confirmed
 
 *(a) 類比訊號，(b) 雜訊疊加後永久混入訊號本身、難以分辨哪段是原訊號。*
 
-- **Digital signal（數位訊號）**：投影片定義的波形只有兩個電位準位 **ZERO（零）**與 **ONE（一）**，每個位元持續時間標示為 $T$。加上雜訊後，只要雜訊幅度不足以讓接收端誤判準位，訊號代表的 0 或 1 邏輯資訊仍能被正確判讀——這是數位訊號**抗雜訊（noise immunity）**能力的來源。
+- **Digital signal（數位訊號）**：投影片定義的波形只有兩個電位準位 **ZERO（零）** 與 **ONE（一）**，每個位元持續時間標示為 $T$。加上雜訊後，只要雜訊幅度不足以讓接收端誤判準位，訊號代表的 0 或 1 邏輯資訊仍能被正確判讀——這是數位訊號**抗雜訊（noise immunity）** 能力的來源。
 
 ![數位訊號 V(t)（標示 ZERO、ONE、位元週期 T）與疊加雜訊後 V(t)+Noise 的波形對照](/note-images/ec-week1-ch1/23-digital-signal-noise.png)
 
@@ -724,7 +724,7 @@ status: confirmed
 ![典型系統訊號處理流程方塊圖：Analog Signal 依序經過 Analog Processing、Analog-to-Digital Conversion、Digital Processing and Storage 四個階段](/note-images/ec-week1-ch1/34-signal-processing-flow.jpeg)
 
 *一個典型電子系統的標準流程：真實世界的訊號天生是類比的，先類比前處理、再轉數位、才交給數位電路處理。*
-- **硬碟訊號範例（第 35 頁）**：投影片舉例從 **Hard Disk（硬碟）**磁頭讀出的訊號，振幅只有約 **3 mV**（約 3 毫伏特），且雜訊很大、形狀不規則，說明類比前端電路常要面對「訊號微弱＋雜訊干擾」的挑戰。
+- **硬碟訊號範例（第 35 頁）**：投影片舉例從 **Hard Disk（硬碟）** 磁頭讀出的訊號，振幅只有約 **3 mV**（約 3 毫伏特），且雜訊很大、形狀不規則，說明類比前端電路常要面對「訊號微弱＋雜訊干擾」的挑戰。
 
 ![硬碟磁頭讀取訊號示意圖：磁頭接觸硬碟表面，讀出訊號振幅只有約 3mV、雜訊很大](/note-images/ec-week1-ch1/35-hard-disk-signal.jpeg)
 
@@ -781,7 +781,7 @@ status: confirmed
 
 *投影片留下的問題：輸入這麼雜訊的波形，NOT 閘的輸出會是什麼樣子？（答案：只要雜訊沒有跨越判斷門檻，輸出仍是乾淨方波。）*
 
-**Example 1-4（NOT 閘電路證明，第 42–43 頁）**：投影片用一個具體電路證明邏輯閘可以只靠最基本的類比元件實現——一個負載電阻 **$R_L$** 接在電源 **$V_{DD}$** 與輸出節點 **$V_{out}$** 之間，輸出節點同時接一個由輸入 $A$ 控制的**開關（switch，$S_1$）**到地：
+**Example 1-4（NOT 閘電路證明，第 42–43 頁）**：投影片用一個具體電路證明邏輯閘可以只靠最基本的類比元件實現——一個負載電阻 **$R_L$** 接在電源 **$V_{DD}$** 與輸出節點 **$V_{out}$** 之間，輸出節點同時接一個由輸入 $A$ 控制的**開關（switch，$S_1$）** 到地：
 
 ![Example 1-4 電路圖：電阻 R_L 接在電源 V_DD 與輸出節點 V_out 之間，輸出節點另接一個由輸入 A 控制的開關 S1 到地](/note-images/ec-week1-ch1/37-example-1-4-circuit.png)
 
@@ -803,13 +803,13 @@ status: confirmed
 
 不管電路多複雜，之後所有電路方程式的推導都建立在這兩條定律上：
 
-- **Kirchoff's Current Law, KCL（克希荷夫電流定律）**：投影片定義 **the sum of all currents flowing into any node is zero**（流入任一**節點（node）**的所有電流總和為零，公式 $\Sigma I_j = 0$）。背後的物理意義是電荷守恆——電荷不會在某個點上憑空出現或消失。
+- **Kirchoff's Current Law, KCL（克希荷夫電流定律）**：投影片定義 **the sum of all currents flowing into any node is zero**（流入任一**節點（node）** 的所有電流總和為零，公式 $\Sigma I_j = 0$）。背後的物理意義是電荷守恆——電荷不會在某個點上憑空出現或消失。
 
 ![一個節點示意圖，多條電流 I1、I2、In、Ij 從不同方向流向同一個中心點](/note-images/ec-week1-ch1/38-kcl-diagram.jpeg)
 
 *KCL：流入同一個節點的所有電流，加總起來一定是零。*
 
-- **Kirchoff's Voltage Law, KVL（克希荷夫電壓定律）**：投影片定義 **the sum of all voltages around any loop is zero**（沿著任一封閉**迴路（loop）**走一圈，所有元件上的電壓總和為零，公式 $\Sigma V_j = 0$）。背後的物理意義是電位是路徑無關的——繞一圈回到起點，電位變化的總和必然是零。
+- **Kirchoff's Voltage Law, KVL（克希荷夫電壓定律）**：投影片定義 **the sum of all voltages around any loop is zero**（沿著任一封閉**迴路（loop）** 走一圈，所有元件上的電壓總和為零，公式 $\Sigma V_j = 0$）。背後的物理意義是電位是路徑無關的——繞一圈回到起點，電位變化的總和必然是零。
 
 ![一個封閉迴路示意圖，四個元件標號 1234，各自標示跨壓 V1、V2、V3、V4 與正負極性](/note-images/ec-week1-ch1/39-kvl-diagram.jpeg)
 
@@ -884,7 +884,7 @@ status: confirmed
 - **Conductors（導體）**：$E_g$ **很小**。
 - **Semiconductors（半導體）**：$E_g$ **中等**，典型範圍 **1 eV 到 1.5 eV**（矽是 1.12 eV）。
 - **Intrinsic carrier concentration（本質載子濃度，記為 $n_i$）**：投影片給出的公式 $n_i = 5.2\times10^{15}\, T^{3/2}\exp\!\left(-\dfrac{E_g}{2kT}\right)$（單位 electrons/cm³），$T$ 是絕對溫度、$k$ 是**波茲曼常數（Boltzmann constant）**。投影片指出兩個推論：$E_g\uparrow \Rightarrow n_i\downarrow$（能隙越大、本質載子濃度越小）；$T \to 0,\ n_i \to 0$（溫度趨近絕對零度時本質載子濃度趨近零）。
-- **Example 2-1（第 11 頁）**：計算矽在 **T = 300 K（室溫）**與 **T = 600 K** 下的電子密度，矽的能隙 $E_g = 1.12\text{ eV} = 1.792\times10^{-19}\text{ J}$：
+- **Example 2-1（第 11 頁）**：計算矽在 **T = 300 K（室溫）** 與 **T = 600 K** 下的電子密度，矽的能隙 $E_g = 1.12\text{ eV} = 1.792\times10^{-19}\text{ J}$：
 
 $$
 \begin{aligned}
@@ -1012,7 +1012,7 @@ status: confirmed
 */}
 <PdfRefChip file="_references/電子學實作系列/第一週/Ch 2 - Basic Physics of Semiconductors.pdf" page={29} status="confirmed" client:visible />
 
-- **Diffusion（擴散）**：投影片定義——**charge particles move from a region of high concentration to a region of low concentration**（電荷粒子從高濃度區移向低濃度區），並用**墨水滴入水中（an ink droplet in water）**當生活類比。
+- **Diffusion（擴散）**：投影片定義——**charge particles move from a region of high concentration to a region of low concentration**（電荷粒子從高濃度區移向低濃度區），並用**墨水滴入水中（an ink droplet in water）** 當生活類比。
 
 ![立體長方體半導體樣品，左側標示 Injection of Carriers（載子注入），內部畫出由左向右逐漸變薄的三角形陰影區塊代表 Nonuniform Concentration（不均勻濃度）](/note-images/ec-week1-ch2/20-diffusion-diagram.png)
 
@@ -1087,7 +1087,7 @@ status: confirmed
 ![n/p 兩側濃度曲線交叉圖，左側標示 Majority Carriers 指向 n_n、Minority Carriers 指向 p_n；右側標示 Majority Carriers 指向 p_p、Minority Carriers 指向 n_p](/note-images/ec-week1-ch2/25-equilibrium-carrier-profile.png)
 
 *平衡態下兩側的多數／少數載子濃度分布：n 側電子多、p 側電洞多，但各自也都有極少量的少數載子。*
-- **Depletion Region（空乏區）**：投影片說明——**as free electrons and holes diffuse across the junction, a region of fixed ions is left behind**（自由電子與電洞擴散通過接面後，留下一個由固定離子構成的區域）。投影片用三個時間點展示形成過程：$t=0$（n 區滿是 **Free Electrons**、p 區滿是 **Free Holes**，尚未擴散）→ $t=t_1$（接面附近出現 **Positive Donor Ions（正電施體離子）**與 **Negative Acceptor Ions（負電受體離子）**）→ $t=\infty$（離子區域擴大穩定，成為完整的空乏區）。
+- **Depletion Region（空乏區）**：投影片說明——**as free electrons and holes diffuse across the junction, a region of fixed ions is left behind**（自由電子與電洞擴散通過接面後，留下一個由固定離子構成的區域）。投影片用三個時間點展示形成過程：$t=0$（n 區滿是 **Free Electrons**、p 區滿是 **Free Holes**，尚未擴散）→ $t=t_1$（接面附近出現 **Positive Donor Ions（正電施體離子）** 與 **Negative Acceptor Ions（負電受體離子）**）→ $t=\infty$（離子區域擴大穩定，成為完整的空乏區）。
 
 ![空乏區形成的三個時間點：t=0 自由電子電洞尚未擴散、t=t₁ 接面附近出現固定離子、t=∞ 空乏區穩定形成](/note-images/ec-week1-ch2/07-depletion-region-formation.png)
 
@@ -1157,7 +1157,7 @@ C_j(V_R=-1\text{V}) &= \dfrac{C_{j0}}{\sqrt{1-V_R/V_0}} = 0.172\ \text{fF}/\mu\t
 \end{aligned}
 $$
 
-- **Voltage-Controlled Oscillator, VCO（電壓控制振盪器，Example 2-16，第 48–49 頁）**：投影片舉的實際應用——手機內建 **2-GHz oscillator**，頻率由 **LC tank（LC 振盪槽電路）**的共振頻率決定：
+- **Voltage-Controlled Oscillator, VCO（電壓控制振盪器，Example 2-16，第 48–49 頁）**：投影片舉的實際應用——手機內建 **2-GHz oscillator**，頻率由 **LC tank（LC 振盪槽電路）** 的共振頻率決定：
 
 $$
 f_{res} = \dfrac{1}{2\pi}\dfrac{1}{\sqrt{LC}}
@@ -1278,7 +1278,7 @@ $$
 
 一個電壓源 $V_X$ 接電阻 $R_1 = 1\text{k}\Omega$ 再接二極體 $D_1$ 的簡單電路，分別用**指數模型**（$I_S = 10^{-16}\text{ A}$）與**定電壓模型**（$V_{D,on} = 800\text{mV}$）計算電流。
 
-**(a) 指數模型**——由 KVL 得 $V_X = I_XR_1 + V_D$，其中 $V_D = V_T\ln(I_X/I_S)$，兩式互相牽扯，須用**疊代法（iterative method）**求解：
+**(a) 指數模型**——由 KVL 得 $V_X = I_XR_1 + V_D$，其中 $V_D = V_T\ln(I_X/I_S)$，兩式互相牽扯，須用**疊代法（iterative method）** 求解：
 
 $$
 \begin{aligned}
@@ -1305,7 +1305,7 @@ status: confirmed
 */}
 <PdfRefChip file="_references/電子學實作系列/第一週/Ch 2 - Basic Physics of Semiconductors.pdf" page={67} status="confirmed" client:visible />
 
-- **Cancer Detection（癌症偵測）**：投影片舉例——**Laser diode（雷射二極體）**產生波長 $\lambda_1$ 的光照射 **Tissue（組織）**，若組織含有癌細胞並含有 **Fluorophore（螢光團）**，會產生新波長 $\lambda_2$；光線通過 **Optical Filter（光學濾波器）**濾除 $\lambda_1$、只留下 $\lambda_2$，再交給 **Photodiode（光電二極體）**轉換成電流 $I_D$，送入 **Amplifier（放大器）**放大輸出——核心元件同樣只是「光電二極體＋放大器」，說明同一套 PN 接面物理換個包裝就能從手機用到醫療設備上。
+- **Cancer Detection（癌症偵測）**：投影片舉例——**Laser diode（雷射二極體）** 產生波長 $\lambda_1$ 的光照射 **Tissue（組織）**，若組織含有癌細胞並含有 **Fluorophore（螢光團）**，會產生新波長 $\lambda_2$；光線通過 **Optical Filter（光學濾波器）** 濾除 $\lambda_1$、只留下 $\lambda_2$，再交給 **Photodiode（光電二極體）** 轉換成電流 $I_D$，送入 **Amplifier（放大器）** 放大輸出——核心元件同樣只是「光電二極體＋放大器」，說明同一套 PN 接面物理換個包裝就能從手機用到醫療設備上。
 
 ![癌症偵測應用方塊圖：雷射二極體發出 λ₁ 光穿過組織、光學濾波器濾除 λ₁ 只留 λ₂、光電二極體轉電流、放大器放大輸出](/note-images/ec-week1-ch2/14-cancer-detection-application.png)
 
