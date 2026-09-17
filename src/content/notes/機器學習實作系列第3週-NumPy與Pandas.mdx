@@ -227,6 +227,48 @@ excerpt: Learning rate (and number of epochs, etc.) are the so-called hyperparam
 */}
 <PdfRefChip file="_references/機器學習實作系列/第3週-Adaline與NumPy Pandas.pdf" page={16} status="suggested" excerpt={"Learning rate (and number of epochs, etc.) are the so-called hyperparameters；in practice, it requires some experimentation to find a good learning rate"} client:visible />
 
+{/* @ai-visualize
+id: ml-week3-learning-rate-slider
+type: motion
+prompt: |
+  一個「學習率互動滑桿」元件，讓讀者親手體驗學習率如何改變梯度下降的收斂行為，
+  而不只是看兩張定格圖。
+
+  版面：上方一條可拖曳的學習率滑桿（範圍約 0.01 到 1.2，含數值顯示），
+  下方是一個固定的凸損失曲線 L(w)（拿前面「梯度下降的更新規則」小節同一種
+  凸拋物線即可），曲線上有一個小球代表當前權重。
+
+  互動規則：
+  - 拖動滑桿後，小球從曲線上某個固定起始點開始，依目前的學習率一步步往下走
+    （可以用點擊「開始」按鈕觸發逐步動畫，或滑桿放開後自動播放）
+  - 學習率落在三個區間要有清楚可辨的行為差異：
+    - 太小（例如 <0.1）：小球每步移動很小，多步後仍離最低點有段距離，
+      文字提示「收斂太慢」
+    - 適中（例如 0.1–0.6）：小球平滑地一步步靠近曲線最低點並停下，
+      文字提示「平滑收斂」
+    - 太大（例如 >0.6）：小球在曲線兩側來回跳動，且每次跳動幅度比前一次更大，
+      最終超出可視範圍，文字提示「發散」
+  - 畫面上即時顯示目前是第幾步、當前的 L(w) 數值，讓讀者看到數字本身的變化
+    （太大時數值應該越跳越大）
+
+  視覺要求：
+  - 手寫 SVG 畫損失曲線與小球，viewBox 寬度不超過 640
+  - 三種收斂狀態用不同的強調色（例如太小用中性色、適中用強調色、太大用警示色）
+  - 尊重 prefers-reduced-motion：關閉動畫時直接顯示最終幾步的靜態軌跡，不做逐格播放
+  - 不使用 emoji；狀態提示用文字或 lucide-react icon
+
+  核心洞察：學習率不是「選對或選錯」的二選一，而是一個連續光譜，同一條曲線上
+  只是調整一個數字，行為就會從「太慢」滑到「剛好」再滑到「發散」。
+caption: 拖動學習率，看同一條損失曲線上小球從太慢、剛好到發散的完整光譜。
+status: generated
+*/}
+
+import MlWeek3LearningRateSlider from '@/components/generated/ml-week3-learning-rate-slider'
+
+<GeneratedFrame id="ml-week3-learning-rate-slider" type="motion" prompt={"一個「學習率互動滑桿」元件，讓讀者親手體驗學習率如何改變梯度下降的收斂行為，\n而不只是看兩張定格圖。\n\n版面：上方一條可拖曳的學習率滑桿（範圍約 0.01 到 1.2，含數值顯示），\n下方是一個固定的凸損失曲線 L(w)（拿前面「梯度下降的更新規則」小節同一種\n凸拋物線即可），曲線上有一個小球代表當前權重。\n\n互動規則：\n- 拖動滑桿後，小球從曲線上某個固定起始點開始，依目前的學習率一步步往下走\n  （可以用點擊「開始」按鈕觸發逐步動畫，或滑桿放開後自動播放）\n- 學習率落在三個區間要有清楚可辨的行為差異：\n  - 太小（例如 <0.1）：小球每步移動很小，多步後仍離最低點有段距離，\n    文字提示「收斂太慢」\n  - 適中（例如 0.1–0.6）：小球平滑地一步步靠近曲線最低點並停下，\n    文字提示「平滑收斂」\n  - 太大（例如 >0.6）：小球在曲線兩側來回跳動，且每次跳動幅度比前一次更大，\n    最終超出可視範圍，文字提示「發散」\n- 畫面上即時顯示目前是第幾步、當前的 L(w) 數值，讓讀者看到數字本身的變化\n  （太大時數值應該越跳越大）\n\n視覺要求：\n- 手寫 SVG 畫損失曲線與小球，viewBox 寬度不超過 640\n- 三種收斂狀態用不同的強調色（例如太小用中性色、適中用強調色、太大用警示色）\n- 尊重 prefers-reduced-motion：關閉動畫時直接顯示最終幾步的靜態軌跡，不做逐格播放\n- 不使用 emoji；狀態提示用文字或 lucide-react icon\n\n核心洞察：學習率不是「選對或選錯」的二選一，而是一個連續光譜，同一條曲線上\n只是調整一個數字，行為就會從「太慢」滑到「剛好」再滑到「發散」。"} caption="拖動學習率，看同一條損失曲線上小球從太慢、剛好到發散的完整光譜。">
+  <MlWeek3LearningRateSlider client:visible />
+</GeneratedFrame>
+
 ### 隨機梯度下降（SGD）：逐筆更新、更快收斂、支援線上學習
 
 **隨機梯度下降（Stochastic Gradient Descent, SGD）** 把「每一步都要算完整個資料集的梯度」換成「每看一筆樣本就用這一筆估計梯度、立刻更新一次參數」——對單一樣本 $(x^{(i)}, y^{(i)})$：
@@ -264,6 +306,50 @@ excerpt: Error surface is noisier than in GD；SGD can escape shallow local mini
 ### Mini-batch GD：介於兩者之間的折衷
 
 **Mini-batch 梯度下降**是全批次 GD 與 SGD 的折衷：不是每次只用 1 筆樣本、也不是每次用全部樣本，而是每次用一小批（例如 32、64、128 筆——習慣取 2 的次方數）估計梯度。它可以理解成「把全批次 GD 套用在資料的一個小子集上」，好處是把 SGD 裡逐筆的 for 迴圈換成向量化運算，同時兼顧計算效率與訓練過程的穩定性；批次大小（batch size）本身也是一個需要調整的超參數。
+
+{/* @ai-visualize
+id: ml-week3-optimizer-paths
+type: motion
+prompt: |
+  一個「三種優化方式路徑對比」元件，把前面分散在不同小節的 Full-batch GD、SGD、
+  Mini-batch GD 放到同一張損失等高線圖上比較「各自怎麼走到最低點」。
+
+  版面：中央一張手寫 SVG 的凸函數等高線圖（同心橢圓或同心圓皆可，仿照前面
+  「特徵縮放」小節那張等高線圖的風格），上方三個切換按鈕／tab：
+  「Full-batch GD」「Mini-batch GD」「SGD」。
+
+  互動規則：
+  - 切換到某個 tab 時，用逐步動畫（stagger 播放，每步間隔約 150–250ms）畫出
+    該優化方式從同一個起始點到最低點附近的路徑：
+    - Full-batch GD：路徑平滑、步數少（例如 5–6 步）、每步都朝著等高線法線
+      方向前進，幾乎不偏離
+    - Mini-batch GD：路徑中等抖動、步數中等（例如 10–14 步），方向大致朝向
+      最低點但有輕微鋸齒
+    - SGD：路徑抖動明顯、步數最多（例如 20 步以上）、路線像雜訊一樣曲折，
+      但整體趨勢仍然逼近最低點
+  - 畫面同時顯示一句對應的白話總結（例如「每步都算全部資料，方向準但慢」
+    「每步只看一小批，快且相對穩定」「每步只看一筆，快但路線曲折」）
+  - 三個路徑用不同顏色區分，且切換 tab 時舊路徑淡出、新路徑淡入，
+    不要同時疊加三條線造成混亂（若讀者想同時比較，可以額外提供一個「全部疊加」
+    的第四個檢視模式，三條線半透明疊在一起）
+
+  視覺要求：
+  - viewBox 寬度不超過 600
+  - 步數用小圓點依序連接成折線表示，起點與終點要有明顯標記
+  - 尊重 prefers-reduced-motion：關閉動畫時直接顯示完整路徑，不逐步播放
+  - 不使用 emoji
+
+  核心洞察：三種優化方式不是三個獨立的演算法，而是「每一步用多少資料估計梯度」
+  這同一個旋鈕轉到三個不同位置——用得資料越少，路徑越抖但更新越頻繁。
+caption: 切換 Full-batch GD／Mini-batch GD／SGD，看同一個損失曲面上三種走法的差異。
+status: generated
+*/}
+
+import MlWeek3OptimizerPaths from '@/components/generated/ml-week3-optimizer-paths'
+
+<GeneratedFrame id="ml-week3-optimizer-paths" type="motion" prompt={"一個「三種優化方式路徑對比」元件，把前面分散在不同小節的 Full-batch GD、SGD、\nMini-batch GD 放到同一張損失等高線圖上比較「各自怎麼走到最低點」。\n\n版面：中央一張手寫 SVG 的凸函數等高線圖（同心橢圓或同心圓皆可，仿照前面\n「特徵縮放」小節那張等高線圖的風格），上方三個切換按鈕／tab：\n「Full-batch GD」「Mini-batch GD」「SGD」。\n\n互動規則：\n- 切換到某個 tab 時，用逐步動畫（stagger 播放，每步間隔約 150–250ms）畫出\n  該優化方式從同一個起始點到最低點附近的路徑：\n  - Full-batch GD：路徑平滑、步數少（例如 5–6 步）、每步都朝著等高線法線\n    方向前進，幾乎不偏離\n  - Mini-batch GD：路徑中等抖動、步數中等（例如 10–14 步），方向大致朝向\n    最低點但有輕微鋸齒\n  - SGD：路徑抖動明顯、步數最多（例如 20 步以上）、路線像雜訊一樣曲折，\n    但整體趨勢仍然逼近最低點\n- 畫面同時顯示一句對應的白話總結（例如「每步都算全部資料，方向準但慢」\n  「每步只看一小批，快且相對穩定」「每步只看一筆，快但路線曲折」）\n- 三個路徑用不同顏色區分，且切換 tab 時舊路徑淡出、新路徑淡入，\n  不要同時疊加三條線造成混亂（若讀者想同時比較，可以額外提供一個「全部疊加」\n  的第四個檢視模式，三條線半透明疊在一起）\n\n視覺要求：\n- viewBox 寬度不超過 600\n- 步數用小圓點依序連接成折線表示，起點與終點要有明顯標記\n- 尊重 prefers-reduced-motion：關閉動畫時直接顯示完整路徑，不逐步播放\n- 不使用 emoji\n\n核心洞察：三種優化方式不是三個獨立的演算法，而是「每一步用多少資料估計梯度」\n這同一個旋鈕轉到三個不同位置——用得資料越少，路徑越抖但更新越頻繁。"} caption="切換 Full-batch GD／Mini-batch GD／SGD，看同一個損失曲面上三種走法的差異。">
+  <MlWeek3OptimizerPaths client:visible />
+</GeneratedFrame>
 
 ### 特徵縮放：為什麼 GD 需要它
 
@@ -625,6 +711,49 @@ excerpt: SGD with Feature Scaling：loss curve，Average loss decreases rapidly 
 */}
 <PdfRefChip file="_references/機器學習實作系列/第3週-Adaline與NumPy Pandas.pdf" page={64} status="suggested" excerpt={"SGD with Feature Scaling：loss curve，Average loss decreases rapidly within the first few epochs"} client:visible />
 
+{/* @ai-visualize
+id: ml-week3-loss-curves-overview
+type: chart
+prompt: |
+  一張「訓練曲線總覽」折線圖，把前面分散在四張獨立截圖裡的訓練結果整合成
+  一張可互動比較的圖表，方便讀者一次看懂學習率、特徵縮放、優化方式三個變因
+  各自的影響。
+
+  資料（epoch 1–15，合成出符合下列趨勢的示意數值即可，不需要跟投影片逐點對齊）：
+  - 「GD, η=0.1（未縮放）」：MSE 從第 1 epoch 開始隨 epoch 增加而暴增
+    （指數發散），到第 15 epoch 已經是第 1 epoch 的數十倍以上
+  - 「GD, η=0.0001（未縮放）」：MSE 從約 0.435 緩慢降到約 0.38，15 個 epoch
+    內下降幅度很小、遠未收斂
+  - 「GD, η=0.5（已縮放）」：MSE 從約 0.5 在前 3 個 epoch 快速陡降，之後
+    平緩收斂到接近 0
+  - 「SGD, η=0.01（已縮放）」：Average loss 從約 0.135 在第 2 個 epoch
+    就幾乎降到收斂水準（略低於 0.02），比 GD 版本收斂更快
+
+  互動規則：
+  - 提供圖例（legend），點擊圖例項目可以顯示／隱藏對應曲線
+  - 「GD, η=0.1（未縮放）」建議預設用對數座標軸（或提供一個切換線性／對數
+    座標的按鈕），否則這條發散曲線會把其他三條壓成貼底的平線、看不出差異
+  - hover 在任一資料點上顯示該 epoch 的數值 tooltip
+
+  視覺要求：
+  - 用 recharts 實作（LineChart + Legend + Tooltip）
+  - 四條線給予彼此區分度高的顏色，並在圖表下方或旁邊附一行文字摘要重點對比
+    （例如「同樣是 GD，縮放前後可用的學習率範圍差一個數量級」「SGD 比
+    GD 更早進入平緩區」）
+
+  核心洞察：學習率、特徵縮放、優化方式這三個變因不是各自獨立的知識點，疊在
+  同一張圖上看，才看得出「縮放讓可用學習率變大」「SGD 比 GD 更快進入平緩」
+  這些跨變因的對比關係。
+caption: 四種訓練設定的損失曲線疊在一起看：學習率、特徵縮放、優化方式各自的影響一次比較。
+status: generated
+*/}
+
+import MlWeek3LossCurvesOverview from '@/components/generated/ml-week3-loss-curves-overview'
+
+<GeneratedFrame id="ml-week3-loss-curves-overview" type="chart" prompt={"一張「訓練曲線總覽」折線圖，把前面分散在四張獨立截圖裡的訓練結果整合成\n一張可互動比較的圖表，方便讀者一次看懂學習率、特徵縮放、優化方式三個變因\n各自的影響。\n\n資料（epoch 1–15，合成出符合下列趨勢的示意數值即可，不需要跟投影片逐點對齊）：\n- 「GD, η=0.1（未縮放）」：MSE 從第 1 epoch 開始隨 epoch 增加而暴增\n  （指數發散），到第 15 epoch 已經是第 1 epoch 的數十倍以上\n- 「GD, η=0.0001（未縮放）」：MSE 從約 0.435 緩慢降到約 0.38，15 個 epoch\n  內下降幅度很小、遠未收斂\n- 「GD, η=0.5（已縮放）」：MSE 從約 0.5 在前 3 個 epoch 快速陡降，之後\n  平緩收斂到接近 0\n- 「SGD, η=0.01（已縮放）」：Average loss 從約 0.135 在第 2 個 epoch\n  就幾乎降到收斂水準（略低於 0.02），比 GD 版本收斂更快\n\n互動規則：\n- 提供圖例（legend），點擊圖例項目可以顯示／隱藏對應曲線\n- 「GD, η=0.1（未縮放）」建議預設用對數座標軸（或提供一個切換線性／對數\n  座標的按鈕），否則這條發散曲線會把其他三條壓成貼底的平線、看不出差異\n- hover 在任一資料點上顯示該 epoch 的數值 tooltip\n\n視覺要求：\n- 用 recharts 實作（LineChart + Legend + Tooltip）\n- 四條線給予彼此區分度高的顏色，並在圖表下方或旁邊附一行文字摘要重點對比\n  （例如「同樣是 GD，縮放前後可用的學習率範圍差一個數量級」「SGD 比\n  GD 更早進入平緩區」）\n\n核心洞察：學習率、特徵縮放、優化方式這三個變因不是各自獨立的知識點，疊在\n同一張圖上看，才看得出「縮放讓可用學習率變大」「SGD 比 GD 更快進入平緩」\n這些跨變因的對比關係。"} caption="四種訓練設定的損失曲線疊在一起看：學習率、特徵縮放、優化方式各自的影響一次比較。">
+  <MlWeek3LossCurvesOverview client:visible />
+</GeneratedFrame>
+
 ## NumPy：向量、矩陣與廣播的課堂練習
 
 後面「NumPy 與 Pandas 概念整理」一節把 NumPy／Pandas 的核心概念講過一輪，這裡先補上投影片實際跑過的程式範例與課堂練習，銜接「概念」跟「手上敲得出來的程式碼」。
@@ -777,6 +906,48 @@ excerpt: Example 2 sample code (03_2.py)：Matrix Addition、Scalar Multiplicati
 ### 廣播規則與三個例子
 
 後面「NumPy 與 Pandas 概念整理」一節會再講一次廣播的直覺，這裡先補上投影片的正式規則與圖解。NumPy 比較兩個陣列的形狀時，**從最右邊（trailing）的維度開始往左**逐一比較，兩個維度只有在**相等**或**其中一個是 1** 時才相容；輸入陣列不需要有相同的維度數，結果陣列的維度數等於輸入中較大的那個，缺少的維度視為 1，每個維度的大小取輸入中較大的那個值；只要有任何一個維度既不相等、也不是 1，就會丟出 `ValueError`。
+
+{/* @ai-visualize
+id: ml-week3-broadcasting-steps
+type: motion
+prompt: |
+  一個「廣播規則逐步比對」互動元件，把上面文字描述的「從最右邊維度開始往左
+  逐一比較」規則變成讀者可以動手操作、逐步驗證的過程，而不是只看靜態結果圖。
+
+  版面：上方提供 3–4 組預設的 shape 配對按鈕可切換（例如 (4,3) 與 (3,)、
+  (4,3) 與 (4,)、(3,) 與 (1,)、(8,1,6,1) 與 (7,1,5) 這種稍複雜的多維範例），
+  下方把兩個 shape 的每個維度數字並排顯示成一格一格的方塊（從右往左排列，
+  對齊右邊界）。
+
+  互動規則：
+  - 點擊「逐步比對」按鈕（或自動播放）後，從最右邊那一欄開始，依序高亮
+    當前正在比較的一對維度方塊
+  - 每一步比對後，用顏色或圖示標示這一對維度是「相等（相容）」「其中一方是 1
+    （相容，會被拉伸）」還是「不相容（兩者都不同且都不是 1）」
+  - 若某一組維度數不相等（一邊多出來的維度），要清楚呈現「視為 1」的規則，
+    在較短的那一邊補上虛線方塊標示「缺少維度視為 1」
+  - 全部比對完成後，若全部相容，顯示最終廣播結果的 shape；若中途出現不相容，
+    立刻停在那一步、標示 ValueError，不繼續比對剩下的維度
+
+  視覺要求：
+  - 手寫 SVG／HTML 皆可，viewBox 或容器寬度不超過 640
+  - 相容（相等）、相容（拉伸）、不相容三種狀態要有清楚不同的顏色語意，
+    並在畫面上有對應的小圖例
+  - 尊重 prefers-reduced-motion：關閉動畫時直接顯示所有維度的最終比對結果，
+    不逐格播放
+  - 不使用 emoji；狀態提示用文字或 lucide-react icon（例如 Check、X）
+
+  核心洞察：廣播規則不是死記的口訣，而是「從右邊開始、一次只比一對數字」的
+  簡單流程——親手一步步點過一次，比看最終結果圖更容易記住規則本身。
+caption: 選一組 shape，逐步比對每個維度，親手驗證廣播規則怎麼判定相容或不相容。
+status: generated
+*/}
+
+import MlWeek3BroadcastingSteps from '@/components/generated/ml-week3-broadcasting-steps'
+
+<GeneratedFrame id="ml-week3-broadcasting-steps" type="motion" prompt={"一個「廣播規則逐步比對」互動元件，把上面文字描述的「從最右邊維度開始往左\n逐一比較」規則變成讀者可以動手操作、逐步驗證的過程，而不是只看靜態結果圖。\n\n版面：上方提供 3–4 組預設的 shape 配對按鈕可切換（例如 (4,3) 與 (3,)、\n(4,3) 與 (4,)、(3,) 與 (1,)、(8,1,6,1) 與 (7,1,5) 這種稍複雜的多維範例），\n下方把兩個 shape 的每個維度數字並排顯示成一格一格的方塊（從右往左排列，\n對齊右邊界）。\n\n互動規則：\n- 點擊「逐步比對」按鈕（或自動播放）後，從最右邊那一欄開始，依序高亮\n  當前正在比較的一對維度方塊\n- 每一步比對後，用顏色或圖示標示這一對維度是「相等（相容）」「其中一方是 1\n  （相容，會被拉伸）」還是「不相容（兩者都不同且都不是 1）」\n- 若某一組維度數不相等（一邊多出來的維度），要清楚呈現「視為 1」的規則，\n  在較短的那一邊補上虛線方塊標示「缺少維度視為 1」\n- 全部比對完成後，若全部相容，顯示最終廣播結果的 shape；若中途出現不相容，\n  立刻停在那一步、標示 ValueError，不繼續比對剩下的維度\n\n視覺要求：\n- 手寫 SVG／HTML 皆可，viewBox 或容器寬度不超過 640\n- 相容（相等）、相容（拉伸）、不相容三種狀態要有清楚不同的顏色語意，\n  並在畫面上有對應的小圖例\n- 尊重 prefers-reduced-motion：關閉動畫時直接顯示所有維度的最終比對結果，\n  不逐格播放\n- 不使用 emoji；狀態提示用文字或 lucide-react icon（例如 Check、X）\n\n核心洞察：廣播規則不是死記的口訣，而是「從右邊開始、一次只比一對數字」的\n簡單流程——親手一步步點過一次，比看最終結果圖更容易記住規則本身。"} caption="選一組 shape，逐步比對每個維度，親手驗證廣播規則怎麼判定相容或不相容。">
+  <MlWeek3BroadcastingSteps client:visible />
+</GeneratedFrame>
 
 ![兩組廣播範例並排：左邊 a(3) 是 [1,2,3]、b(1) 是純量 2 被 stretch 拉伸成 [2,2,2]，相乘結果 result(3) 是 [2,4,6]；右邊 a(4×3) 是 4 列 3 欄的矩陣、b(3) 是 [1,2,3] 沿著列的方向 stretch 拉伸成 4 份，相加後 result(4×3) 每一列都加上同一組 [1,2,3]](/note-images/ml-week3/07-broadcasting-basic-examples.jpeg)
 
