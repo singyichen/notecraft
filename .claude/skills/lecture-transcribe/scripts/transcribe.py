@@ -98,16 +98,20 @@ def main() -> None:
         def flush() -> None:
             nonlocal n, last_end
             while not vad.empty():
+                # 必須在 pop() 之前把樣本與起點複製出來：front 回傳的是 VAD 內部緩衝的參照，
+                # pop() 後再讀 seg.samples 會拿到已失效的資料，辨識結果全部變成空字串
                 seg = vad.front
+                seg_samples = np.array(seg.samples, dtype=np.float32)
+                seg_start = seg.start
                 vad.pop()
                 s = rec.create_stream()
-                s.accept_waveform(SAMPLE_RATE, seg.samples)
+                s.accept_waveform(SAMPLE_RATE, seg_samples)
                 rec.decode_stream(s)
                 text = s.result.text.strip()
-                start = seg.start / SAMPLE_RATE
+                start = seg_start / SAMPLE_RATE
                 if start < last_end - 60 or start > total_sec:  # 異常時間戳，改用上一段結尾
                     start = last_end
-                last_end = start + len(seg.samples) / SAMPLE_RATE
+                last_end = start + len(seg_samples) / SAMPLE_RATE
                 if conv:
                     text = conv.convert(text)
                 if text:
