@@ -171,6 +171,18 @@ status: confirmed
 
 - **Outline（大綱）**：四個實驗——**Forward Bias: Knee Voltage（順偏：膝點電壓）**、**Reverse Bias（逆偏）**、**Half-wave Rectifier（半波整流器）**、**Full-wave Rectifier（全波整流器）**。全波整流器前面標了 **(O)**，講義沒有解釋這個記號，推測是「選做」或「延伸」項目（待課堂確認）。
 
+### 這學期要做哪幾個實驗
+
+評分辦法規定基礎實驗必做，進階實驗自選，只接受下列三種組合：基礎；基礎 + 進階 I；基礎 + 進階 I + 進階 II。
+
+| 項目 | 佔實驗操作分數 | A 方案 | B 方案 | 備註 |
+| --- | --- | --- | --- | --- |
+| 基礎實驗（必做） | 70% | Lab 1 順偏膝點電壓 **與** 逆偏，兩個都要做 | LED 順向與逆向偏壓觀察（Tinkercad.pdf 第 6 頁的電路） | A、B 擇一 |
+| 進階實驗 I | 15% | 半波整流器 | | |
+| 進階實驗 II | 15% | 全波整流器 | | |
+
+本筆記的實驗一、二對應 A 方案，實驗三對應進階 I，實驗四對應進階 II。不用交預報，但當天下課前要把數據、麵包板照片、示波器照片上傳並找助教登記；結報一週內交，數據表必須和當天上傳的一致。
+
 ### 三個工具怎麼分工
 
 | 階段 | 工具 | 做什麼 | 不做什麼 |
@@ -191,6 +203,52 @@ Tinkercad 儀器設定一次列齊，四個實驗共用（儀器接法與自學�
 | Oscilloscope（放兩台） | Time per division／Volts per division | 不用 | 5 ms、2 V | 5 ms、1 V |
 | Multimeter | 檔位 | 一台切 A 串進迴路、一台切 V 跨在二極體兩端 | 不用 | 不用 |
 
+### 實體器材對照：Tinkercad 端子 ↔ 實驗室儀器
+
+> 講義只列了實驗一、二的器材（GDM-532 電表、GPE-3323 電源），實驗三、四的訊號產生器與示波器沒有列出；下面以課程提供手冊的 Keysight DSOX1200 系列示波器（G 型號內建波形產生器）為準，圖全部取自三份原廠手冊。麵包板、1N4007、電阻沒有課程提供的照片，用文字描述外觀特徵。
+
+![GW Instek GPE-3323 直流電源供應器正面線稿：左半是大 LCD 顯示各通道電壓電流，右上 CH1 與 CH2 各一組 Voltage 與 Current 旋鈕，中間 Series／Parallel／Independent 模式鍵，下排由左至右為 POWER 開關、CH1 紅黑端子、綠色 GND 端子、CH2 紅黑端子、CH3 固定 5 V 端子](/note-images/ec-week3-equipment/01-gpe-3323-front-view.png)
+
+*GPE-3323 正面（手冊第 20 頁）：實驗一、二只用 CH1 那組紅（+）黑（−）端子與它上方的 Voltage、Current 兩顆旋鈕。*
+
+![GPE 系列前面板功能標註圖（以四通道 GPE-4323 為例）：LCD、CH1 Current Knob、CH1 Voltage Knob、CH1/CH2 Mode Setting、Output Key、View setting value / Key lock、Power Switch、GND Terminal、各通道 Output 端子位置皆以引線標出](/note-images/ec-week3-equipment/02-gpe-front-panel-annotated.png)
+
+*手冊第 15 頁的標註圖是四通道機型，旋鈕與按鍵名稱和 GPE-3323 相同：接線前先按 Output 讓輸出 OFF，調好電壓再按一次 ON。*
+
+![GPE 電源端子接線示意：紅色 CH1 + 端子逆時針轉鬆、插入線端子後順時針鎖緊；下圖為香蕉插頭直接插入端子中央插孔](/note-images/ec-week3-equipment/03-gpe-terminal-cable.png)
+
+*手冊第 24 頁：端子可鎖裸線（轉鬆 → 插線 → 鎖緊），也可直接插香蕉插頭；接麵包板用香蕉頭轉鱷魚夾線最方便。*
+
+![GW Instek GDM-532 手持萬用電表外觀結構圖：正面由上而下為 LCD、四顆功能鍵、旋鈕、左下 mA/A 與 µA 輸入孔、右下 COM 與 VΩ 輸入孔；背面有掛鉤、探棒收納槽與支架](/note-images/ec-week3-equipment/04-gdm-532-external-structure.png)
+
+*GDM-532（手冊第 11 頁）：4 個輸入孔——mA/A、µA、COM、VΩ。黑棒永遠插 COM，紅棒依「量電壓」或「量電流」換孔。*
+
+![GDM-532 量電壓接線圖：紅棒插 VΩ 孔、黑棒插 COM 孔，兩支探棒並聯跨在待測兩端](/note-images/ec-week3-equipment/05-gdm-532-voltage-wiring.png)
+
+*量電壓：紅棒 VΩ、黑棒 COM，並聯跨在二極體兩端（手冊第 14 頁）。*
+
+![GDM-532 量電流接線圖：紅棒插 mA/A 孔、黑棒插 COM 孔，電表串聯接進電源與負載之間的迴路](/note-images/ec-week3-equipment/06-gdm-532-current-wiring.png)
+
+*量電流：紅棒 mA/A（小電流用 µA 孔）、黑棒 COM，電表串進迴路（手冊第 24 頁）。這兩張圖的差別就是實驗一最容易出錯的地方。*
+
+![Keysight DSOX1204G 示波器前面板標註照片：左側大螢幕顯示黃色正弦波與綠色波形，右側由上而下為 Default Setup、Auto Scale、水平控制、Run/Stop、量測與工具鍵、觸發控制、四色通道鍵與垂直控制、Wave Gen 鍵；下排 BNC 由左至右為 Demo/Probe Comp 端子、Gen Out、通道 1 至 4 輸入](/note-images/ec-week3-equipment/07-dsox1200-front-panel-annotated.png)
+
+*DSOX1200 系列（手冊第 26 頁）：實驗三、四用到的是下排的 Gen Out（訊號源）、CH1／CH2 輸入，以及右側的 [Wave Gen]、[Auto Scale]、[Meas] 三顆鍵。*
+
+Tinkercad 元件與實物的端子對應，四個實驗共用：
+
+| Tinkercad 元件 | 實驗室實物 | 端子對應 | 實物才有的注意事項 |
+| --- | --- | --- | --- |
+| Power Supply（電源供應器） | GPE-3323 | **+** = CH1 紅端子、**−** = CH1 黑端子；綠色 GND 是機殼大地，本實驗不接 | 接線前 Output 先 OFF；Voltage 轉到 0、Current 轉到約 0.1 A 當保護，接好線再 ON |
+| Multimeter 切 **A** | GDM-532 | 紅棒 **mA/A**（實驗二漏電流改插 **µA**）、黑棒 COM，旋鈕轉 mA 或 µA，`SEL` 選 DC | 一定要串聯；接完先確認紅棒不在 VΩ 孔 |
+| Multimeter 切 **V** | GDM-532 | 紅棒 **VΩ**、黑棒 COM，旋鈕轉 V，`SEL` 選 DC | 並聯跨接；輸入阻抗約 10 MΩ，量 10 kΩ 級的電路會有一點負載效應 |
+| Function Generator（函數波產生器） | DSOX1200 **G 型號**的 Gen Out BNC（或實驗室另給的獨立訊號產生器） | BNC 中心導體 = **+**、外殼 = **−**（與示波器地夾同電位） | 按 [Wave Gen] 設 Sine、頻率、幅度；「設定 → 輸出負載」選 **高-Z**，選 50 Ω 時 10 kΩ 負載上的實際振幅會是設定值的兩倍 |
+| Oscilloscope（示波器）× 2 | DSOX1200 的 CH1、CH2 | 探棒鉤子 = Tinkercad 的正探棒、地夾 = 負探棒 | 兩個通道的地夾在機殼內相連，實驗四的接地陷阱由此而來；探棒 10:1 要和通道設定一致 |
+| Diode | 1N4007 | 黑色圓柱本體、一端印**銀白色色環**，色環端 = 陰極 | 麵包板上色環朝向要和 Tinkercad 的色環端一致 |
+| Resistor | 1 kΩ（棕黑紅）／10 kΩ（棕黑橙），1/4 W | 無方向 | 插麵包板時兩腳要跨不同的五孔列 |
+| Capacitor | 1 µF | 陶瓷電容無方向；電解電容長腳 = 正極，白色條紋那側 = 負極 | 電解電容正極接輸出 +、負極接輸出 −，接反會鼓包 |
+| Zener Diode | 助教給的型號 | 同 1N4007，色環端 = 陰極 | 穩壓時陰極接輸出 +（逆偏使用） |
+
 ### LTspice：真實型號的預報值怎麼來
 
 教授提到的進階工具。CircuitJS 與 Tinkercad 的二極體都是理想化模型，LTspice 內建元件庫有 Diodes Inc. 的 **1N4007** 參數（$I_S = 90$ pA、$n = 1.4$、$R_S = 40$ mΩ、$BV = 1000$ V），跑出來的數字可以直接和實驗室量到的比。
@@ -209,9 +267,9 @@ Tinkercad 是 Autodesk 提供的免費線上工具，開瀏覽器登入即可使
 
 | 模組 | 用途 | 本課程 |
 | --- | --- | --- |
-| **Circuits（電路）** | 在虛擬麵包板上擺元件、接線，按模擬看電流、電壓與波形 | 主要工具 |
-| **3D Design（3D 設計）** | 用基本形狀組合 3D 模型，輸出給 3D 列印 | 不用 |
-| **Codeblocks（程式積木）** | 用積木式程式產生 3D 形狀 | 不用 |
+| **電路（Circuits）** | 在虛擬麵包板上擺元件、接線，按模擬看電流、電壓與波形 | 主要工具 |
+| **3D 設計（3D Design）** | 用基本形狀組合 3D 模型，輸出給 3D 列印 | 不用 |
+| **程式積木（Codeblocks）** | 用積木式程式產生 3D 形狀 | 不用 |
 
 Circuits 模組可以想成一張**不會燒壞的實驗桌**，把實驗室的東西全部虛擬化：
 
@@ -232,13 +290,13 @@ status: confirmed
 */}
 <PdfRefChip file="_references/電子學實作系列/第二週/Tinkercad.pdf" page={2} status="confirmed" client:visible />
 
-- **Tinkercad**：投影片介紹——**a free web app for 3D design, electronics, and coding**（免費的網頁應用程式，涵蓋 3D 設計、電子電路與程式），網址 [tinkercad.com](https://www.tinkercad.com/)。第一次使用要 **Sign Up（註冊）**，之後 **Login（登入）**——兩個按鈕在首頁導覽列右上角。
+- **Tinkercad**：投影片介紹——一款免費的網頁應用程式，涵蓋 3D 設計、電子電路與程式，網址 [tinkercad.com](https://www.tinkercad.com/)。第一次使用要 **註冊（Sign Up）**，之後 **登入（Login）**——兩個按鈕在首頁導覽列右上角。
 
 ![Tinkercad 首頁頂部導覽列：選單 Tinker、Gallery、Learn、Teachers、Resources，右上 Log In 與 Sign Up 兩個按鈕被紅框圈起](/note-images/ec-week2-tinkercad/01-navbar-login-signup.png)
 
 *首頁右上角的 Log In 與 Sign Up：第一次用先註冊，之後登入。*
 
-- **Sign Up or Login（第 3 頁）**：點 Log In 後出現 **Personal Accounts** 面板，可選 **Email or Username**（Autodesk 帳號）、**Sign in with Google**、**Sign in with Apple**，或展開 **More sign in options**；沒有帳號就點底部的 **Join Tinkercad** 註冊。選 Email 後進入 Autodesk 的中文登入頁，輸入電子郵件或使用者名稱（投影片示範用學校信箱）再按「下一步」輸入密碼。
+- **註冊或登入（Sign Up or Login，第 3 頁）**：點 Log In 後出現 **Personal Accounts** 面板，可選 **Email or Username**（Autodesk 帳號）、**Sign in with Google**、**Sign in with Apple**，或展開 **More sign in options**；沒有帳號就點底部的 **Join Tinkercad** 註冊。選 Email 後進入 Autodesk 的中文登入頁，輸入電子郵件或使用者名稱（投影片示範用學校信箱）再按「下一步」輸入密碼。
 
 ![Tinkercad 登入對話框 Personal Accounts：Email or Username、Sign in with Google、Sign in with Apple 三個按鈕，下方 More sign in options 與 Join Tinkercad 連結](/note-images/ec-week2-tinkercad/02-personal-accounts-sign-in.png)
 
@@ -257,7 +315,7 @@ status: confirmed
 */}
 <PdfRefChip file="_references/電子學實作系列/第二週/Tinkercad.pdf" page={4} status="confirmed" client:visible />
 
-- **Dashboard（儀表板，第 4 頁）**：登入後進到 `tinkercad.com/dashboard`。左側欄有首頁、課程、設計、集合、自學課程、挑戰、說明中心；主區分「3D 設計」與「電路」兩大區塊，投影片用紅框圈出 **「電路」區塊** ——本課程的模擬專案都建在這裡，也可以從右上角「＋ 建立」新增。
+- **儀表板（Dashboard，第 4 頁）**：登入後進到 `tinkercad.com/dashboard`。左側欄有首頁、課程、設計、集合、自學課程、挑戰、說明中心；主區分「3D 設計」與「電路」兩大區塊，投影片用紅框圈出 **「電路」區塊** ——本課程的模擬專案都建在這裡，也可以從右上角「＋ 建立」新增。
 
 ![Tinkercad 儀表板繁體中文介面：左側欄首頁、課程、設計、集合、自學課程、挑戰、說明中心；主區上方 3D 設計區塊，下方電路區塊被紅框圈起，內有電池盒、麵包板與電表的既有設計縮圖](/note-images/ec-week2-tinkercad/04-dashboard-circuits-section.jpeg)
 
@@ -384,7 +442,10 @@ status: confirmed
 */}
 <PdfRefChip file="_references/電子學實作系列/第二週/App_Lab1.pdf" page={4} status="confirmed" client:visible />
 
-- **Objective（目標，第 4 頁）**：**observe and verify forward-biased diode conduction characteristics**（觀察並驗證順偏二極體的導通特性）、**measure I-V relationship to identify the Knee Voltage**（量測 I-V 關係以找出膝點電壓）、**understand non-linear diode behavior and its fundamental applications**（理解二極體的非線性行為與基本應用）。
+- **目標（Objective，第 4 頁）**：
+  - 觀察並驗證順向偏壓（forward bias）下二極體的導通特性。
+  - 量測電流–電壓關係（I-V relationship），找出膝點電壓（knee voltage）。
+  - 理解二極體的非線性行為（non-linear behavior）與基本應用。
 - **Fig. 1.1 PN junction diode**：P 區、N 區與中間的 **depletion（空乏區）**，外加電壓正端接 P、負端接 N——就是第 1 週講的順偏。
 
 ![Fig.1.1 PN 接面二極體示意圖：左側 p-region 散布電洞、中央 depletion 空乏區排列固定離子、右側 n-region 散布電子，下方為二極體符號並標示 Positive 陽極與 Negative 陰極](/note-images/ec-week2-lab1/01-pn-junction-forward-bias.png)
@@ -396,7 +457,13 @@ status: confirmed
   - **Forward Bias（順向偏壓）**：**positive voltage applied to the P-region, negative to the N-region. This narrows the depletion region**（正電壓接 P 區、負電壓接 N 區，空乏區因此變窄）。
   - **Knee Voltage（膝點電壓）**：**the threshold voltage where the depletion region becomes narrow enough for significant current to flow**（空乏區窄到足以讓明顯電流流過的門檻電壓）——就是 CH3 定電壓模型的 $V_{D,on}$，矽二極體約 0.6–0.7 V。
   - **Conduction Behavior（導通行為）**：**below the Knee Voltage, the diode exhibits high impedance with minimal leakage current. Above this threshold, its resistance drops sharply, causing current to increase exponentially**（低於膝點電壓時二極體呈高阻抗、只有極小漏電流；超過門檻後電阻急遽下降、電流呈指數上升）。
-- **Procedure（步驟，第 6 頁）**：**assemble a forward-biased diode circuit**（接一個順偏二極體電路）→ **vary the applied voltage in 0.1 V increments while measuring corresponding current and voltage**（以 0.1 V 為級距改變外加電壓，逐點量電流與電壓）→ **plot the diode's I-V characteristic curve**（畫出 I-V 特性曲線）→ **identify the Knee Voltage from the plotted curve**（從曲線找出膝點電壓）。講義附了記錄表格範例，欄位是電源電壓 $V_s$（1、2、…）與對應的 $V_D$、$I$。
+- **步驟（Procedure，第 6 頁）**：
+  1. 接一個順偏二極體電路。
+  2. 以 0.1 V 為級距改變外加電壓，每一點都量對應的電流與電壓。
+  3. 畫出二極體的 I-V 特性曲線（characteristic curve）。
+  4. 從曲線找出膝點電壓。
+
+  講義附了記錄表格範例，欄位是電源電壓 $V_s$（1、2、…）與對應的 $V_D$、$I$。
 
 ![順偏 I-V 特性曲線示意圖：橫軸 VF、縱軸 IF，曲線先以極緩坡度上升，到標示 Knee Voltage 的黑點後斜率突然變陡](/note-images/ec-week2-lab1/03-forward-iv-curve-knee-voltage.png)
 
@@ -430,15 +497,48 @@ status: confirmed
 
 ### 預演：Tinkercad 接線配方
 
-| 步驟 | 從 | 到 | 備註 |
-| --- | --- | --- | --- |
-| 1 | Power Supply **+** | Resistor 一端 | 電源先設 0 V、電流上限 0.1 A |
-| 2 | Resistor 另一端 | Diode **無色環端**（陽極） | 色環在陰極 |
-| 3 | Diode 色環端（陰極） | Multimeter A 的 **+** | 電表切 A，串進迴路 |
-| 4 | Multimeter A 的 − | Power Supply **−** | 迴路閉合 |
-| 5 | Multimeter V 的 +／− | Diode 陽極／陰極 | 第二台電表切 V，跨在二極體兩端 |
+照講義投影片的畫法：元件橫插在麵包板上半區、正負極走上方電源軌、跳線用短直線，實驗當天的實體接法就照這張圖插。
 
-按 Start Simulation，把電源電壓從 0 調到 2 V，每 0.1 V 讀一次兩台電表。
+<div style={{display: 'flex', flexWrap: 'wrap', gap: '1rem', alignItems: 'flex-start', margin: '1rem 0'}}>
+  <figure style={{flex: '1 1 340px', margin: 0}}>
+    <img src="/note-images/ec-week3-tinkercad/lab1-exp1-breadboard.png" alt="Tinkercad 麵包板版實驗一電路：左側電源供應器 0.7 V 的紅黑線接到麵包板上方的正負電源軌；二極體橫插在 i 列第 5 到 9 欄、電阻橫插在 h 列第 9 到 13 欄；上方兩台萬用表，左邊量電壓讀 494 mV、右邊量電流讀 206 µA" />
+    <figcaption style={{fontSize: '0.9em', opacity: 0.75, marginTop: '0.4rem'}}>模擬圖：正極經上方 + 軌與一條短跳線進第 5 欄，電流依序流過二極體、電阻、電流表回到 − 軌；0.7 V 時 V<sub>D</sub> = 494 mV、I = 206 µA。</figcaption>
+  </figure>
+  <figure style={{flex: '1 1 260px', margin: 0}}>
+    <img src="/note-images/ec-week3-tinkercad/lab1-exp1-schematic.png" alt="Tinkercad 線路圖檢視：P1 電源的 P1+ 節點接到 D1 二極體陽極，陰極接 R1 1k 電阻；R1 另一端與 P1 負端各留一個開放端，因為線路圖不畫萬用表" />
+    <figcaption style={{fontSize: '0.9em', opacity: 0.75, marginTop: '0.4rem'}}>電路圖：Tinkercad 自動產生的線路圖，P1+ → D1 陽極 → 陰極 → R1，與講義的 V<sub>s</sub> → D → R 順序相同。兩個開放端是電流表所在的位置，線路圖檢視不畫儀器。</figcaption>
+  </figure>
+</div>
+
+| 步驟 | 元件 | 插在哪裡 | 備註 |
+| --- | --- | --- | --- |
+| 1 | 小型電路試驗板 | 畫布中央 | 上方兩列是電源軌，− 在上、+ 在下（紅線那列） |
+| 2 | Diode | **橫放**在 i 列，陽極（無色環端）第 5 欄、陰極（色環端）第 9 欄 | 拖上板後按 `R` 三次轉 90°，兩腳要各自落進孔裡 |
+| 3 | Resistor 1 kΩ | 橫放在 h 列，第 9 到 13 欄 | 左腳和二極體陰極同在第 9 欄，就是同一個節點 |
+| 4 | Power Supply | 板子左側 | 紅線接 + 軌左端、黑線接 − 軌左端；先設 0 V、電流上限 0.1 A |
+| 5 | 跳線 | + 軌第 5 欄 → j5 | 一條短直線，把正極送進二極體陽極那一欄 |
+| 6 | Multimeter A（安培數） | 板子上方右側 | 紅探棒 → j13（電阻另一端），黑探棒 → − 軌 |
+| 7 | Multimeter V（電壓） | 板子上方左側 | 紅探棒 → + 軌第 3 欄（等於陽極），黑探棒 → j9（陰極） |
+
+按 Start Simulation，把電源電壓從 0 調到 2 V，每 0.1 V 讀一次兩台電表。實驗室只有一台 DMM：量 $V_D$ 用電表，電流直接讀 GPE-3323 面板的電流顯示，或量完電壓再把電表切 A 檔串到第 13 欄與 − 軌之間。
+
+**講義 Procedure（第 6 頁）逐步對照**
+
+| 老師的步驟 | Tinkercad 對應 | 實驗室對應 |
+| --- | --- | --- |
+| 1. **Assemble a forward-biased diode circuit** | 上表步驟 1–7：$V_s$ + → D 陽極 → D 陰極 → R → 電流表 → $V_s$ − | 同一張圖插麵包板；GPE-3323 CH1 紅端子接 + 軌、黑端子接 − 軌，Output 先 OFF |
+| 2. **Vary the applied voltage in 0.1 V increments while measuring corresponding current and voltage** | 屬性面板電壓 0 → 2 V，每 0.1 V 抄 $V_D$、$I$ | CH1 Voltage 旋鈕每次轉 0.1 V（面板 LCD 讀 $V_s$），GDM-532 讀 $V_D$；$I$ 讀面板電流或電表 mA 檔 |
+| 3. **Plot the diode's I-V characteristic curve** | 橫軸 $V_D$、縱軸 $I$，**不是** $V_s$ 對 $I$ | 同左；每列順手驗算 $V_s = V_D + I \cdot 1\text{ k}\Omega$，不成立就是探棒接錯位置 |
+| 4. **Identify the Knee Voltage from the plotted curve** | 曲線由平轉陡的轉折點 | 同左；和 CH3 的 $V_{D,on} = 0.7$ V 比較，差異寫進問題 1 |
+
+**實體器材對照**（端子與旋鈕見上方「實體器材對照」小節）
+
+| Tinkercad | 實驗室實物怎麼接 |
+| --- | --- |
+| Power Supply +／− | GPE-3323 CH1 紅端子 → 麵包板 + 軌、黑端子 → − 軌。Output OFF、Voltage 歸零、Current 轉到約 0.1 A，接好再 ON |
+| Multimeter A | GDM-532 紅棒插 **mA/A**、黑棒 COM，旋鈕 mA、`SEL` 選 DC；紅棒點 j13（電阻尾端）、黑棒點 − 軌 |
+| Multimeter V | 紅棒改插 **VΩ**、旋鈕 V；紅棒點 + 軌（陽極）、黑棒點 j9（陰極） |
+| 只有一台電表時 | 先量 $V_D$，再把電表改跨 R 兩端量 $V_R$，$I = V_R / 1\text{ k}\Omega$；記錄表多一欄 $V_R$，和面板電流互相驗證 |
 
 ### LTspice 預報值：真實 1N4007 模型
 
@@ -506,7 +606,11 @@ status: confirmed
 */}
 <PdfRefChip file="_references/電子學實作系列/第二週/App_Lab1.pdf" page={10} status="confirmed" client:visible />
 
-- **Objective（目標，第 10 頁）**：**investigate and characterize standard diode behavior under reverse bias**（探討一般二極體在逆偏下的行為）、**measure small reverse current and observe its high-resistance state**（量測微小的逆向電流、觀察高電阻狀態）、**understand the concept of breakdown voltage and diode limitations under reverse voltage**（理解崩潰電壓的概念與二極體在逆向電壓下的限制）、**distinguish standard diodes from Zener diodes designed for stable breakdown**（區分一般二極體與設計來穩定工作在崩潰區的齊納二極體）。
+- **目標（Objective，第 10 頁）**：
+  - 探討並描述一般二極體在逆向偏壓（reverse bias）下的行為。
+  - 量測微小的逆向電流（reverse current），觀察它的高電阻狀態。
+  - 理解崩潰電壓（breakdown voltage）的概念，以及二極體在逆向電壓下的限制。
+  - 區分一般二極體與設計來穩定工作在崩潰區的齊納二極體（Zener diode）。
 - **Fig. 1.1**（第 10 頁）：三張 PN 接面圖對照——平衡態（Normal）、加逆偏後空乏區變寬。
 
 ![PN 接面在無偏壓與逆偏下的對照：左圖 Normal 空乏區窄，右圖 Reverse Bias Voltage 下 p 端接負、n 端接正，空乏區明顯變寬](/note-images/ec-week2-lab1/04-pn-junction-normal-vs-reverse-bias.png)
@@ -517,7 +621,12 @@ status: confirmed
   - **Reverse Bias Fundamentals（逆偏基礎）**：**applying reverse bias widens the diode's depletion region, creating high resistance and allowing only a very small, temperature-dependent leakage current**（逆偏使空乏區變寬、呈現高電阻，只允許極小且與溫度相關的漏電流）。
   - **Breakdown Voltage（崩潰電壓）**：**a critical reverse voltage causes Zener or avalanche breakdown, leading to a sudden, sharp increase in current**（超過某個臨界逆向電壓會發生齊納或突崩崩潰，電流突然急遽增加）。
   - **Standard Diode Limitation（一般二極體的限制）**：**unlike Zener diodes, standard diodes are not designed for stable operation in breakdown; exceeding current limits in this region can cause permanent damage**（一般二極體不像齊納二極體設計來穩定工作在崩潰區，在此區超過電流限制會永久損壞）。
-- **Procedure（步驟，第 12 頁）**：接逆偏電路 → **vary the applied voltage in 1 V increments**（以 1 V 為級距改變電壓，比順偏的 0.1 V 粗，因為逆偏區電流幾乎不變）→ 畫 I-V 曲線。記錄表格欄位 $V_s$、$V_D$、$I$（mA）。
+- **步驟（Procedure，第 12 頁）**：
+  1. 接一個逆偏二極體電路（二極體反接）。
+  2. 以 1 V 為級距改變外加電壓，每一點都量對應的電流與電壓；級距比順偏的 0.1 V 粗，因為逆偏區電流幾乎不變。
+  3. 畫出二極體的 I-V 特性曲線。
+
+  記錄表格欄位 $V_s$、$V_D$、$I$（mA）。
 
 ![完整二極體 I-V 特性曲線：縱軸左側標 Reverse Bias、右側標 Forward Bias，曲線在負電壓區幾乎貼著橫軸，過原點後緩慢上升，到 Knee Voltage 後陡升](/note-images/ec-week2-lab1/06-diode-iv-curve-reverse-forward.png)
 
@@ -568,7 +677,34 @@ import EcWeek2LabIvMeasurement from '@/components/generated/ec-week2-lab-iv-meas
 
 ### 預演：Tinkercad 接線配方
 
-與實驗一完全相同，只做一件事：點選 Diode 按 `R` 兩次讓它轉 180°，色環端改接電阻。電表 A 檔讀值應為 0（Tinkercad 的二極體逆向電流是零）。
+**講義 Procedure（第 12 頁）逐步對照**
+
+| 老師的步驟 | Tinkercad 對應 | 實驗室對應 |
+| --- | --- | --- |
+| 1. **Assemble a reverse-biased diode circuit** | 實驗一的板子只翻二極體：**色環端（陰極）改朝第 5 欄（+ 軌那側）**，無色環端接第 9 欄 | 把 1N4007 拔起來轉向再插回同兩欄；接線前再對一次色環方向，插反就變回實驗一，1 kΩ 上會流過約 30 mA |
+| 2. **Vary the applied voltage in 1 V increments while measuring corresponding current and voltage** | 屬性面板電壓 1、2、3 … V，每級抄 $V_D$、$I$ | CH1 Voltage 旋鈕每次轉 1 V，一路到 GPE-3323 上限 32 V；電流表改 **µA** 檔才看得到漏電流 |
+| 3. **Plot the diode's I-V characteristic curve** | 這條曲線貼著橫軸；接到實驗一曲線左邊就是講義第 12 頁右下的完整特性曲線 | 同左；講義沒有第 4 步，因為逆偏區沒有膝點可找 |
+
+講義記錄表欄位寫明是 $V_s$ (V)、$V_D$ (V)、$I$ (mA)。
+
+**Tinkercad 接線**
+
+| 步驟 | 元件 | 插在哪裡 | 備註 |
+| --- | --- | --- | --- |
+| 1 | 實驗一的整張板子 | 不動 | 電源、電阻、兩台電表、跳線全部沿用 |
+| 2 | Diode | 點選後按 `R` 六次轉 180°，仍橫放在 i 列第 5–9 欄，**陰極（色環端）第 5 欄、陽極第 9 欄** | 懸停兩端看提示「陰極／陽極」確認方向 |
+| 3 | Power Supply | 電壓改從 1 V 起、每次加 1 V | 電流上限維持 0.1 A |
+
+Multimeter A 讀值應為 0（Tinkercad 的二極體逆向電流是零）；Multimeter V 若探棒不換位置會讀到 $-V_s$，負號是正常的，代表二極體上的壓降方向和實驗一相反。
+
+**實體器材對照**
+
+| Tinkercad | 實驗室實物怎麼接 |
+| --- | --- |
+| Diode 翻面 | 1N4007 色環端改朝 + 軌那一側插 |
+| Multimeter A | 紅棒改插 **µA** 孔、旋鈕轉 µA，才看得到 nA–µA 級的漏電流；mA 檔只會顯示 0 |
+| Multimeter V | 同實驗一；紅棒點色環端（接 + 那側）讀值才是正的 |
+| Power Supply | 電壓會一路加到 20 V 以上，Current 上限維持 0.1 A；若面板電流突然跳到幾十 mA 代表二極體接反，立刻按 Output OFF |
 
 ### LTspice 預報值：真實 1N4007 模型
 
@@ -688,14 +824,37 @@ $$
 
 ### 預演：Tinkercad 接線配方
 
-| 步驟 | 從 | 到 | 備註 |
+**講義 Procedure（第 18 頁）逐步對照**
+
+| 老師的步驟 | Tinkercad 對應 | 實驗室對應 |
+| --- | --- | --- |
+| **Circuit Setup — Connect the circuit according to the diagram on the right** | 下表步驟 1–7：$V_{in}$ + → D 陽極 → D 陰極（$V_{out}$）→ R 10 kΩ → 地，$V_{in}$ − 也接地 | 同一張圖插麵包板；輸入與輸出**共地**，所以示波器兩個通道可以同時接 |
+| **Measurement — $V_{peak}$、$V_{rms}$、efficiency** | 兩台示波器面板讀 Max 與 RMS；efficiency 用 $V_{out}$ 的 $V_{avg}^2 / V_{rms}^2$ 算（公式見「檢查點與公式」） | [Meas] 加 Maximum、DC RMS、Average 三項；efficiency 兩列合併只填一格 |
+| **Experiment setup／Wave pattern 兩格** | 截圖麵包板檢視與示波器畫面 | 拍麵包板全景照、示波器兩通道同畫面截圖存 USB（[Save/Recall]） |
+| **第 20 頁 with RC filter** | 步驟 8：R 上並聯 C = 1 µF 再量一次 | 講義用「Diode on／Diode off」標出電容充電與放電區間，截圖時把兩段都框進畫面 |
+
+**Tinkercad 接線**（沿用實驗一的版面：元件橫插上半區、電源軌在上方）
+
+| 步驟 | 元件 | 插在哪裡 | 備註 |
 | --- | --- | --- | --- |
-| 1 | Function Generator **+** | Diode 陽極（無色環端） | 產生器設 Sine、60 Hz、Amplitude 10、offset 0 |
-| 2 | Diode 陰極（色環端） | Resistor 10 kΩ 一端 | 這個節點就是 $V_{out}$ |
-| 3 | Resistor 另一端 | Function Generator **−** | 迴路閉合，當作接地 |
-| 4 | Oscilloscope 1 的兩支探棒 | 跨在 Function Generator 兩端 | 看 $V_{in}$，5 ms/div、2 V/div |
-| 5 | Oscilloscope 2 的兩支探棒 | 跨在 Resistor 兩端 | 看 $V_{out}$ |
-| 6（第二部分） | Capacitor 1 µF 兩端 | 與 Resistor 並聯 | 若拿 Polarized Capacitor，正極朝二極體那側 |
+| 1 | 小型電路試驗板 | 畫布中央 | 上方兩列是電源軌，− 在上、+ 在下 |
+| 2 | Function Generator（搜尋「函數波產生器」） | 板子左側 | **+** 接 + 軌左端、**−** 接 − 軌左端；設 Sine、60 Hz、Amplitude **10**（峰對峰值）、DC offset 0 |
+| 3 | Diode | 橫放在 i 列，陽極（無色環端）第 5 欄、陰極（色環端）第 9 欄 | 按 `R` 三次轉 90° |
+| 4 | Resistor 10 kΩ | 橫放在 h 列，第 9 到 13 欄 | 左腳與二極體陰極同在第 9 欄，這一欄就是 $V_{out}$ |
+| 5 | 跳線 | + 軌第 5 欄 → j5 | 把 $V_{in}$ 送進陽極 |
+| 6 | 跳線 | j13 → − 軌 | 電阻尾端回地 |
+| 7 | Oscilloscope 1（示波器） | 板子上方左側 | 正探棒 → + 軌、負探棒 → − 軌，看 $V_{in}$；5 ms/div、2 V/div |
+| 8 | Oscilloscope 2 | 板子上方右側 | 正探棒 → j9、負探棒 → − 軌，看 $V_{out}$；兩台的負探棒都在 − 軌 |
+| 9（第 20 頁） | Capacitor 1 µF | 橫放在 g 列，第 9 到 13 欄，與電阻並聯 | 若拿「極性電容」，正極在第 9 欄（二極體那側） |
+
+**實體器材對照**（端子與旋鈕見「實體器材對照」小節）
+
+| Tinkercad | 實驗室實物怎麼接 |
+| --- | --- |
+| Function Generator +／− | 示波器 **Gen Out** BNC（G 型號）接 BNC 轉鱷魚夾線：紅夾 → + 軌、黑夾 → − 軌。按 [Wave Gen]：Sine、60 Hz、幅度 10 Vpp、偏移 0，「設定 → 輸出負載」選**高-Z** |
+| Oscilloscope 1 | CH1 探棒鉤子勾 + 軌（陽極）、地夾夾 − 軌；[Meas] 加 Maximum、AC RMS |
+| Oscilloscope 2 | CH2 探棒鉤子勾第 9 欄（$V_{out}$）、地夾夾**同一條 − 軌**；[Meas] 加 Maximum、DC RMS、Average |
+| Capacitor 1 µF | 陶瓷電容無方向；電解電容長腳（正極）插第 9 欄、條紋側插第 13 欄 |
 
 ### LTspice 預報值：真實 1N4007 模型
 
@@ -836,26 +995,61 @@ $\frac{V_R}{V_p}$ 這個比值對應 CH3 第 29 頁「漣波峰對峰值須低�
 
 ### 預演：Tinkercad 接線配方
 
-橋式的四顆二極體最容易接反，先在麵包板上定四個節點：**A**（交流上端）、**B**（交流下端）、**P**（輸出 +）、**N**（輸出 −，當接地）。
+**講義 Procedure（第 25–27 頁）逐步對照**
 
-| 二極體 | 陽極（無色環） | 陰極（色環） | 導通半週 |
+三頁的步驟都是 **Circuit Setup — Connect the circuit according to the diagram on the left** → **Measurement**，差別只在電路多接什麼、表格量什麼：
+
+| 頁 | 老師的電路 | 講義量測表欄位 | Tinkercad 對應 |
 | --- | --- | --- | --- |
-| D_a | A | P | 正半週（A 高） |
-| D_b | B | P | 負半週（B 高） |
-| D_c | N | A | 負半週 |
-| D_d | N | B | 正半週 |
+| 25 | $V_{in}$ 60 Hz 5 Vpp → D1–D4 1N4007 橋 → R 10 kΩ | $V_{in}$、$V_{out}$ 各記 $V_{peak}$、$V_{rms}$；efficiency 一格 | 下表步驟 1–12 |
+| 26 | 同上，輸出端並聯 C 1 µF 與 $R_L$ 10 kΩ | $V_{peak}$、$V_{rms}$、$V_R$、Ratio $V_R / V_p$ | 加步驟 13 |
+| 27 | 同上，電容換成齊納二極體與 $R_L$ 並聯 | $V_{peak}$、$V_{drop}$（at $V_{in} < V_Z$） | 拆步驟 13、加步驟 14 |
+
+三頁都另有「Experiment setup／Wave pattern」兩格要貼接線照片與波形截圖。講義電路圖的四顆二極體從箭頭方向讀出來是：**D2、D3 在上排，D1、D4 在下排**；$V_{in}$ 上端接「D2 陰極＋D3 陽極」那個節點，$V_{in}$ 下端接「D1 陰極＋D4 陽極」的節點；D3、D4 的陰極相接是輸出 +（接 R），D2、D1 的陽極相接是輸出 −（接地）。圖上左邊那條從 D2／D1 之間往下拉到地的線，和 $V_{in}$ 下端的線只是交叉、沒有相接。
+
+**節點與二極體方向**
+
+橋式的四顆二極體最容易接反，先定四個節點：**A**（交流上端）、**B**（交流下端）、**P**（輸出 +）、**N**（輸出 −，當接地）。下表同時列出講義的編號：
+
+| 本表 | 講義編號 | 陽極（無色環） | 陰極（色環） | 導通半週 |
+| --- | --- | --- | --- | --- |
+| D_a | D3 | A | P | 正半週（A 高） |
+| D_b | D4 | B | P | 負半週（B 高） |
+| D_c | D2 | N | A | 負半週 |
+| D_d | D1 | N | B | 正半週 |
 
 記法：兩顆色環都指向 P（電流只能流進 P），兩顆無色環端都接 N（電流只能從 N 流出）。
 
-| 步驟 | 從 | 到 | 備註 |
+**Tinkercad 接線**（+ 軌當 P、− 軌當 N，A 在第 5 欄、B 在第 17 欄；四顆二極體各跨 4 欄，用短跳線接到軌道）
+
+| 步驟 | 元件 | 插在哪裡 | 備註 |
 | --- | --- | --- | --- |
-| 1 | Function Generator + | 節點 A | Sine、60 Hz、Amplitude 5、offset 0 |
-| 2 | Function Generator − | 節點 B | 注意：產生器的 − **不是** 接地 |
-| 3 | Resistor 10 kΩ | P 與 N 之間 | 這就是 $V_{out}$ |
-| 4 | Oscilloscope 1 | 跨 A、B | 看 $V_{in}$，5 ms/div、1 V/div |
-| 5 | Oscilloscope 2 | 跨 P、N | 看 $V_{out}$ |
-| 6（第 26 頁） | Capacitor 1 µF | 與 Resistor 並聯 | 有極性的話正極接 P |
-| 7（第 27 頁） | Zener Diode | 色環（陰極）接 P、陽極接 N | 屬性面板填助教給的 $V_Z$ |
+| 1 | 小型電路試驗板 | 畫布中央 | 上方兩列電源軌：− 在上當 **N**、+ 在下當 **P** |
+| 2 | Diode D3（D_a） | 橫放在 j 列，陽極第 5 欄（A）、陰極第 9 欄 | 色環朝右 |
+| 3 | 跳線 | j9 → + 軌 | 第 9 欄併入 P |
+| 4 | Diode D2（D_c） | 橫放在 i 列，陽極第 1 欄、陰極第 5 欄（A） | 色環朝右，和 D3 共用第 5 欄 |
+| 5 | 跳線 | i1 → − 軌 | 第 1 欄併入 N |
+| 6 | Diode D4（D_b） | 橫放在 j 列，陽極第 17 欄（B）、陰極第 13 欄 | **色環朝左** |
+| 7 | 跳線 | j13 → + 軌 | 第 13 欄併入 P |
+| 8 | Diode D1（D_d） | 橫放在 i 列，陽極第 21 欄、陰極第 17 欄（B） | 色環朝左，和 D4 共用第 17 欄 |
+| 9 | 跳線 | i21 → − 軌 | 第 21 欄併入 N |
+| 10 | Resistor 10 kΩ | 橫放在 h 列，第 25 到 29 欄；跳線 h25 → + 軌、h29 → − 軌 | 跨在 P、N 之間，就是 $V_{out}$ |
+| 11 | Function Generator | 板子左側 | **+** → j5（A）、**−** → j17（B）；Sine、60 Hz、Amplitude **5**、offset 0。注意產生器的 − **不是**接軌道 |
+| 12 | Oscilloscope 1／2 | 板子上方 | 1 號正探棒 → 第 5 欄、負探棒 → 第 17 欄，看 $V_{in}$；2 號正探棒 → + 軌、負探棒 → − 軌，看 $V_{out}$；5 ms/div、1 V/div |
+| 13（第 26 頁） | Capacitor 1 µF | 橫放在 g 列，第 25 到 29 欄，與電阻並聯 | 極性電容正極在第 25 欄（P 那側） |
+| 14（第 27 頁） | Zener Diode（搜尋「稽納二極體」） | 先拆掉電容，橫放在 g 列第 25 到 29 欄，**陰極（色環）第 25 欄**、陽極第 29 欄 | 屬性面板填助教給的 $V_Z$ |
+
+模擬跑起來後先看電流方向：正半週黃點走 A → D3 → P → R → N → D1 → B，負半週走 B → D4 → P → R → N → D2 → A，兩個半週流過 R 的方向一樣才是接對。
+
+**實體器材對照**
+
+| Tinkercad | 實驗室實物怎麼接 |
+| --- | --- |
+| Function Generator +／− | Gen Out 接 BNC 轉鱷魚夾線：紅夾 → 第 5 欄（A）、黑夾 → 第 17 欄（B）。幅度改 **5 Vpp**，輸出負載仍選高-Z。黑夾與示波器地夾同電位，所以 **B 已經是大地**——這就是下一節接地陷阱的來源 |
+| Oscilloscope 1／2 | 不能像 Tinkercad 那樣同時跨 A–B 與 P–N；改用下一節的兩種做法之一（先量 $V_{in}$ 再量 $V_{out}$，或兩地夾同接 N 用 Math CH1 − CH2） |
+| 四顆 1N4007 | 照上表插好後，用 GDM-532 二極體檔逐顆量：紅棒陽極、黑棒陰極應顯示約 0.5–0.8 V，反過來顯示 OL |
+| Capacitor 1 µF（第 26 頁） | 電解電容長腳插第 25 欄（P）、條紋側插第 29 欄（N） |
+| Zener（第 27 頁） | 色環端插第 25 欄（P）、另一端第 29 欄；換上去前先拆電容 |
 
 ### 實驗室的接地陷阱（比接線本身更重要）
 
