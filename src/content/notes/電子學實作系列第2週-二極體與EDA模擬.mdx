@@ -283,7 +283,7 @@ import EcWeek2EdaFlow from '@/components/generated/ec-week2-eda-flow'
 
 ## CH3：二極體模型與電路（逐頁名詞詳解，中英對照）
 
-> 依教授要求，以下依投影片出現順序、每個名詞先給**原文英文**再給完整中文解釋。前面「本週摘要」已經用直覺方式講過理想二極體、三種模型與小訊號分析的道理，這裡把投影片裡每個名詞、每道公式與例題數字攤開來，兩邊互相對照著讀。投影片第 1–22 頁對應課本 3.1–3.2（本週上課範圍），第 23–47 頁是 3.3 的整流器、穩壓器應用——教授這週一併發下講義，內容與[第 3 週整流電路實驗](/notes/電子學實作系列第3週-整流電路實驗)直接對應，Lab 1 講義的逐頁詳解與 Tinkercad 入門也收在那篇。
+> 依教授要求，以下依投影片出現順序、每個名詞先給**完整中文解釋**、原文英文附註在括號中。前面「本週摘要」已經用直覺方式講過理想二極體、三種模型與小訊號分析的道理，這裡把投影片裡每個名詞、每道公式與例題數字攤開來，兩邊互相對照著讀。投影片第 1–22 頁對應課本 3.1–3.2（本週上課範圍），第 23–47 頁是 3.3 的整流器、穩壓器應用——教授這週一併發下講義，內容與[第 3 週整流電路實驗](/notes/電子學實作系列第3週-整流電路實驗)直接對應，Lab 1 講義的逐頁詳解與 Tinkercad 入門也收在那篇。
 
 ### 章節導入與手機充電器：Diode's Application（第 1–4 頁）
 
@@ -295,15 +295,15 @@ status: confirmed
 */}
 <PdfRefChip file="_references/電子學實作系列/第二週/Ch 3 - Diode Models and Circuits.pdf" page={2} status="confirmed" client:visible />
 
-- **Diode Models and Circuits（二極體模型與電路）**：投影片開宗明義——**after understanding the basic physics of a diode, we will study its behavior as a circuit element and its many applications in this chapter**（在理解二極體的基本物理之後，本章要研究它作為電路元件的行為與眾多應用）。這一句就是第 1 週「元件物理」與第 2 週「電路元件」的分界線。
-- **Cell Phone Charger（手機充電器）**：投影片提出的問題是 **how to convert 110-V AC voltage to 3.5-V DC voltage?**（如何把 110 V 交流電轉成 3.5 V 直流電？）。整章的應用都繞著這個問題展開。
-- **Black box（黑盒子）**：充電器方塊圖中，二極體扮演的角色是 **the black box that passes only the positive half of the sinusoid**（只讓正弦波正半週通過的黑盒子）。投影片 (a) 是充電器電路、(b) 是負半週被消除後的波形。
+- **二極體模型與電路（Diode Models and Circuits）**：投影片開宗明義，指出在理解二極體的基本物理之後，本章要研究它作為電路元件的行為與眾多應用。這一句就是第 1 週「元件物理」與第 2 週「電路元件」的分界線。
+- **手機充電器（cell phone charger）**：投影片提出的問題是如何把 110 V 交流電轉成 3.5 V 直流電。整章的應用都繞著這個問題展開。
+- **黑盒子（black box）**：充電器方塊圖中，二極體扮演的角色是只讓正弦波正半週通過的黑盒子。投影片 (a) 是充電器電路、(b) 是負半週被消除後的波形。
 
 ![手機充電器示意圖：(a) 110√2 V、60 Hz 市電經變壓器降到 4√2 V 後送進標示 Block Box 的黑盒子，輸出 3.5 V 直流；(b) 正負面積相等的正弦波經黑盒子後只剩正半週](/note-images/ec-week2-ch3/01-charger-block-diagram.png)
 
 *充電器的核心問題：把正負對稱的正弦波變成只有正半週的波形，這個黑盒子就是二極體。*
 
-- **Diode's Action in The Black Box（黑盒子裡二極體的動作）**：**the diode behaves as a short circuit during the positive half cycle and an open circuit during the negative half cycle**（二極體在正半週表現為短路、負半週表現為斷路）——這是整章的第一個模型，後面的理想二極體就是把這句話形式化。
+- **黑盒子裡二極體的動作（diode's action in the black box）**：二極體在正半週表現為短路、負半週表現為斷路——這是整章的第一個模型，後面的理想二極體就是把這句話形式化。
 
 ![二極體觀念性運作：下方 x(t) 完整正弦波，上方 y(t) 只剩正半週，正半週對應閉合開關、負半週對應斷開開關](/note-images/ec-week2-ch3/02-diode-as-switch-concept.png)
 
@@ -319,20 +319,20 @@ status: confirmed
 */}
 <PdfRefChip file="_references/電子學實作系列/第二週/Ch 3 - Diode Models and Circuits.pdf" page={5} status="confirmed" client:visible />
 
-- **Ideal Diode（理想二極體）**：投影片定義——**if the voltage across it tends to exceed zero, current flows**（只要跨壓有超過零的趨勢，電流就流動）。它的 **equivalent circuit（等效電路）** 是順偏短路、逆偏斷路。
-- **Water pipe analogy（水管類比）**：**analogous to a water pipe that allows water to flow in only one direction**（類比成只允許水單向流動的水管）。投影片 (a) 是二極體符號、(b) 等效電路、(c) 水管類比。
+- **理想二極體（ideal diode）**：投影片定義只要跨壓有超過零的趨勢，電流就流動。它的**等效電路（equivalent circuit）** 是順偏短路、逆偏斷路。
+- **水管類比（water pipe analogy）**：類比成只允許水單向流動的水管。投影片 (a) 是二極體符號、(b) 等效電路、(c) 水管類比。
 
 ![理想二極體：(a) 二極體符號標示 Anode 與 Cathode；(b) 順偏時等效閉合開關、逆偏時等效斷開開關；(c) 水管類比，閥門只允許單向流動](/note-images/ec-week2-ch3/03-ideal-diode-symbol-pipe-analogy.png)
 
 *理想二極體的符號、等效電路與水管類比：閥門只往一個方向開。*
 
-- **Example 3-1（第 6 頁）**：**as with other two-terminal devices, diodes can be placed in series (or in parallel)**（跟其他二端元件一樣，二極體可以串聯或並聯），問題是圖中哪些接法能導通。投影片結論：**diodes cannot be connected in series randomly. Only (a) can conduct current from A to C**（二極體不能隨意串聯，只有 (a) 能讓電流從 A 流到 C）——判斷方法是逐顆問「這顆現在被推向順偏還是逆偏」，只要串聯路徑上有一顆逆偏，整條就不通。
+- **Example 3-1（第 6 頁）**：跟其他二端元件一樣，二極體可以串聯或並聯，問題是圖中哪些接法能導通。投影片結論：二極體不能隨意串聯，只有 (a) 能讓電流從 A 流到 C——判斷方法是逐顆問「這顆現在被推向順偏還是逆偏」，只要串聯路徑上有一顆逆偏，整條就不通。
 
 ![Example 3-1 三種串聯組態 A–D1–B–D2–C：(a) 兩顆同向；(b) D2 反向；(c) D1 反向](/note-images/ec-week2-ch3/04-example-3-1-series-diodes.png)
 
 *只有 (a) 兩顆同向時電流能從 A 流到 C，另外兩種總有一顆逆偏。*
 
-- **Diodes in Series（二極體與電阻串聯）**：投影片要求 **plot the I/V characteristic for the diode-resistor combination**（畫出二極體–電阻組合的 I/V 特性）。(a) 串聯組合、(b) 順偏時的等效電路（二極體短路，只剩電阻）、(c) 逆偏時的等效電路（斷路，電流為零）、(d) I/V 特性——負電壓時電流為零、正電壓時斜率為 $\frac{1}{R_1}$ 的直線、(e) 假設 $D_1$ 導通時的等效電路。
+- **二極體與電阻串聯（diodes in series）**：投影片要求畫出二極體–電阻組合的 I/V 特性。(a) 串聯組合、(b) 順偏時的等效電路（二極體短路，只剩電阻）、(c) 逆偏時的等效電路（斷路，電流為零）、(d) I/V 特性——負電壓時電流為零、正電壓時斜率為 $\frac{1}{R_1}$ 的直線、(e) 假設 $D_1$ 導通時的等效電路。
 
 ![二極體與電阻串聯：(a) VA 串聯 D1 與 R1；(b) 順偏等效為只剩 R1；(c) 逆偏等效為斷路；(d) I/V 特性在 VA 大於零時為斜率 1/R1 的直線；(e) D1 導通時的等效電路](/note-images/ec-week2-ch3/05-diode-resistor-series-iv.png)
 
@@ -348,13 +348,13 @@ status: confirmed
 */}
 <PdfRefChip file="_references/電子學實作系列/第二週/Ch 3 - Diode Models and Circuits.pdf" page={8} status="confirmed" client:visible />
 
-- **Diode Implementation of OR Gate（二極體實作 OR 閘）**：兩顆二極體陽極各接輸入 $V_A$、$V_B$，陰極共接輸出並經電阻接地。投影片指出 **$V_{out}$ can only be either $V_A$ or $V_B$, not both**（輸出只會是 $V_A$ 或 $V_B$ 其中之一，不會兩者同時）——誰比較高誰就把自己那顆二極體推成順偏、把輸出拉上去，另一顆自動逆偏。**The circuit operates as a logical OR gate and was in fact used in early digital computers**（這個電路就是邏輯 OR 閘，早期數位電腦真的這樣做）。
+- **二極體實作 OR 閘（diode implementation of OR gate）**：兩顆二極體陽極各接輸入 $V_A$、$V_B$，陰極共接輸出並經電阻接地。投影片指出輸出只會是 $V_A$ 或 $V_B$ 其中之一，不會兩者同時——誰比較高誰就把自己那顆二極體推成順偏、把輸出拉上去，另一顆自動逆偏。這個電路就是邏輯 OR 閘，早期數位電腦真的這樣做。
 
 ![二極體 OR 閘電路：VA 經 D1、VB 經 D2 匯合到 Vout 節點，再經 RL 接地](/note-images/ec-week2-ch3/06-diode-or-gate.png)
 
 *兩顆二極體加一顆電阻就是 OR 閘：哪個輸入高，輸出就跟著它。*
 
-- **Input/Output Characteristics（輸入輸出特性）**：第 9 頁把二極體與電阻的位置對調——(a) 電阻–二極體電路（電阻在上、二極體對地）、(b) 負輸入時的等效電路（二極體斷路，輸出跟著輸入）、(c) 正輸入時的等效電路（二極體短路，輸出被壓在零）、(d) 輸入輸出特性——負半邊斜率 1、正半邊被壓平在零。跟第 7 頁對照，可以看出**二極體與電阻誰接輸出端，決定了輸出「跟著走」的是哪一個半週**。
+- **輸入輸出特性（input/output characteristics）**：第 9 頁把二極體與電阻的位置對調——(a) 電阻–二極體電路（電阻在上、二極體對地）、(b) 負輸入時的等效電路（二極體斷路，輸出跟著輸入）、(c) 正輸入時的等效電路（二極體短路，輸出被壓在零）、(d) 輸入輸出特性——負半邊斜率 1、正半邊被壓平在零。跟第 7 頁對照，可以看出**二極體與電阻誰接輸出端，決定了輸出「跟著走」的是哪一個半週**。
 
 ![電阻–二極體電路的輸入輸出特性：(a) Vin 經 R1 後接 D1 對地；(b) 負輸入時 D1 斷路、Vout 等於 Vin；(c) 正輸入時 D1 短路、Vout 為零；(d) 特性曲線負半邊斜率 1、正半邊貼在零](/note-images/ec-week2-ch3/07-resistor-diode-io-characteristic.png)
 
@@ -370,13 +370,13 @@ status: confirmed
 */}
 <PdfRefChip file="_references/電子學實作系列/第二週/Ch 3 - Diode Models and Circuits.pdf" page={10} status="confirmed" client:visible />
 
-- **Rectifier（整流器）**：投影片定義——**a device that passes positive-half cycle of a sinusoid and blocks the negative half-cycle or vice versa**（讓正弦波正半週通過、擋掉負半週，或反過來的裝置）。(a) 二極體當整流器、(b) 完整的整流器電路、(c) 輸入輸出波形、(d) 輸入輸出特性。
+- **整流器（rectifier）**：投影片定義為讓正弦波正半週通過、擋掉負半週，或反過來的裝置。(a) 二極體當整流器、(b) 完整的整流器電路、(c) 輸入輸出波形、(d) 輸入輸出特性。
 
 ![整流器：(a) 只有二極體；(b) 完整整流器 D1 後並聯 R1；(c) 輸入正弦波與只剩正半週的輸出波形，橫軸標 0、T/2、T、3T/2、2T；(d) 輸入輸出特性](/note-images/ec-week2-ch3/08-rectifier-circuit-waveforms.png)
 
 *半波整流器：正半週輸出跟著輸入、負半週輸出為零，特性曲線是一條折線。*
 
-- **Signal Strength Indicator（訊號強度指示器）**：**the averaged value of a rectifier output can be used as a signal strength indicator for the input, since $V_{out,avg}$ is proportional to $V_p$**（整流輸出的平均值可當作輸入訊號強度指示器，因為平均值正比於輸入振幅 $V_p$）。推導：半波整流輸出在前半週期是 $V_p\sin\omega t$、後半週期為零，對一個週期取平均：
+- **訊號強度指示器（signal strength indicator）**：整流輸出的平均值可當作輸入訊號強度指示器，因為平均值正比於輸入振幅 $V_p$。推導：半波整流輸出在前半週期是 $V_p\sin\omega t$、後半週期為零，對一個週期取平均：
 
 $$
 \begin{aligned}
@@ -398,8 +398,8 @@ status: confirmed
 */}
 <PdfRefChip file="_references/電子學實作系列/第二週/Ch 3 - Diode Models and Circuits.pdf" page={12} status="confirmed" client:visible />
 
-- **Limiter（限幅器）**：投影片說明 **the purpose of a limiter is to force the output to remain below certain value**（限幅器的目的是強迫輸出維持在某個值以下）。
-- **1 V battery（1 V 電池）**：在 (a) 圖中，**the addition of a 1 V battery forces the diode to turn on after $V_1$ has become greater than 1 V**（串一顆 1 V 電池，讓二極體要等到 $V_1$ 超過 1 V 才導通）——$I_1$–$V_1$ 特性的垂直導通線從原點移到 $+1\text{ V}$。(b) 是沒有電池的 $V_{in}$–$R_1$–$D_1$ 電路，正半週被壓平在零、只留負半週；(c) 在 $D_1$ 下方串上 1 V 電池後，正半週改被削平在 $+1\text{ V}$，負半週照常到 $-V_p$。電池的電壓就是「天花板」的高度。
+- **限幅器（limiter）**：投影片說明限幅器的目的是強迫輸出維持在某個值以下。
+- **1 V 電池（1 V battery）**：在 (a) 圖中，串一顆 1 V 電池，讓二極體要等到 $V_1$ 超過 1 V 才導通——$I_1$–$V_1$ 特性的垂直導通線從原點移到 $+1\text{ V}$。(b) 是沒有電池的 $V_{in}$–$R_1$–$D_1$ 電路，正半週被壓平在零、只留負半週；(c) 在 $D_1$ 下方串上 1 V 電池後，正半週改被削平在 $+1\text{ V}$，負半週照常到 $-V_p$。電池的電壓就是「天花板」的高度。
 
 ![限幅器：(a) V1 串聯 D1 與 1 V 電池，I1–V1 特性在 1 V 處垂直導通；(b) 無電池的 Vin–R1–D1 電路，輸出只留負半週；(c) 加 1 V 電池後正半週被削平在 +1 V](/note-images/ec-week2-ch3/09-limiter-circuits.png)
 
@@ -415,13 +415,13 @@ status: confirmed
 */}
 <PdfRefChip file="_references/電子學實作系列/第二週/Ch 3 - Diode Models and Circuits.pdf" page={13} status="confirmed" client:visible />
 
-- **Different Models for Diode（二極體的不同模型）**：投影片並排三張 I/V 特性——(a) **ideal model（理想模型）**：逆偏電流為零、正向從原點垂直起飛；(b) **exponential model（指數模型）**：$I_D = I_S\exp\!\left(\frac{V_D}{V_T}\right)$ 的平滑曲線；(c) **constant-voltage model（定電壓模型）**：逆偏為零、到 $V_{D,on}$（約 0.7–0.8 V）才垂直起飛。三張圖形狀類似，差別只在「轉折點在哪裡、轉折有多硬」。
+- **二極體的不同模型（different models for diode）**：投影片並排三張 I/V 特性——(a) **理想模型（ideal model）**：逆偏電流為零、正向從原點垂直起飛；(b) **指數模型（exponential model）**：$I_D = I_S\exp\!\left(\frac{V_D}{V_T}\right)$ 的平滑曲線；(c) **定電壓模型（constant-voltage model）**：逆偏為零、到 $V_{D,on}$（約 0.7–0.8 V）才垂直起飛。三張圖形狀類似，差別只在「轉折點在哪裡、轉折有多硬」。
 
 ![三種二極體模型的 ID–VD 特性：(a) 理想模型在 VD 等於零處垂直導通；(b) 指數模型是平滑上升曲線；(c) 定電壓模型在 VD,on 處垂直導通，等效為開關串電池](/note-images/ec-week2-ch3/10-diode-models-ideal-exponential-constant.png)
 
 *三種模型：理想模型在原點起飛、指數模型平滑上升、定電壓模型在 VD,on 起飛。*
 
-- **Input/Output Characteristics with Ideal and Constant-Voltage Models（理想與定電壓模型下的輸入輸出特性）**：電路是 $V_{in}$ 經 $R_1$ 到 $V_{out}$、$V_{out}$ 再經 $R_2$ 串 $D_1$ 接地。理想模型下，$V_{in} < 0$ 時 $D_1$ 斷路、輸出跟著輸入（斜率 1）；$V_{in} > 0$ 時 $D_1$ 導通、$R_1$ 與 $R_2$ 分壓，斜率變成 $\frac{R_2}{R_1 + R_2}$。定電壓模型則把 $D_1$ 換成一顆 $V_{D,on}$ 電池，轉折點從原點右移到 $V_{in} = V_{D,on}$、$V_{out} = V_{D,on}$，之後斜率相同——兩條曲線**形狀相同、轉折點不同**，定電壓模型其實就是「理想二極體 + 電池」。
+- **理想與定電壓模型下的輸入輸出特性（input/output characteristics with ideal and constant-voltage models）**：電路是 $V_{in}$ 經 $R_1$ 到 $V_{out}$、$V_{out}$ 再經 $R_2$ 串 $D_1$ 接地。理想模型下，$V_{in} < 0$ 時 $D_1$ 斷路、輸出跟著輸入（斜率 1）；$V_{in} > 0$ 時 $D_1$ 導通、$R_1$ 與 $R_2$ 分壓，斜率變成 $\frac{R_2}{R_1 + R_2}$。定電壓模型則把 $D_1$ 換成一顆 $V_{D,on}$ 電池，轉折點從原點右移到 $V_{in} = V_{D,on}$、$V_{out} = V_{D,on}$，之後斜率相同——兩條曲線**形狀相同、轉折點不同**，定電壓模型其實就是「理想二極體 + 電池」。
 
 ![分壓電路加二極體的輸入輸出特性：(a) Vin 經 R1 到 Vout，Vout 經 R2 串 D1 接地；(b) 理想模型特性，正輸入時斜率 R2/(R2+R1)；(c) D1 換成 VD,on 電池的電路；(d) 定電壓模型特性，轉折點移到 VD,on](/note-images/ec-week2-ch3/11-io-characteristic-ideal-vs-constant-voltage.png)
 
@@ -464,7 +464,7 @@ status: confirmed
 */}
 <PdfRefChip file="_references/電子學實作系列/第二週/Ch 3 - Diode Models and Circuits.pdf" page={15} status="confirmed" client:visible />
 
-- **Example 3-13: Exponential Model（指數模型）**：**assume $D_1$ and $D_2$ have different cross section areas but are otherwise identical. Determine the current flowing through each diode**（假設 $D_1$、$D_2$ 截面積不同、其他完全相同，求各自流過的電流）。投影片指出 **we must resort to the exponential equation because the ideal and constant-voltage models do not include the device area**（必須用指數方程式，因為理想與定電壓模型都不含元件面積這個變數）。兩顆並聯、跨壓相同，由指數式得到電流比等於飽和電流比：
+- **Example 3-13：指數模型（exponential model）**：假設 $D_1$、$D_2$ 截面積不同、其他完全相同，求各自流過的電流。投影片指出必須用指數方程式，因為理想與定電壓模型都不含元件面積這個變數。兩顆並聯、跨壓相同，由指數式得到電流比等於飽和電流比：
 
 $$
 \begin{aligned}
@@ -492,7 +492,7 @@ status: confirmed
 */}
 <PdfRefChip file="_references/電子學實作系列/第二週/Ch 3 - Diode Models and Circuits.pdf" page={16} status="confirmed" client:visible />
 
-- **Robotics Application: Diode as a Protector（機器人應用：二極體當保護元件）**：(a) **relay（繼電器）** 的結構——用線圈的磁力吸合機械接點；(b) 用繼電器控制馬達，微控制器只需驅動線圈電流 $I_r$；(c) **voltage surge（電壓突波）** 的問題——線圈是電感，微控制器切斷電流時 $V_1 = L\,\dfrac{dI_r}{dt}$，電流瞬間中斷造成 $\frac{dI_r}{dt}$ 極大，感應出足以打壞微控制器的高壓；(d) 在線圈兩端反向並聯一顆二極體——正常運作時它逆偏不影響電路，切斷瞬間線圈電壓反轉，二極體導通提供電流續流路徑，把突波夾住。這顆二極體俗稱 **flyback diode（飛輪二極體／續流二極體）**。
+- **機器人應用：二極體當保護元件（robotics application: diode as a protector）**：(a) **繼電器（relay）** 的結構——用線圈的磁力吸合機械接點；(b) 用繼電器控制馬達，微控制器只需驅動線圈電流 $I_r$；(c) **電壓突波（voltage surge）** 的問題——線圈是電感，微控制器切斷電流時 $V_1 = L\,\dfrac{dI_r}{dt}$，電流瞬間中斷造成 $\frac{dI_r}{dt}$ 極大，感應出足以打壞微控制器的高壓；(d) 在線圈兩端反向並聯一顆二極體——正常運作時它逆偏不影響電路，切斷瞬間線圈電壓反轉，二極體導通提供電流續流路徑，把突波夾住。這顆二極體俗稱**飛輪二極體／續流二極體（flyback diode）**。
 
 ![繼電器與二極體保護：(a) 繼電器結構，A–B 為接點、X–Y 為線圈；(b) 微控制器驅動線圈、接點控制馬達；(c) 線圈電流突然切斷時 V1 出現很深的負向尖峰；(d) 在線圈兩端反向並聯 D1](/note-images/ec-week2-ch3/13-relay-diode-protector.png)
 
@@ -534,13 +534,13 @@ status: confirmed
 */}
 <PdfRefChip file="_references/電子學實作系列/第二週/Ch 3 - Diode Models and Circuits.pdf" page={17} status="confirmed" client:visible />
 
-- **Small-Signal Analysis of Diode（二極體的小訊號分析）**：投影片定義——**small-signal analysis is performed around a bias point by perturbing the voltage by a small amount and observing the resulting linear current perturbation**（小訊號分析是繞著一個偏壓點進行，把電壓擾動一個小量、觀察隨之而來的線性電流擾動）。(a) 含二極體的一般電路、(b) $D_1$ 的工作點、(c) $V_D$ 改變造成的 $I_D$ 改變——問題寫成 $\Delta V_D \to \Delta I_D\,?$。
+- **二極體的小訊號分析（small-signal analysis of diode）**：投影片定義小訊號分析是繞著一個偏壓點進行，把電壓擾動一個小量、觀察隨之而來的線性電流擾動。(a) 含二極體的一般電路、(b) $D_1$ 的工作點、(c) $V_D$ 改變造成的 $I_D$ 改變——問題寫成 $\Delta V_D \to \Delta I_D\,?$。
 
 ![小訊號分析：(a) 任意電路中含一顆二極體 D1；(b) ID–VD 曲線上的工作點 A；(c) VD 改變 ΔVD 後工作點從 A 移到 B，問 ΔID 是多少](/note-images/ec-week2-ch3/14-small-signal-operating-point.png)
 
 *小訊號分析的問題設定：在工作點 A 附近，電壓小變動會造成多少電流變動？*
 
-- **Small-Signal Analysis in Detail（小訊號分析的細節，第 18 頁）**：把偏壓點 $V_{D1}$ 加上小擾動 $\Delta V_D$ 代入指數式，用 $e^x \approx 1 + x$ 線性化：
+- **小訊號分析的細節（small-signal analysis in detail，第 18 頁）**：把偏壓點 $V_{D1}$ 加上小擾動 $\Delta V_D$ 代入指數式，用 $e^x \approx 1 + x$ 線性化：
 
 $$
 \begin{aligned}
@@ -551,7 +551,7 @@ I_{D2} &= I_S\exp\!\left(\frac{V_{D2}}{V_T}\right) = I_S\exp\!\left(\frac{V_{D1}
 \end{aligned}
 $$
 
-- **Bias point / Operating point（偏壓點／工作點）**：投影片註明 **Point A is called the "bias" point or the "operating" point**（圖上的 A 點稱為偏壓點或工作點）。上式的關鍵是 $\Delta I_D$ 與 $\Delta V_D$ 成**線性**關係，比例係數 $\frac{I_{D1}}{V_T}$ 由工作點決定——這就是「在偏壓點上切一條直線」的代數版本。
+- **偏壓點／工作點（bias point / operating point）**：投影片註明圖上的 A 點稱為偏壓點或工作點。上式的關鍵是 $\Delta I_D$ 與 $\Delta V_D$ 成**線性**關係，比例係數 $\frac{I_{D1}}{V_T}$ 由工作點決定——這就是「在偏壓點上切一條直線」的代數版本。
 
 ![小訊號放大圖：ID–VD 指數曲線上的 A、B 兩點局部放大後近似一條直線，橫向差 ΔVD、縱向差 ΔID](/note-images/ec-week2-ch3/15-small-signal-zoom.png)
 
@@ -578,7 +578,7 @@ status: confirmed
 */}
 <PdfRefChip file="_references/電子學實作系列/第二週/Ch 3 - Diode Models and Circuits.pdf" page={20} status="confirmed" client:visible />
 
-- **Small-Signal Resistance（小訊號電阻，記為 $r_d$）**：投影片 **in analogy with Ohm's law, we define the "small-signal resistance" of the diode as**（仿照歐姆定律，定義二極體的小訊號電阻為）：
+- **小訊號電阻（small-signal resistance，記為 $r_d$）**：投影片仿照歐姆定律，定義二極體的小訊號電阻為：
 
 $$
 \Delta V_D = r_d\,\Delta I_D, \qquad r_d = \frac{V_T}{I_D}
@@ -590,7 +590,7 @@ $$
 
 *同一顆二極體的兩個模型：算偏壓時是 VD,on 電池，算訊號時是電阻 rd。*
 
-- **Example 3-19: Small Signal Analysis（第 21–22 頁）**：一個峰值 $V_p$、直流值 $V_0$ 的正弦訊號 $V(t) = V_0 + V_p\cos\omega t$ 加在二極體上，且 $V_p \ll V_T$，求二極體的交流電流。投影片先問：**if a sinusoidal voltage with small amplitude is applied, the resulting current is also a small sinusoid around a DC value?**（加小振幅正弦電壓，電流也會是繞著直流值的小正弦嗎？）。**Method #1** 直接從指數式展開：
+- **Example 3-19：小訊號分析（第 21–22 頁）**：一個峰值 $V_p$、直流值 $V_0$ 的正弦訊號 $V(t) = V_0 + V_p\cos\omega t$ 加在二極體上，且 $V_p \ll V_T$，求二極體的交流電流。投影片先問，加小振幅正弦電壓，電流也會是繞著直流值的小正弦嗎？**Method #1** 直接從指數式展開：
 
 $$
 \begin{aligned}
@@ -607,7 +607,7 @@ $$
 \Delta I_D = \frac{\Delta V_D}{r_d} = \frac{V_p\cos\omega t}{r_d}, \qquad r_d = \frac{V_T}{I_0} = \frac{V_T}{I_S\exp\!\left(\frac{V_0}{V_T}\right)}
 $$
 
-投影片結論：**the AC current is also a sinusoidal signal**（交流電流也是正弦訊號）。兩種方法答案相同，但 Method #2 只要兩行——這就是小訊號模型的價值：先用 $V_0$ 算出偏壓電流 $I_0$ 與 $r_d$，訊號部分直接用歐姆定律。
+投影片結論：交流電流也是正弦訊號。兩種方法答案相同，但 Method #2 只要兩行——這就是小訊號模型的價值：先用 $V_0$ 算出偏壓電流 $I_0$ 與 $r_d$，訊號部分直接用歐姆定律。
 
 ![Example 3-19：(a) 以 V0 為中心、振幅 Vp 的小正弦電壓；(b) 指數曲線把輸入小正弦映射成以 I0 為中心、振幅 Ip 的輸出小正弦電流](/note-images/ec-week2-ch3/17-example-3-19-small-signal-sinusoid.png)
 
@@ -623,7 +623,7 @@ status: confirmed
 */}
 <PdfRefChip file="_references/電子學實作系列/第二週/Ch 3 - Diode Models and Circuits.pdf" page={23} status="confirmed" client:visible />
 
-- **Applications of Diode（二極體的應用）**：**the remainder of this chapter deals with circuit applications of diodes**（本章其餘部分處理二極體的電路應用），投影片給出大綱——半波與全波整流器、穩壓器、限幅電路、電壓倍增器、二極體當電子開關。以下第 24–47 頁就是這條路線，也是第 3 週實驗的理論背景。
+- **二極體的應用（applications of diode）**：本章其餘部分處理二極體的電路應用，投影片給出大綱——半波與全波整流器、穩壓器、限幅電路、電壓倍增器、二極體當電子開關。以下第 24–47 頁就是這條路線，也是第 3 週實驗的理論背景。
 
 ### 半波整流器與峰值檢波器：Half-Wave Rectifier / Peak Detector（第 24–26 頁）
 
@@ -635,7 +635,7 @@ status: confirmed
 */}
 <PdfRefChip file="_references/電子學實作系列/第二週/Ch 3 - Diode Models and Circuits.pdf" page={24} status="confirmed" client:visible />
 
-- **Half-Wave Rectifier（半波整流器）**：**a very common application of diodes is half-wave rectification, where either the positive or negative half of the input is blocked**（二極體最常見的應用之一是半波整流，把輸入的正半週或負半週擋掉）。用定電壓模型時，導通期間 $V_{out} = V_{in} - V_{D,on}$，二極體 off 時輸出為零。把二極體反接，留下的就變成負半週。投影片接著問：**but, how do we generate a constant output?**（但要怎麼產生穩定的輸出？）——半波整流後的輸出還是一座座山丘，離直流很遠。
+- **半波整流器（half-wave rectifier）**：二極體最常見的應用之一是半波整流，把輸入的正半週或負半週擋掉。用定電壓模型時，導通期間 $V_{out} = V_{in} - V_{D,on}$，二極體 off 時輸出為零。把二極體反接，留下的就變成負半週。投影片接著問，但要怎麼產生穩定的輸出？——半波整流後的輸出還是一座座山丘，離直流很遠。
 
 ![半波整流器定電壓模型：左為 Vin–D1–R1 電路，右為輸入正弦波與輸出波形，輸出在 Vin 超過 VD,on 後才跟隨且低了 VD,on，下方標示導通與截止的等效電路](/note-images/ec-week2-ch3/18-half-wave-rectifier-positive.png)
 
@@ -645,13 +645,13 @@ status: confirmed
 
 *二極體反接，留下的就變成負半週。*
 
-- **Diode-Capacitor Circuit: Constant Voltage Model（二極體–電容電路，定電壓模型）**：**if the resistor in half-wave rectifier is replaced by a capacitor, a fixed voltage output is obtained since the capacitor (assumed ideal) has no path to discharge**（把半波整流器的電阻換成電容，因為理想電容沒有放電路徑，就得到固定電壓輸出）。輸出會被充到 $V_p - V_{D,on}$ 然後停在那裡。投影片給了兩個別名：**"ac-dc converter"（交流轉直流轉換器）** 與 **"peak detector"（峰值檢波器）**。
+- **二極體–電容電路，定電壓模型（diode-capacitor circuit: constant voltage model）**：把半波整流器的電阻換成電容，因為理想電容沒有放電路徑，就得到固定電壓輸出。輸出會被充到 $V_p - V_{D,on}$ 然後停在那裡。投影片給了兩個別名：**「交流轉直流轉換器」（ac-dc converter）** 與 **「峰值檢波器」（peak detector）**。
 
 ![二極體–電容電路定電壓模型：(a) Vin–D1–C1；(b) 輸出在 t1 前跟隨輸入上升，到達 Vp−VD,on 後保持水平，t3 處標出約 2Vp 的最大逆向電壓](/note-images/ec-week2-ch3/20-peak-detector-constant-voltage-model.png)
 
 *峰值檢波器：電容沒有放電路徑，輸出充到 Vp−VD,on 後就停在那裡。*
 
-- **Diode-Capacitor Circuit: Ideal Model（理想模型）**：用理想模型看同一個電路，$V_{D1} = V_{in} - V_{out}$。投影片提醒 **note that $V_{D1}$ is just like $V_{in}$, only shifted down**（二極體跨壓的波形跟 $V_{in}$ 一模一樣，只是整個往下平移 $V_p$）——所以二極體在負峰值時要承受 $2V_p$ 的逆偏電壓，這個數字在後面比較半波與全波時會再出現。
+- **二極體–電容電路：理想模型（diode-capacitor circuit: ideal model）**：用理想模型看同一個電路，$V_{D1} = V_{in} - V_{out}$。投影片提醒二極體跨壓的波形跟 $V_{in}$ 一模一樣，只是整個往下平移 $V_p$——所以二極體在負峰值時要承受 $2V_p$ 的逆偏電壓，這個數字在後面比較半波與全波時會再出現。
 
 ![二極體–電容電路理想模型的電路圖：Vin 經 D1 到 C1，取 C1 兩端 Vout](/note-images/ec-week2-ch3/21-diode-capacitor-circuit-ideal.png)
 
@@ -671,20 +671,20 @@ status: confirmed
 */}
 <PdfRefChip file="_references/電子學實作系列/第二週/Ch 3 - Diode Models and Circuits.pdf" page={27} status="confirmed" client:visible />
 
-- **Diode-Capacitor with Load Resistor（二極體–電容加負載電阻）**：**a path is available for capacitor to discharge. Therefore, $V_{out}$ will not be constant and a ripple exists**（電容有了放電路徑，輸出不再固定，出現漣波）。
-- **Ripple（漣波，記為 $V_R$）**：**the resulting variation in $V_{out}$ is called the "ripple"**（輸出的這種起伏稱為漣波）。二極體導通時電容跟著輸入充電、輸入下降後二極體截止、電容經 $R_L$ 緩慢放電，直到下一個週期輸入再度高過輸出。
+- **二極體–電容加負載電阻（diode-capacitor with load resistor）**：電容有了放電路徑，輸出不再固定，出現漣波。
+- **漣波（ripple，記為 $V_R$）**：輸出的這種起伏稱為漣波。二極體導通時電容跟著輸入充電、輸入下降後二極體截止、電容經 $R_L$ 緩慢放電，直到下一個週期輸入再度高過輸出。
 
 ![加負載電阻的二極體–電容電路：(a) C1 與 RL 並聯；(b) 輸出到達峰值後經 RL 緩慢下降，t2 時輸入再度追上、t3 回到峰值，右側標示漣波 VR](/note-images/ec-week2-ch3/23-diode-capacitor-load-resistor-ripple.png)
 
 *有了負載電阻，電容在二極體截止期間放電，輸出出現漣波 VR。*
 
-- **Smoothing / Filter capacitor（平滑電容／濾波電容）**：投影片第 28 頁比較不同電容值——**$C_1$ is called the "smoothing" or "filter" capacitor. For large $C_1$, $V_{out}$ has small ripple**（$C_1$ 稱為平滑或濾波電容；$C_1$ 越大，漣波越小）。
+- **平滑電容／濾波電容（smoothing / filter capacitor）**：投影片第 28 頁比較不同電容值——$C_1$ 稱為平滑或濾波電容；$C_1$ 越大，漣波越小。
 
 ![不同 C1 值的輸出波形：Very Small C1 幾乎跟著輸入掉下來，Small C1 漣波大，Large C1 幾乎水平](/note-images/ec-week2-ch3/25-smoothing-capacitor-values-waveforms.png)
 
 *濾波電容越大、放電越慢、漣波越小。*
 
-- **Peak to Peak Amplitude of Ripple（漣波的峰對峰振幅）**：**in typical applications, the (peak-to-peak) amplitude of the ripple, $V_R$, must remain below 5% to 10% of the input peak voltage**（典型應用中漣波峰對峰值必須低於輸入峰值的 5% 到 10%）；**if the maximum current drawn by the load is known, the value of $C_1$ is chosen large enough to yield an acceptable ripple**（若已知負載最大電流，就把 $C_1$ 選得夠大以得到可接受的漣波）。
+- **漣波的峰對峰振幅（peak to peak amplitude of ripple）**：典型應用中漣波峰對峰值必須低於輸入峰值的 5% 到 10%；若已知負載最大電流，就把 $C_1$ 選得夠大以得到可接受的漣波。
 
 ![漣波峰對峰值：(a) 電路；(b) 輸出於 t1 達 Vp−VD,on 後線性下降，t2 到 t4 再度充電回峰值，右側雙向箭頭標示 VR](/note-images/ec-week2-ch3/26-ripple-peak-to-peak.png)
 
@@ -756,7 +756,7 @@ status: confirmed
 */}
 <PdfRefChip file="_references/電子學實作系列/第二週/Ch 3 - Diode Models and Circuits.pdf" page={32} status="confirmed" client:visible />
 
-- **Maximum Diode Current（二極體最大電流，記為 $I_p$）**：**the diode has its maximum current at $t_1$, since that's when the slope of $V_{out}$ is the greatest**（二極體電流在 $t_1$ 達到最大，因為那時 $V_{out}$ 的斜率最大）；**this current has to be carefully controlled so it does not damage the device**（這個電流必須小心控制，以免損壞元件）。原因：二極體要在很短的導通時間內，同時補足電容放掉的電荷與負載電流，所以峰值電流遠大於平均負載電流。
+- **二極體最大電流（maximum diode current，記為 $I_p$）**：二極體電流在 $t_1$ 達到最大，因為那時 $V_{out}$ 的斜率最大；這個電流必須小心控制，以免損壞元件。原因：二極體要在很短的導通時間內，同時補足電容放掉的電荷與負載電流，所以峰值電流遠大於平均負載電流。
 
 ![最大二極體電流：輸出在 Vp 與 Vp−VR 之間鋸齒狀變化，t1 為輸入追上輸出、開始充電的時刻](/note-images/ec-week2-ch3/27-maximum-diode-current.png)
 
@@ -835,25 +835,25 @@ status: confirmed
 */}
 <PdfRefChip file="_references/電子學實作系列/第二週/Ch 3 - Diode Models and Circuits.pdf" page={36} status="confirmed" client:visible />
 
-- **Full-Wave Rectifier, FWR（全波整流器）**：**passes both the negative and positive half cycles of the input, while inverting the negative half of the input**（讓輸入的正負半週都通過，並把負半週翻轉成正的）；**as proved later, a full-wave rectifier reduces the ripple by a factor of two**（稍後會證明，全波整流把漣波減半）。(a) 輸入輸出波形——輸出是 $|V_{in}|$、(b) 輸入輸出特性——V 字形。
+- **全波整流器（full-wave rectifier, FWR）**：讓輸入的正負半週都通過，並把負半週翻轉成正的；稍後會證明，全波整流把漣波減半。(a) 輸入輸出波形——輸出是 $|V_{in}|$、(b) 輸入輸出特性——V 字形。
 
 ![全波整流器概念：(a) 完整正弦波經全波整流後負半週被翻正；(b) 輸入輸出特性為 V 形](/note-images/ec-week2-ch3/28-full-wave-rectifier-concept.png)
 
 *全波整流：輸出是輸入的絕對值，特性曲線是 V 字形。*
 
-- **Bridge Rectifier（橋式整流器）**：四顆二極體組成的橋——**passes and invert the negative half cycles through $D_1$ and $D_2$ as in (c) and the positive half cycles through $D_3$ and $D_4$ as in (d)**（負半週經 $D_1$、$D_2$ 通過並翻轉，正半週經 $D_3$、$D_4$ 通過）。任何時刻都只有對角的兩顆導通，電流永遠從負載的同一端流進去。
+- **橋式整流器（bridge rectifier）**：四顆二極體組成的橋——負半週經 $D_1$、$D_2$ 通過並翻轉，正半週經 $D_3$、$D_4$ 通過。任何時刻都只有對角的兩顆導通，電流永遠從負載的同一端流進去。
 
 ![橋式整流器：(a) 四顆二極體交叉接法；(b) 重畫成菱形橋，RL 跨接中間；(c) 負半週電流經 D2、D1；(d) 正半週電流經 D3、D4](/note-images/ec-week2-ch3/29-bridge-rectifier.png)
 
 *橋式整流器：任何時刻只有對角兩顆導通，電流永遠從負載同一端流入。*
 
-- **Dead zone（死區）**：用定電壓模型看橋式整流器的輸入輸出特性——**the dead-zone around $V_{in}$ arises because $V_{in}$ must exceed $2V_{D,on}$ to turn on the bridge**（$V_{in}$ 附近的死區來自於輸入必須超過 $2V_{D,on}$ 才能讓橋導通）。因為電流路徑上串了兩顆二極體，壓降是半波整流的兩倍。
+- **死區（dead zone）**：用定電壓模型看橋式整流器的輸入輸出特性——$V_{in}$ 附近的死區來自於輸入必須超過 $2V_{D,on}$ 才能讓橋導通。因為電流路徑上串了兩顆二極體，壓降是半波整流的兩倍。
 
 ![定電壓模型的全波整流輸入輸出特性：V 形曲線在 −2VD,on 到 +2VD,on 之間為死區，輸出弧形之間有間隙](/note-images/ec-week2-ch3/30-full-wave-io-constant-voltage-deadzone.png)
 
 *全波整流的死區：輸入要超過 2VD,on 才能讓橋導通。*
 
-- **Complete Full-Wave Rectifier（完整全波整流器）**：加上濾波電容後，**since $C_1$ only gets ½ of period to discharge, ripple voltage is decreased by a factor of 2**（電容只有半個週期可放電，漣波減半）。同時 (b) 顯示 **each diode is subjected to approximately one $V_p$ reverse bias drop (versus $2V_p$ in half-wave rectifier)**（每顆二極體只承受約 $V_p$ 的逆偏，半波整流則是 $2V_p$）：
+- **完整全波整流器（complete full-wave rectifier）**：加上濾波電容後，電容只有半個週期可放電，漣波減半。同時 (b) 顯示每顆二極體只承受約 $V_p$ 的逆偏，半波整流則是 $2V_p$：
 
 $$
 V_R \approx \frac{1}{2}\cdot\frac{V_p - 2V_{D,on}}{R_L C_1 f_{in}} = \frac{1}{2}\cdot\frac{I_L}{C_1 f_{in}}
@@ -863,7 +863,7 @@ $$
 
 *加濾波電容的全波整流器：每半週充電一次，漣波減半，每顆二極體只承受約 Vp 逆偏。*
 
-- **Advantages of Full-Wave Rectifiers（全波整流器的優點）**：**by using two more diodes, full-wave rectifiers have half the ripple and require only half the diode breakdown voltage. Full-wave rectifier is more suited to adapter and charger applications**（多用兩顆二極體，換到一半的漣波與一半的崩潰電壓需求，更適合變壓器與充電器應用）。投影片並排半波與全波兩種整流器的電路與波形做對照。
+- **全波整流器的優點（advantages of full-wave rectifiers）**：多用兩顆二極體，換到一半的漣波與一半的崩潰電壓需求，更適合變壓器與充電器應用。投影片並排半波與全波兩種整流器的電路與波形做對照。
 
 ![半波與全波整流器比較：(a) 半波輸出約 Vp−VD,on、每週期充電一次、逆偏約 2Vp；(b) 全波橋式輸出約 Vp−2VD,on、每半週充電一次、逆偏約 Vp](/note-images/ec-week2-ch3/32-half-vs-full-wave-comparison.png)
 
@@ -921,13 +921,13 @@ status: confirmed
 */}
 <PdfRefChip file="_references/電子學實作系列/第二週/Ch 3 - Diode Models and Circuits.pdf" page={42} status="confirmed" client:visible />
 
-- **Voltage Regulator（電壓穩壓器）**：**the ripple created by the rectifier can be unacceptable to sensitive load; therefore, a voltage regulator is required to obtain a very stable output**（整流器產生的漣波對敏感負載可能無法接受，因此需要穩壓器得到非常穩定的輸出）。投影片第一個做法：**three diodes operate as a primitive voltage regulator**（三顆順偏二極體串聯當作原始的穩壓器）——輸出被夾在約 $3V_{D,on} \approx 2.4\text{ V}$，因為每顆二極體的小訊號電阻 $r_d$ 很小，輸入的變動大部分掉在串聯電阻 $R_1$ 上。
+- **電壓穩壓器（voltage regulator）**：整流器產生的漣波對敏感負載可能無法接受，因此需要穩壓器得到非常穩定的輸出。投影片第一個做法是三顆順偏二極體串聯當作原始的穩壓器——輸出被夾在約 $3V_{D,on} \approx 2.4\text{ V}$，因為每顆二極體的小訊號電阻 $r_d$ 很小，輸入的變動大部分掉在串聯電阻 $R_1$ 上。
 
 ![基本電壓穩壓器：變壓器、二極體橋、C1 濾波後經 R1 接三顆串聯二極體到地，負載並聯在三顆二極體兩端](/note-images/ec-week2-ch3/33-voltage-regulator-three-diodes.png)
 
 *三顆順偏二極體串聯當作原始穩壓器：輸出被夾在約 3VD,on。*
 
-- **Voltage Regulation Using Zener Diode（用齊納二極體穩壓）**：**voltage regulation can be accomplished with Zener diode. Since $r_d$ is small, large change in the input will not be reflected at the output**（齊納二極體也能穩壓；因為 $r_d$ 很小，輸入的大變化不會反映到輸出）。用小訊號模型看，輸出變動是輸入變動經 $R_1$ 與 $r_d$ 分壓：
+- **用齊納二極體穩壓（voltage regulation using Zener diode）**：齊納二極體也能穩壓；因為 $r_d$ 很小，輸入的大變化不會反映到輸出。用小訊號模型看，輸出變動是輸入變動經 $R_1$ 與 $r_d$ 分壓：
 
 $$
 \Delta V_{out} = \frac{r_d}{r_d + R_1}\,\Delta V_{in}
@@ -939,7 +939,7 @@ $r_d \ll R_1$ 時這個比值趨近零——這是第 1 週「齊納崩潰區的
 
 *齊納穩壓的小訊號模型：輸入變動經 R1 與 rd 分壓，rd 很小所以輸出幾乎不動。*
 
-- **Line Regulation vs. Load Regulation（線調整率與負載調整率）**：投影片用一顆順偏二極體 $D_1$ 串一顆逆偏齊納二極體 $D_2$ 的電路定義兩個指標——**line regulation: the suppression of change in $V_{out}$ due to change in input voltage $V_{in}$**（線調整率：抑制輸入電壓變化對輸出的影響，圖 (b)）；**load regulation: the suppression of change in $V_{out}$ due to change in load current $I_L$**（負載調整率：抑制負載電流變化對輸出的影響，圖 (c)）：
+- **線調整率與負載調整率（line regulation vs. load regulation）**：投影片用一顆順偏二極體 $D_1$ 串一顆逆偏齊納二極體 $D_2$ 的電路定義兩個指標——**線調整率（line regulation）**：抑制輸入電壓變化對輸出的影響，圖 (b)；**負載調整率（load regulation）**：抑制負載電流變化對輸出的影響，圖 (c)：
 
 $$
 \frac{v_{out}}{v_{in}} = \frac{r_{d1} + r_{d2}}{r_{d1} + r_{d2} + R_1}, \qquad \frac{v_{out}}{I_L} = (r_{d1} + r_{d2})\,\|\,R_1
@@ -1003,7 +1003,7 @@ status: confirmed
 */}
 <PdfRefChip file="_references/電子學實作系列/第二週/Ch 3 - Diode Models and Circuits.pdf" page={47} status="confirmed" client:visible />
 
-- **Evolution of AC-DC Converter（AC-DC 轉換器的演進）**：投影片用一張流程圖收尾，把本章的應用串成一條線——變壓器降壓 → 整流器（半波 → 全波）→ 濾波電容 → 穩壓器 → 負載。每一級都在解決前一級留下的問題：整流器留下脈動、電容留下漣波、穩壓器把漣波與輸入變動壓掉。這也是[第 3 週實驗](/notes/電子學實作系列第3週-整流電路實驗)逐級搭建的順序。
+- **AC-DC 轉換器的演進（evolution of AC-DC converter）**：投影片用一張流程圖收尾，把本章的應用串成一條線——變壓器降壓 → 整流器（半波 → 全波）→ 濾波電容 → 穩壓器 → 負載。每一級都在解決前一級留下的問題：整流器留下脈動、電容留下漣波、穩壓器把漣波與輸入變動壓掉。這也是[第 3 週實驗](/notes/電子學實作系列第3週-整流電路實驗)逐級搭建的順序。
 
 ![AC-DC 轉換器演進流程圖：半波整流加電容、橋式整流加電容、橋式整流加電容加串聯電阻與齊納穩壓，三個階段以箭頭串接](/note-images/ec-week2-ch3/36-ac-dc-converter-evolution.png)
 
