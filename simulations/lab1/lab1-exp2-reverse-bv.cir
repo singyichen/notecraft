@@ -1,0 +1,7 @@
+* Lab 1 實驗二延伸：逆偏掃到 1200 V 看 1N4007 的崩潰（實驗室量不到，只在模擬看）
+Vs in 0 DC 0
+R1 in k 1k
+D1 0 k 1N4007
+.model 1N4007 D(Is=90p Rs=40m Cjo=30p N=1.4 TT=5u Bv=1000 Ibv=5u Iave=1 Vpk=1000 mfg=Diodes_Inc. type=silicon)
+.dc Vs 0 1200 1
+.end

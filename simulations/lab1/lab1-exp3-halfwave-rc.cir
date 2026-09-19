@@ -1,0 +1,9 @@
+* Lab 1 實驗三：半波整流加濾波電容（C = 1 µF / 10 µF / 100 µF 三組比較）
+Vin in 0 SINE(0 5 60)
+D1 in out 1N4007
+RL out 0 10k
+C1 out 0 {C}
+.step param C list 1u 10u 100u
+.model 1N4007 D(Is=90p Rs=40m Cjo=30p N=1.4 TT=5u Bv=1000 Ibv=5u Iave=1 Vpk=1000 mfg=Diodes_Inc. type=silicon)
+.tran 0 3 0 50u
+.end

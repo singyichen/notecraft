@@ -1,0 +1,7 @@
+* Lab 1 實驗三：半波整流（60 Hz、10 Vpp、1N4007、R 10 kΩ）
+Vin in 0 SINE(0 5 60)
+D1 in out 1N4007
+RL out 0 10k
+.model 1N4007 D(Is=90p Rs=40m Cjo=30p N=1.4 TT=5u Bv=1000 Ibv=5u Iave=1 Vpk=1000 mfg=Diodes_Inc. type=silicon)
+.tran 0 50m 0 10u
+.end

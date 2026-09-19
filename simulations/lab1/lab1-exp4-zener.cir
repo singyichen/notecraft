@@ -1,0 +1,13 @@
+* Lab 1 實驗四：橋式整流加齊納穩壓（概念電路：±10 V、Rlimit 1 kΩ、Vz 6.8 V、RL 10 kΩ）
+Vin a b SINE(0 10 60)
+Da a p 1N4007
+Db b p 1N4007
+Dc 0 a 1N4007
+Dd 0 b 1N4007
+Rlim p out 1k
+Dz 0 out Z6V8
+RL out 0 10k
+.model 1N4007 D(Is=90p Rs=40m Cjo=30p N=1.4 TT=5u Bv=1000 Ibv=5u Iave=1 Vpk=1000 mfg=Diodes_Inc. type=silicon)
+.model Z6V8 D(Is=1e-14 N=1 Rs=0.5 Bv=6.8 Ibv=1m)
+.tran 0 50m 0 10u
+.end

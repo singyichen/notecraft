@@ -1,0 +1,7 @@
+* Lab 1 實驗二：逆偏 I-V 掃描（Vs 0→20 V，二極體反接）
+Vs in 0 DC 0
+R1 in k 1k
+D1 0 k 1N4007
+.model 1N4007 D(Is=90p Rs=40m Cjo=30p N=1.4 TT=5u Bv=1000 Ibv=5u Iave=1 Vpk=1000 mfg=Diodes_Inc. type=silicon)
+.dc Vs 0 20 0.1
+.end

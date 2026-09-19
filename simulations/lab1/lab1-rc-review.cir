@@ -1,0 +1,6 @@
+* Lab 1 RC 電路複習：20 Hz 正弦（3 V 偏移、±1 V）、R 100 Ω、C 1 mF
+Vin in 0 SINE(3 1 20)
+R1 in out 100
+C1 out 0 1m
+.tran 0 300m 0 100u
+.end
