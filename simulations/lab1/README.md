@@ -13,6 +13,8 @@
 | `lab1-exp4-bridge.cir` | 全波橋式：60 Hz、5 Vpp、10 kΩ | `.tran` |
 | `lab1-exp4-bridge-rc.cir` | 橋式加濾波電容，`.step` 三組 | `.tran` 3 s |
 | `lab1-exp4-zener.cir` | 橋式加齊納穩壓（概念電路：±10 V、Rlimit 1 kΩ、Vz 6.8 V） | `.tran` |
+| `plot_measured.py` | 把 `measured/*.csv`（實測或 Tinkercad 掃描，欄位 `Vs,VD,I_mA`）疊到實驗一的 LTspice 曲線上，用「1 mA 門檻」與「切線交點」兩個準則印出導通電壓表，圖存到 `public/note-images/ec-week3-measured/` | 讀 `.raw` |
+| `measured/lab1-exp1-forward.csv`、`measured/lab1-exp1-tinkercad.csv` | 實測與 Tinkercad 掃描的記錄範本（0.1–2.0 V 共 21 列，`I_mA` 留空會用 $(V_s - V_D)/1\,\text{k}\Omega$ 補） | — |
 
 ## 三種跑法
 
