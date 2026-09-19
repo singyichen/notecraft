@@ -657,18 +657,6 @@ status: confirmed
 
 *用 `plot_measured.py` 疊圖：同一個 1 kΩ、同一組 $V_s$，Tinkercad 的通用二極體比 1N4007 早導通約 0.05 V。兩個準則算出的導通電壓，Tinkercad 是 0.535 V（1 mA 門檻）與 0.510 V（切線交點），LTspice 是 0.588 V 與 0.551 V。實測回來後再加一組點重畫。*
 
-**圖庫裡別人畫的順偏電路，值得抄嗎**
-
-Tinkercad 圖庫搜尋 [Forward Bias: Knee Voltage](https://www.tinkercad.com/search?q=Forward%20Bias:%20Knee%20Voltage&staffPicks=0&type=circuits) 的前幾筆結果分三類（搜尋頁是動態載入，這裡只能依截圖判讀，無法附各設計的連結），對照本實驗的講義規格：
-
-| 圖庫設計 | 接法 | 和實驗一的差別 | 用途 |
-| --- | --- | --- | --- |
-| FORWARD BIAS（CATHERINE JOY GARBIN）、FORWARD BIAS（ANTHONY PEREZ） | 9 V 電池 + 可變電阻分壓當可調電源，串二極體與電阻，電流表、電壓表各一 | 講義指定電源供應器每次加 0.1 V；分壓器輸出會隨負載變動，掃描級距不好控制 | 沒有可調電源時的替代接法，本實驗用不到 |
-| forward bias（kashyapsuryakant7） | 電源供應器 + 麵包板 + 二極體 + 兩台電表 | 拓樸和本篇配方相同，但沒有記錄表、沒有掃描 | 可對照接線，沒有比本篇配方多的資訊 |
-| 標題未顯示（20 V 電源，讀值 591 mV／19.4 V／8.82 mA） | 20 V 直接串二極體與約 2.2 kΩ 電阻，單一工作點 | 只有一點；8.8 mA 已超出本實驗 1 kΩ、2 V 的範圍 | 可把 $V_D = 0.591$ V 當「8.8 mA 時的導通電壓」多一個對照點 |
-
-結論：三類都沒有做講義要求的 0.1 V 級距掃描，現有配方已照講義投影片的畫法接好，**不需要換**；把上面的掃描記錄表填滿，就比圖庫任何一筆完整。
-
 ### LTspice 預報值：真實 1N4007 模型
 
 ![LTspice 順偏 I-V 曲線：左圖 ID 對 VD，0.5 V 前幾乎為零、之後指數上升，標出 1 mA 時 VD 為 0.59 V；右圖 VD 與 VR 對 Vs，VD 在 0.5 V 後趨於平坦，VR 呈直線上升](/note-images/ec-week3-ltspice/exp1-forward-iv.png)
