@@ -149,7 +149,7 @@ export default function EcWeek2DiodeModels() {
         role="img"
         aria-label="二極體 IV 特性曲線，依所選模型呈現不同形狀"
       >
-        {/* 0.7V 膝點輔助虛線 */}
+        {/* 0.7V 導通電壓輔助虛線 */}
         <line
           x1={xScale(0.7)}
           y1={PLOT_TOP}

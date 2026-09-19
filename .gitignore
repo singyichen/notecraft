@@ -30,3 +30,9 @@ recordings/
 
 # python tooling under simulations/
 __pycache__/
+
+# KiCad 個人偏好與 CLI 產物
+*.kicad_prl
+*-backups/
+simulations/**/erc.rpt
+~*.lck

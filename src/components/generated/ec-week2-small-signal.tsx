@@ -3,7 +3,7 @@ import { Zap, Activity, TrendingUp, Gauge } from 'lucide-react'
 
 // ── 二極體指數模型 ───────────────────────────────────────────────────────
 // IS/VT 與 ec-week2-lab-iv-measurement 刻意取不同數值（那邊為量測情境用
-// IS=1e-9 對齊約 0.35–0.40V 膝點），這裡沿用 ec-week2-diode-models 的
+// IS=1e-9 對齊約 0.35–0.40V 導通電壓），這裡沿用 ec-week2-diode-models 的
 // IS=2e-14，VD=0.7V 時 I≈9.8mA，方便與同週其他元件的直覺對照。
 const IS = 2e-14
 const VT = 0.026

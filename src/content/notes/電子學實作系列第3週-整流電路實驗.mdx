@@ -1,6 +1,6 @@
 ---
 title: "電子學實作系列：第 3 週 - 整流電路實驗"
-description: "Lab 1 二極體實驗的講義詳解與執行手冊：四個實驗（順偏膝點電壓、逆偏、半波整流、全波橋式整流與齊納穩壓）各附講義目標／理論／問題詳解、CircuitJS 一鍵模擬連結看波形、Tinkercad 接線配方預演、LTspice 真實型號預報值、實驗室量測記錄表與檢查點；並收錄 Tinkercad 線上模擬器入門與自學路線，整理整流效率、漣波公式與橋式電路的示波器接地陷阱。"
+description: "Lab 1 二極體實驗的講義詳解與執行手冊：四個實驗（順偏導通電壓、逆偏、半波整流、全波橋式整流與齊納穩壓）各附講義目標／理論／問題詳解、CircuitJS 一鍵模擬連結看波形、Tinkercad 接線配方預演、LTspice 真實型號預報值、實驗室量測記錄表與檢查點；並收錄 Tinkercad 線上模擬器入門與自學路線，整理整流效率、漣波公式與橋式電路的示波器接地陷阱。"
 tags: ["電子學實作系列"]
 createdAt: "2026-09-26"
 updatedAt: "2026-09-19"
@@ -155,7 +155,7 @@ import EcWeek3Bridge from '@/components/generated/ec-week3-bridge'
 
 ## Lab 1 實驗總覽
 
-> `App_Lab1.pdf` 是第 2 週發下的第一份實驗講義，共四個實驗：順偏膝點電壓、逆偏、半波整流、全波整流（含齊納穩壓）。前兩個實驗只用直流電源與電表量 I-V 曲線，後兩個要用訊號產生器與示波器看波形，對應 CH3 第 24–46 頁的理論。儀器操作見[實驗器材速查](/notes/電子學實作系列-實驗器材速查)。講義後半的投影片右下角頁碼（18、20、22…）與 PDF 頁數不同步，以下一律以 PDF 頁數為準。本節之後四個實驗各自成章，每章固定六段——先讀講義詳解（目標、理論、講義問題）知道要量什麼、點 CircuitJS 連結把波形看懂、照 Tinkercad 接線配方預演一次、用 LTspice 的真實型號結果當預報值、帶著記錄表進實驗室、最後對照檢查點。
+> `App_Lab1.pdf` 是第 2 週發下的第一份實驗講義，共四個實驗：順偏導通電壓、逆偏、半波整流、全波整流（含齊納穩壓）。前兩個實驗只用直流電源與電表量 I-V 曲線，後兩個要用訊號產生器與示波器看波形，對應 CH3 第 24–46 頁的理論。儀器操作見[實驗器材速查](/notes/電子學實作系列-實驗器材速查)。講義後半的投影片右下角頁碼（18、20、22…）與 PDF 頁數不同步，以下一律以 PDF 頁數為準。本節之後四個實驗各自成章，每章固定六段——先讀講義詳解（目標、理論、講義問題）知道要量什麼、點 CircuitJS 連結把波形看懂、照 Tinkercad 接線配方預演一次、用 LTspice 的真實型號結果當預報值、帶著記錄表進實驗室、最後對照檢查點。
 
 > **課堂實驗提醒**：本次不要求繳交書面預報，但「不用交」不等於「不用預習」。進實驗室前至少先讀過目的、接線圖、量測欄位與預期波形，並用課堂指定的 EDA／Tinkercad 工具把電路預接一次。這能把正式實驗從摸索接法改成核對實物，也能提早發現二極體方向、電表串並聯或限流電阻漏接等問題，縮短操作時間並降低元件損壞風險。
 
@@ -169,7 +169,7 @@ status: confirmed
 */}
 <PdfRefChip file="_references/電子學實作系列/第二週/App_Lab1.pdf" page={2} status="confirmed" client:visible />
 
-- **Outline（大綱）**：四個實驗——**Forward Bias: Knee Voltage（順偏：膝點電壓）**、**Reverse Bias（逆偏）**、**Half-wave Rectifier（半波整流器）**、**Full-wave Rectifier（全波整流器）**。全波整流器前面標了 **(O)**，講義沒有解釋這個記號，推測是「選做」或「延伸」項目（待課堂確認）。
+- **Outline（大綱）**：四個實驗——**Forward Bias: Knee Voltage（順偏：導通電壓）**、**Reverse Bias（逆偏）**、**Half-wave Rectifier（半波整流器）**、**Full-wave Rectifier（全波整流器）**。全波整流器前面標了 **(O)**，講義沒有解釋這個記號，推測是「選做」或「延伸」項目（待課堂確認）。
 
 ### 這學期要做哪幾個實驗
 
@@ -177,11 +177,66 @@ status: confirmed
 
 | 項目 | 佔實驗操作分數 | A 方案 | B 方案 | 備註 |
 | --- | --- | --- | --- | --- |
-| 基礎實驗（必做） | 70% | Lab 1 順偏膝點電壓 **與** 逆偏，兩個都要做 | LED 順向與逆向偏壓觀察（Tinkercad.pdf 第 6 頁的電路） | A、B 擇一 |
+| 基礎實驗（必做） | 70% | Lab 1 順偏導通電壓 **與** 逆偏，兩個都要做 | LED 順向與逆向偏壓觀察（Tinkercad.pdf 第 6 頁的電路） | A、B 擇一 |
 | 進階實驗 I | 15% | 半波整流器 | | |
 | 進階實驗 II | 15% | 全波整流器 | | |
 
 本筆記的實驗一、二對應 A 方案，實驗三對應進階 I，實驗四對應進階 II。不用交預報，但當天下課前要把數據、麵包板照片、示波器照片上傳並找助教登記；結報一週內交，數據表必須和當天上傳的一致。
+
+### 實驗前自學清單（助教提供）
+
+助教列了 14 個實驗課前該自己先懂的項目，說明是「用關鍵字上網搜尋」。下面按「儀器 → 基本量 → 電路定律 → 元件」四組整理，每項給一句它在 Lab 1 哪裡用到、本站已經寫過的段落、以及搜尋關鍵字。標 **進階** 的是助教原清單的標記，Lab 1 的實驗三、四才會碰到。
+
+**第一組：工具與儀器（操作面，看影片與速查頁就夠）**
+
+| 項目 | Lab 1 用在哪 | 本站已有 | 搜尋關鍵字 |
+| --- | --- | --- | --- |
+| Tinkercad 操作 | 四個實驗的接線預演 | 本篇「Tinkercad 線上模擬器簡介」與「實驗前準備：Tinkercad 自學路線」 | `Tinkercad Circuits 教學`、`Tinkercad breadboard tutorial` |
+| 萬用電表 | 實驗一、二量 $V_D$ 與 $I$；量電壓並聯、量電流串聯、紅棒換孔 | [實驗器材速查](/notes/電子學實作系列-實驗器材速查)「萬用電表」；本篇「實體器材對照」的 GDM-532 接線圖與三用電表影片 | `三用電表 使用 教學`、`multimeter how to measure current` |
+| 電源供應器 | 實驗一、二的 $V_s$，每次加 0.1 V | [實驗器材速查](/notes/電子學實作系列-實驗器材速查)「直流電源供應器」；本篇 GPE-3323 面板圖 | `直流電源供應器 CV CC 模式`、`bench power supply current limit` |
+| **進階** 示波器 | 實驗三、四看整流波形，橋式電路的接地陷阱 | [實驗器材速查](/notes/電子學實作系列-實驗器材速查)「示波器」；本篇 DSOX1200 面板圖與實驗四「實驗室的接地陷阱」 | `示波器 基礎 操作`、`oscilloscope basics probe ground` |
+
+**第二組：基本量（第 1、2 週筆記已從物理定義寫起）**
+
+| 項目 | Lab 1 用在哪 | 本站已有 | 搜尋關鍵字 |
+| --- | --- | --- | --- |
+| 電壓、電流 | 記錄表的兩個欄位；電壓是兩點的電位差、電流是每秒通過截面的電荷量 | [第 2 週](/notes/電子學實作系列第2週-二極體與EDA模擬)「前提盤點：先分清楚四個量」；[第 1 週](/notes/電子學實作系列第1週-半導體物理基礎)「漂移：Drift」的電流密度 $J$ | `電壓 電流 差別`、`voltage vs current water analogy` |
+| 直流電、交流電 | 實驗一、二用直流電源；實驗三、四改用 60 Hz 正弦波，整流就是把交流變直流 | 本篇「三個工具怎麼分工」的 Function Generator 設定（Amplitude 是峰對峰值）；[第 2 週](/notes/電子學實作系列第2週-二極體與EDA模擬)「半波整流器與峰值檢波器」 | `直流 交流 差異 DC AC`、`peak vs peak-to-peak vs RMS` |
+| 什麼是電阻、電容 | 1 kΩ 限流電阻（實驗一）、10 kΩ 負載與 1 µF 濾波電容（實驗三、四） | 電阻：尚無獨立段落，[第 1 週](/notes/電子學實作系列第1週-半導體物理基礎)「載子的兩種移動方式：漂移與擴散」只提到漂移速度與電場成正比是歐姆定律的微觀樣貌；電容：[第 2 週](/notes/電子學實作系列第2週-二極體與EDA模擬)「加上負載電阻後的漣波」 | `電阻 色碼 讀法`、`capacitor charge discharge 電容 充放電` |
+
+**第三組：電路定律（這門課沒有另開電路學，是這位作者真正的缺口）**
+
+| 項目 | Lab 1 用在哪 | 本站已有 | 搜尋關鍵字 |
+| --- | --- | --- | --- |
+| 歐姆定律 | 記錄表 $I = V_R / R$ 那一欄；用 1 kΩ 上的壓降反推電流 | 尚無獨立段落；[第 1 週](/notes/電子學實作系列第1週-半導體物理基礎)「載子的兩種移動方式：漂移與擴散」一句帶過，下方推導從 $V_R = IR$ 起用 | `歐姆定律 Ohm's law V=IR` |
+| 串聯、並聯 | 實驗一整圈是串聯（電流處處相同）；電表量電壓時是並聯上去的 | 尚無獨立段落；[第 2 週](/notes/電子學實作系列第2週-二極體與EDA模擬)「理想二極體與串聯判斷」用到串聯電流相同 | `串聯 並聯 電阻 公式`、`series parallel circuit rules` |
+| 如何在麵包板上串聯、並聯元件 | 接線配方表：同一個五孔列就是同一個節點 | 本篇「範例：麵包板檢視與原理圖檢視」、「實體器材對照」的麵包板影片 | `麵包板 串聯 並聯 接法`、`breadboard series parallel wiring` |
+| KCL、KVL | 實驗一 $V_s = V_D + V_R$ 是一條 KVL；橋式整流每個節點是一條 KCL | [第 1 週](/notes/電子學實作系列第1週-半導體物理基礎)「電路分析的兩條鐵律」 | `克希荷夫 電流 電壓 定律`、`KCL KVL examples` |
+| 分壓、分流 | 實驗一每加 0.1 V，多出來的電壓幾乎全落在 1 kΩ 上，二極體停在 0.6–0.7 V，就是分壓 | 尚無獨立段落，下方推導補上 | `分壓 分流 公式 voltage divider current divider` |
+
+**第四組：元件**
+
+| 項目 | Lab 1 用在哪 | 本站已有 | 搜尋關鍵字 |
+| --- | --- | --- | --- |
+| 二極體（Diode） | 四個實驗的主角，1N4007 | [第 1 週](/notes/電子學實作系列第1週-半導體物理基礎)「PN 接面的結構與三個工作區」到「二極體方程式」；[第 2 週](/notes/電子學實作系列第2週-二極體與EDA模擬)「三種二極體模型」；本篇各實驗的講義詳解 | `二極體 順向 逆向 偏壓 膝點電壓`、`1N4007 datasheet forward voltage` |
+| **進階** RC 電路 | 實驗四濾波電容的放電段：$R_L C$ 決定漣波大小 | [第 2 週](/notes/電子學實作系列第2週-二極體與EDA模擬)「加上負載電阻後的漣波」；本篇實驗三、四的漣波公式與 LTspice 步進 $C$ 的圖 | `RC 電路 時間常數`、`RC time constant charging curve` |
+
+**第三組四條定律其實是同一件事**：對數學背景的讀者，歐姆定律、KVL、串聯、分壓不是四條要背的規則，而是一條線性方程。以實驗一的迴路為例，從 KVL 出發：
+
+$$
+\begin{aligned}
+V_s &= V_D + V_R && \text{（KVL：繞迴路一圈電位差總和為零）} \\
+V_R &= I R && \text{（歐姆定律，串聯所以 } I \text{ 處處相同）} \\
+I &= \frac{V_s - V_D}{R} && \text{（記錄表 } V_R / R \text{ 那一欄）} \\
+V_R &= V_s - V_D \approx V_s - 0.7\ \text{V} && \text{（分壓：二極體導通後 } V_D \text{ 幾乎不變，多出的電壓全給 } R\text{）}
+\end{aligned}
+$$
+
+把二極體換成第二顆電阻 $R_2$，第四行就變成教科書的分壓公式 $V_{R} = V_s \cdot \dfrac{R}{R + R_2}$；把「串聯、同電流」改成「並聯、同電壓」，同一套推導給出分流公式 $I_1 = I \cdot \dfrac{R_2}{R_1 + R_2}$。因次檢查：$\text{V} / \Omega = \text{A}$，符合。
+
+**自測**：實驗一把限流電阻從 1 kΩ 換成 10 kΩ、電源同樣 2 V，最大電流變成多少？二極體兩端電壓會明顯改變嗎？（答：$I \approx (2 - 0.7) / 10\ \text{k}\Omega = 0.13\ \text{mA}$，小十倍；$V_D$ 只降幾十 mV，因為指數曲線上電流變十倍只對應約 $V_T \ln 10 \approx 60\ \text{mV}$。）
+
+**建議順序**：第一組看影片與速查頁半小時；第二組已在第 1、2 週筆記寫過，回頭翻即可；第三組是真正要花時間的，先用上面那段推導把四條定律串起來，再搜尋關鍵字做幾題串並聯與分壓練習；第四組的二極體本篇各實驗會反覆講，RC 電路等實驗四前再看。
 
 ### 三個工具怎麼分工
 
@@ -249,6 +304,24 @@ Tinkercad 元件與實物的端子對應，四個實驗共用：
 | Capacitor | 1 µF | 陶瓷電容無方向；電解電容長腳 = 正極，白色條紋那側 = 負極 | 電解電容正極接輸出 +、負極接輸出 −，接反會鼓包 |
 | Zener Diode | 助教給的型號 | 同 1N4007，色環端 = 陰極 | 穩壓時陰極接輸出 +（逆偏使用） |
 
+### 實驗前補充影片：麵包板、三用電表與 I-V 量測示範
+
+上面的表格與手冊圖是「對照用」；第一次碰實體麵包板和電表，先看下面兩支短片把手感建立起來，再回頭讀各實驗的接線配方。兩支都是 [黃信惠的瘋狂教室](https://www.youtube.com/@davidhuanglab) 的教學系列，四個實驗共用。
+
+| 影片 | 長度 | 看什麼 | 對應本篇哪裡 |
+| --- | --- | --- | --- |
+| [【教學】麵包板教學](https://www.youtube.com/watch?v=s9fCNmhsqr4) | 5 分鐘 | 五孔一組垂直相通、上下電源軌水平相通、中間溝槽左右隔開；元件兩腳要跨不同的五孔列，不然會被短路 | 各實驗「預演：Tinkercad 接線配方」表裡的「i 列第 5 到 9 欄」「同在第 9 欄就是同一個節點」，前提都是這支影片講的孔位規則 |
+| [【教學】三用電表，第一次就上手](https://www.youtube.com/watch?v=Dvg1X1q7kQs) | 11 分鐘 | 量電壓並聯跨接、量電流串進迴路、紅棒依檔位換插孔、二極體檔怎麼判斷陰陽極 | 上方 GDM-532 的兩張接線圖；實驗一記錄表多算一欄 $V_R / R$ 就是為了抓「電表接成並聯量電流」這種錯 |
+
+這兩支只講操作，不講二極體原理與整流電路；導通電壓、空乏區、漣波公式仍以各實驗的「講義詳解」與第 1、2 週筆記為準。
+
+實驗一、二「每加 0.1 V 抄一列、畫 I-V 曲線」的完整流程，中文頻道沒有找到逐點示範，下面兩支英文影片是照實驗課的格式拍的，看接法與記錄方式即可、不必聽懂每句話：
+
+| 影片 | 頻道 | 對應實驗 | 看什麼 |
+| --- | --- | --- | --- |
+| [Simple Electronics Practical to Observe the Forward Bias Diode Characteristic](https://www.youtube.com/watch?v=LLzBfYM8OnE) | Engineers Academy | 實驗一 | 電源、限流電阻、二極體串成一圈，逐點調電壓、同時讀 $V_D$ 與 $I$，最後畫出非線性的順偏曲線；步驟和講義第 6 頁的 Procedure 一致 |
+| [Basic Electronics Lab#4: Diode Characteristics in Forward or Reverse Bias](https://www.youtube.com/watch?v=7Yu9Uq5BuMM) | PLC Automation Academy | 實驗一、二 | 同一個電路先順偏再把二極體反接量逆偏，對照順偏電流指數上升、逆偏電流幾乎為零；一支影片涵蓋實驗一、二的記錄表 |
+
 ### LTspice：真實型號的預報值怎麼來
 
 教授提到的進階工具。CircuitJS 與 Tinkercad 的二極體都是理想化模型，LTspice 內建元件庫有 Diodes Inc. 的 **1N4007** 參數（$I_S = 90$ pA、$n = 1.4$、$R_S = 40$ mΩ、$BV = 1000$ V），跑出來的數字可以直接和實驗室量到的比。
@@ -278,7 +351,7 @@ Circuits 模組可以想成一張**不會燒壞的實驗桌**，把實驗室的�
 - **模擬**：按 Start Simulation 後電路依電學規則運作，電表直接顯示讀數、示波器畫出波形；接錯了 LED 也真的不會亮。
 - **微控制器**：內建 Arduino Uno 與 micro:bit，可寫程式跑模擬，本課程暫時用不到。
 
-對本課程而言，它就是「EDA 工具與模擬器」段落說的那一類工具，只是不必學 SPICE 語法，用拖拉完成「畫電路圖 → 產生網表 → 跑模擬」三步。實際工作流程是：做 Lab 前先在 Tinkercad 接一次、跑出預期讀數或波形；進實驗室用實體元件與儀器再接一次；最後比較兩邊差異（膝點電壓略不同、電表內阻造成的誤差），這正是 Lab 1 問題要解釋的東西。它以教學為目的，做不了真正的 PCB 佈局或精確的類比模擬，那是 KiCad、LTspice 這類工具的事。
+對本課程而言，它就是「EDA 工具與模擬器」段落說的那一類工具，只是不必學 SPICE 語法，用拖拉完成「畫電路圖 → 產生網表 → 跑模擬」三步。實際工作流程是：做 Lab 前先在 Tinkercad 接一次、跑出預期讀數或波形；進實驗室用實體元件與儀器再接一次；最後比較兩邊差異（導通電壓略不同、電表內阻造成的誤差），這正是 Lab 1 問題要解釋的東西。它以教學為目的，做不了真正的 PCB 佈局或精確的類比模擬，那是 KiCad、LTspice 這類工具的事。
 
 ### 註冊與登入（第 1–3 頁）
 
@@ -325,10 +398,10 @@ status: confirmed
 
 | 區域 | 位置 | 內容 |
 | --- | --- | --- |
-| **Operation Area（操作區）** | 中央畫布 | 放元件、拉導線、跑模擬時看電表與示波器讀數 |
-| **Tools list（工具列）** | 左上 | 專案名稱、複製／貼上／刪除、復原／重做、註解、導線顏色與線型、翻轉 |
-| **Component List（元件清單）** | 右側 | Components 下拉切換分類（Basic 等）、Search 搜尋；基本元件含 Resistor、LED、Pushbutton、Potentiometer、Capacitor、Slideswitch、9V／3V／1.5V 電池、Breadboard、Arduino Uno R3、micro:bit、各種馬達、NPN Transistor |
-| **User interface（使用者介面）** | 右上 | 「All changes saved」自動存檔狀態、電路／原理圖／零件表檢視切換、Code、**Start Simulation（開始模擬）**、Send To |
+| **操作區（Operation Area）** | 中央畫布 | 放元件、拉導線、跑模擬時看電表與示波器讀數 |
+| **工具列（Tools list）** | 左上 | 專案名稱、複製／貼上／刪除、復原／重做、註解、導線顏色與線型、翻轉 |
+| **元件清單（Component List）** | 右側 | Components 下拉切換分類（Basic 等）、Search 搜尋；基本元件含 Resistor、LED、Pushbutton、Potentiometer、Capacitor、Slideswitch、9V／3V／1.5V 電池、Breadboard、Arduino Uno R3、micro:bit、各種馬達、NPN Transistor |
+| **使用者介面（User interface）** | 右上 | 「All changes saved」自動存檔狀態、電路／原理圖／零件表檢視切換、Code、**開始模擬（Start Simulation）**、Send To |
 
 投影片的範例專案（EXP4-2）畫面裡已經放了麵包板、NMOS、電阻、電容、LED、電源供應器與三用電表——Tinkercad 的元件庫裡有虛擬的訊號產生器、電源供應器、電表與示波器，可以直接對照實驗課的真實儀器。
 
@@ -346,7 +419,7 @@ status: confirmed
 */}
 <PdfRefChip file="_references/電子學實作系列/第二週/Tinkercad.pdf" page={6} status="confirmed" client:visible />
 
-- 第 6 頁是一個最簡單的範例電路：兩顆 AA 1.5 V 電池串成 3 V → 1 kΩ 電阻 → 兩顆紅色 LED 並聯。左圖是**麵包板檢視**（元件照實體外觀擺在麵包板上、綠色跳線接電源軌），右圖是同一份電路切到 **Schematic（原理圖）檢視**後自動產生的電路圖（元件自動命名為 BAT2、RR1 1k、D1 RED、DLED1 RED）。兩種檢視是同一份電路的兩種呈現——這對應本週摘要說的「畫電路圖 → 產生網表」：在 Tinkercad 裡接線的同時，網表就已經產生了。
+- 第 6 頁是一個最簡單的範例電路：兩顆 AA 1.5 V 電池串成 3 V → 1 kΩ 電阻 → 兩顆紅色 LED 並聯。左圖是**麵包板檢視**（元件照實體外觀擺在麵包板上、綠色跳線接電源軌），右圖是同一份電路切到 **原理圖（Schematic）檢視**後自動產生的電路圖（元件自動命名為 BAT2、RR1 1k、D1 RED、DLED1 RED）。兩種檢視是同一份電路的兩種呈現——這對應本週摘要說的「畫電路圖 → 產生網表」：在 Tinkercad 裡接線的同時，網表就已經產生了。
 
 ![Tinkercad 麵包板檢視範例：麵包板上接一顆電阻與兩顆紅色 LED，左下電池盒裝兩顆 AA 1.5V 電池，綠色跳線連接電源軌](/note-images/ec-week2-tinkercad/06-breadboard-led-example.png)
 
@@ -385,13 +458,13 @@ status: confirmed
 | 直流電源 | **Power Supply** | 點選後在屬性面板設電壓與電流上限；正端接二極體陽極側、負端接地 | GW Instek GPE-3323 |
 | 二極體 | **Diode**（搜尋框輸入 diode） | 有色環那端是陰極（cathode），電流只能從無環端流向色環端 | 1N4007 |
 
-- **順偏掃描**：Power Supply 串 1 kΩ 與 Diode 接成實驗一的電路，一台 Multimeter 切 A 串在迴路裡量 $I$，另一台切 V 跨在二極體兩端量 $V_D$。從 0 V 開始每次把電源加 0.1 V、按一次模擬、抄一列數據，抄到約 2 V 為止。把 $(V_D, I)$ 畫成 I-V 曲線，轉折處就是膝點電壓；再和 CH3 定電壓模型的 $V_{D,on} = 0.7\ \text{V}$ 比較。
+- **順偏掃描**：Power Supply 串 1 kΩ 與 Diode 接成實驗一的電路，一台 Multimeter 切 A 串在迴路裡量 $I$，另一台切 V 跨在二極體兩端量 $V_D$。從 0 V 開始每次把電源加 0.1 V、按一次模擬、抄一列數據，抄到約 2 V 為止。把 $(V_D, I)$ 畫成 I-V 曲線，轉折處就是導通電壓；再和 CH3 定電壓模型的 $V_{D,on} = 0.7\ \text{V}$ 比較。
 - **逆偏**：把 Diode 轉 180°（按 `R` 兩次）重跑一次，電流表讀值應接近 0，對應實驗二。
-- 模擬器的兩個限制，正好是 Lab 1 第 1 題要你解釋的東西：Tinkercad 的二極體是理想化的 SPICE 模型，膝點與實體 1N4007 略有差異；虛擬電表是理想儀器（電壓檔內阻無限大、電流檔內阻為零），實體電表不是。進實驗室量到的數值和模擬不同時，先想這兩點。
+- 模擬器的兩個限制，正好是 Lab 1 第 1 題要你解釋的東西：Tinkercad 的二極體是理想化的 SPICE 模型，導通電壓與實體 1N4007 略有差異；虛擬電表是理想儀器（電壓檔內阻無限大、電流檔內阻為零），實體電表不是。進實驗室量到的數值和模擬不同時，先想這兩點。
 
 **第 2 階段：交流訊號與整流（對應實驗三、四）**
 
-- Tinkercad **沒有交流電源元件**，交流輸入一律用 **Function Generator（訊號產生器）** 代替；波形用 **Oscilloscope（示波器）** 看。兩台儀器的設定：
+- Tinkercad **沒有交流電源元件**，交流輸入一律用 **訊號產生器（Function Generator）** 代替；波形用 **示波器（Oscilloscope）** 看。兩台儀器的設定：
 
 | 虛擬儀器 | 要設定的項目 | 建議起始值 | 注意 |
 | --- | --- | --- | --- |
@@ -407,11 +480,11 @@ status: confirmed
 
 **收尾：整理與對照**
 
-- 切到 **Schematic（原理圖）檢視** 比對麵包板接線與原理圖是否一致——接錯排孔在麵包板檢視很難看出來，原理圖會直接畫出多餘或缺少的連線。
+- 切到 **原理圖（Schematic）檢視** 比對麵包板接線與原理圖是否一致——接錯排孔在麵包板檢視很難看出來，原理圖會直接畫出多餘或缺少的連線。
 - 用 **Send To** 或截圖把電路圖存下來；要分享給同學時先在設計的 Properties 改成 Public，Tinkercad 預設所有設計都是私有的。
 - 元件庫裡也有 NMOS、電容與 Arduino，第 7 週的 CS 放大器可以先在這裡模擬偏壓點；Arduino 從 Blocks 拖程式開始，切到 Blocks + Text 就能看到自動生成的 C++，這門課暫時用不到。
 
-## 實驗一：順偏膝點電壓 Forward Bias: Knee Voltage
+## 實驗一：順偏導通電壓 Forward Bias: Knee Voltage
 
 {/* @ai-reference
 id: w3-lab1-exp1
@@ -444,32 +517,32 @@ status: confirmed
 
 - **目標（Objective，第 4 頁）**：
   - 觀察並驗證順向偏壓（forward bias）下二極體的導通特性。
-  - 量測電流–電壓關係（I-V relationship），找出膝點電壓（knee voltage）。
+  - 量測電流–電壓關係（I-V relationship），找出導通電壓（knee voltage，講義寫 Knee Voltage，直譯「膝點電壓」）。
   - 理解二極體的非線性行為（non-linear behavior）與基本應用。
-- **Fig. 1.1 PN junction diode**：P 區、N 區與中間的 **depletion（空乏區）**，外加電壓正端接 P、負端接 N——就是第 1 週講的順偏。
+- **Fig. 1.1 PN junction diode**：P 區、N 區與中間的 **空乏區（depletion）**，外加電壓正端接 P、負端接 N——就是第 1 週講的順偏。
 
 ![Fig.1.1 PN 接面二極體示意圖：左側 p-region 散布電洞、中央 depletion 空乏區排列固定離子、右側 n-region 散布電子，下方為二極體符號並標示 Positive 陽極與 Negative 陰極](/note-images/ec-week2-lab1/01-pn-junction-forward-bias.png)
 
 *講義的 PN 接面圖：P 區接正、N 區接負就是順偏，空乏區被壓窄。*
 
-- **Theory Overview（理論概述，第 5 頁）**，四個名詞：
-  - **Diode Basics（二極體基礎）**：**a semiconductor device allowing current flow primarily in one direction, formed by a PN junction**（由 PN 接面構成、主要只讓電流單向流動的半導體元件）。
-  - **Forward Bias（順向偏壓）**：**positive voltage applied to the P-region, negative to the N-region. This narrows the depletion region**（正電壓接 P 區、負電壓接 N 區，空乏區因此變窄）。
-  - **Knee Voltage（膝點電壓）**：**the threshold voltage where the depletion region becomes narrow enough for significant current to flow**（空乏區窄到足以讓明顯電流流過的門檻電壓）——就是 CH3 定電壓模型的 $V_{D,on}$，矽二極體約 0.6–0.7 V。
-  - **Conduction Behavior（導通行為）**：**below the Knee Voltage, the diode exhibits high impedance with minimal leakage current. Above this threshold, its resistance drops sharply, causing current to increase exponentially**（低於膝點電壓時二極體呈高阻抗、只有極小漏電流；超過門檻後電阻急遽下降、電流呈指數上升）。
+- **理論概述（Theory Overview，第 5 頁）**，四個名詞：
+  - **二極體基礎（Diode Basics）**：由 PN 接面構成、主要只讓電流單向流動的半導體元件。
+  - **順向偏壓（Forward Bias）**：正電壓接 P 區、負電壓接 N 區，空乏區因此變窄。
+  - **導通電壓（Knee Voltage）**：空乏區窄到足以讓明顯電流流過的門檻電壓，就是 CH3 定電壓模型的 $V_{D,on}$（turn-on voltage），矽二極體約 0.6–0.7 V。講義用 knee（膝）形容 I-V 曲線在這裡由平轉陡的形狀，舊課本也叫切入電壓（cut-in voltage），三個名字指同一件事。
+  - **導通行為（Conduction Behavior）**：低於導通電壓時二極體呈高阻抗、只有極小漏電流；超過門檻後電阻急遽下降、電流呈指數上升。
 - **步驟（Procedure，第 6 頁）**：
   1. 接一個順偏二極體電路。
   2. 以 0.1 V 為級距改變外加電壓，每一點都量對應的電流與電壓。
   3. 畫出二極體的 I-V 特性曲線（characteristic curve）。
-  4. 從曲線找出膝點電壓。
+  4. 從曲線找出導通電壓。
 
   講義附了記錄表格範例，欄位是電源電壓 $V_s$（1、2、…）與對應的 $V_D$、$I$。
 
 ![順偏 I-V 特性曲線示意圖：橫軸 VF、縱軸 IF，曲線先以極緩坡度上升，到標示 Knee Voltage 的黑點後斜率突然變陡](/note-images/ec-week2-lab1/03-forward-iv-curve-knee-voltage.png)
 
-*實驗要畫的目標曲線：轉折處就是膝點電壓。*
+*實驗要畫的目標曲線：轉折處就是導通電壓。*
 
-- **Equipment / Component List（器材與元件清單，第 7 頁）**：
+- **器材與元件清單（Equipment / Component List，第 7 頁）**：
 
 | 類別 | 規格 |
 | --- | --- |
@@ -482,9 +555,9 @@ status: confirmed
 
 1N4007 是一般用途的整流二極體（1 A、逆向耐壓 1000 V），四個實驗全部用它。1 kΩ 是**限流電阻**，理由見下面第 3 題。
 
-- **Question（問題，第 8 頁）**：
-  1. 從你畫的 I-V 曲線估計矽二極體的膝點電壓是多少？與理論值相比如何？解釋觀察到的差異。
-  2. 解釋為什麼順偏電壓低於膝點時電流幾乎為零、超過膝點後卻急遽指數上升——要連結到**空乏區**與**多數載子**的行為（第 1 週的內容：順偏壓縮空乏區、降低多數載子擴散要跨過的位障，電流依 $\exp\!\left(\frac{V_D}{V_T}\right)$ 上升）。
+- **問題（Question，第 8 頁）**：
+  1. 從你畫的 I-V 曲線估計矽二極體的導通電壓是多少？與理論值相比如何？解釋觀察到的差異。
+  2. 解釋為什麼順偏電壓低於導通電壓時電流幾乎為零、超過導通電壓後卻急遽指數上升——要連結到**空乏區**與**多數載子**的行為（第 1 週的內容：順偏壓縮空乏區、降低多數載子擴散要跨過的位障，電流依 $\exp\!\left(\frac{V_D}{V_T}\right)$ 上升）。
   3. 串聯限流電阻在這個電路裡的主要角色是什麼？若拿掉它、順偏操作時二極體與電源供應器會發生什麼事？（提示：二極體導通後電阻極小，沒有限流電阻時電流只受電源能力限制，二極體會過熱燒毀、或觸發電源的 CC 保護。）
 
 ### 先看懂：CircuitJS
@@ -492,8 +565,8 @@ status: confirmed
 [開啟順偏 I-V 模擬](https://www.falstad.com/circuit/circuitjs.html?ctz=CQAgjCAMB0l3BWcMBMcUHYMGZIA4UA2ATmIxAUgpABZsKBTAWjDACgA3cFPEH3sDxDFCUMTSowkkqNARsATt14iQ2NMNFUw8NgBM1G1TTxVVKEHoYAzAIYBXADYAXNgHdapzZ6r8o7nz48ASE-SDYAc2UgkN51GXDsXgS+EAA1AGdZdgB7VMIacRQwEQQIaWgIKgARdiA)
 
 - 右側有一支 **Vs** 滑桿（0 到 2 V，每格 0.1 V），拖它就是在做講義的「每次加 0.1 V」。
-- 0.4 V 以前黃點幾乎不動；0.5 V 附近開始流；再往上，每加 0.1 V 電流就跳一大截，而二極體兩端電壓 $V_D$ 幾乎停在 0.6 V 左右不再上升——多出來的電壓全落在 1 kΩ 上。這就是「膝點」的意思：過了它，二極體像一個固定 0.6–0.7 V 的電壓源。
-- 下方示波器顯示 D1 的電壓（綠）與電流（黃）。CircuitJS 預設二極體模型的膝點比 1N4007 略低（約 0.5–0.6 V），**看形狀、不抄數值**。
+- 0.4 V 以前黃點幾乎不動；0.5 V 附近開始流；再往上，每加 0.1 V 電流就跳一大截，而二極體兩端電壓 $V_D$ 幾乎停在 0.6 V 左右不再上升——多出來的電壓全落在 1 kΩ 上。這就是「導通電壓」的意思：過了它，二極體像一個固定 0.6–0.7 V 的電壓源。
+- 下方示波器顯示 D1 的電壓（綠）與電流（黃）。CircuitJS 預設二極體模型的導通電壓比 1N4007 略低（約 0.5–0.6 V），**看形狀、不抄數值**。
 
 ### 預演：Tinkercad 接線配方
 
@@ -551,9 +624,15 @@ status: confirmed
 | $V_D$ 於 $I = 1$ mA | 0.7 V | 0.59 V | 0.53 V | |
 | $I$ 於 $V_s = 2$ V | 1.3 mA | 1.40 mA | 1.46 mA | |
 
-三個「膝點」不一樣，正是 Lab 1 問題 1 要你解釋的：0.7 V 是課本用來手算的常數電壓模型，實際二極體的膝點取決於你把「明顯導通」定在多少電流，1N4007 在 1 mA 才到 0.59 V，而 Tinkercad 的通用模型又更低。
+三個「導通電壓」不一樣，正是 Lab 1 問題 1 要你解釋的：0.7 V 是課本用來手算的常數電壓模型，實際二極體的導通電壓取決於你把「明顯導通」定在多少電流，1N4007 在 1 mA 才到 0.59 V，而 Tinkercad 的通用模型又更低。
 
 ### 實驗室：記錄表
+
+結報要附的正式電路圖用 KiCad 畫（Tinkercad 的線路圖檢視不畫電表）。接線順序和上面的 Tinkercad 配方一樣，電壓表跨在 D1 兩端、電流表串在 R1 之後；原理圖檔在 [simulations/lab1/kicad/](https://github.com/singyichen/notecraft/tree/main/simulations/lab1/kicad)，可用本機 KiCad 打開修改，ERC 零違規、匯出的 SPICE 網表和 LTspice 用的 `lab1-exp1-forward.cir` 同拓樸。
+
+![KiCad 原理圖：左側直流電源 Vs（0 到 2 V）正端經上方導線接到 D1 1N4007 陽極，D1 陰極串 R1 1 kΩ 再串電流表 A 回到下方 GND 導線與電源負端；電壓表 V 的正負端分別接在 D1 陽極與陰極兩側的節點，標示 VD；圖下方註明驗算式 Vs = VD + I·1 kΩ](/note-images/ec-week3-kicad/lab1-exp1-forward.svg)
+
+*結報電路圖（KiCad）：電流表讀 $I$、電壓表讀 $V_D$，每一列數據都能用 $V_s = V_D + I \cdot 1\text{ k}\Omega$ 驗算。*
 
 | $V_s$ (V) | $V_D$ (V) | $V_R = V_s - V_D$ (V) | $I = V_R / R$ (mA) | 電表 $I$ (mA) |
 | --- | --- | --- | --- | --- |
@@ -566,14 +645,14 @@ status: confirmed
 
 ### 檢查點
 
-- 畫 $I$ 對 $V_D$ 的曲線，轉折點就是膝點電壓，預期 0.6–0.7 V。
+- 畫 $I$ 對 $V_D$ 的曲線，轉折點就是導通電壓，預期 0.6–0.7 V。
 - 最高點的電流用定電壓模型估：
 
   $$
   I \approx \frac{V_s - V_{D,on}}{R} = \frac{2 - 0.7}{1\ \text{k}\Omega} = 1.3\ \text{mA}
   $$
 
-- 講義三題（膝點與理論值的差異、空乏區與多數載子如何解釋指數上升、限流電阻拿掉會怎樣）的提示見上方講義詳解。
+- 講義三題（導通電壓與理論值的差異、空乏區與多數載子如何解釋指數上升、限流電阻拿掉會怎樣）的提示見上方講義詳解。
 
 ## 實驗二：逆偏 Reverse Bias
 
@@ -617,10 +696,10 @@ status: confirmed
 
 *逆偏把空乏區拉寬：自由載子被拉離接面，只剩極小的漏電流。*
 
-- **Theory Overview（理論概述，第 11 頁）**：
-  - **Reverse Bias Fundamentals（逆偏基礎）**：**applying reverse bias widens the diode's depletion region, creating high resistance and allowing only a very small, temperature-dependent leakage current**（逆偏使空乏區變寬、呈現高電阻，只允許極小且與溫度相關的漏電流）。
-  - **Breakdown Voltage（崩潰電壓）**：**a critical reverse voltage causes Zener or avalanche breakdown, leading to a sudden, sharp increase in current**（超過某個臨界逆向電壓會發生齊納或突崩崩潰，電流突然急遽增加）。
-  - **Standard Diode Limitation（一般二極體的限制）**：**unlike Zener diodes, standard diodes are not designed for stable operation in breakdown; exceeding current limits in this region can cause permanent damage**（一般二極體不像齊納二極體設計來穩定工作在崩潰區，在此區超過電流限制會永久損壞）。
+- **理論概述（Theory Overview，第 11 頁）**：
+  - **逆偏基礎（Reverse Bias Fundamentals）**：逆偏使空乏區變寬、呈現高電阻，只允許極小且與溫度相關的漏電流。
+  - **崩潰電壓（Breakdown Voltage）**：超過某個臨界逆向電壓會發生齊納或突崩崩潰，電流突然急遽增加。
+  - **一般二極體的限制（Standard Diode Limitation）**：一般二極體不像齊納二極體設計來穩定工作在崩潰區，在此區超過電流限制會永久損壞。
 - **步驟（Procedure，第 12 頁）**：
   1. 接一個逆偏二極體電路（二極體反接）。
   2. 以 1 V 為級距改變外加電壓，每一點都量對應的電流與電壓；級距比順偏的 0.1 V 粗，因為逆偏區電流幾乎不變。
@@ -632,10 +711,10 @@ status: confirmed
 
 *把順偏與逆偏兩個實驗的數據合起來，就是這條完整的 I-V 曲線。*
 
-- **Equipment List（第 13 頁）**：與實驗一完全相同（麵包板、22 AWG 跳線、1 kΩ 電阻、1N4007、GDM-532、GPE-3323）。
-- **Question（問題，第 14 頁）**：
+- **器材清單（Equipment List，第 13 頁）**：與實驗一完全相同（麵包板、22 AWG 跳線、1 kΩ 電阻、1N4007、GDM-532、GPE-3323）。
+- **問題（Question，第 14 頁）**：
   1. 從 I-V 曲線估計的崩潰電壓 $V_{BR}$ 是多少？與 datasheet 規格比較如何？（1N4007 的額定逆向耐壓是 1000 V，GPE-3323 最高只能輸出 32 V，所以在這個實驗裡**量不到**一般二極體的崩潰——這正是題目要你意識到的事。）
-  2. 描述逆偏下的「崩潰」現象。**Avalanche（突崩）** 與 **Zener（齊納）** 兩種機制根本上有何不同？為什麼一般二極體不建議操作在這一區？（回顧第 1 週：齊納是強電場直接扯斷共價鍵、發生在重摻雜與低電壓；突崩是載子加速碰撞連鎖倍增、發生在高電壓。）
+  2. 描述逆偏下的「崩潰」現象。**突崩（Avalanche）** 與 **齊納（Zener）** 兩種機制根本上有何不同？為什麼一般二極體不建議操作在這一區？（回顧第 1 週：齊納是強電場直接扯斷共價鍵、發生在重摻雜與低電壓；突崩是載子加速碰撞連鎖倍增、發生在高電壓。）
   3. 在逆偏齊納二極體電路中，串聯電阻的角色是什麼？尤其當二極體到達崩潰電壓時？拿掉它會有什麼後果？（崩潰後齊納的 $r_d$ 只有幾歐姆，沒有串聯電阻電流會失控。）
 
 {/* @ai-visualize
@@ -661,12 +740,12 @@ prompt: |
   視覺要求：電路與曲線兩張 SVG 各自 viewBox 寬度不超過 320；表格用 Tailwind DOM；
   中文標籤放 SVG 外；拖動即時更新；尊重 prefers-reduced-motion。
 status: generated
-caption: 膝點之後二極體幾乎是短路：電源再往上加，多出來的電壓全部掉在 1 kΩ 限流電阻上。
+caption: 導通電壓之後二極體幾乎是短路：電源再往上加，多出來的電壓全部掉在 1 kΩ 限流電阻上。
 */}
 
 import EcWeek2LabIvMeasurement from '@/components/generated/ec-week2-lab-iv-measurement'
 
-<GeneratedFrame id="ec-week2-lab-iv-measurement" type="chart" prompt={"模擬 Lab 1 實驗一、二的逐點量測流程，讓讀者在動手前先體驗「為什麼電源電壓一直加、\n二極體跨壓卻卡在 0.7 V 附近」。\n左側是手寫 SVG 電路：電源 Vs → 二極體 D1（1N4007）→ 電阻 R = 1 kΩ 回到地，\n標出 VD 與 I 的量測位置（符號依 circuit-symbols.md）。\n一個「順偏／逆偏」切換鈕：切到逆偏時二極體符號翻轉，滑桿級距改為 1 V。\n一條滑桿：電源電壓 Vs（順偏 0–5 V、級距 0.1 V；逆偏 0–30 V、級距 1 V）。\n每拖到一個新值，右側兩件事同步發生：\n1. 量測表新增一列（Vs、VD、I），最多顯示最近 10 列，可捲動\n2. I-V 曲線圖（橫軸 VD、縱軸 I）多出一個點，並用淡色線連起來\n二極體用指數模型計算：I = Is·(exp(VD/VT) − 1)，Is = 1e-9 A、VT = 26 mV，\n與 Vs = VD + I·R 聯立求解（用簡單的二分法或牛頓法）；逆偏時 I ≈ −Is（幾乎為零），\n並在圖上以文字提示「1N4007 崩潰電壓 1000 V，本實驗電源最高 32 V，量不到崩潰」。\n順偏模式下，當 VD 超過 0.6 V 時在曲線上標出「Knee Voltage」；\n另外用一根堆疊長條即時顯示 Vs 如何分配成 VD 與 I·R 兩段，讓「多出來的電壓都掉在電阻上」\n一眼可見。\n提供「清除重量」按鈕。\n視覺要求：電路與曲線兩張 SVG 各自 viewBox 寬度不超過 320；表格用 Tailwind DOM；\n中文標籤放 SVG 外；拖動即時更新；尊重 prefers-reduced-motion。"} caption="膝點之後二極體幾乎是短路：電源再往上加，多出來的電壓全部掉在 1 kΩ 限流電阻上。">
+<GeneratedFrame id="ec-week2-lab-iv-measurement" type="chart" prompt={"模擬 Lab 1 實驗一、二的逐點量測流程，讓讀者在動手前先體驗「為什麼電源電壓一直加、\n二極體跨壓卻卡在 0.7 V 附近」。\n左側是手寫 SVG 電路：電源 Vs → 二極體 D1（1N4007）→ 電阻 R = 1 kΩ 回到地，\n標出 VD 與 I 的量測位置（符號依 circuit-symbols.md）。\n一個「順偏／逆偏」切換鈕：切到逆偏時二極體符號翻轉，滑桿級距改為 1 V。\n一條滑桿：電源電壓 Vs（順偏 0–5 V、級距 0.1 V；逆偏 0–30 V、級距 1 V）。\n每拖到一個新值，右側兩件事同步發生：\n1. 量測表新增一列（Vs、VD、I），最多顯示最近 10 列，可捲動\n2. I-V 曲線圖（橫軸 VD、縱軸 I）多出一個點，並用淡色線連起來\n二極體用指數模型計算：I = Is·(exp(VD/VT) − 1)，Is = 1e-9 A、VT = 26 mV，\n與 Vs = VD + I·R 聯立求解（用簡單的二分法或牛頓法）；逆偏時 I ≈ −Is（幾乎為零），\n並在圖上以文字提示「1N4007 崩潰電壓 1000 V，本實驗電源最高 32 V，量不到崩潰」。\n順偏模式下，當 VD 超過 0.6 V 時在曲線上標出「Knee Voltage」；\n另外用一根堆疊長條即時顯示 Vs 如何分配成 VD 與 I·R 兩段，讓「多出來的電壓都掉在電阻上」\n一眼可見。\n提供「清除重量」按鈕。\n視覺要求：電路與曲線兩張 SVG 各自 viewBox 寬度不超過 320；表格用 Tailwind DOM；\n中文標籤放 SVG 外；拖動即時更新；尊重 prefers-reduced-motion。"} caption="導通電壓之後二極體幾乎是短路：電源再往上加，多出來的電壓全部掉在 1 kΩ 限流電阻上。">
   <EcWeek2LabIvMeasurement client:visible />
 </GeneratedFrame>
 
@@ -683,7 +762,7 @@ import EcWeek2LabIvMeasurement from '@/components/generated/ec-week2-lab-iv-meas
 | --- | --- | --- |
 | 1. **Assemble a reverse-biased diode circuit** | 實驗一的板子只翻二極體：**色環端（陰極）改朝第 5 欄（+ 軌那側）**，無色環端接第 9 欄 | 把 1N4007 拔起來轉向再插回同兩欄；接線前再對一次色環方向，插反就變回實驗一，1 kΩ 上會流過約 30 mA |
 | 2. **Vary the applied voltage in 1 V increments while measuring corresponding current and voltage** | 屬性面板電壓 1、2、3 … V，每級抄 $V_D$、$I$ | CH1 Voltage 旋鈕每次轉 1 V，一路到 GPE-3323 上限 32 V；電流表改 **µA** 檔才看得到漏電流 |
-| 3. **Plot the diode's I-V characteristic curve** | 這條曲線貼著橫軸；接到實驗一曲線左邊就是講義第 12 頁右下的完整特性曲線 | 同左；講義沒有第 4 步，因為逆偏區沒有膝點可找 |
+| 3. **Plot the diode's I-V characteristic curve** | 這條曲線貼著橫軸；接到實驗一曲線左邊就是講義第 12 頁右下的完整特性曲線 | 同左；講義沒有第 4 步，因為逆偏區沒有導通電壓可找 |
 
 講義記錄表欄位寫明是 $V_s$ (V)、$V_D$ (V)、$I$ (mA)。
 
@@ -763,13 +842,13 @@ status: confirmed
 */}
 <PdfRefChip file="_references/電子學實作系列/第二週/App_Lab1.pdf" page={16} status="confirmed" client:visible />
 
-- **Introduction to Rectifiers（整流器簡介，第 16 頁）**：**rectification converts an alternating current (AC) waveform into a direct current (DC) waveform with a single polarity, akin to "setting something straight"**（整流是把交流波形轉成單一極性的直流波形，就像「把東西弄直」——rectify 的字面意思）。講義特別澄清：**DC doesn't require a constant value (e.g., a battery); it simply means the polarity remains unchanged, with varying amplitudes called pulsating DC**（直流不要求數值固定如電池；它只要求極性不變，振幅會變的稱為**脈動直流 pulsating DC**）。所以半波整流的輸出雖然一座座山丘，仍算「直流」。圖片引自[維基百科整流器條目](https://zh.wikipedia.org/zh-tw/%E6%95%B4%E6%B5%81%E5%99%A8)。
+- **整流器簡介（Introduction to Rectifiers，第 16 頁）**：整流是把交流波形轉成單一極性的直流波形，就像「把東西弄直」——rectify 的字面意思。講義特別澄清：直流不要求數值固定如電池，它只要求極性不變，振幅會變的稱為**脈動直流（pulsating DC）**。所以半波整流的輸出雖然一座座山丘，仍算「直流」。圖片引自[維基百科整流器條目](https://zh.wikipedia.org/zh-tw/%E6%95%B4%E6%B5%81%E5%99%A8)。
 
 ![整流概念總覽三個波形框：上為紅色完整正弦波 Sinusoidal Signal，中為綠色 Half-wave Rectification 只剩正半週，下為藍色 Full-wave Rectification 負半週被翻正](/note-images/ec-week2-lab1/07-rectification-waveforms-overview.png)
 
 *整流的兩種結果：半波只留正半週，全波把負半週翻正——兩者都是極性不變的脈動直流。*
 
-- **Half-wave Rectifier（半波整流器，第 17 頁）**：**Figure 1. Basic AC diode-resistor circuit**（基本的交流二極體–電阻電路）：$V_{in}$ 正弦 → D → R → $V_{out}$；**Figure 2. Half-wave rectification waveforms including forward diode drop**（含順向壓降的半波整流波形）——輸出峰值比輸入低一個 $V_{D,on}$，對應 CH3 第 24 頁。
+- **半波整流器（Half-wave Rectifier，第 17 頁）**：**基本的交流二極體–電阻電路（Figure 1. Basic AC diode-resistor circuit）**：$V_{in}$ 正弦 → D → R → $V_{out}$；**含順向壓降的半波整流波形（Figure 2. Half-wave rectification waveforms including forward diode drop）**——輸出峰值比輸入低一個 $V_{D,on}$，對應 CH3 第 24 頁。
 
 ![Figure 1 基本半波整流電路：交流源 Vin sine 串接二極體 D，負載電阻 R 接到地，Vin 與 Vout 各以方框標示示波器量測點](/note-images/ec-week2-lab1/08-half-wave-rectifier-circuit.png)
 
@@ -779,11 +858,11 @@ status: confirmed
 
 *含順向壓降的半波整流波形：輸出峰值比輸入低 0.7 V。*
 
-- **Experiment Procedure - Half-wave Rectifier（實驗步驟，第 18 頁）**：
-  - **Circuit Setup（電路設置）**：$V_{in}$ 為 **60 Hz、10 Vpp 正弦波**（訊號產生器），D 為 **1N4007**，R 為 **10 kΩ**，量 R 兩端的 $V_{out}$。
-  - **Measurement（量測）**：對 $V_{in}$ 與 $V_{out}$ 各記錄 $V_{peak}$、$V_{rms}$ 與 **efficiency（效率）**，並貼上實驗接線照與示波器波形（講義表格有 Ex. 範例欄位）。效率這裡指整流效率，實驗中以量到的 $V_{out}$ 與 $V_{in}$ 的關係計算（理論上半波整流輸出的 $V_{rms} = \frac{V_p}{2}$、平均值 $\frac{V_p}{\pi}$）。
+- **實驗步驟（Experiment Procedure - Half-wave Rectifier，第 18 頁）**：
+  - **電路設置（Circuit Setup）**：$V_{in}$ 為 **60 Hz、10 Vpp 正弦波**（訊號產生器），D 為 **1N4007**，R 為 **10 kΩ**，量 R 兩端的 $V_{out}$。
+  - **量測（Measurement）**：對 $V_{in}$ 與 $V_{out}$ 各記錄 $V_{peak}$、$V_{rms}$ 與**效率（efficiency）**，並貼上實驗接線照與示波器波形（講義表格有 Ex. 範例欄位）。效率這裡指整流效率，實驗中以量到的 $V_{out}$ 與 $V_{in}$ 的關係計算（理論上半波整流輸出的 $V_{rms} = \frac{V_p}{2}$、平均值 $\frac{V_p}{\pi}$）。
 
-- **RC Circuit Review（RC 電路複習，第 19 頁）**：先不接二極體，只看 $V_{in}$（**20 Hz 正弦**）→ R（**100 Ω**）→ C（**1 mF**）的 RC 低通行為，$V_{out}$ 取電容兩端。時間常數 $\tau = RC = 100\ \Omega\times 1\text{ mF} = 0.1\text{ s}$，跟 20 Hz 的週期 0.05 s 同量級，所以能在示波器上明顯看到電容「充得慢、放得慢」造成的相位落後與振幅衰減——這是理解下一步濾波電容的前置。
+- **RC 電路複習（RC Circuit Review，第 19 頁）**：先不接二極體，只看 $V_{in}$（**20 Hz 正弦**）→ R（**100 Ω**）→ C（**1 mF**）的 RC 低通行為，$V_{out}$ 取電容兩端。時間常數 $\tau = RC = 100\ \Omega\times 1\text{ mF} = 0.1\text{ s}$，跟 20 Hz 的週期 0.05 s 同量級，所以能在示波器上明顯看到電容「充得慢、放得慢」造成的相位落後與振幅衰減——這是理解下一步濾波電容的前置。
 
 ![RC 電路複習接線圖：Vin 為 Sine 20 Hz 交流源，串聯電阻 R 100 Ω，輸出 Vout 跨接電容 C 1 mF 到地](/note-images/ec-week2-lab1/11-rc-lowpass-review-circuit.png)
 
@@ -793,7 +872,7 @@ status: confirmed
 
 *RC 低通的效果：交流擺動被電容濾掉，只留下 3 V 的直流準位。*
 
-- **Half-wave Rectifier with RC filter（加 RC 濾波的半波整流器，第 20 頁）**：在半波整流器（60 Hz 正弦、1N4007、R = 10 kΩ）的電阻兩端並聯 **C = 1 μF**。波形圖標出 **Diode on（二極體導通，電容充電、輸出跟著輸入上升）** 與 **Diode off（二極體截止，電容經 R 放電、輸出緩慢下降）** 兩段——就是 CH3 第 27 頁的漣波機制。用漣波公式估計：
+- **加 RC 濾波的半波整流器（Half-wave Rectifier with RC filter，第 20 頁）**：在半波整流器（60 Hz 正弦、1N4007、R = 10 kΩ）的電阻兩端並聯 **C = 1 μF**。波形圖標出 **二極體導通（Diode on，電容充電、輸出跟著輸入上升）** 與 **二極體截止（Diode off，電容經 R 放電、輸出緩慢下降）** 兩段——就是 CH3 第 27 頁的漣波機制。用漣波公式估計：
 
 $$
 V_R \approx \frac{I_L}{C\,f_{in}} = \frac{\frac{V_p}{R}}{C\,f_{in}} = \frac{\frac{5 - 0.7}{10\text{ k}\Omega}}{1\ \mu\text{F}\times 60\text{ Hz}} \approx 7.2\text{ V}
@@ -945,7 +1024,7 @@ status: confirmed
 */}
 <PdfRefChip file="_references/電子學實作系列/第二週/App_Lab1.pdf" page={22} status="confirmed" client:visible />
 
-- **Full-wave Bridge Rectifier without RC filter（不含 RC 濾波的全波橋式整流器，第 22 頁）**：四顆二極體接成橋，負載電阻取 $V_{out}$。講義用兩種顏色畫出電流路徑——正半週經 $D_1$、$D_3$，負半週經 $D_2$、$D_4$，兩者最後都以同一方向流過 R。示波器上應看到 $|V_{in}|$ 形狀的連續正弧、峰值比輸入低 $2V_{D,on}$，弧與弧之間有 CH3 第 38 頁說的死區。
+- **不含 RC 濾波的全波橋式整流器（Full-wave Bridge Rectifier without RC filter，第 22 頁）**：四顆二極體接成橋，負載電阻取 $V_{out}$。講義用兩種顏色畫出電流路徑——正半週經 $D_1$、$D_3$，負半週經 $D_2$、$D_4$，兩者最後都以同一方向流過 R。示波器上應看到 $|V_{in}|$ 形狀的連續正弧、峰值比輸入低 $2V_{D,on}$，弧與弧之間有 CH3 第 38 頁說的死區。
 
 ![全波橋式整流電流路徑圖：Vin sine 接到 D1 到 D4 組成的菱形橋，負載 R 標 Vout；淡藍色路徑為正半週電流經 D1 與 D3，橘色路徑為負半週電流經 D2 與 D4，兩者以同方向流過 R](/note-images/ec-week2-lab1/15-full-wave-bridge-current-paths.png)
 
@@ -955,7 +1034,7 @@ status: confirmed
 
 *全波整流輸出：峰值比輸入低 2VD,on，過零附近有死區。*
 
-- **Full-wave Bridge Rectifier with RC filter（含 RC 濾波，第 23 頁）**：橋後並聯濾波電容。因為每半週充電一次，同樣的 RC 下漣波是半波整流的一半（CH3 第 39 頁）。
+- **含 RC 濾波（Full-wave Bridge Rectifier with RC filter，第 23 頁）**：橋後並聯濾波電容。因為每半週充電一次，同樣的 RC 下漣波是半波整流的一半（CH3 第 39 頁）。
 
 ![全波橋式整流加 RC 濾波的電流路徑圖：同樣的 D1 到 D4 橋式結構，輸出端先並聯電容 C 再接負載 RL，淡藍色與橘色路徑皆流向 C 與 RL](/note-images/ec-week2-lab1/17-full-wave-bridge-rc-current-paths.png)
 
@@ -965,7 +1044,7 @@ status: confirmed
 
 *每半週充電一次，同樣的 RC 下漣波是半波整流的一半。*
 
-- **Zener Regulation（齊納穩壓，第 24 頁）**：概念圖是輸入串一顆限流電阻 $R_{limit}$，再把齊納二極體（逆向、陰極朝正端）與負載 $R_L$ 並聯。輸入超過齊納電壓 $V_Z$ 時輸出被夾在 $V_Z$；低於 $V_Z$ 時齊納不導通，輸出跟著輸入走——所以量測欄位有「$V_{drop}$ (at $V_{in} < V_Z$)」。模擬波形是 ±10 V 正弦經全波整流後，每半週上升到約 6.7 V 就被削成平頂，過零附近仍降到零，形成梯形脈動波。
+- **齊納穩壓（Zener Regulation，第 24 頁）**：概念圖是輸入串一顆限流電阻 $R_{limit}$，再把齊納二極體（逆向、陰極朝正端）與負載 $R_L$ 並聯。輸入超過齊納電壓 $V_Z$ 時輸出被夾在 $V_Z$；低於 $V_Z$ 時齊納不導通，輸出跟著輸入走——所以量測欄位有「$V_{drop}$ (at $V_{in} < V_Z$)」。模擬波形是 ±10 V 正弦經全波整流後，每半週上升到約 6.7 V 就被削成平頂，過零附近仍降到零，形成梯形脈動波。
 
 ![Zener 穩壓電路示意圖：輸入端串聯限流電阻 Rlimit，之後 Zener 二極體（陰極朝上、逆向工作）與負載 RL 並聯，輸出 Vout 取自 RL 兩端](/note-images/ec-week2-lab1/19-zener-regulation-circuit.png)
 
@@ -975,7 +1054,7 @@ status: confirmed
 
 *齊納把每個半週的峰值削平在 VZ，但沒有電容，過零時輸出仍掉到零。*
 
-- **Experiment Procedure（實驗步驟，第 25–27 頁）**，三個子實驗各一頁，格式相同（電路設置 → 量測表 → 貼接線照與波形）。三個電路的輸入都是 **60 Hz、5 Vpp 正弦**（注意半波實驗是 10 Vpp），四顆 1N4007 組成橋、負載 $R_L = 10\text{ k}\Omega$；第 26 頁並聯 **C = 1 μF**，第 27 頁把電容換成一顆與 $R_L$ 並聯的齊納二極體——**電路裡沒有電容、也沒有第 24 頁概念圖的限流電阻**，講義標題仍寫「with RC filter」是沿用前一頁未改：
+- **實驗步驟（Experiment Procedure，第 25–27 頁）**，三個子實驗各一頁，格式相同（電路設置 → 量測表 → 貼接線照與波形）。三個電路的輸入都是 **60 Hz、5 Vpp 正弦**（注意半波實驗是 10 Vpp），四顆 1N4007 組成橋、負載 $R_L = 10\text{ k}\Omega$；第 26 頁並聯 **C = 1 μF**，第 27 頁把電容換成一顆與 $R_L$ 並聯的齊納二極體——**電路裡沒有電容、也沒有第 24 頁概念圖的限流電阻**，講義標題仍寫「with RC filter」是沿用前一頁未改：
 
 | 子實驗 | 頁 | 量測項目 |
 | --- | --- | --- |
@@ -1123,7 +1202,7 @@ Tinkercad 的示波器探棒是浮接的，兩台隨便跨都沒事。實體實�
 
 | 實驗 | 要交的圖 | 要交的數 | 對照的理論 |
 | --- | --- | --- | --- |
-| 一、順偏 | $I$-$V_D$ 曲線 | 膝點電壓 | $V_{D,on} \approx 0.7$ V；指數模型 $I = I_S \left( e^{V_D / V_T} - 1 \right)$ |
+| 一、順偏 | $I$-$V_D$ 曲線 | 導通電壓 | $V_{D,on} \approx 0.7$ V；指數模型 $I = I_S \left( e^{V_D / V_T} - 1 \right)$ |
 | 二、逆偏 | 併入同一張 $I$-$V$ 曲線 | 漏電流量級、量不到的 $V_{BR}$ | datasheet：$I_R \le 5\ \mu$A、$V_{BR} = 1000$ V |
 | 三、半波 | $V_{in}$／$V_{out}$ 波形、加 C 後的鋸齒 | $V_{peak}$、$V_{rms}$、η、$V_R$ | $V_p - V_{D,on}$、$\eta \le 40.6\%$、$V_R \approx V_p / (R_L C f)$ |
 | 四、橋式 | 兩張波形、加 C、加齊納 | $V_{peak}$、$V_{rms}$、η、$V_R / V_p$、$V_{drop}$ | $V_p - 2V_{D,on}$、$\eta \le 81.2\%$、$V_R \approx V_p / (2 R_L C f)$ |

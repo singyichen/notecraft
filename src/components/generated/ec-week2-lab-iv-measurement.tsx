@@ -16,7 +16,7 @@ const IS = 1e-9; // A
 const VT = 0.026; // V（熱電壓）
 const R = 1000; // Ω（限流電阻）
 const MAX_HISTORY = 500;
-// 膝點判定：以 IS = 1e-9 A 計算，實際膝點電壓約落在 0.35–0.40 V 附近，
+// 導通電壓判定：以 IS = 1e-9 A 計算，實際導通電壓約落在 0.35–0.40 V 附近，
 // 不是常見手算捷徑的 0.7 V；因此不能寫死「VD > 0.6」，
 // 改用「順偏量測中電流首次達到 1 mA」這個更貼近物理定義的門檻。
 const KNEE_CURRENT = 0.001; // A
@@ -350,7 +350,7 @@ export default function EcWeek2LabIvMeasurement() {
 
       {kneeSample && (
         <div className="inline-flex w-fit items-center gap-1.5 rounded-md px-2.5 py-1 text-xs font-medium bg-[var(--warning-50)] text-[var(--warning-500)]">
-          膝點電壓 ≈ {kneeSample.vd.toFixed(2)} V
+          導通電壓 ≈ {kneeSample.vd.toFixed(2)} V
         </div>
       )}
 

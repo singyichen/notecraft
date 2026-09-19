@@ -44,7 +44,7 @@ description: Use when the author has a lab handout (App_LabN.pdf、實驗講義)
 - 用 `@ai-visualize` 元件「示意」實驗 → 那是插圖不是模擬，作者看不到電流與讀值。
 - 把 Tinkercad 的 Amplitude 當峰值 → 它是峰對峰值。
 - 橋式電路的實體示波器兩通道同時接輸入與輸出 → 大地短路一顆二極體，手冊必須寫接地做法。
-- 直接抄 CircuitJS／Tinkercad 的數值當預報值 → 通用模型膝點約 0.5 V，預報值以 LTspice 真實型號為準。
+- 直接抄 CircuitJS／Tinkercad 的數值當預報值 → 通用模型導通電壓約 0.5 V，預報值以 LTspice 真實型號為準。
 - LTspice 網表用 `.lib` 引用元件庫 → 線上版開不起來，`.model` 要內嵌。
 - 濾波電容大的 `.tran` 只跑 50 ms → 還沒到穩態，漣波算錯。
 - 圖沒用 Read 打開看就貼進筆記 → 圖例重疊、座標軸錯了都看不到。
