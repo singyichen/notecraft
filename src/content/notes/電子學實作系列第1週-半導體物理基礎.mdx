@@ -3,7 +3,7 @@ title: "電子學實作系列：第 1 週 - 半導體物理基礎"
 description: "課程綱要（授課教師、教科書、評分方式、40/40 學習法則）與半導體物理基礎：矽的共價鍵、摻雜、漂移與擴散、PN 接面三個工作區、逆向崩潰。"
 tags: ["電子學實作系列"]
 createdAt: "2026-09-12"
-updatedAt: "2026-09-12"
+updatedAt: "2026-09-19"
 ---
 
 import PdfRefChip from '@/components/islands/PdfRefChip.tsx'
@@ -553,7 +553,7 @@ import EcWeek1IcEcosystem from '@/components/generated/ec-week1-ic-ecosystem'
 實際元件數量 ≈ 理想元件數量 × 版圖利用率
 ```
 
-這個估算的重點不是得到一個精確答案，而是看懂微縮的威力：若元件的長、寬都縮成原來的 $1/k$，單顆占用面積理想上會縮成 $1/k^2$，同樣面積可容納的數量便可能提高到約 $k^2$ 倍。實際 IC 還必須保留金屬互連、接觸孔、隔離區、電源網路與輸入輸出區域，因此不能單用「晶粒面積 ÷ 最小製程節點平方」當成真正的電晶體數量。這段語音未完整留下投影片所用的單一元件尺寸，故不在此補寫未確認的數值結果。
+這個估算的重點不是得到一個精確答案，而是看懂微縮的威力：若元件的長、寬都縮成原來的 $\frac{1}{k}$，單顆占用面積理想上會縮成 $\frac{1}{k^2}$，同樣面積可容納的數量便可能提高到約 $k^2$ 倍。實際 IC 還必須保留金屬互連、接觸孔、隔離區、電源網路與輸入輸出區域，因此不能單用「晶粒面積 ÷ 最小製程節點平方」當成真正的電晶體數量。這段語音未完整留下投影片所用的單一元件尺寸，故不在此補寫未確認的數值結果。
 
 > **常見誤解｜公分與奈米在量不同東西**：這裡的 $3\text{ cm} \times 3\text{ cm}$ 是 **die size（晶粒外形尺寸）**；常聽到的「幾奈米」則是 **process node（製程節點）** 的世代名稱。前者描述整顆晶片有多寬、多長，後者描述製造技術世代，不能把「三公分見方的晶粒」寫成「三乘三奈米的晶片」。
 
@@ -645,9 +645,37 @@ status: confirmed
 
 *接收機：把 $\pm f_C$ 附近的訊號降頻搬回 0 附近，LNA 負責在雜訊很小的情況下先把微弱訊號放大。*
 
+{/* @ai-visualize
+id: ec-week1-frequency-conversion
+type: motion
+prompt: |
+  用四步 stepper（上一步／下一步按鈕＋步驟指示點）走查手機收發機裡「升頻 → 發射 → 降頻 → 濾波」
+  的頻譜搬移，讓讀者看懂「時域相乘 = 頻域卷積」到底把頻譜搬去了哪裡。
+  每一步同時顯示兩塊：左邊一個小方塊圖標出目前走到哪個電路方塊（麥克風 → 乘法器 → 天線 → 乘法器 →
+  低通濾波器 → 喇叭），右邊一張頻譜圖（橫軸為頻率 f，標出 -2fc、-fc、0、+fc、+2fc 五個刻度）：
+  1. 語音訊號 x(t)：頻譜是集中在 0 附近、寬約 ±20 kHz 的一小塊隆起
+  2. 乘上載波 cos(2πfc t)（乘法器＋振盪器）：載波頻譜是 ±fc 兩根脈衝；輸出頻譜變成把語音那塊隆起
+     「複製並搬到」±fc 兩側
+  3. 接收端再乘一次 fc（降頻）：頻譜出現三塊——搬回 0 附近的原始語音，以及 ±2fc 兩處不要的高頻副本
+  4. 低通濾波器：畫出一個以 0 為中心的通帶遮罩，±2fc 的副本淡出消失、只剩 0 附近的語音
+  每步下方一行 DOM 文字說明該步在做什麼，並在第 2、3 步附註「時域兩訊號相乘，等於頻域兩者頻譜做卷積」。
+  視覺要求：頻譜用手寫 SVG（viewBox 寬 ≤ 640），隆起用平滑曲線、脈衝用帶箭頭的豎線；步驟切換時
+  頻譜區塊用 200–400ms ease-out 的位移／淡入淡出過渡；語音頻譜用 indigo 系、載波脈衝用 emerald 系、
+  被濾掉的副本用灰色；所有中文放在 DOM，不放 SVG text；尊重 prefers-reduced-motion。
+status: generated
+caption: 升頻與降頻是同一件事：時域乘上載波，頻譜就整塊搬到 ±fc；再乘一次搬回 0，多出來的 ±2fc 副本交給低通濾波器清掉。
+*/}
+
+import EcWeek1FrequencyConversion from '@/components/generated/ec-week1-frequency-conversion'
+
+<GeneratedFrame id="ec-week1-frequency-conversion" type="motion" prompt={"用四步 stepper（上一步／下一步按鈕＋步驟指示點）走查手機收發機裡「升頻 → 發射 → 降頻 → 濾波」\n的頻譜搬移，讓讀者看懂「時域相乘 = 頻域卷積」到底把頻譜搬去了哪裡。\n每一步同時顯示兩塊：左邊一個小方塊圖標出目前走到哪個電路方塊（麥克風 → 乘法器 → 天線 → 乘法器 →\n低通濾波器 → 喇叭），右邊一張頻譜圖（橫軸為頻率 f，標出 -2fc、-fc、0、+fc、+2fc 五個刻度）：\n1. 語音訊號 x(t)：頻譜是集中在 0 附近、寬約 ±20 kHz 的一小塊隆起\n2. 乘上載波 cos(2πfc t)（乘法器＋振盪器）：載波頻譜是 ±fc 兩根脈衝；輸出頻譜變成把語音那塊隆起\n   「複製並搬到」±fc 兩側\n3. 接收端再乘一次 fc（降頻）：頻譜出現三塊——搬回 0 附近的原始語音，以及 ±2fc 兩處不要的高頻副本\n4. 低通濾波器：畫出一個以 0 為中心的通帶遮罩，±2fc 的副本淡出消失、只剩 0 附近的語音\n每步下方一行 DOM 文字說明該步在做什麼，並在第 2、3 步附註「時域兩訊號相乘，等於頻域兩者頻譜做卷積」。\n視覺要求：頻譜用手寫 SVG（viewBox 寬 ≤ 640），隆起用平滑曲線、脈衝用帶箭頭的豎線；步驟切換時\n頻譜區塊用 200–400ms ease-out 的位移／淡入淡出過渡；語音頻譜用 indigo 系、載波脈衝用 emerald 系、\n被濾掉的副本用灰色；所有中文放在 DOM，不放 SVG text；尊重 prefers-reduced-motion。"} caption="升頻與降頻是同一件事：時域乘上載波，頻譜就整塊搬到 ±fc；再乘一次搬回 0，多出來的 ±2fc 副本交給低通濾波器清掉。">
+  <EcWeek1FrequencyConversion client:visible />
+</GeneratedFrame>
+
+
 **分貝增益 Example 1-3（第 36–37 頁）**：投影片給了一道具體例題——手機收到的訊號只有 **20μV**，但要送給喇叭的訊號要有 **50mV**，兩者相差 2500 倍。
 
-- **Decibel, dB（分貝）**：工程上表示放大倍率的常用單位，投影片定義 **voltage gain of an amplifier is defined as v_out/v_in and sometimes expressed in decibels (dB) as 20log(v_out/v_in)**（放大器的電壓增益定義為輸出電壓除以輸入電壓，有時以 $20 \times \log_{10}(v_{out}/v_{in})$ 表示為分貝）。
+- **Decibel, dB（分貝）**：工程上表示放大倍率的常用單位，投影片定義 **voltage gain of an amplifier is defined as v_out/v_in and sometimes expressed in decibels (dB) as 20log(v_out/v_in)**（放大器的電壓增益定義為輸出電壓除以輸入電壓，有時以 $20 \times \log_{10}\!\left(\frac{v_{out}}{v_{in}}\right)$ 表示為分貝）。
 - 代入本題：
 
 $$
@@ -878,12 +906,39 @@ status: confirmed
 ![三張時間序列晶格圖，展示電洞位置隨時間從一個節點移動到另一個節點](/note-images/ec-week1-ch2/03-electron-hole-pair-movement.png)
 
 *電洞的移動其實是相鄰電子依序跳過去填補空缺，等效呈現電洞往反方向遷移。*
+
+{/* @ai-visualize
+id: ec-week1-hole-motion
+type: motion
+prompt: |
+  用可逐步推進的動畫，讓讀者看懂「電洞往右移」其實是「電子依序往左跳」的等效說法。
+  畫一排 6 個相鄰的矽原子鍵結位置（水平排列的圓形格位），初始狀態最左邊格位是空的（電洞），
+  其餘 5 格各有一顆電子。
+  互動：一顆「下一步」按鈕（配合「重播」按鈕），每按一次，緊鄰空位右邊的電子往左跳一格填補空位，
+  空位因此往右移一格；共 5 步走到最右邊。
+  畫面上方用兩條標示同步顯示：藍色箭頭標「電子實際移動方向：往左」、橘色箭頭標「電洞等效移動方向：
+  往右」，並在空位所在格位上方掛一個橘色「hole」標籤跟著移動。
+  下方顯示一行步數指示「t = t1 / t2 / …」呼應投影片的三張時間序列圖，以及一行結論文字：
+  「我們把這連鎖填補當成一顆帶正電的粒子在移動，所以電洞也是載子。」
+  視覺要求：格位與電子用手寫 SVG（viewBox 寬 ≤ 600），電子跳動用 200–400ms ease-out 的位移動畫；
+  電子藍色、電洞橘色（沿用 ec-week1-doping 的色彩語意）；中文標籤放 DOM，不放 SVG text；
+  尊重 prefers-reduced-motion（關閉動畫時直接跳到新位置）。
+status: generated
+caption: 電洞不是真的粒子，而是「電子依序往反方向填補空位」的等效描述——所以矽裡同時有電子與電洞兩種載子。
+*/}
+
+import EcWeek1HoleMotion from '@/components/generated/ec-week1-hole-motion'
+
+<GeneratedFrame id="ec-week1-hole-motion" type="motion" prompt={"用可逐步推進的動畫，讓讀者看懂「電洞往右移」其實是「電子依序往左跳」的等效說法。\n畫一排 6 個相鄰的矽原子鍵結位置（水平排列的圓形格位），初始狀態最左邊格位是空的（電洞），\n其餘 5 格各有一顆電子。\n互動：一顆「下一步」按鈕（配合「重播」按鈕），每按一次，緊鄰空位右邊的電子往左跳一格填補空位，\n空位因此往右移一格；共 5 步走到最右邊。\n畫面上方用兩條標示同步顯示：藍色箭頭標「電子實際移動方向：往左」、橘色箭頭標「電洞等效移動方向：\n往右」，並在空位所在格位上方掛一個橘色「hole」標籤跟著移動。\n下方顯示一行步數指示「t = t1 / t2 / …」呼應投影片的三張時間序列圖，以及一行結論文字：\n「我們把這連鎖填補當成一顆帶正電的粒子在移動，所以電洞也是載子。」\n視覺要求：格位與電子用手寫 SVG（viewBox 寬 ≤ 600），電子跳動用 200–400ms ease-out 的位移動畫；\n電子藍色、電洞橘色（沿用 ec-week1-doping 的色彩語意）；中文標籤放 DOM，不放 SVG text；\n尊重 prefers-reduced-motion（關閉動畫時直接跳到新位置）。"} caption="電洞不是真的粒子，而是「電子依序往反方向填補空位」的等效描述——所以矽裡同時有電子與電洞兩種載子。">
+  <EcWeek1HoleMotion client:visible />
+</GeneratedFrame>
+
 - **Bandgap energy（能隙能量，記為 $E_g$）**：投影片說明 **Eg determines how much effort is required for an electron to break off a covalent bond and become free**（$E_g$ 決定了讓一個電子脫離共價鍵、變成自由電子所需要的努力／能量）。
 - **electron volt, eV（電子伏特）**：能量單位，投影片定義 **the energy necessary to move one electron across a potential difference of 1V**（讓一個電子通過 1 伏特電位差所需的能量），換算 $1\text{ eV} = 1.6\times10^{-19}\text{ J}$。
 - **Insulators（絕緣體）**：$E_g$ **高**（投影片舉例鑽石 diamond 的 $E_g = 2.5\text{ eV}$）。
 - **Conductors（導體）**：$E_g$ **很小**。
 - **Semiconductors（半導體）**：$E_g$ **中等**，典型範圍 **1 eV 到 1.5 eV**（矽是 1.12 eV）。
-- **Intrinsic carrier concentration（本質載子濃度，記為 $n_i$）**：投影片給出的公式 $n_i = 5.2\times10^{15}\, T^{3/2}\exp\!\left(-\dfrac{E_g}{2kT}\right)$（單位 electrons/cm³），$T$ 是絕對溫度、$k$ 是**波茲曼常數（Boltzmann constant）**。投影片指出兩個推論：$E_g\uparrow \Rightarrow n_i\downarrow$（能隙越大、本質載子濃度越小）；$T \to 0,\ n_i \to 0$（溫度趨近絕對零度時本質載子濃度趨近零）。
+- **Intrinsic carrier concentration（本質載子濃度，記為 $n_i$）**：投影片給出的公式 $n_i = 5.2\times10^{15}\, T^{\frac{3}{2}}\exp\!\left(-\dfrac{E_g}{2kT}\right)$（單位 electrons/cm³），$T$ 是絕對溫度、$k$ 是**波茲曼常數（Boltzmann constant）**。投影片指出兩個推論：$E_g\uparrow \Rightarrow n_i\downarrow$（能隙越大、本質載子濃度越小）；$T \to 0,\ n_i \to 0$（溫度趨近絕對零度時本質載子濃度趨近零）。
 - **Example 2-1（第 11 頁）**：計算矽在 **T = 300 K（室溫）** 與 **T = 600 K** 下的電子密度，矽的能隙 $E_g = 1.12\text{ eV} = 1.792\times10^{-19}\text{ J}$：
 
 $$
@@ -894,6 +949,35 @@ n_i(T=600\text{K}) &= 1.54\times10^{15}\text{ electrons/cm}^3
 $$
 
 矽的原子密度為 $5\times10^{22}\text{ atoms/cm}^3$，投影片結論 **silicon still seems a very poor conductor**（純矽在室溫下仍是很差的導體）——因為每 5×10¹² 個原子中只有大約 1 個電子是自由的。
+
+{/* @ai-visualize
+id: ec-week1-ni-temperature
+type: chart
+prompt: |
+  用一張對數縱軸的折線圖加一顆溫度 slider，讓讀者體會「溫度只動一點，本質載子濃度 ni 就差好幾個
+  數量級」。
+  資料：依公式 ni = 5.2×10^15 · T^(3/2) · exp(−Eg / 2kT) 計算（k = 8.617×10^−5 eV/K），
+  橫軸 T 從 200 K 到 600 K，縱軸 ni（cm^−3）用對數刻度（10^6 到 10^16）。
+  畫兩條線：矽 Eg = 1.12 eV（主線、indigo）與鍺 Eg = 0.66 eV（對照線、較淡色），呈現「Eg 越大
+  ni 越低」。
+  互動：一顆 T slider（200–600 K，步進 10 K，預設 300 K），拖動時在圖上顯示一條垂直參考線與對應點；
+  圖下方三個數值卡片即時更新：目前溫度、矽的 ni（科學記號）、相對 300 K 的倍數（例如 600 K 時
+  顯示「約 1.4×10^5 倍」）。
+  在圖上用兩個標註點標出投影片 Example 2-1 的兩個值：300 K → 1.08×10^10、600 K → 1.54×10^15。
+  底部一行固定結論：「指數關係讓 ni 對溫度極度敏感——這就是後面所有偏壓電路都要抵抗溫度漂移的原因。」
+  視覺要求：用 recharts LineChart（對數 YAxis、ReferenceLine、ReferenceDot），圖寬撐滿容器、
+  高約 260px；slider 用原生 range input 配 Tailwind 樣式；數值卡片用 DOM；
+  尊重 prefers-reduced-motion（關閉 recharts 動畫）。
+status: generated
+caption: 本質載子濃度對溫度是指數關係：矽從 300 K 升到 600 K，ni 暴增約 10^5 倍；能隙越大（矽 vs 鍺）整條曲線越低。
+*/}
+
+import EcWeek1NiTemperature from '@/components/generated/ec-week1-ni-temperature'
+
+<GeneratedFrame id="ec-week1-ni-temperature" type="chart" prompt={"用一張對數縱軸的折線圖加一顆溫度 slider，讓讀者體會「溫度只動一點，本質載子濃度 ni 就差好幾個\n數量級」。\n資料：依公式 ni = 5.2×10^15 · T^(3/2) · exp(−Eg / 2kT) 計算（k = 8.617×10^−5 eV/K），\n橫軸 T 從 200 K 到 600 K，縱軸 ni（cm^−3）用對數刻度（10^6 到 10^16）。\n畫兩條線：矽 Eg = 1.12 eV（主線、indigo）與鍺 Eg = 0.66 eV（對照線、較淡色），呈現「Eg 越大\nni 越低」。\n互動：一顆 T slider（200–600 K，步進 10 K，預設 300 K），拖動時在圖上顯示一條垂直參考線與對應點；\n圖下方三個數值卡片即時更新：目前溫度、矽的 ni（科學記號）、相對 300 K 的倍數（例如 600 K 時\n顯示「約 1.4×10^5 倍」）。\n在圖上用兩個標註點標出投影片 Example 2-1 的兩個值：300 K → 1.08×10^10、600 K → 1.54×10^15。\n底部一行固定結論：「指數關係讓 ni 對溫度極度敏感——這就是後面所有偏壓電路都要抵抗溫度漂移的原因。」\n視覺要求：用 recharts LineChart（對數 YAxis、ReferenceLine、ReferenceDot），圖寬撐滿容器、\n高約 260px；slider 用原生 range input 配 Tailwind 樣式；數值卡片用 DOM；\n尊重 prefers-reduced-motion（關閉 recharts 動畫）。"} caption="本質載子濃度對溫度是指數關係：矽從 300 K 升到 600 K，ni 暴增約 10^5 倍；能隙越大（矽 vs 鍺）整條曲線越低。">
+  <EcWeek1NiTemperature client:visible />
+</GeneratedFrame>
+
 
 ### 摻雜：Modification of Carrier Densities（第 13–19 頁）
 
@@ -930,7 +1014,7 @@ status: confirmed
 
 - **Mass Action Law（質量作用定律）**：投影片給出的核心公式 $n \times p = n_i^2$——**the product of electron and hole densities is ALWAYS equal to the square of intrinsic electron density regardless of doping levels**（電子與電洞濃度的乘積永遠等於本質載子濃度的平方，不論摻雜程度為何）。
 - **Majority Carriers（多數載子）公式**：N 型中 $n \approx N_D$（因為 $N_D \gg n_i$）；P 型中 $p \approx N_A$（因為 $N_A \gg n_i$）。
-- **Minority Carriers（少數載子）公式**：N 型中 $p \approx \dfrac{n_i^2}{N_D}$；P 型中 $n \approx n_i^2/N_A$。
+- **Minority Carriers（少數載子）公式**：N 型中 $p \approx \dfrac{n_i^2}{N_D}$；P 型中 $n \approx \frac{n_i^2}{N_A}$。
 - **Example 2-3（第 19 頁）**：一片矽均勻摻雜磷原子，摻雜濃度 $N_D = 10^{16}\text{ electrons/cm}^3$。因為磷貢獻的自由電子比矽本身熱激發產生的電子多出 $10^6$ 倍，滿足 $N_D \gg n_i$：
 
 $$
@@ -963,9 +1047,9 @@ status: confirmed
 
 $$
 \begin{aligned}
-E &= V/L = 10^6\ \text{V/m} \\
+E &= \frac{V}{L} = 10^6\ \text{V/m} \\
 v_e &= \mu_n E = 1.35\times10^7\text{ cm/s} \\
-\Delta t &= L/v_e = 7.4\text{ ps}
+\Delta t &= \frac{L}{v_e} = 7.4\text{ ps}
 \end{aligned}
 $$
 
@@ -981,17 +1065,17 @@ n &= \sqrt{\dfrac{\mu_p}{\mu_n}}\, n_i
 \end{aligned}
 $$
 
-矽的 $\mu_n/\mu_p = 1350/480 = 2.81$，代入得 $p = 1.68\, n_i$、$n = 0.596\, n_i$——投影片結論 **since p and n are of the same order as n_i, equal electron and hole drift currents can occur for only a very lightly doped material**（因為 $p$、$n$ 與 $n_i$ 同數量級，只有非常輕摻雜的材料才會出現電子電洞漂移電流相等）。
-- **Velocity saturation（速度飽和）**：投影片指出先前假設遷移率與電場無關並不精確——**in reality, carrier velocity does not increase linearly with the electric field due to frequent collisions with lattice and eventually saturates at high electric fields, limiting transistor performance**（實際上載子因頻繁與晶格碰撞，速度不會隨電場線性增加，最終在高電場下飽和，限制電晶體效能）。公式：$v(E) = \dfrac{\mu_0}{1+\mu_0E/v_{sat}}\, E$，$\mu_0$ 是**低電場遷移率（low-field mobility）**、$v_{sat}$ 是**飽和速度**。
+矽的 $\frac{\mu_n}{\mu_p} = \frac{1350}{480} = 2.81$，代入得 $p = 1.68\, n_i$、$n = 0.596\, n_i$——投影片結論 **since p and n are of the same order as n_i, equal electron and hole drift currents can occur for only a very lightly doped material**（因為 $p$、$n$ 與 $n_i$ 同數量級，只有非常輕摻雜的材料才會出現電子電洞漂移電流相等）。
+- **Velocity saturation（速度飽和）**：投影片指出先前假設遷移率與電場無關並不精確——**in reality, carrier velocity does not increase linearly with the electric field due to frequent collisions with lattice and eventually saturates at high electric fields, limiting transistor performance**（實際上載子因頻繁與晶格碰撞，速度不會隨電場線性增加，最終在高電場下飽和，限制電晶體效能）。公式：$v(E) = \dfrac{\mu_0}{1+\frac{\mu_0E}{v_{sat}}}\, E$，$\mu_0$ 是**低電場遷移率（low-field mobility）**、$v_{sat}$ 是**飽和速度**。
 
 ![速度 v 對電場 E 的曲線圖，一開始線性上升，隨後趨於平緩並收斂到 v_sat](/note-images/ec-week1-ch2/05-velocity-saturation.png)
 
 *速度飽和：電場夠大之後，速度不再隨電場線性增加，而是收斂到 $v_{sat}$。*
-- **Effective mobility, $\mu(E)$（有效遷移率）**：$\mu(E) = \dfrac{\mu_0}{1+(\mu_0/v_{sat})E}$，會隨電場 $E$ 增加而逐漸趨近零。
+- **Effective mobility, $\mu(E)$（有效遷移率）**：$\mu(E) = \dfrac{\mu_0}{1+\frac{\mu_0}{v_{sat}}E}$，會隨電場 $E$ 增加而逐漸趨近零。
 - **Example 2-7（第 27 頁）**：長 0.2 μm 元件兩端加 1V 電壓，低場遷移率 $\mu_0 = 1350\ \text{cm}^2/(\text{V}\cdot\text{s})$、飽和速度 $v_{sat} = 10^7\text{ cm/s}$：
 
 $$
-E = V/L = 5\times10^4\ \text{V/cm}, \qquad \mu = \dfrac{\mu_0}{1+\mu_0E/v_{sat}} = 0.129\mu_0 = 174\ \text{cm}^2/(\text{V}\cdot\text{s})
+E = \frac{V}{L} = 5\times10^4\ \text{V/cm}, \qquad \mu = \dfrac{\mu_0}{1+\frac{\mu_0E}{v_{sat}}} = 0.129\mu_0 = 174\ \text{cm}^2/(\text{V}\cdot\text{s})
 $$
 
 再求 $\mu$ 只比 $\mu_0$ 低 10%（即 $\mu = 0.9\mu_0$）時對應的最大電壓：
@@ -1034,7 +1118,7 @@ $$
 - **Example 2-9（第 32 頁）**：改為指數濃度梯度，$L_d$ 為常數：
 
 $$
-n(x) = N\exp(-x/L_d) \quad\Longrightarrow\quad J_n = \left(-\dfrac{qD_nN}{L_d}\right)\exp(-x/L_d)
+n(x) = N\exp\!\left(-\frac{x}{L_d}\right) \quad\Longrightarrow\quad J_n = \left(-\dfrac{qD_nN}{L_d}\right)\exp\!\left(-\frac{x}{L_d}\right)
 $$
 
 這裡電流密度本身其實會隨 $x$ 呈指數衰減（跟線性梯度那題「電流沿 $x$ 軸恆定」不同），讀原始投影片時要留意這個差異。
@@ -1042,6 +1126,35 @@ $$
 ![濃度分布為一條從 N 呈指數衰減到 L 處趨近零的曲線圖，沿線畫有向右的箭頭表示擴散方向](/note-images/ec-week1-ch2/22-example-2-9-exponential-gradient.png)
 
 *Example 2-9：指數濃度梯度，曲線是彎的，擴散電流會隨位置改變（不是常數）。*
+
+{/* @ai-visualize
+id: ec-week1-diffusion-gradient
+type: chart
+prompt: |
+  用左右並排的兩張小圖加一顆切換鈕，讓讀者親眼看到「擴散電流正比於濃度梯度，不是濃度本身」。
+  切換鈕兩態：「線性梯度（Example 2-8）」與「指數梯度（Example 2-9）」。
+  左圖：電子濃度 n(x) 對位置 x（0 到 L）；線性態畫一條從 N 直線降到 0 的斜線，指數態畫
+  n(x) = N·exp(−x/Ld) 的衰減曲線。
+  右圖：擴散電流密度 |Jn(x)| 對 x；線性態是一條水平線（處處相等），指數態是同樣形狀的指數衰減曲線
+  （x=0 最大、往右遞減）。
+  互動加分：一顆 x 位置 slider（0 到 L），拖動時兩張圖同步出現垂直參考線，並在圖下方顯示該位置的
+  「當地斜率 |dn/dx|」與「當地 |Jn|」的相對值（以 x=0 為 100%），讓讀者發現斜率固定 → 電流固定、
+  斜率變平 → 電流變小。
+  底部一行固定結論：「電流看的是斜率（dn/dx），不是高度（n）——線性分布斜率處處相同，所以電流
+  處處相等。」
+  視覺要求：兩張圖用 recharts（LineChart 或 AreaChart）並排、各佔一半寬度（總寬需在 640px 內），
+  不需精確數值刻度、只標 0 與 L／N；濃度用 emerald 系、電流用 indigo 系；切換時曲線用 200–400ms
+  ease-out 過渡（recharts 內建動畫）；尊重 prefers-reduced-motion。
+status: generated
+caption: 擴散電流只看濃度分布的斜率：線性分布斜率固定、電流處處相等；指數分布越往右越平、電流也跟著衰減。
+*/}
+
+import EcWeek1DiffusionGradient from '@/components/generated/ec-week1-diffusion-gradient'
+
+<GeneratedFrame id="ec-week1-diffusion-gradient" type="chart" prompt={"用左右並排的兩張小圖加一顆切換鈕，讓讀者親眼看到「擴散電流正比於濃度梯度，不是濃度本身」。\n切換鈕兩態：「線性梯度（Example 2-8）」與「指數梯度（Example 2-9）」。\n左圖：電子濃度 n(x) 對位置 x（0 到 L）；線性態畫一條從 N 直線降到 0 的斜線，指數態畫\nn(x) = N·exp(−x/Ld) 的衰減曲線。\n右圖：擴散電流密度 |Jn(x)| 對 x；線性態是一條水平線（處處相等），指數態是同樣形狀的指數衰減曲線\n（x=0 最大、往右遞減）。\n互動加分：一顆 x 位置 slider（0 到 L），拖動時兩張圖同步出現垂直參考線，並在圖下方顯示該位置的\n「當地斜率 |dn/dx|」與「當地 |Jn|」的相對值（以 x=0 為 100%），讓讀者發現斜率固定 → 電流固定、\n斜率變平 → 電流變小。\n底部一行固定結論：「電流看的是斜率（dn/dx），不是高度（n）——線性分布斜率處處相同，所以電流\n處處相等。」\n視覺要求：兩張圖用 recharts（LineChart 或 AreaChart）並排、各佔一半寬度（總寬需在 640px 內），\n不需精確數值刻度、只標 0 與 L／N；濃度用 emerald 系、電流用 indigo 系；切換時曲線用 200–400ms\nease-out 過渡（recharts 內建動畫）；尊重 prefers-reduced-motion。"} caption="擴散電流只看濃度分布的斜率：線性分布斜率固定、電流處處相等；指數分布越往右越平、電流也跟著衰減。">
+  <EcWeek1DiffusionGradient client:visible />
+</GeneratedFrame>
+
 ![Drift Current 與 Diffusion Current 左右對照：左邊立體長方體標示電場 E 與鋸齒路徑、公式 Jn=qμnE；右邊立體長方體標示三角形濃度分布、公式 Jn=qDn(dn/dx)](/note-images/ec-week1-ch2/23-drift-vs-diffusion-formulas.png)
 
 *漂移靠電場、擴散靠濃度梯度——物理機制完全不同，公式長得也不像，但兩者的比例常數（$\mu$ 與 $D$）之間卻有固定關係。*
@@ -1102,7 +1215,7 @@ status: confirmed
 
 *內建電位推導要用到的濃度分布圖：對 $x_1$ 到 $x_2$ 這段空乏區積分，就能推出 $V_0$ 的公式。*
 
-- **Built-in potential（內建電位，記為 $V_0$）**：因為接面上存在電場，所以存在一個內建電位。投影片推導：從平衡條件出發，代入電場與電位的關係（$E = -\dfrac{dV}{dx}$），對空乏區積分後得到 $V(x_1) - V(x_2) = \dfrac{D_p}{\mu_p}\ln\!\left(\dfrac{p_p}{p_n}\right)$；再代入愛因斯坦關係式 $\dfrac{D_p}{\mu_p} = \dfrac{kT}{q}$，並代入 $p_p = N_A$、$p_n = n_i^2/N_D$，最終得到：
+- **Built-in potential（內建電位，記為 $V_0$）**：因為接面上存在電場，所以存在一個內建電位。投影片推導：從平衡條件出發，代入電場與電位的關係（$E = -\dfrac{dV}{dx}$），對空乏區積分後得到 $V(x_1) - V(x_2) = \dfrac{D_p}{\mu_p}\ln\!\left(\dfrac{p_p}{p_n}\right)$；再代入愛因斯坦關係式 $\dfrac{D_p}{\mu_p} = \dfrac{kT}{q}$，並代入 $p_p = N_A$、$p_n = \frac{n_i^2}{N_D}$，最終得到：
 
 $$
 V_0 = V_T\ln\!\left(\dfrac{N_AN_D}{n_i^2}\right)
@@ -1143,7 +1256,7 @@ status: confirmed
 
 *逆偏 PN 接面：外加電場與內建電場同向，空乏區被拉寬。*
 
-- **Junction capacitance（接面電容，記為 $C_j$）**：公式 $C_j = \dfrac{C_{j0}}{\sqrt{1-V_R/V_0}}$，$C_{j0}$ 是零偏壓（$V_R = 0$）時的電容，另有推導公式 $C_{j0} = \sqrt{\dfrac{\varepsilon_{si}q}{2}\cdot\dfrac{N_AN_D}{N_A+N_D}\cdot\dfrac{1}{V_0}}$，$\varepsilon_{si}$ 是矽的**介電常數（dielectric constant）**。
+- **Junction capacitance（接面電容，記為 $C_j$）**：公式 $C_j = \dfrac{C_{j0}}{\sqrt{1-\frac{V_R}{V_0}}}$，$C_{j0}$ 是零偏壓（$V_R = 0$）時的電容，另有推導公式 $C_{j0} = \sqrt{\dfrac{\varepsilon_{si}q}{2}\cdot\dfrac{N_AN_D}{N_A+N_D}\cdot\dfrac{1}{V_0}}$，$\varepsilon_{si}$ 是矽的**介電常數（dielectric constant）**。
 
 ![接面電容 C_j 對逆偏電壓 V_R 的曲線圖，V_R=0 時電容最大，隨 |V_R| 增加而遞減](/note-images/ec-week1-ch2/09-capacitance-vs-reverse-voltage.png)
 
@@ -1153,7 +1266,7 @@ status: confirmed
 $$
 \begin{aligned}
 V_0 &= 730\text{ mV}, \quad C_{j0} = 0.265\ \text{fF}/\mu\text{m}^2 \\
-C_j(V_R=-1\text{V}) &= \dfrac{C_{j0}}{\sqrt{1-V_R/V_0}} = 0.172\ \text{fF}/\mu\text{m}^2
+C_j(V_R=-1\text{V}) &= \dfrac{C_{j0}}{\sqrt{1-\frac{V_R}{V_0}}} = 0.172\ \text{fF}/\mu\text{m}^2
 \end{aligned}
 $$
 
@@ -1177,6 +1290,37 @@ $$
 ![LC 振盪電路符號：左側可變電容 C（箭頭穿過電容符號代表電壓可調），右側電感 L，左下方標示輸入 V_R](/note-images/ec-week1-ch2/29-lc-oscillator-circuit.png)
 
 *用電壓可調電容組成的 LC 振盪槽電路：改變 $V_R$ 就改變 $C$，也就改變共振頻率——手機頻率合成器調台的實際電路。*
+
+{/* @ai-visualize
+id: ec-week1-junction-cap-vco
+type: motion
+prompt: |
+  用一顆逆偏電壓 slider 串起「VR → 空乏區寬度 → 接面電容 Cj → LC 共振頻率 fres」這條因果鏈，
+  讓讀者親手體驗 PN 接面怎麼被拿來調頻。
+  互動：一顆 VR slider，範圍 0 到 −2 V（步進 0.1 V），預設 0 V。
+  畫面分三段由上到下：
+  1. 接面示意：一條水平長條，P 側橘色、N 側藍色，中間灰色空乏區的寬度隨 |VR| 增大而變寬
+     （用 200–400ms ease-out 過渡）
+  2. 三個數值卡片即時更新，採用投影片 Example 2-15／2-16 的參數：V0 = 730 mV、
+     Cj0 = 0.265 fF/μm²、接面面積 2000 μm²、L = 11.9 nH。公式 Cj = Cj0 / sqrt(1 − VR/V0)
+     （VR 為負值）、C = Cj × 面積、fres = 1 / (2π·sqrt(L·C))。卡片依序顯示：Cj（fF/μm²）、
+     總電容 C（fF）、fres（GHz）
+  3. 一條水平的頻率標尺（2.0 到 2.8 GHz），一個指標點隨 slider 滑動，並標出兩個端點的投影片答案：
+     VR = 0 → 2.00 GHz、VR = −2 V → 2.78 GHz
+  底部一行固定結論：「空乏區就是電容的介電層——逆偏越深、板間距越寬、電容越小、頻率越高，
+  手機頻率合成器就靠這招調台。」
+  視覺要求：接面長條與頻率標尺用手寫 SVG（viewBox 寬 ≤ 640）或純 DOM 色塊；數值卡片用 DOM；
+  空乏區灰色、P 側橘色、N 側藍色（與 ec-week1-pn-junction 一致）；尊重 prefers-reduced-motion。
+status: generated
+caption: 逆偏電壓從 0 拉到 −2 V，空乏區變寬、總電容從 530 fF 降到 274 fF，LC 共振頻率從 2.00 GHz 升到 2.78 GHz——這就是電壓控制振盪器。
+*/}
+
+import EcWeek1JunctionCapVco from '@/components/generated/ec-week1-junction-cap-vco'
+
+<GeneratedFrame id="ec-week1-junction-cap-vco" type="motion" prompt={"用一顆逆偏電壓 slider 串起「VR → 空乏區寬度 → 接面電容 Cj → LC 共振頻率 fres」這條因果鏈，\n讓讀者親手體驗 PN 接面怎麼被拿來調頻。\n互動：一顆 VR slider，範圍 0 到 −2 V（步進 0.1 V），預設 0 V。\n畫面分三段由上到下：\n1. 接面示意：一條水平長條，P 側橘色、N 側藍色，中間灰色空乏區的寬度隨 |VR| 增大而變寬\n   （用 200–400ms ease-out 過渡）\n2. 三個數值卡片即時更新，採用投影片 Example 2-15／2-16 的參數：V0 = 730 mV、\n   Cj0 = 0.265 fF/μm²、接面面積 2000 μm²、L = 11.9 nH。公式 Cj = Cj0 / sqrt(1 − VR/V0)\n   （VR 為負值）、C = Cj × 面積、fres = 1 / (2π·sqrt(L·C))。卡片依序顯示：Cj（fF/μm²）、\n   總電容 C（fF）、fres（GHz）\n3. 一條水平的頻率標尺（2.0 到 2.8 GHz），一個指標點隨 slider 滑動，並標出兩個端點的投影片答案：\n   VR = 0 → 2.00 GHz、VR = −2 V → 2.78 GHz\n底部一行固定結論：「空乏區就是電容的介電層——逆偏越深、板間距越寬、電容越小、頻率越高，\n手機頻率合成器就靠這招調台。」\n視覺要求：接面長條與頻率標尺用手寫 SVG（viewBox 寬 ≤ 640）或純 DOM 色塊；數值卡片用 DOM；\n空乏區灰色、P 側橘色、N 側藍色（與 ec-week1-pn-junction 一致）；尊重 prefers-reduced-motion。"} caption="逆偏電壓從 0 拉到 −2 V，空乏區變寬、總電容從 530 fF 降到 274 fF，LC 共振頻率從 2.00 GHz 升到 2.78 GHz——這就是電壓控制振盪器。">
+  <EcWeek1JunctionCapVco client:visible />
+</GeneratedFrame>
+
 - **Robotics Application: Infrared Transceivers（機器人應用：紅外線收發器，第 50 頁）**：投影片舉例——機器人用紅外線收發器偵測障礙物：**Transmitter**（發射端）的 **IR LED** 發射紅外線光照向 **Obstacle**（障礙物），**Receiver**（接收端）的 **IR Sensor**（本質是一顆 PN 接面光感測器）接收反射光；光照射到接面時會產生電子電洞對，在外加電場作用下電子與電洞分別被拉往 n 區與 p 區，形成光電流，把間歇性的紅外線光脈衝轉換成對應的電流脈衝。
 
 ![機器人紅外線收發器系統圖：(a) 發射端 IR LED 對障礙物發光、接收端 IR Sensor 接收反射光 (b) PN 接面光感測器運作原理，光照使電子電洞對分別被拉往 n、p 區 (c) 發射的間歇 IR 光脈衝與感測器產生的對應電流脈衝波形](/note-images/ec-week1-ch2/17-ir-transceiver-application.png)
@@ -1203,7 +1347,7 @@ status: confirmed
 ![平衡態與順偏態的載子濃度分布對照圖，順偏態下 n 側電洞濃度與 p 側電子濃度都明顯升高](/note-images/ec-week1-ch2/10-minority-carrier-forward-bias.png)
 
 *順偏後，兩側的少數載子濃度（虛線標示處）都比平衡態明顯升高。*
-- **推導**：從 $p_p/p_n = e^{V_0/V_T}$ 出發，平衡態 $p_{n,e} = p_{p,e}\, e^{-V_0/V_T}$；順偏態 $p_{n,f} = p_{p,f}\, e^{-(V_0-V_F)/V_T}$；因為 $p_{p,e} \approx p_{p,f} \approx N_A$（外加順偏電壓幾乎不改變多數載子濃度），可得 $p_{n,f} = e^{V_F/V_T}\, p_{n,e}$——順偏態的少數載子濃度是平衡態的 $e^{V_F/V_T}$ 倍，遠大於平衡態值。
+- **推導**：從 $\frac{p_p}{p_n} = \exp\!\left(\frac{V_0}{V_T}\right)$ 出發，平衡態 $p_{n,e} = p_{p,e}\, \exp\!\left(-\frac{V_0}{V_T}\right)$；順偏態 $p_{n,f} = p_{p,f}\, \exp\!\left(-\frac{V_0-V_F}{V_T}\right)$；因為 $p_{p,e} \approx p_{p,f} \approx N_A$（外加順偏電壓幾乎不改變多數載子濃度），可得 $p_{n,f} = \exp\!\left(\frac{V_F}{V_T}\right)\, p_{n,e}$——順偏態的少數載子濃度是平衡態的 $\exp\!\left(\frac{V_F}{V_T}\right)$ 倍，遠大於平衡態值。
 - **Reverse saturation current（逆向飽和電流，記為 $I_S$）**：把少數載子增加量整理成電流公式後得到：$I_S = Aqn_i^2\left(\dfrac{D_n}{N_AL_n} + \dfrac{D_p}{N_DL_p}\right)$，$A$ 是元件截面積，$L_n$、$L_p$ 是電子與電洞的**擴散長度（diffusion lengths）**——少數載子在復合消失前平均能擴散的距離。
 - **Example 2-17（第 55 頁）**：$A = 100\ \mu\text{m}^2$、$L_n = L_p = 20\ \mu\text{m}$，代入 Example 2-13 的摻雜濃度：
 
@@ -1238,7 +1382,7 @@ $$
 I_D = I_S\left(\exp\!\left(\dfrac{V_D}{V_T}\right) - 1\right)
 $$
 
-當 $V_D$ 為正且遠大於 $V_T$ 時可近似為 $I_D \approx I_S \exp(V_D/V_T)$。投影片說明——**the current and voltage relationship of a PN junction is exponential in forward bias region, and relatively constant in reverse bias region**（PN 接面的電流電壓關係在順偏區呈指數關係，逆偏區則相對維持定值，接近 $-I_S$）。
+當 $V_D$ 為正且遠大於 $V_T$ 時可近似為 $I_D \approx I_S \exp\!\left(\frac{V_D}{V_T}\right)$。投影片說明——**the current and voltage relationship of a PN junction is exponential in forward bias region, and relatively constant in reverse bias region**（PN 接面的電流電壓關係在順偏區呈指數關係，逆偏區則相對維持定值，接近 $-I_S$）。
 
 ![二極體 I-V 特性曲線：逆偏區電流趨近 −I_S 的水平線，順偏區電流呈指數陡升](/note-images/ec-week1-ch2/12-diode-iv-characteristic.png)
 
@@ -1261,10 +1405,41 @@ $$
 - **Example 2-19（第 62 頁，60mV 經驗法則）**：投影片提問——電流要增加為原來的 10 倍，$V_D$ 需要改變多少？
 
 $$
-V_D = V_T\ln(I_D/I_S), \qquad I_1 = 10I_D \implies \Delta V_D = V_T\ln(10) \approx 59.9\text{ mV}
+V_D = V_T\ln\!\left(\frac{I_D}{I_S}\right), \qquad I_1 = 10I_D \implies \Delta V_D = V_T\ln(10) \approx 59.9\text{ mV}
 $$
 
 這是電子學裡非常重要的經驗法則：**二極體電流每增加 10 倍，兩端電壓大約只需增加 60 mV**。
+
+{/* @ai-visualize
+id: ec-week1-diode-60mv-rule
+type: chart
+prompt: |
+  用「線性／對數縱軸」可切換的二極體 I-V 曲線加一顆 VD slider，讓讀者體會指數關係有多陡、
+  以及「每 60 mV 電流翻 10 倍」的經驗法則。
+  資料：ID = IS·(exp(VD/VT) − 1)，IS = 1.77×10^−17 A、VT = 26 mV，橫軸 VD 從 0 到 0.85 V。
+  互動一：一組兩顆切換鈕「線性刻度／對數刻度」——線性刻度下曲線在 0.7 V 前幾乎貼著零、之後陡直
+  起飛；對數刻度下同一條曲線變成一條直線（斜率就是每 decade 60 mV）。
+  互動二：一顆 VD slider（0.3 到 0.85 V，步進 0.01 V，預設 0.7 V），圖上顯示目前點；圖下方兩個
+  數值卡片即時更新：目前 ID（自動選 pA／nA／μA／mA 單位）、以及「再加 60 mV 後的 ID」
+  （顯示為前者的約 10 倍）。
+  在圖上標出投影片 Example 2-18 的兩個點：300 mV → 3.63 pA、800 mV → 816 μA（並註「電壓只差
+  500 mV，電流差 8 個數量級」）。
+  底部一行固定結論：「指數曲線在對數座標下是直線，斜率固定為 VT·ln10 ≈ 60 mV／decade——這是估算
+  二極體工作點最常用的捷徑。」
+  視覺要求：用 recharts LineChart（YAxis 的 scale 依切換在 linear／log 間切換、log 時 domain
+  下限設 1e-13 避免 log(0)）；切換時用 recharts 動畫過渡；slider 用原生 range input；數值卡片用
+  DOM；曲線 indigo 系、參考點 emerald 系；尊重 prefers-reduced-motion。
+  不要重做「理想／定電壓／指數三種模型對照」——那是第 2 週 ec-week2-diode-models 的主題。
+status: generated
+caption: 同一條二極體 I-V 曲線：線性座標下像一道牆，對數座標下是一條斜率 60 mV／decade 的直線——電流每翻 10 倍，電壓只多 60 mV。
+*/}
+
+import EcWeek1Diode60mvRule from '@/components/generated/ec-week1-diode-60mv-rule'
+
+<GeneratedFrame id="ec-week1-diode-60mv-rule" type="chart" prompt={"用「線性／對數縱軸」可切換的二極體 I-V 曲線加一顆 VD slider，讓讀者體會指數關係有多陡、\n以及「每 60 mV 電流翻 10 倍」的經驗法則。\n資料：ID = IS·(exp(VD/VT) − 1)，IS = 1.77×10^−17 A、VT = 26 mV，橫軸 VD 從 0 到 0.85 V。\n互動一：一組兩顆切換鈕「線性刻度／對數刻度」——線性刻度下曲線在 0.7 V 前幾乎貼著零、之後陡直\n起飛；對數刻度下同一條曲線變成一條直線（斜率就是每 decade 60 mV）。\n互動二：一顆 VD slider（0.3 到 0.85 V，步進 0.01 V，預設 0.7 V），圖上顯示目前點；圖下方兩個\n數值卡片即時更新：目前 ID（自動選 pA／nA／μA／mA 單位）、以及「再加 60 mV 後的 ID」\n（顯示為前者的約 10 倍）。\n在圖上標出投影片 Example 2-18 的兩個點：300 mV → 3.63 pA、800 mV → 816 μA（並註「電壓只差\n500 mV，電流差 8 個數量級」）。\n底部一行固定結論：「指數曲線在對數座標下是直線，斜率固定為 VT·ln10 ≈ 60 mV／decade——這是估算\n二極體工作點最常用的捷徑。」\n視覺要求：用 recharts LineChart（YAxis 的 scale 依切換在 linear／log 間切換、log 時 domain\n下限設 1e-13 避免 log(0)）；切換時用 recharts 動畫過渡；slider 用原生 range input；數值卡片用\nDOM；曲線 indigo 系、參考點 emerald 系；尊重 prefers-reduced-motion。\n不要重做「理想／定電壓／指數三種模型對照」——那是第 2 週 ec-week2-diode-models 的主題。"} caption="同一條二極體 I-V 曲線：線性座標下像一道牆，對數座標下是一條斜率 60 mV／decade 的直線——電流每翻 10 倍，電壓只多 60 mV。">
+  <EcWeek1Diode60mvRule client:visible />
+</GeneratedFrame>
+
 - **Constant-Voltage Diode Model（定電壓二極體模型，第 63 頁）**：投影片定義——**diode operates as an open circuit if V_D < V_D,on and a constant voltage source of V_D,on if V_D tends to exceed V_D,on**（若 $V_D$ 小於開啟電壓 $V_{D,on}$，二極體視為開路；電壓有超過 $V_{D,on}$ 的趨勢，則視為固定電壓源）。
 
 ![定電壓模型的 I-V 曲線（電壓未達 V_D,on 前電流為零、達到後垂直陡升）與對應的電路符號等效（開路／固定電壓源）](/note-images/ec-week1-ch2/13-constant-voltage-model.png)
@@ -1278,7 +1453,7 @@ $$
 
 一個電壓源 $V_X$ 接電阻 $R_1 = 1\text{k}\Omega$ 再接二極體 $D_1$ 的簡單電路，分別用**指數模型**（$I_S = 10^{-16}\text{ A}$）與**定電壓模型**（$V_{D,on} = 800\text{mV}$）計算電流。
 
-**(a) 指數模型**——由 KVL 得 $V_X = I_XR_1 + V_D$，其中 $V_D = V_T\ln(I_X/I_S)$，兩式互相牽扯，須用**疊代法（iterative method）** 求解：
+**(a) 指數模型**——由 KVL 得 $V_X = I_XR_1 + V_D$，其中 $V_D = V_T\ln\!\left(\frac{I_X}{I_S}\right)$，兩式互相牽扯，須用**疊代法（iterative method）** 求解：
 
 $$
 \begin{aligned}
@@ -1335,6 +1510,36 @@ status: confirmed
 
 *齊納崩潰是電場直接扯斷共價鍵；突崩崩潰是載子加速碰撞產生連鎖倍增，兩種機制殊途同歸。*
 
+{/* @ai-visualize
+id: ec-week1-breakdown-mechanisms
+type: motion
+prompt: |
+  用左右並排的兩格動畫（各自一顆「播放」按鈕，可重播）對照逆向崩潰的兩種機制，讓讀者看懂
+  「一個是電場直接扯、一個是撞出來的連鎖反應」。
+  左格「齊納崩潰（Zener）」：畫一段空乏區（灰色底），區內幾顆固定在共價鍵上的電子（藍色小圓、
+  以短線連著格點）；播放時，一組水平的電場箭頭（indigo）變粗變密，接著多顆電子同時「被拉脫」
+  鍵結、沿電場方向平移出去——強調沒有碰撞、是強電場直接把電子從共價鍵扯出（量子穿隧）。
+  右格「突崩崩潰（Avalanche）」：同樣一段空乏區，畫幾顆固定離子（灰色圓）；播放時，一顆電子從
+  左側加速衝入，撞到第一顆離子後分裂成 2 顆（撞出一組電子電洞對：藍色電子＋橘色電洞），2 顆再
+  加速撞出 4 顆、4 顆變 8 顆，三代倍增後畫面右側擠滿載子——強調「加速 → 碰撞 → 倍增 → 再加速」
+  的雪崩連鎖。
+  兩格下方各三行 DOM 說明（觸發條件／新載子從哪來／關鍵字），最底部一行橫跨兩格的共同點：
+  「兩者都發生在 VR 超過 VBD 之後，且只要外部有限流電阻保護，崩潰區『電壓幾乎不隨電流變』的
+  特性正是齊納二極體穩壓的原理。」
+  視覺要求：兩格各用手寫 SVG（每格 viewBox 寬 ≤ 300，兩格並排總寬在 640px 內；若太擠改為上下
+  堆疊），動畫用 motion 分段推進、每段 300–500ms ease-out、總長不超過 3 秒；電子藍色、電洞橘色、
+  電場箭頭 indigo、離子灰色；中文放 DOM 不放 SVG text；尊重 prefers-reduced-motion（直接顯示終態）。
+status: generated
+caption: 齊納崩潰是強電場直接把電子從共價鍵扯出；突崩崩潰是載子加速撞擊離子、一顆變兩顆、兩顆變四顆的連鎖倍增。殊途同歸：崩潰區電壓幾乎不變，可用來穩壓。
+*/}
+
+import EcWeek1BreakdownMechanisms from '@/components/generated/ec-week1-breakdown-mechanisms'
+
+<GeneratedFrame id="ec-week1-breakdown-mechanisms" type="motion" prompt={"用左右並排的兩格動畫（各自一顆「播放」按鈕，可重播）對照逆向崩潰的兩種機制，讓讀者看懂\n「一個是電場直接扯、一個是撞出來的連鎖反應」。\n左格「齊納崩潰（Zener）」：畫一段空乏區（灰色底），區內幾顆固定在共價鍵上的電子（藍色小圓、\n以短線連著格點）；播放時，一組水平的電場箭頭（indigo）變粗變密，接著多顆電子同時「被拉脫」\n鍵結、沿電場方向平移出去——強調沒有碰撞、是強電場直接把電子從共價鍵扯出（量子穿隧）。\n右格「突崩崩潰（Avalanche）」：同樣一段空乏區，畫幾顆固定離子（灰色圓）；播放時，一顆電子從\n左側加速衝入，撞到第一顆離子後分裂成 2 顆（撞出一組電子電洞對：藍色電子＋橘色電洞），2 顆再\n加速撞出 4 顆、4 顆變 8 顆，三代倍增後畫面右側擠滿載子——強調「加速 → 碰撞 → 倍增 → 再加速」\n的雪崩連鎖。\n兩格下方各三行 DOM 說明（觸發條件／新載子從哪來／關鍵字），最底部一行橫跨兩格的共同點：\n「兩者都發生在 VR 超過 VBD 之後，且只要外部有限流電阻保護，崩潰區『電壓幾乎不隨電流變』的\n特性正是齊納二極體穩壓的原理。」\n視覺要求：兩格各用手寫 SVG（每格 viewBox 寬 ≤ 300，兩格並排總寬在 640px 內；若太擠改為上下\n堆疊），動畫用 motion 分段推進、每段 300–500ms ease-out、總長不超過 3 秒；電子藍色、電洞橘色、\n電場箭頭 indigo、離子灰色；中文放 DOM 不放 SVG text；尊重 prefers-reduced-motion（直接顯示終態）。"} caption="齊納崩潰是強電場直接把電子從共價鍵扯出；突崩崩潰是載子加速撞擊離子、一顆變兩顆、兩顆變四顆的連鎖倍增。殊途同歸：崩潰區電壓幾乎不變，可用來穩壓。">
+  <EcWeek1BreakdownMechanisms client:visible />
+</GeneratedFrame>
+
+
 ## 關鍵定義
 
 期中考複習範圍鎖定本週涵蓋的半導體物理（CH2 為主，CH1 少量會考的定量題一併列入）。以下依「定義 → 公式 → 考題 → 詳解」整理，供期中考前複習使用。
@@ -1345,20 +1550,20 @@ status: confirmed
 | Covalent bond（共價鍵） | 相鄰原子各出一個電子共用形成的鍵結 |
 | Free electron / Hole（自由電子／電洞） | 熱能使電子脫離共價鍵成為自由電子，留下的空位即電洞（帶正電、可視為移動的載子） |
 | Bandgap energy $E_g$（能隙能量） | 電子脫離共價鍵所需的最小能量；矽 $E_g=1.12\text{eV}$ |
-| Intrinsic carrier concentration $n_i$（本質載子濃度） | 未摻雜純半導體中的載子濃度，$n_i=5.2\times10^{15}T^{3/2}\exp(-E_g/2kT)$ |
+| Intrinsic carrier concentration $n_i$（本質載子濃度） | 未摻雜純半導體中的載子濃度，$n_i=5.2\times10^{15}T^{\frac{3}{2}}\exp\!\left(-\frac{E_g}{2kT}\right)$ |
 | Doping / Dopant（摻雜／摻雜物） | 刻意混入微量雜質改變載子濃度；使半導體從 intrinsic 變 extrinsic，電阻下降 |
 | Donor / Acceptor（施體／受體） | 磷等五價元素（施體）摻入形成 N 型；硼等三價元素（受體）摻入形成 P 型 |
 | Majority / Minority carrier（多數／少數載子） | N 型中電子為多數、電洞為少數；P 型相反 |
 | Drift（漂移） | 電場推動帶電粒子移動的過程，$v=\mu E$ |
 | Mobility $\mu$（遷移率） | 速度與電場的比例常數；矽 $\mu_n=1350$、$\mu_p=480\ \text{cm}^2/(\text{V·s})$ |
 | Velocity saturation（速度飽和） | 高電場下速度不再線性增加、趨近 $v_{sat}$ |
-| Diffusion（擴散） | 載子由高濃度往低濃度移動，與電場無關，電流正比於濃度梯度 $dn/dx$ |
+| Diffusion（擴散） | 載子由高濃度往低濃度移動，與電場無關，電流正比於濃度梯度 $\frac{dn}{dx}$ |
 | Diffusion coefficient $D$（擴散係數） | 擴散電流的比例常數；矽 $D_n=34$、$D_p=12\ \text{cm}^2/\text{s}$ |
-| Einstein relation（愛因斯坦關係式） | $D/\mu = kT/q = V_T$，連結漂移與擴散兩個獨立機制 |
-| Thermal voltage $V_T$（熱電壓） | $V_T=kT/q$，室溫下約 26mV |
+| Einstein relation（愛因斯坦關係式） | $\frac{D}{\mu} = \frac{kT}{q} = V_T$，連結漂移與擴散兩個獨立機制 |
+| Thermal voltage $V_T$（熱電壓） | $V_T=\frac{kT}{q}$，室溫下約 26mV |
 | PN junction（PN 接面） | N 型與 P 型並排形成的二極體 |
 | Depletion region（空乏區） | 接面附近載子擴散殆盡後、只剩固定離子的區域 |
-| Built-in potential $V_0$（內建電位） | 平衡態接面兩端因空乏區電場產生的電位差，$V_0=V_T\ln(N_AN_D/n_i^2)$ |
+| Built-in potential $V_0$（內建電位） | 平衡態接面兩端因空乏區電場產生的電位差，$V_0=V_T\ln\!\left(\frac{N_AN_D}{n_i^2}\right)$ |
 | Junction capacitance $C_j$（接面電容） | 逆偏下空乏區寬度隨電壓變化形成的等效電容 |
 | Reverse saturation current $I_S$（逆向飽和電流） | 順偏二極體方程式中的比例常數，正比於接面面積 $A$ |
 | Constant-voltage model（定電壓模型） | 用「未達 $V_{D,on}$ 視為開路，超過視為定電壓源」簡化指數 I-V 曲線 |
@@ -1369,16 +1574,16 @@ status: confirmed
 ## 公式
 
 - 質量作用定律（Mass Action Law）：$np = n_i^2$（恆成立，與摻雜濃度無關）
-- 多數／少數載子濃度（N 型，$N_D\gg n_i$）：$n\approx N_D,\ p\approx n_i^2/N_D$（P 型對稱）
+- 多數／少數載子濃度（N 型，$N_D\gg n_i$）：$n\approx N_D,\ p\approx \frac{n_i^2}{N_D}$（P 型對稱）
 - 漂移電流密度：$J_n=q\mu_n nE,\ J_p=q\mu_p pE,\ J_{tot}=q(\mu_n n+\mu_p p)E$
-- 速度飽和：$v(E)=\dfrac{\mu_0}{1+\mu_0E/v_{sat}}E$
+- 速度飽和：$v(E)=\dfrac{\mu_0}{1+\frac{\mu_0E}{v_{sat}}}E$
 - 擴散電流密度：$J_n=qD_n\dfrac{dn}{dx},\ J_p=-qD_p\dfrac{dp}{dx}$
 - 愛因斯坦關係式：$\dfrac{D_n}{\mu_n}=\dfrac{D_p}{\mu_p}=\dfrac{kT}{q}=V_T\approx26\text{mV（室溫）}$
 - 內建電位：$V_0=V_T\ln\!\left(\dfrac{N_AN_D}{n_i^2}\right)$
-- 接面電容：$C_j=\dfrac{C_{j0}}{\sqrt{1-V_R/V_0}}$，其中 $C_{j0}=\sqrt{\dfrac{\varepsilon_{si}q}{2}\cdot\dfrac{N_AN_D}{N_A+N_D}\cdot\dfrac1{V_0}}$
+- 接面電容：$C_j=\dfrac{C_{j0}}{\sqrt{1-\frac{V_R}{V_0}}}$，其中 $C_{j0}=\sqrt{\dfrac{\varepsilon_{si}q}{2}\cdot\dfrac{N_AN_D}{N_A+N_D}\cdot\dfrac1{V_0}}$
 - LC 振盪頻率：$f_{res}=\dfrac1{2\pi\sqrt{LC}}$
 - 逆向飽和電流：$I_S=Aqn_i^2\left(\dfrac{D_n}{N_AL_n}+\dfrac{D_p}{N_DL_p}\right)$
-- 二極體方程式：$I_D=I_S\left(e^{V_D/V_T}-1\right)\approx I_S e^{V_D/V_T}$（當 $V_D\gg V_T$）
+- 二極體方程式：$I_D=I_S\left(\exp\!\left(\frac{V_D}{V_T}\right)-1\right)\approx I_S \exp\!\left(\frac{V_D}{V_T}\right)$（當 $V_D\gg V_T$）
 - 60mV 經驗法則：電流增為 10 倍 $\Leftrightarrow \Delta V_D=V_T\ln10\approx60\text{mV}$
 
 ## 考題
@@ -1393,7 +1598,7 @@ status: confirmed
 
 **詳解**
 
-摻雜不是憑空創造載子，而是把電子、電洞的天平往一邊壓，且必須維持 $np=n_i^2$ 恆定。N 型摻磷後 $n\approx N_D$ 大幅升高，為了讓乘積不變，$p=n_i^2/N_D$ 必須大幅下降——電洞並未消失，只是變成數量遠低於電子的少數載子。這件事之所以重要，是因為後面 BJT／二極體順偏電流的物理機制，恰恰建立在少數載子的注入與擴散上，不是多數載子。
+摻雜不是憑空創造載子，而是把電子、電洞的天平往一邊壓，且必須維持 $np=n_i^2$ 恆定。N 型摻磷後 $n\approx N_D$ 大幅升高，為了讓乘積不變，$p=\frac{n_i^2}{N_D}$ 必須大幅下降——電洞並未消失，只是變成數量遠低於電子的少數載子。這件事之所以重要，是因為後面 BJT／二極體順偏電流的物理機制，恰恰建立在少數載子的注入與擴散上，不是多數載子。
 
 #### 複習題 2
 
@@ -1403,14 +1608,14 @@ status: confirmed
 
 | 項目 | 漂移 | 擴散 |
 | --- | --- | --- |
-| 驅動力 | 電場 $E$ | 濃度梯度 $dn/dx$ |
+| 驅動力 | 電場 $E$ | 濃度梯度 $\frac{dn}{dx}$ |
 | 需要外加電壓 | 要 | 不要 |
 | 電流正比於 | 電場強度（線性） | 濃度的斜率 |
 | 高強度極限 | 速度飽和 $v_{sat}$ | 濃度拉平後電流趨於零 |
 
 **詳解**
 
-兩者物理機制完全獨立（一個靠電場加速、一個靠亂數熱運動擴散），但愛因斯坦關係式 $D/\mu=kT/q$ 指出兩者的比例常數維持固定比值——這正是 PN 接面平衡態「兩股電流剛好抵消」得以成立的數學基礎。
+兩者物理機制完全獨立（一個靠電場加速、一個靠亂數熱運動擴散），但愛因斯坦關係式 $\frac{D}{\mu}=\frac{kT}{q}$ 指出兩者的比例常數維持固定比值——這正是 PN 接面平衡態「兩股電流剛好抵消」得以成立的數學基礎。
 
 #### 複習題 3
 
@@ -1442,7 +1647,7 @@ status: confirmed
 
 **詳解**
 
-指數模型 $I_D=I_S(e^{V_D/V_T}-1)$ 精確，但因為 $V_D$ 與 $I_D$ 互相牽扯（KVL 方程式和指數方程式聯立），手算必須用疊代法逐步逼近，非常耗時。定電壓模型把二極體簡化成「未達 $V_{D,on}$ 視為開路，超過視為固定電壓源」，電路瞬間變成純線性方程式，可直接解出。代價是精度略降，但通常誤差在 1% 以內，換取的計算效率遠大於損失的精度。
+指數模型 $I_D=I_S\left(\exp\!\left(\frac{V_D}{V_T}\right)-1\right)$ 精確，但因為 $V_D$ 與 $I_D$ 互相牽扯（KVL 方程式和指數方程式聯立），手算必須用疊代法逐步逼近，非常耗時。定電壓模型把二極體簡化成「未達 $V_{D,on}$ 視為開路，超過視為固定電壓源」，電路瞬間變成純線性方程式，可直接解出。代價是精度略降，但通常誤差在 1% 以內，換取的計算效率遠大於損失的精度。
 
 ### 計算題
 
@@ -1452,7 +1657,7 @@ status: confirmed
 
 **詳解**
 
-公式 $n_i=5.2\times10^{15}T^{3/2}\exp\!\left(-\dfrac{E_g}{2kT}\right)$。$T$ 上升會讓 $n_i$ 上升（指數項的負指數絕對值變小，$n_i$ 隨溫度非線性、劇烈上升；300K→600K，$n_i$ 從 $1.08\times10^{10}$ 暴增到 $1.54\times10^{15}$，暴增了約 $10^5$ 倍）；$E_g$ 越大則 $n_i$ 越小（能隙越大越難產生自由載子）。工程意義：這正是為什麼所有偏壓電路都要設計成抵抗溫度飄移，不能依賴元件的絕對電流值。
+公式 $n_i=5.2\times10^{15}T^{\frac{3}{2}}\exp\!\left(-\dfrac{E_g}{2kT}\right)$。$T$ 上升會讓 $n_i$ 上升（指數項的負指數絕對值變小，$n_i$ 隨溫度非線性、劇烈上升；300K→600K，$n_i$ 從 $1.08\times10^{10}$ 暴增到 $1.54\times10^{15}$，暴增了約 $10^5$ 倍）；$E_g$ 越大則 $n_i$ 越小（能隙越大越難產生自由載子）。工程意義：這正是為什麼所有偏壓電路都要設計成抵抗溫度飄移，不能依賴元件的絕對電流值。
 
 #### 複習題 8
 
@@ -1496,28 +1701,28 @@ $$
 $$
 \begin{aligned}
 E &=\frac{V}{L}=\frac{1\text{V}}{0.5\times10^{-4}\text{cm}}=2\times10^4\ \text{V/cm} \\
-\mu(E) &=\frac{\mu_0}{1+\mu_0E/v_{sat}}=\frac{1350}{1+2.7}=365\ \text{cm}^2/(\text{V·s})
+\mu(E) &=\frac{\mu_0}{1+\frac{\mu_0E}{v_{sat}}}=\frac{1350}{1+2.7}=365\ \text{cm}^2/(\text{V·s})
 \end{aligned}
 $$
 
-$\mu(E)/\mu_0\approx0.27$，已下降超過 70%，明顯進入速度飽和區——說明次微米元件在正常工作電壓下幾乎必然遭遇速度飽和，是短通道 MOS 電晶體效能受限的物理根源。
+$\frac{\mu(E)}{\mu_0}\approx0.27$，已下降超過 70%，明顯進入速度飽和區——說明次微米元件在正常工作電壓下幾乎必然遭遇速度飽和，是短通道 MOS 電晶體效能受限的物理根源。
 
 #### 複習題 11
 
-> 電子濃度分布 $n(x)=N\exp(-x/L_d)$（$L_d=1\mu\text{m}$，$N=10^{16}\text{cm}^{-3}$，$D_n=34\text{cm}^2/\text{s}$），求 $x=0$ 與 $x=L_d$ 處的擴散電流密度，並說明為何電流不是常數。
+> 電子濃度分布 $n(x)=N\exp\!\left(-\frac{x}{L_d}\right)$（$L_d=1\mu\text{m}$，$N=10^{16}\text{cm}^{-3}$，$D_n=34\text{cm}^2/\text{s}$），求 $x=0$ 與 $x=L_d$ 處的擴散電流密度，並說明為何電流不是常數。
 
 **詳解**
 
 $$
 \begin{aligned}
-\frac{dn}{dx} &= -\frac{N}{L_d}\exp(-x/L_d) \\
-J_n(x) &= qD_n\frac{dn}{dx} = -\frac{qD_nN}{L_d}\exp(-x/L_d) \\
+\frac{dn}{dx} &= -\frac{N}{L_d}\exp\!\left(-\frac{x}{L_d}\right) \\
+J_n(x) &= qD_n\frac{dn}{dx} = -\frac{qD_nN}{L_d}\exp\!\left(-\frac{x}{L_d}\right) \\
 J_n(0) &= -\frac{(1.6\times10^{-19})(34)(10^{16})}{10^{-4}} \approx -544\ \text{A/cm}^2 \\
 J_n(L_d) &= -544\times e^{-1} \approx -200\ \text{A/cm}^2
 \end{aligned}
 $$
 
-電流不是常數的原因：擴散電流只取決於當地的濃度梯度 $dn/dx$，不是濃度本身。因為 $n(x)$ 是指數遞減函式，其斜率本身隨 $x$ 增加而變平緩，所以 $|J_n|$ 也隨之遞減。若濃度分布是線性而非指數，梯度才會處處相同、電流才會是常數——這正是用來測試「擴散電流正比於梯度、不正比於濃度」這個易混淆點。
+電流不是常數的原因：擴散電流只取決於當地的濃度梯度 $\frac{dn}{dx}$，不是濃度本身。因為 $n(x)$ 是指數遞減函式，其斜率本身隨 $x$ 增加而變平緩，所以 $|J_n|$ 也隨之遞減。若濃度分布是線性而非指數，梯度才會處處相同、電流才會是常數——這正是用來測試「擴散電流正比於梯度、不正比於濃度」這個易混淆點。
 
 #### 複習題 12
 
