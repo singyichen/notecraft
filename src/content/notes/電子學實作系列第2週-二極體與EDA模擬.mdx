@@ -78,9 +78,16 @@ prompt: |
   視覺要求：IV 曲線用單一 SVG 折線（viewBox 寬度不超過 640），切換時
   用 200-400ms ease-out 的路徑過渡；三種模型各用一個顏色；所有中文標註
   放在 SVG 外的 DOM，不要用 SVG text 寫中文；尊重 prefers-reduced-motion。
-status: pending
+status: generated
 caption: 同一顆二極體的三種模型：精度與手算難度的取捨，決定了你該用哪一個。
 */}
+
+import GeneratedFrame from '@/components/GeneratedFrame.astro'
+import EcWeek2DiodeModels from '@/components/generated/ec-week2-diode-models'
+
+<GeneratedFrame id="ec-week2-diode-models" type="motion" prompt={"用可切換的三態，對照二極體的三種模型在同一條 IV 特性上的差異。\n三個狀態（三顆切換鈕，一次顯示一態）：\n1. 理想模型：反向電流為零、正向從原點起垂直上升\n2. 定電壓模型：反向電流為零、正向到約 0.7V 才起飛，之後垂直上升\n3. 指數模型：平滑的指數曲線\n每個狀態下方顯示三個欄位：導通時的壓降、適用場合、主要代價。\n視覺要求：IV 曲線用單一 SVG 折線（viewBox 寬度不超過 640），切換時\n用 200-400ms ease-out 的路徑過渡；三種模型各用一個顏色；所有中文標註\n放在 SVG 外的 DOM，不要用 SVG text 寫中文；尊重 prefers-reduced-motion。"} caption="同一顆二極體的三種模型：精度與手算難度的取捨，決定了你該用哪一個。">
+  <EcWeek2DiodeModels client:visible />
+</GeneratedFrame>
 
 {/* @ai-visualize
 id: ec-week2-small-signal
@@ -99,9 +106,15 @@ prompt: |
   這個關係可以被直接看見。
   視覺要求：曲線與切線用 SVG（viewBox 寬度不超過 640），四個讀數用 DOM
   卡片橫排顯示；拖動時讀數即時更新不要有動畫延遲；切線用強調色。
-status: pending
+status: generated
 caption: 小訊號分析就是在偏壓點上切一條線：偏壓點越往上，曲線越陡，等效電阻越小。
 */}
+
+import EcWeek2SmallSignal from '@/components/generated/ec-week2-small-signal'
+
+<GeneratedFrame id="ec-week2-small-signal" type="chart" prompt={"互動示範小訊號分析：在二極體的指數 IV 曲線上，讓使用者拖動偏壓點，\n即時顯示該點的切線與等效小訊號電阻。\n互動元素（只有一個旋鈕）：\n- 一條水平滑桿，控制直流偏壓點在曲線上的位置\n即時顯示的四個讀數：\n1. 偏壓點的電壓\n2. 偏壓點的電流\n3. 該點切線的斜率\n4. 等效小訊號電阻（斜率的倒數）\n同時在曲線上畫出通過該點的切線段，讓「電流越大、曲線越陡、等效電阻越小」\n這個關係可以被直接看見。\n視覺要求：曲線與切線用 SVG（viewBox 寬度不超過 640），四個讀數用 DOM\n卡片橫排顯示；拖動時讀數即時更新不要有動畫延遲；切線用強調色。"} caption="小訊號分析就是在偏壓點上切一條線：偏壓點越往上，曲線越陡，等效電阻越小。">
+  <EcWeek2SmallSignal client:visible />
+</GeneratedFrame>
 
 {/* @ai-visualize
 id: ec-week2-eda-flow
@@ -121,9 +134,15 @@ prompt: |
   視覺要求：手繪 SVG，不引入圖表函式庫；viewBox 寬度不超過 640；
   節點文字用 DOM 疊在 SVG 上或用 foreignObject 以外的方式處理中文，
   避免 SVG text 中文被裁切；手算路徑用灰色、模擬路徑用主色。
-status: pending
+status: generated
 caption: 手算建立直覺、模擬抓漏網之魚：兩條路徑在「驗證工作區假設」這一步交會。
 */}
+
+import EcWeek2EdaFlow from '@/components/generated/ec-week2-eda-flow'
+
+<GeneratedFrame id="ec-week2-eda-flow" type="diagram" prompt={"畫一條 EDA 模擬流程，並標出它與手算如何互相檢查。\n主流程五個節點，由左至右串接：\n1. 畫電路圖（schematic）\n2. 產生網表（netlist）\n3. 選擇分析類型\n4. 執行模擬\n5. 讀波形並驗證工作區假設\n在「選擇分析類型」節點下方分出三個並列的子項：直流工作點分析（確認偏壓）、\n暫態分析（看波形隨時間變化）、交流頻率響應分析（看增益隨頻率變化）。\n在流程上方畫一條平行的「手算」路徑（兩個節點：簡化模型、建立直覺），\n用一條雙向虛線連到最後的驗證節點，標註「互相檢查」。\n視覺要求：手繪 SVG，不引入圖表函式庫；viewBox 寬度不超過 640；\n節點文字用 DOM 疊在 SVG 上或用 foreignObject 以外的方式處理中文，\n避免 SVG text 中文被裁切；手算路徑用灰色、模擬路徑用主色。"} caption="手算建立直覺、模擬抓漏網之魚：兩條路徑在「驗證工作區假設」這一步交會。">
+  <EcWeek2EdaFlow client:visible />
+</GeneratedFrame>
 
 ## 教材預習重點
 
@@ -189,7 +208,7 @@ status: confirmed
 
 *只有 (a) 兩顆同向時電流能從 A 流到 C，另外兩種總有一顆逆偏。*
 
-- **Diodes in Series（二極體與電阻串聯）**：投影片要求 **plot the I/V characteristic for the diode-resistor combination**（畫出二極體–電阻組合的 I/V 特性）。(a) 串聯組合、(b) 順偏時的等效電路（二極體短路，只剩電阻）、(c) 逆偏時的等效電路（斷路，電流為零）、(d) I/V 特性——負電壓時電流為零、正電壓時斜率為 $1/R_1$ 的直線、(e) 假設 $D_1$ 導通時的等效電路。
+- **Diodes in Series（二極體與電阻串聯）**：投影片要求 **plot the I/V characteristic for the diode-resistor combination**（畫出二極體–電阻組合的 I/V 特性）。(a) 串聯組合、(b) 順偏時的等效電路（二極體短路，只剩電阻）、(c) 逆偏時的等效電路（斷路，電流為零）、(d) I/V 特性——負電壓時電流為零、正電壓時斜率為 $\frac{1}{R_1}$ 的直線、(e) 假設 $D_1$ 導通時的等效電路。
 
 ![二極體與電阻串聯：(a) VA 串聯 D1 與 R1；(b) 順偏等效為只剩 R1；(c) 逆偏等效為斷路；(d) I/V 特性在 VA 大於零時為斜率 1/R1 的直線；(e) D1 導通時的等效電路](/note-images/ec-week2-ch3/05-diode-resistor-series-iv.png)
 
@@ -238,12 +257,12 @@ status: confirmed
 $$
 \begin{aligned}
 V_{out}(t) &= \begin{cases} V_p\sin\omega t, & 0 \le t \le \dfrac{T}{2} \\[4pt] 0, & \dfrac{T}{2} \le t \le T \end{cases} \\[6pt]
-V_{out,avg} &= \frac{1}{T}\int_0^{T} V_{out}(t)\,dt = \frac{1}{T}\int_0^{T/2} V_p\sin\omega t\,dt \\
-&= \frac{1}{T}\cdot\frac{V_p}{\omega}\Big[-\cos\omega t\Big]_0^{T/2} = \frac{V_p}{\pi}
+V_{out,avg} &= \frac{1}{T}\int_0^{T} V_{out}(t)\,dt = \frac{1}{T}\int_0^{\frac{T}{2}} V_p\sin\omega t\,dt \\
+&= \frac{1}{T}\cdot\frac{V_p}{\omega}\Big[-\cos\omega t\Big]_0^{\frac{T}{2}} = \frac{V_p}{\pi}
 \end{aligned}
 $$
 
-平均值 $V_p/\pi$ 與振幅成正比，所以量平均值就知道輸入有多強——這正是早期收音機訊號強度表的原理。
+平均值 $\frac{V_p}{\pi}$ 與振幅成正比，所以量平均值就知道輸入有多強——這正是早期收音機訊號強度表的原理。
 
 ### 限幅器：Limiter（第 12 頁）
 
@@ -272,17 +291,44 @@ status: confirmed
 */}
 <PdfRefChip file="_references/電子學實作系列/第二週/Ch 3 - Diode Models and Circuits.pdf" page={13} status="confirmed" client:visible />
 
-- **Different Models for Diode（二極體的不同模型）**：投影片並排三張 I/V 特性——(a) **ideal model（理想模型）**：逆偏電流為零、正向從原點垂直起飛；(b) **exponential model（指數模型）**：$I_D = I_S\exp(V_D/V_T)$ 的平滑曲線；(c) **constant-voltage model（定電壓模型）**：逆偏為零、到 $V_{D,on}$（約 0.7–0.8 V）才垂直起飛。三張圖形狀類似，差別只在「轉折點在哪裡、轉折有多硬」。
+- **Different Models for Diode（二極體的不同模型）**：投影片並排三張 I/V 特性——(a) **ideal model（理想模型）**：逆偏電流為零、正向從原點垂直起飛；(b) **exponential model（指數模型）**：$I_D = I_S\exp\!\left(\frac{V_D}{V_T}\right)$ 的平滑曲線；(c) **constant-voltage model（定電壓模型）**：逆偏為零、到 $V_{D,on}$（約 0.7–0.8 V）才垂直起飛。三張圖形狀類似，差別只在「轉折點在哪裡、轉折有多硬」。
 
 ![三種二極體模型的 ID–VD 特性：(a) 理想模型在 VD 等於零處垂直導通；(b) 指數模型是平滑上升曲線；(c) 定電壓模型在 VD,on 處垂直導通，等效為開關串電池](/note-images/ec-week2-ch3/10-diode-models-ideal-exponential-constant.png)
 
 *三種模型：理想模型在原點起飛、指數模型平滑上升、定電壓模型在 VD,on 起飛。*
 
-- **Input/Output Characteristics with Ideal and Constant-Voltage Models（理想與定電壓模型下的輸入輸出特性）**：電路是 $V_{in}$ 經 $R_1$ 到 $V_{out}$、$V_{out}$ 再經 $R_2$ 串 $D_1$ 接地。理想模型下，$V_{in} < 0$ 時 $D_1$ 斷路、輸出跟著輸入（斜率 1）；$V_{in} > 0$ 時 $D_1$ 導通、$R_1$ 與 $R_2$ 分壓，斜率變成 $R_2/(R_1 + R_2)$。定電壓模型則把 $D_1$ 換成一顆 $V_{D,on}$ 電池，轉折點從原點右移到 $V_{in} = V_{D,on}$、$V_{out} = V_{D,on}$，之後斜率相同——兩條曲線**形狀相同、轉折點不同**，定電壓模型其實就是「理想二極體 + 電池」。
+- **Input/Output Characteristics with Ideal and Constant-Voltage Models（理想與定電壓模型下的輸入輸出特性）**：電路是 $V_{in}$ 經 $R_1$ 到 $V_{out}$、$V_{out}$ 再經 $R_2$ 串 $D_1$ 接地。理想模型下，$V_{in} < 0$ 時 $D_1$ 斷路、輸出跟著輸入（斜率 1）；$V_{in} > 0$ 時 $D_1$ 導通、$R_1$ 與 $R_2$ 分壓，斜率變成 $\frac{R_2}{R_1 + R_2}$。定電壓模型則把 $D_1$ 換成一顆 $V_{D,on}$ 電池，轉折點從原點右移到 $V_{in} = V_{D,on}$、$V_{out} = V_{D,on}$，之後斜率相同——兩條曲線**形狀相同、轉折點不同**，定電壓模型其實就是「理想二極體 + 電池」。
 
 ![分壓電路加二極體的輸入輸出特性：(a) Vin 經 R1 到 Vout，Vout 經 R2 串 D1 接地；(b) 理想模型特性，正輸入時斜率 R2/(R2+R1)；(c) D1 換成 VD,on 電池的電路；(d) 定電壓模型特性，轉折點移到 VD,on](/note-images/ec-week2-ch3/11-io-characteristic-ideal-vs-constant-voltage.png)
 
 *理想模型與定電壓模型畫出的特性曲線形狀相同，只差轉折點從原點移到 VD,on。*
+
+{/* @ai-visualize
+id: ec-week2-transfer-curves
+type: motion
+prompt: |
+  四個電阻–二極體電路的「輸入輸出特性走查」，讓讀者體驗「誰接輸出端、要不要加電池」
+  如何改變轉移曲線與輸出波形。四個分頁（一次顯示一個，點分頁切換）：
+  1. 二極體串電阻、輸出取電阻兩端（第 7 頁）：正半週通過、負半週為零
+  2. 電阻串二極體對地、輸出取二極體兩端（第 9 頁）：負半週通過、正半週被壓平在零
+  3. 同 2 但二極體下方串一顆電池 VB（第 12 頁限幅器）：正半週被削平在 +VB
+  4. 分壓電路 R1、R2 加二極體（第 14 頁）：正輸入時斜率變成 R2/(R1+R2)
+  每個分頁左側是手寫 SVG 電路圖（符號依 circuit-symbols.md），中間是轉移曲線
+  （橫軸 Vin、縱軸 Vout），右側是輸入正弦波與對應輸出波形。
+  分頁 3 提供一條滑桿調整 VB（0–3 V），削平的高度與轉移曲線的轉折點要即時跟著動。
+  提供一個「理想／定電壓」切換鈕：切到定電壓模型時轉折點整體平移 0.7 V。
+  視覺要求：三張 SVG 各自 viewBox 寬度不超過 320，整體寬度不超過 640；
+  分頁切換用 200–400ms ease-out 過渡；所有中文標籤放在 SVG 外的 DOM；
+  尊重 prefers-reduced-motion。
+status: generated
+caption: 同樣一顆二極體加一顆電阻，接法不同就留下不同的半週；串一顆電池則把削平的高度抬起來。
+*/}
+
+import EcWeek2TransferCurves from '@/components/generated/ec-week2-transfer-curves'
+
+<GeneratedFrame id="ec-week2-transfer-curves" type="motion" prompt={"四個電阻–二極體電路的「輸入輸出特性走查」，讓讀者體驗「誰接輸出端、要不要加電池」\n如何改變轉移曲線與輸出波形。四個分頁（一次顯示一個，點分頁切換）：\n1. 二極體串電阻、輸出取電阻兩端（第 7 頁）：正半週通過、負半週為零\n2. 電阻串二極體對地、輸出取二極體兩端（第 9 頁）：負半週通過、正半週被壓平在零\n3. 同 2 但二極體下方串一顆電池 VB（第 12 頁限幅器）：正半週被削平在 +VB\n4. 分壓電路 R1、R2 加二極體（第 14 頁）：正輸入時斜率變成 R2/(R1+R2)\n每個分頁左側是手寫 SVG 電路圖（符號依 circuit-symbols.md），中間是轉移曲線\n（橫軸 Vin、縱軸 Vout），右側是輸入正弦波與對應輸出波形。\n分頁 3 提供一條滑桿調整 VB（0–3 V），削平的高度與轉移曲線的轉折點要即時跟著動。\n提供一個「理想／定電壓」切換鈕：切到定電壓模型時轉折點整體平移 0.7 V。\n視覺要求：三張 SVG 各自 viewBox 寬度不超過 320，整體寬度不超過 640；\n分頁切換用 200–400ms ease-out 過渡；所有中文標籤放在 SVG 外的 DOM；\n尊重 prefers-reduced-motion。"} caption="同樣一顆二極體加一顆電阻，接法不同就留下不同的半週；串一顆電池則把削平的高度抬起來。">
+  <EcWeek2TransferCurves client:visible />
+</GeneratedFrame>
 
 ### 指數模型例題：Example 3-13（第 15 頁）
 
@@ -322,11 +368,37 @@ status: confirmed
 */}
 <PdfRefChip file="_references/電子學實作系列/第二週/Ch 3 - Diode Models and Circuits.pdf" page={16} status="confirmed" client:visible />
 
-- **Robotics Application: Diode as a Protector（機器人應用：二極體當保護元件）**：(a) **relay（繼電器）** 的結構——用線圈的磁力吸合機械接點；(b) 用繼電器控制馬達，微控制器只需驅動線圈電流 $I_r$；(c) **voltage surge（電壓突波）** 的問題——線圈是電感，微控制器切斷電流時 $V_1 = L\,\dfrac{dI_r}{dt}$，電流瞬間中斷造成 $dI_r/dt$ 極大，感應出足以打壞微控制器的高壓；(d) 在線圈兩端反向並聯一顆二極體——正常運作時它逆偏不影響電路，切斷瞬間線圈電壓反轉，二極體導通提供電流續流路徑，把突波夾住。這顆二極體俗稱 **flyback diode（飛輪二極體／續流二極體）**。
+- **Robotics Application: Diode as a Protector（機器人應用：二極體當保護元件）**：(a) **relay（繼電器）** 的結構——用線圈的磁力吸合機械接點；(b) 用繼電器控制馬達，微控制器只需驅動線圈電流 $I_r$；(c) **voltage surge（電壓突波）** 的問題——線圈是電感，微控制器切斷電流時 $V_1 = L\,\dfrac{dI_r}{dt}$，電流瞬間中斷造成 $\frac{dI_r}{dt}$ 極大，感應出足以打壞微控制器的高壓；(d) 在線圈兩端反向並聯一顆二極體——正常運作時它逆偏不影響電路，切斷瞬間線圈電壓反轉，二極體導通提供電流續流路徑，把突波夾住。這顆二極體俗稱 **flyback diode（飛輪二極體／續流二極體）**。
 
 ![繼電器與二極體保護：(a) 繼電器結構，A–B 為接點、X–Y 為線圈；(b) 微控制器驅動線圈、接點控制馬達；(c) 線圈電流突然切斷時 V1 出現很深的負向尖峰；(d) 在線圈兩端反向並聯 D1](/note-images/ec-week2-ch3/13-relay-diode-protector.png)
 
 *繼電器線圈是電感，切斷瞬間會產生高壓突波；反向並聯一顆二極體提供續流路徑保護微控制器。*
+
+{/* @ai-visualize
+id: ec-week2-flyback-diode
+type: motion
+prompt: |
+  用可操作的動畫解釋「繼電器線圈切斷瞬間為什麼會產生高壓突波，以及續流二極體如何夾住它」。
+  版面左右兩欄並排對比：左欄「沒有二極體」、右欄「反向並聯二極體」。
+  每欄上方是手寫 SVG 電路：微控制器輸出端 → 開關（電晶體以簡單開關符號表示）→
+  線圈 L（電感符號）→ 電源；右欄在線圈兩端多一顆反向並聯的二極體。
+  每欄下方是一張時間軸波形（SVG 折線）：上軌是線圈電流 Ir、下軌是線圈電壓 V1。
+  互動：一顆「切斷電流」按鈕，按下後兩欄同時播放 600–900ms 的動畫——
+  開關打開、Ir 從穩態掉到零；左欄 V1 出現一個很深的負向尖峰（標注 V1 = L·dIr/dt，
+  尖峰高度超出微控制器耐壓線），右欄二極體亮起、電流改走二極體迴路、V1 只被夾在
+  約 −0.7 V。提供「重播」按鈕。
+  在兩欄之間標示微控制器耐壓線（虛線），讓「左邊超過、右邊沒超過」一眼可見。
+  視覺要求：SVG viewBox 總寬不超過 640；中文標籤放在 DOM；動畫用 motion，
+  尊重 prefers-reduced-motion（關閉動畫時直接顯示切斷後的最終波形）。
+status: generated
+caption: 電感不允許電流瞬間中斷：沒有續流路徑時，切斷瞬間的 L·dI/dt 會產生足以打壞微控制器的尖峰。
+*/}
+
+import EcWeek2FlybackDiode from '@/components/generated/ec-week2-flyback-diode'
+
+<GeneratedFrame id="ec-week2-flyback-diode" type="motion" prompt={"用可操作的動畫解釋「繼電器線圈切斷瞬間為什麼會產生高壓突波，以及續流二極體如何夾住它」。\n版面左右兩欄並排對比：左欄「沒有二極體」、右欄「反向並聯二極體」。\n每欄上方是手寫 SVG 電路：微控制器輸出端 → 開關（電晶體以簡單開關符號表示）→\n線圈 L（電感符號）→ 電源；右欄在線圈兩端多一顆反向並聯的二極體。\n每欄下方是一張時間軸波形（SVG 折線）：上軌是線圈電流 Ir、下軌是線圈電壓 V1。\n互動：一顆「切斷電流」按鈕，按下後兩欄同時播放 600–900ms 的動畫——\n開關打開、Ir 從穩態掉到零；左欄 V1 出現一個很深的負向尖峰（標注 V1 = L·dIr/dt，\n尖峰高度超出微控制器耐壓線），右欄二極體亮起、電流改走二極體迴路、V1 只被夾在\n約 −0.7 V。提供「重播」按鈕。\n在兩欄之間標示微控制器耐壓線（虛線），讓「左邊超過、右邊沒超過」一眼可見。\n視覺要求：SVG viewBox 總寬不超過 640；中文標籤放在 DOM；動畫用 motion，\n尊重 prefers-reduced-motion（關閉動畫時直接顯示切斷後的最終波形）。"} caption="電感不允許電流瞬間中斷：沒有續流路徑時，切斷瞬間的 L·dI/dt 會產生足以打壞微控制器的尖峰。">
+  <EcWeek2FlybackDiode client:visible />
+</GeneratedFrame>
 
 ### 小訊號分析：Small-Signal Analysis（第 17–19 頁，Example 3-18）
 
@@ -355,7 +427,7 @@ I_{D2} &= I_S\exp\!\left(\frac{V_{D2}}{V_T}\right) = I_S\exp\!\left(\frac{V_{D1}
 \end{aligned}
 $$
 
-- **Bias point / Operating point（偏壓點／工作點）**：投影片註明 **Point A is called the "bias" point or the "operating" point**（圖上的 A 點稱為偏壓點或工作點）。上式的關鍵是 $\Delta I_D$ 與 $\Delta V_D$ 成**線性**關係，比例係數 $I_{D1}/V_T$ 由工作點決定——這就是「在偏壓點上切一條直線」的代數版本。
+- **Bias point / Operating point（偏壓點／工作點）**：投影片註明 **Point A is called the "bias" point or the "operating" point**（圖上的 A 點稱為偏壓點或工作點）。上式的關鍵是 $\Delta I_D$ 與 $\Delta V_D$ 成**線性**關係，比例係數 $\frac{I_{D1}}{V_T}$ 由工作點決定——這就是「在偏壓點上切一條直線」的代數版本。
 
 ![小訊號放大圖：ID–VD 指數曲線上的 A、B 兩點局部放大後近似一條直線，橫向差 ΔVD、縱向差 ΔID](/note-images/ec-week2-ch3/15-small-signal-zoom.png)
 
@@ -400,15 +472,15 @@ $$
 \begin{aligned}
 I_D &= I_S\exp\!\left(\frac{V_0 + V_p\cos\omega t}{V_T}\right) = I_S\exp\!\left(\frac{V_0}{V_T}\right)\exp\!\left(\frac{V_p\cos\omega t}{V_T}\right) \\
 &= I_0\exp\!\left(\frac{V_p\cos\omega t}{V_T}\right) \approx I_0\left(1 + \frac{V_p\cos\omega t}{V_T}\right) \qquad (\because V_p \ll V_T) \\
-&= I_0 + \frac{V_p\cos\omega t}{V_T/I_0} \\
-\Delta I_D &= \frac{V_p\cos\omega t}{V_T/I_0} = \frac{V_p\cos\omega t}{r_d} = \frac{\Delta V_D}{r_d}
+&= I_0 + \frac{V_p\cos\omega t}{\frac{V_T}{I_0}} \\
+\Delta I_D &= \frac{V_p\cos\omega t}{\frac{V_T}{I_0}} = \frac{V_p\cos\omega t}{r_d} = \frac{\Delta V_D}{r_d}
 \end{aligned}
 $$
 
 **Method #2** 因為 $V_p \ll V_T$，直接套小訊號模型：
 
 $$
-\Delta I_D = \frac{\Delta V_D}{r_d} = \frac{V_p\cos\omega t}{r_d}, \qquad r_d = \frac{V_T}{I_0} = \frac{V_T}{I_S\exp(V_0/V_T)}
+\Delta I_D = \frac{\Delta V_D}{r_d} = \frac{V_p\cos\omega t}{r_d}, \qquad r_d = \frac{V_T}{I_0} = \frac{V_T}{I_S\exp\!\left(\frac{V_0}{V_T}\right)}
 $$
 
 投影片結論：**the AC current is also a sinusoidal signal**（交流電流也是正弦訊號）。兩種方法答案相同，但 Method #2 只要兩行——這就是小訊號模型的價值：先用 $V_0$ 算出偏壓電流 $I_0$ 與 $r_d$，訊號部分直接用歐姆定律。
@@ -494,7 +566,7 @@ status: confirmed
 
 *漣波的定義：輸出從峰值放電到下一次充電前的落差。*
 
-- **漣波公式推導（第 30 頁）**：設輸入頻率 $f_{in}$、週期 $T_{in} = 1/f_{in}$，把時間原點放在二極體截止的瞬間 $t_1 = 0$。電容經 $R_L$ 放電是指數衰減，小漣波時（$R_L C_1 \gg t_3$）可線性近似：
+- **漣波公式推導（第 30 頁）**：設輸入頻率 $f_{in}$、週期 $T_{in} = \frac{1}{f_{in}}$，把時間原點放在二極體截止的瞬間 $t_1 = 0$。電容經 $R_L$ 放電是指數衰減，小漣波時（$R_L C_1 \gg t_3$）可線性近似：
 
 $$
 \begin{aligned}
@@ -506,7 +578,7 @@ V_R &= V_{out}(0) - V_{out}(t_3) \approx V_{out}(0) - V_{out}(T_{in}) \\
 \end{aligned}
 $$
 
-這條 $V_R \approx I_L/(C_1 f_{in})$ 是整流器設計的核心公式：負載電流越大、電容越小、頻率越低，漣波越大。推導中把放電時間近似成整個週期 $T_{in}$（因為充電只佔一小段時間）。
+這條 $V_R \approx \frac{I_L}{C_1 f_{in}}$ 是整流器設計的核心公式：負載電流越大、電容越小、頻率越低，漣波越大。推導中把放電時間近似成整個週期 $T_{in}$（因為充電只佔一小段時間）。
 
 - **Example 3-27（第 31 頁）**：變壓器把 110 V、60 Hz 市電降到峰對峰 9 V，接半波整流器供電給 Example 3-25 的筆電（$R_L = 0.436\ \Omega$），求讓漣波低於 0.1 V 的最小濾波電容，$V_{D,on} = 0.8\text{ V}$：
 
@@ -519,6 +591,36 @@ C_1 &\approx \frac{I_L}{V_R f_{in}} = \frac{V_p - V_{D,on}}{R_L}\cdot\frac{1}{V_
 $$
 
 答案是 **1.417 F**——一個大到不切實際的電容（一般電解電容在 μF 到 mF 等級），這個誇張的數字就是為了鋪陳後面全波整流與穩壓器的必要性。注意峰對峰 9 V 對應 $V_p = 4.5\text{ V}$。
+
+{/* @ai-visualize
+id: ec-week2-ripple-explorer
+type: chart
+prompt: |
+  互動示範半波整流器加濾波電容的漣波機制，讓讀者親手感受 C 與 RL 如何決定 VR。
+  上方是一張 SVG 波形圖（橫軸時間 0–3 個週期，縱軸電壓）：淡色 Vin 正弦波、
+  深色 Vout；Vout 在二極體導通時跟著 Vin 上升到 Vp − VD,on，截止後依
+  exp(−t/(RL·C)) 放電，直到 Vin 再度追上。導通區間用淺色底色標注「充電」、
+  放電區間標注「放電」。右側用雙箭頭標出漣波 VR。
+  兩條滑桿：
+  - 濾波電容 C：對數刻度 0.1 μF–1000 μF
+  - 負載電阻 RL：對數刻度 100 Ω–∞（最右端為「無負載」，此時 Vout 停在峰值不放電，
+    等於第 25 頁的峰值檢波器）
+  固定參數：Vp = 5 V、f = 60 Hz、VD,on = 0.7 V。
+  下方三張讀數卡片：時間常數 RL·C、漣波 VR（用公式 IL/(C·f) 估算並與波形實際落差並列，
+  當兩者差距超過 20% 時顯示提示「線性近似已不成立」）、以及 VR/Vp 百分比
+  （超過 10% 時以警示色標示「超出設計準則」）。
+  預設值取 Lab 1 的組合：C = 1 μF、RL = 10 kΩ，讓讀者一開始就看到漣波過大的鋸齒。
+  視覺要求：波形用手寫 SVG 折線（viewBox 寬度不超過 640），拖動時即時重算不要動畫延遲；
+  滑桿與讀數用 DOM；中文標籤放在 SVG 外；尊重 prefers-reduced-motion。
+status: generated
+caption: 漣波就是電容在二極體截止期間放掉的電壓：C 越大、RL 越大、放得越慢，鋸齒越淺。
+*/}
+
+import EcWeek2RippleExplorer from '@/components/generated/ec-week2-ripple-explorer'
+
+<GeneratedFrame id="ec-week2-ripple-explorer" type="chart" prompt={"互動示範半波整流器加濾波電容的漣波機制，讓讀者親手感受 C 與 RL 如何決定 VR。\n上方是一張 SVG 波形圖（橫軸時間 0–3 個週期，縱軸電壓）：淡色 Vin 正弦波、\n深色 Vout；Vout 在二極體導通時跟著 Vin 上升到 Vp − VD,on，截止後依\nexp(−t/(RL·C)) 放電，直到 Vin 再度追上。導通區間用淺色底色標注「充電」、\n放電區間標注「放電」。右側用雙箭頭標出漣波 VR。\n兩條滑桿：\n- 濾波電容 C：對數刻度 0.1 μF–1000 μF\n- 負載電阻 RL：對數刻度 100 Ω–∞（最右端為「無負載」，此時 Vout 停在峰值不放電，\n  等於第 25 頁的峰值檢波器）\n固定參數：Vp = 5 V、f = 60 Hz、VD,on = 0.7 V。\n下方三張讀數卡片：時間常數 RL·C、漣波 VR（用公式 IL/(C·f) 估算並與波形實際落差並列，\n當兩者差距超過 20% 時顯示提示「線性近似已不成立」）、以及 VR/Vp 百分比\n（超過 10% 時以警示色標示「超出設計準則」）。\n預設值取 Lab 1 的組合：C = 1 μF、RL = 10 kΩ，讓讀者一開始就看到漣波過大的鋸齒。\n視覺要求：波形用手寫 SVG 折線（viewBox 寬度不超過 640），拖動時即時重算不要動畫延遲；\n滑桿與讀數用 DOM；中文標籤放在 SVG 外；尊重 prefers-reduced-motion。"} caption="漣波就是電容在二極體截止期間放掉的電壓：C 越大、RL 越大、放得越慢，鋸齒越淺。">
+  <EcWeek2RippleExplorer client:visible />
+</GeneratedFrame>
 
 ### 二極體最大電流：Maximum Diode Current（第 32–35 頁，Example 3-28）
 
@@ -548,7 +650,7 @@ I_p &= \max_t\left(C_1\frac{dV_{out}}{dt} + I_L\right) \approx C_1\max_t\frac{dV
 \end{aligned}
 $$
 
-把 (2)、(3) 代回 (1)，並用 $V_R \ll V_p$ 丟掉 $(V_R/V_p)^2$ 項、再以 $V_R \approx I_L/(C_1 f_{in})$ 消去 $C_1\omega_{in} \approx 2\pi I_L/V_R$：
+把 (2)、(3) 代回 (1)，並用 $V_R \ll V_p$ 丟掉 $\left(\frac{V_R}{V_p}\right)^2$ 項、再以 $V_R \approx \frac{I_L}{C_1 f_{in}}$ 消去 $C_1\omega_{in} \approx \frac{2\pi I_L}{V_R}$：
 
 $$
 \begin{aligned}
@@ -558,7 +660,7 @@ I_p &= C_1 V_p\omega_{in}\sqrt{1 - \left(1 - \frac{V_R}{V_p}\right)^2} + I_L = V
 \end{aligned}
 $$
 
-峰值電流是負載電流的 $1 + 2\pi\sqrt{2V_p/V_R}$ 倍——漣波要求越嚴（$V_R$ 越小），二極體被迫在越短的時間內灌入同樣的電荷，峰值電流就越大。
+峰值電流是負載電流的 $1 + 2\pi\sqrt{\frac{2V_p}{V_R}}$ 倍——漣波要求越嚴（$V_R$ 越小），二極體被迫在越短的時間內灌入同樣的電荷，峰值電流就越大。
 
 - **Example 3-28（第 35 頁）**：求 Example 3-27 的峰值二極體電流，$V_{D,on} \approx 0.8\text{ V}$、$C_1 = 1.417\text{ F}$（投影片註明課本寫 $V_{D,on} \approx 0$ 是筆誤）。已知 $V_p = 4.5\text{ V}$、$R_L = 0.436\ \Omega$、$f_{in} = 60\text{ Hz}$：
 
@@ -571,6 +673,33 @@ I_p &= I_L\left(1 + 2\pi\sqrt{\frac{2V_p}{V_R}}\right) = 515\text{ A}
 $$
 
 投影片備註：若直接取 $V_R \approx 0.1\text{ V}$，則 $I_p = 517\text{ A}$。負載平均只抽 8.49 A，二極體卻要在每個週期扛 500 A 以上的尖峰——這就是半波整流加大電容的代價。
+
+{/* @ai-visualize
+id: ec-week2-peak-diode-current
+type: chart
+prompt: |
+  互動示範「漣波要求越嚴、二極體峰值電流越大」這個反直覺的取捨。
+  上方 SVG 波形圖：一個週期內的 Vin 正弦波與鋸齒狀 Vout（放大顯示峰值附近），
+  下方同一時間軸畫二極體電流 ID：只在 Vin 追上 Vout 到峰值之間的短暫窗口內出現
+  一根尖峰，其餘時間為零；並以水平虛線畫出負載電流 IL 作為對照。
+  一條滑桿：漣波比 VR/Vp，範圍 1%–20%，預設 2.2%（對應 Example 3-28 的
+  0.0998 V / 4.5 V）。
+  拖動時即時更新：導通窗口的寬度（用 sin(ω·t1) = 1 − VR/Vp 反算）、
+  尖峰高度（用 Ip = IL·(1 + 2π·√(2Vp/VR)) 計算）。
+  右側三張讀數卡片：導通窗口佔週期的百分比、Ip/IL 倍率、以及代入
+  Example 3-28 數值（Vp = 4.5 V、IL = 8.49 A）得到的 Ip 安培數。
+  滑桿旁標註兩個錨點：「2.2%：Ip ≈ 515 A」與「10%：設計準則上限」。
+  視覺要求：波形 SVG viewBox 寬度不超過 640；中文標籤放 DOM；
+  拖動即時重算不加動畫；尊重 prefers-reduced-motion。
+status: generated
+caption: 漣波要求越小，二極體被迫在越短的窗口內灌入同樣的電荷，峰值電流就越高。
+*/}
+
+import EcWeek2PeakDiodeCurrent from '@/components/generated/ec-week2-peak-diode-current'
+
+<GeneratedFrame id="ec-week2-peak-diode-current" type="chart" prompt={"互動示範「漣波要求越嚴、二極體峰值電流越大」這個反直覺的取捨。\n上方 SVG 波形圖：一個週期內的 Vin 正弦波與鋸齒狀 Vout（放大顯示峰值附近），\n下方同一時間軸畫二極體電流 ID：只在 Vin 追上 Vout 到峰值之間的短暫窗口內出現\n一根尖峰，其餘時間為零；並以水平虛線畫出負載電流 IL 作為對照。\n一條滑桿：漣波比 VR/Vp，範圍 1%–20%，預設 2.2%（對應 Example 3-28 的\n0.0998 V / 4.5 V）。\n拖動時即時更新：導通窗口的寬度（用 sin(ω·t1) = 1 − VR/Vp 反算）、\n尖峰高度（用 Ip = IL·(1 + 2π·√(2Vp/VR)) 計算）。\n右側三張讀數卡片：導通窗口佔週期的百分比、Ip/IL 倍率、以及代入\nExample 3-28 數值（Vp = 4.5 V、IL = 8.49 A）得到的 Ip 安培數。\n滑桿旁標註兩個錨點：「2.2%：Ip ≈ 515 A」與「10%：設計準則上限」。\n視覺要求：波形 SVG viewBox 寬度不超過 640；中文標籤放 DOM；\n拖動即時重算不加動畫；尊重 prefers-reduced-motion。"} caption="漣波要求越小，二極體被迫在越短的窗口內灌入同樣的電荷，峰值電流就越高。">
+  <EcWeek2PeakDiodeCurrent client:visible />
+</GeneratedFrame>
 
 ### 全波整流器與橋式整流：Full-Wave Rectifier（第 36–41 頁，Example 3-31）
 
@@ -622,11 +751,41 @@ $$
 \begin{aligned}
 V_{in,p} &= V_{out} + 2V_{D,on} = 3.6 + 2\times 0.8 = 5.2\text{ V} \\
 \because\ V_R &= \frac{1}{2}\cdot\frac{I_L}{C_1 f_{in}} \\
-C_1 &= \frac{1}{2}\cdot\frac{I_L}{V_R f_{in}} = \frac{1}{2}\cdot\frac{P/V_{out}}{V_R f_{in}} = \frac{1}{2}\cdot\frac{2\text{ W}/3.6\text{ V}}{0.2\text{ V}\times 60\text{ Hz}} = 23{,}100\ \mu\text{F}
+C_1 &= \frac{1}{2}\cdot\frac{I_L}{V_R f_{in}} = \frac{1}{2}\cdot\frac{\frac{P}{V_{out}}}{V_R f_{in}} = \frac{1}{2}\cdot\frac{\frac{2\text{ W}}{3.6\text{ V}}}{0.2\text{ V}\times 60\text{ Hz}} = 23{,}100\ \mu\text{F}
 \end{aligned}
 $$
 
 投影片結論：變壓器必須把市電（110 Vrms 或 220 Vrms）降到峰值 5.2 V；二極體必須承受 5.2 V 的逆偏電壓。23,100 μF 雖然還是很大，但已是市售電解電容能買到的等級，跟 Example 3-27 的 1.417 F 相比合理得多。
+
+{/* @ai-visualize
+id: ec-week2-bridge-rectifier-paths
+type: motion
+prompt: |
+  逐步播放橋式整流器在正、負半週各走哪條電流路徑，並在最後對比半波整流器。
+  主體是手寫 SVG：左側正弦電源 Vin，中間四顆二極體排成菱形橋（D2、D3 在上，
+  D1、D4 在下，符號依 circuit-symbols.md），右側負載 RL 跨接橋的中點，
+  再右側是一小張 Vout 波形圖，隨播放逐步畫出。
+  四個步驟（用「下一步／上一步」按鈕或 stepper 推進，也可自動播放）：
+  1. 正半週：高亮 D3、D4 路徑（用主色粗線 + 沿線流動的小圓點），其餘兩顆淡化，
+     Vout 波形畫出第一個正弧
+  2. 負半週：高亮 D1、D2 路徑，電流仍從 RL 的同一端流入，Vout 畫出第二個正弧
+     （負半週被翻正）
+  3. 定電壓模型：路徑上串了兩顆二極體，標出 2·VD,on 的壓降，Vout 波形在
+     過零附近出現死區（弧與弧之間的平坦段）
+  4. 逆向電壓：標出截止那兩顆二極體承受的逆偏約 Vp，並在旁邊以小圖對照半波整流器
+     的 2·Vp，附一行摘要「漣波減半、逆向耐壓減半」
+  視覺要求：SVG viewBox 寬度不超過 640；小圓點流動動畫用 motion、
+  每步過渡 200–400ms ease-out；中文步驟說明放在 SVG 外的 DOM 卡片；
+  尊重 prefers-reduced-motion（關閉動畫時直接顯示該步驟的靜態高亮）。
+status: generated
+caption: 橋式整流器：任何時刻只有對角兩顆導通，電流永遠從負載同一端流入，代價是路徑上多一顆二極體的壓降。
+*/}
+
+import EcWeek2BridgeRectifierPaths from '@/components/generated/ec-week2-bridge-rectifier-paths'
+
+<GeneratedFrame id="ec-week2-bridge-rectifier-paths" type="motion" prompt={"逐步播放橋式整流器在正、負半週各走哪條電流路徑，並在最後對比半波整流器。\n主體是手寫 SVG：左側正弦電源 Vin，中間四顆二極體排成菱形橋（D2、D3 在上，\nD1、D4 在下，符號依 circuit-symbols.md），右側負載 RL 跨接橋的中點，\n再右側是一小張 Vout 波形圖，隨播放逐步畫出。\n四個步驟（用「下一步／上一步」按鈕或 stepper 推進，也可自動播放）：\n1. 正半週：高亮 D3、D4 路徑（用主色粗線 + 沿線流動的小圓點），其餘兩顆淡化，\n   Vout 波形畫出第一個正弧\n2. 負半週：高亮 D1、D2 路徑，電流仍從 RL 的同一端流入，Vout 畫出第二個正弧\n   （負半週被翻正）\n3. 定電壓模型：路徑上串了兩顆二極體，標出 2·VD,on 的壓降，Vout 波形在\n   過零附近出現死區（弧與弧之間的平坦段）\n4. 逆向電壓：標出截止那兩顆二極體承受的逆偏約 Vp，並在旁邊以小圖對照半波整流器\n   的 2·Vp，附一行摘要「漣波減半、逆向耐壓減半」\n視覺要求：SVG viewBox 寬度不超過 640；小圓點流動動畫用 motion、\n每步過渡 200–400ms ease-out；中文步驟說明放在 SVG 外的 DOM 卡片；\n尊重 prefers-reduced-motion（關閉動畫時直接顯示該步驟的靜態高亮）。"} caption="橋式整流器：任何時刻只有對角兩顆導通，電流永遠從負載同一端流入，代價是路徑上多一顆二極體的壓降。">
+  <EcWeek2BridgeRectifierPaths client:visible />
+</GeneratedFrame>
 
 ### 電壓穩壓器與齊納二極體：Voltage Regulator（第 42–46 頁，Example 3-33）
 
@@ -680,6 +839,35 @@ r_{D1} &= \frac{V_T}{I_{D1}} = \frac{26\text{ mV}}{15\text{ mA}} = 1.73\ \Omega 
 $$
 
 輸入每變動 1 V，輸出只動 63 mV；負載電流每多抽 1 mA，輸出掉 6.31 mV。這題把「偏壓計算用定電壓模型、變動量用小訊號電阻」的兩段式流程完整走了一遍。
+
+{/* @ai-visualize
+id: ec-week2-zener-regulation
+type: motion
+prompt: |
+  互動示範齊納穩壓器的小訊號分壓概念，以及線調整率與負載調整率的差別。
+  左側是手寫 SVG 電路：Vin → R1 → Vout 節點，節點下方串接一顆順偏二極體 D1
+  與一顆逆偏齊納二極體 D2 到地（符號依 circuit-symbols.md）。
+  提供一個「大訊號／小訊號」切換鈕：切到小訊號時，D1、D2 用 200–400ms 過渡
+  變形成兩顆電阻 rd1、rd2，Vin 變成 vin，讓讀者看到「二極體在小訊號模型裡就是電阻」。
+  右側兩個分頁：
+  - 「線調整率」：一條滑桿拖動輸入變動 Δvin（0–1 V），即時顯示 Δvout =
+    (rd1+rd2)/(rd1+rd2+R1) · Δvin，並用一根比例長條把兩者並排（輸入動 1 V、輸出只動 63 mV）
+  - 「負載調整率」：一條滑桿拖動負載電流變動 ΔIL（0–20 mA），即時顯示
+    Δvout = (rd1+rd2)‖R1 · ΔIL
+  兩個分頁共用三條參數滑桿：R1（10 Ω–1 kΩ）、rd2（1–50 Ω）、ID1（1–50 mA，
+  rd1 = 26 mV / ID1 自動算出）。預設值取 Example 3-33：R1 = 100 Ω、rd2 = 5 Ω、
+  ID1 = 15 mA。讀數卡片顯示 rd1、線調整率（無因次）、負載調整率（Ω）。
+  視覺要求：SVG viewBox 寬度不超過 480；比例長條與讀數用 DOM；中文標籤放 SVG 外；
+  拖動即時重算；尊重 prefers-reduced-motion。
+status: generated
+caption: 穩壓的本質是分壓：齊納的 rd 遠小於 R1，所以輸入的變動幾乎全部掉在 R1 上。
+*/}
+
+import EcWeek2ZenerRegulation from '@/components/generated/ec-week2-zener-regulation'
+
+<GeneratedFrame id="ec-week2-zener-regulation" type="motion" prompt={"互動示範齊納穩壓器的小訊號分壓概念，以及線調整率與負載調整率的差別。\n左側是手寫 SVG 電路：Vin → R1 → Vout 節點，節點下方串接一顆順偏二極體 D1\n與一顆逆偏齊納二極體 D2 到地（符號依 circuit-symbols.md）。\n提供一個「大訊號／小訊號」切換鈕：切到小訊號時，D1、D2 用 200–400ms 過渡\n變形成兩顆電阻 rd1、rd2，Vin 變成 vin，讓讀者看到「二極體在小訊號模型裡就是電阻」。\n右側兩個分頁：\n- 「線調整率」：一條滑桿拖動輸入變動 Δvin（0–1 V），即時顯示 Δvout =\n  (rd1+rd2)/(rd1+rd2+R1) · Δvin，並用一根比例長條把兩者並排（輸入動 1 V、輸出只動 63 mV）\n- 「負載調整率」：一條滑桿拖動負載電流變動 ΔIL（0–20 mA），即時顯示\n  Δvout = (rd1+rd2)‖R1 · ΔIL\n兩個分頁共用三條參數滑桿：R1（10 Ω–1 kΩ）、rd2（1–50 Ω）、ID1（1–50 mA，\nrd1 = 26 mV / ID1 自動算出）。預設值取 Example 3-33：R1 = 100 Ω、rd2 = 5 Ω、\nID1 = 15 mA。讀數卡片顯示 rd1、線調整率（無因次）、負載調整率（Ω）。\n視覺要求：SVG viewBox 寬度不超過 480；比例長條與讀數用 DOM；中文標籤放 SVG 外；\n拖動即時重算；尊重 prefers-reduced-motion。"} caption="穩壓的本質是分壓：齊納的 rd 遠小於 R1，所以輸入的變動幾乎全部掉在 R1 上。">
+  <EcWeek2ZenerRegulation client:visible />
+</GeneratedFrame>
 
 ### AC-DC 轉換器的演進（第 47 頁）
 
@@ -760,7 +948,7 @@ status: confirmed
 
 - **Question（問題，第 8 頁）**：
   1. 從你畫的 I-V 曲線估計矽二極體的膝點電壓是多少？與理論值相比如何？解釋觀察到的差異。
-  2. 解釋為什麼順偏電壓低於膝點時電流幾乎為零、超過膝點後卻急遽指數上升——要連結到**空乏區**與**多數載子**的行為（第 1 週的內容：順偏壓縮空乏區、降低多數載子擴散要跨過的位障，電流依 $\exp(V_D/V_T)$ 上升）。
+  2. 解釋為什麼順偏電壓低於膝點時電流幾乎為零、超過膝點後卻急遽指數上升——要連結到**空乏區**與**多數載子**的行為（第 1 週的內容：順偏壓縮空乏區、降低多數載子擴散要跨過的位障，電流依 $\exp\!\left(\frac{V_D}{V_T}\right)$ 上升）。
   3. 串聯限流電阻在這個電路裡的主要角色是什麼？若拿掉它、順偏操作時二極體與電源供應器會發生什麼事？（提示：二極體導通後電阻極小，沒有限流電阻時電流只受電源能力限制，二極體會過熱燒毀、或觸發電源的 CC 保護。）
 
 ### 實驗二：逆偏 Reverse Bias（第 9–14 頁）
@@ -800,6 +988,38 @@ status: confirmed
   2. 描述逆偏下的「崩潰」現象。**Avalanche（突崩）** 與 **Zener（齊納）** 兩種機制根本上有何不同？為什麼一般二極體不建議操作在這一區？（回顧第 1 週：齊納是強電場直接扯斷共價鍵、發生在重摻雜與低電壓；突崩是載子加速碰撞連鎖倍增、發生在高電壓。）
   3. 在逆偏齊納二極體電路中，串聯電阻的角色是什麼？尤其當二極體到達崩潰電壓時？拿掉它會有什麼後果？（崩潰後齊納的 $r_d$ 只有幾歐姆，沒有串聯電阻電流會失控。）
 
+{/* @ai-visualize
+id: ec-week2-lab-iv-measurement
+type: chart
+prompt: |
+  模擬 Lab 1 實驗一、二的逐點量測流程，讓讀者在動手前先體驗「為什麼電源電壓一直加、
+  二極體跨壓卻卡在 0.7 V 附近」。
+  左側是手寫 SVG 電路：電源 Vs → 二極體 D1（1N4007）→ 電阻 R = 1 kΩ 回到地，
+  標出 VD 與 I 的量測位置（符號依 circuit-symbols.md）。
+  一個「順偏／逆偏」切換鈕：切到逆偏時二極體符號翻轉，滑桿級距改為 1 V。
+  一條滑桿：電源電壓 Vs（順偏 0–5 V、級距 0.1 V；逆偏 0–30 V、級距 1 V）。
+  每拖到一個新值，右側兩件事同步發生：
+  1. 量測表新增一列（Vs、VD、I），最多顯示最近 10 列，可捲動
+  2. I-V 曲線圖（橫軸 VD、縱軸 I）多出一個點，並用淡色線連起來
+  二極體用指數模型計算：I = Is·(exp(VD/VT) − 1)，Is = 1e-9 A、VT = 26 mV，
+  與 Vs = VD + I·R 聯立求解（用簡單的二分法或牛頓法）；逆偏時 I ≈ −Is（幾乎為零），
+  並在圖上以文字提示「1N4007 崩潰電壓 1000 V，本實驗電源最高 32 V，量不到崩潰」。
+  順偏模式下，當 VD 超過 0.6 V 時在曲線上標出「Knee Voltage」；
+  另外用一根堆疊長條即時顯示 Vs 如何分配成 VD 與 I·R 兩段，讓「多出來的電壓都掉在電阻上」
+  一眼可見。
+  提供「清除重量」按鈕。
+  視覺要求：電路與曲線兩張 SVG 各自 viewBox 寬度不超過 320；表格用 Tailwind DOM；
+  中文標籤放 SVG 外；拖動即時更新；尊重 prefers-reduced-motion。
+status: generated
+caption: 膝點之後二極體幾乎是短路：電源再往上加，多出來的電壓全部掉在 1 kΩ 限流電阻上。
+*/}
+
+import EcWeek2LabIvMeasurement from '@/components/generated/ec-week2-lab-iv-measurement'
+
+<GeneratedFrame id="ec-week2-lab-iv-measurement" type="chart" prompt={"模擬 Lab 1 實驗一、二的逐點量測流程，讓讀者在動手前先體驗「為什麼電源電壓一直加、\n二極體跨壓卻卡在 0.7 V 附近」。\n左側是手寫 SVG 電路：電源 Vs → 二極體 D1（1N4007）→ 電阻 R = 1 kΩ 回到地，\n標出 VD 與 I 的量測位置（符號依 circuit-symbols.md）。\n一個「順偏／逆偏」切換鈕：切到逆偏時二極體符號翻轉，滑桿級距改為 1 V。\n一條滑桿：電源電壓 Vs（順偏 0–5 V、級距 0.1 V；逆偏 0–30 V、級距 1 V）。\n每拖到一個新值，右側兩件事同步發生：\n1. 量測表新增一列（Vs、VD、I），最多顯示最近 10 列，可捲動\n2. I-V 曲線圖（橫軸 VD、縱軸 I）多出一個點，並用淡色線連起來\n二極體用指數模型計算：I = Is·(exp(VD/VT) − 1)，Is = 1e-9 A、VT = 26 mV，\n與 Vs = VD + I·R 聯立求解（用簡單的二分法或牛頓法）；逆偏時 I ≈ −Is（幾乎為零），\n並在圖上以文字提示「1N4007 崩潰電壓 1000 V，本實驗電源最高 32 V，量不到崩潰」。\n順偏模式下，當 VD 超過 0.6 V 時在曲線上標出「Knee Voltage」；\n另外用一根堆疊長條即時顯示 Vs 如何分配成 VD 與 I·R 兩段，讓「多出來的電壓都掉在電阻上」\n一眼可見。\n提供「清除重量」按鈕。\n視覺要求：電路與曲線兩張 SVG 各自 viewBox 寬度不超過 320；表格用 Tailwind DOM；\n中文標籤放 SVG 外；拖動即時更新；尊重 prefers-reduced-motion。"} caption="膝點之後二極體幾乎是短路：電源再往上加，多出來的電壓全部掉在 1 kΩ 限流電阻上。">
+  <EcWeek2LabIvMeasurement client:visible />
+</GeneratedFrame>
+
 ### 實驗三：半波整流器 Half-Wave Rectifier（第 15–20 頁）
 
 {/* @ai-reference
@@ -828,7 +1048,7 @@ status: confirmed
 
 - **Experiment Procedure - Half-wave Rectifier（實驗步驟，第 18 頁）**：
   - **Circuit Setup（電路設置）**：$V_{in}$ 為 **60 Hz、10 Vpp 正弦波**（訊號產生器），D 為 **1N4007**，R 為 **10 kΩ**，量 R 兩端的 $V_{out}$。
-  - **Measurement（量測）**：對 $V_{in}$ 與 $V_{out}$ 各記錄 $V_{peak}$、$V_{rms}$ 與 **efficiency（效率）**，並貼上實驗接線照與示波器波形（講義表格有 Ex. 範例欄位）。效率這裡指整流效率，實驗中以量到的 $V_{out}$ 與 $V_{in}$ 的關係計算（理論上半波整流輸出的 $V_{rms} = V_p/2$、平均值 $V_p/\pi$）。
+  - **Measurement（量測）**：對 $V_{in}$ 與 $V_{out}$ 各記錄 $V_{peak}$、$V_{rms}$ 與 **efficiency（效率）**，並貼上實驗接線照與示波器波形（講義表格有 Ex. 範例欄位）。效率這裡指整流效率，實驗中以量到的 $V_{out}$ 與 $V_{in}$ 的關係計算（理論上半波整流輸出的 $V_{rms} = \frac{V_p}{2}$、平均值 $\frac{V_p}{\pi}$）。
 
 ![半波整流實驗接線圖：Vin 為 Sine 60 Hz 10 Vpp 交流源，串接 D 1N4007，負載 R 10 kΩ 接於 Vout 與地之間](/note-images/ec-week2-lab1/10-half-wave-experiment-circuit.png)
 
@@ -847,7 +1067,7 @@ status: confirmed
 - **Half-wave Rectifier with RC filter（加 RC 濾波的半波整流器，第 20 頁）**：在半波整流器（60 Hz 正弦、1N4007、R = 10 kΩ）的電阻兩端並聯 **C = 1 μF**。波形圖標出 **Diode on（二極體導通，電容充電、輸出跟著輸入上升）** 與 **Diode off（二極體截止，電容經 R 放電、輸出緩慢下降）** 兩段——就是 CH3 第 27 頁的漣波機制。用漣波公式估計：
 
 $$
-V_R \approx \frac{I_L}{C\,f_{in}} = \frac{V_p/R}{C\,f_{in}} = \frac{(5 - 0.7)/10\text{ k}\Omega}{1\ \mu\text{F}\times 60\text{ Hz}} \approx 7.2\text{ V}
+V_R \approx \frac{I_L}{C\,f_{in}} = \frac{\frac{V_p}{R}}{C\,f_{in}} = \frac{\frac{5 - 0.7}{10\text{ k}\Omega}}{1\ \mu\text{F}\times 60\text{ Hz}} \approx 7.2\text{ V}
 $$
 
 算出來的漣波比峰值還大，代表 $RC = 10\text{ ms}$ 相對於 16.7 ms 的週期太短、電容在下一個峰值來之前幾乎放光，線性近似已不成立——實驗時會看到明顯的鋸齒。講義第二張圖把 R 拿掉只留 C，就是 CH3 第 25 頁的峰值檢波器，輸出應該停在 $V_p - V_{D,on}$ 不下降。
@@ -905,10 +1125,10 @@ status: confirmed
 | 子實驗 | 頁 | 量測項目 |
 | --- | --- | --- |
 | 全波橋式整流，不含 RC 濾波 | 25 | $V_{in}$、$V_{out}$ 各記 $V_{peak}$、$V_{rms}$、efficiency |
-| 全波橋式整流，含 RC 濾波 | 26 | $V_{peak}$、$V_{rms}$、漣波 $V_R$、比值 $V_R/V_p$ |
+| 全波橋式整流，含 RC 濾波 | 26 | $V_{peak}$、$V_{rms}$、漣波 $V_R$、比值 $\frac{V_R}{V_p}$ |
 | 齊納穩壓 | 27 | $V_{peak}$、$V_{drop}$（$V_{in} < V_Z$ 時） |
 
-$V_R/V_p$ 這個比值對應 CH3 第 29 頁「漣波峰對峰值須低於輸入峰值的 5–10%」的設計準則，可以直接檢查實驗的電容夠不夠大。
+$\frac{V_R}{V_p}$ 這個比值對應 CH3 第 29 頁「漣波峰對峰值須低於輸入峰值的 5–10%」的設計準則，可以直接檢查實驗的電容夠不夠大。
 
 ![全波橋式整流無 RC 濾波實驗接線圖：Vin 為 60 Hz 5 Vpp 交流源，四顆 1N4007 組成橋（D2 左上、D3 右上、D1 左下、D4 右下），負載 R 10 kΩ 接於輸出正負端之間](/note-images/ec-week2-lab1/21-full-wave-bridge-experiment-circuit.png)
 
