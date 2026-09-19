@@ -14,6 +14,7 @@ description: Use when the author has a lab handout (App_LabN.pdf、實驗講義)
 | CircuitJS | 通用 | 一鍵連結看電流方向與波形形狀 | 抄數值、預演接線 |
 | Tinkercad | 通用 | 照配方表在虛擬麵包板預演接線與儀器接法 | 精確數據 |
 | LTspice | 真實型號 | 產生可進報告的曲線與預報值，和實測對照 | 麵包板與儀器外觀 |
+| KiCad | — | 結報用的正式電路圖（含電表），ERC 驗證後匯出 SVG／PDF | 模擬、預演接線 |
 
 ## When to use
 

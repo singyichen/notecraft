@@ -142,7 +142,7 @@ import EcWeek3Bridge from '@/components/generated/ec-week3-bridge'
 
 ## 教材預習重點
 
-**CH3 Diode Circuits（3.3 Applications of Diodes）**
+**第 3 章 二極體電路（CH3 Diode Circuits，3.3 節 Applications of Diodes）**
 
 - 半波整流器；二極體加電容的定電壓模型與理想模型
 - 加上負載電阻後的放電行為、漣波峰對峰值、不同電容值的影響
@@ -169,7 +169,7 @@ status: confirmed
 */}
 <PdfRefChip file="_references/電子學實作系列/第二週/App_Lab1.pdf" page={2} status="confirmed" client:visible />
 
-- **Outline（大綱）**：四個實驗——**Forward Bias: Knee Voltage（順偏：導通電壓）**、**Reverse Bias（逆偏）**、**Half-wave Rectifier（半波整流器）**、**Full-wave Rectifier（全波整流器）**。全波整流器前面標了 **(O)**，講義沒有解釋這個記號，推測是「選做」或「延伸」項目（待課堂確認）。
+- **大綱（Outline）**：四個實驗——**順偏：導通電壓（Forward Bias: Knee Voltage）**、**逆偏（Reverse Bias）**、**半波整流器（Half-wave Rectifier）**、**全波整流器（Full-wave Rectifier）**。全波整流器前面標了 **(O)**，講義沒有解釋這個記號，推測是「選做」或「延伸」項目（待課堂確認）。
 
 ### 這學期要做哪幾個實驗
 
@@ -201,7 +201,7 @@ status: confirmed
 | 項目 | Lab 1 用在哪 | 本站已有 | 搜尋關鍵字 |
 | --- | --- | --- | --- |
 | 電壓、電流 | 記錄表的兩個欄位；電壓是兩點的電位差、電流是每秒通過截面的電荷量 | [第 2 週](/notes/電子學實作系列第2週-二極體與EDA模擬)「前提盤點：先分清楚四個量」；[第 1 週](/notes/電子學實作系列第1週-半導體物理基礎)「漂移：Drift」的電流密度 $J$ | `電壓 電流 差別`、`voltage vs current water analogy` |
-| 直流電、交流電 | 實驗一、二用直流電源；實驗三、四改用 60 Hz 正弦波，整流就是把交流變直流 | 本篇「三個工具怎麼分工」的 Function Generator 設定（Amplitude 是峰對峰值）；[第 2 週](/notes/電子學實作系列第2週-二極體與EDA模擬)「半波整流器與峰值檢波器」 | `直流 交流 差異 DC AC`、`peak vs peak-to-peak vs RMS` |
+| 直流電、交流電 | 實驗一、二用直流電源；實驗三、四改用 60 Hz 正弦波，整流就是把交流變直流 | 本篇「四個工具怎麼分工」的 Function Generator 設定（Amplitude 是峰對峰值）；[第 2 週](/notes/電子學實作系列第2週-二極體與EDA模擬)「半波整流器與峰值檢波器」 | `直流 交流 差異 DC AC`、`peak vs peak-to-peak vs RMS` |
 | 什麼是電阻、電容 | 1 kΩ 限流電阻（實驗一）、10 kΩ 負載與 1 µF 濾波電容（實驗三、四） | 電阻：尚無獨立段落，[第 1 週](/notes/電子學實作系列第1週-半導體物理基礎)「載子的兩種移動方式：漂移與擴散」只提到漂移速度與電場成正比是歐姆定律的微觀樣貌；電容：[第 2 週](/notes/電子學實作系列第2週-二極體與EDA模擬)「加上負載電阻後的漣波」 | `電阻 色碼 讀法`、`capacitor charge discharge 電容 充放電` |
 
 **第三組：電路定律（這門課沒有另開電路學，是這位作者真正的缺口）**
@@ -218,7 +218,7 @@ status: confirmed
 
 | 項目 | Lab 1 用在哪 | 本站已有 | 搜尋關鍵字 |
 | --- | --- | --- | --- |
-| 二極體（Diode） | 四個實驗的主角，1N4007 | [第 1 週](/notes/電子學實作系列第1週-半導體物理基礎)「PN 接面的結構與三個工作區」到「二極體方程式」；[第 2 週](/notes/電子學實作系列第2週-二極體與EDA模擬)「三種二極體模型」；本篇各實驗的講義詳解 | `二極體 順向 逆向 偏壓 膝點電壓`、`1N4007 datasheet forward voltage` |
+| 二極體（Diode） | 四個實驗的主角，1N4007 | [第 1 週](/notes/電子學實作系列第1週-半導體物理基礎)「PN 接面的結構與三個工作區」到「二極體方程式」；[第 2 週](/notes/電子學實作系列第2週-二極體與EDA模擬)「三種二極體模型」；本篇各實驗的講義詳解 | `二極體 順向 逆向 偏壓 導通電壓`、`1N4007 datasheet forward voltage` |
 | **進階** RC 電路 | 實驗四濾波電容的放電段：$R_L C$ 決定漣波大小 | [第 2 週](/notes/電子學實作系列第2週-二極體與EDA模擬)「加上負載電阻後的漣波」；本篇實驗三、四的漣波公式與 LTspice 步進 $C$ 的圖 | `RC 電路 時間常數`、`RC time constant charging curve` |
 
 **第三組四條定律其實是同一件事**：對數學背景的讀者，歐姆定律、KVL、串聯、分壓不是四條要背的規則，而是一條線性方程。以實驗一的迴路為例，從 KVL 出發：
@@ -238,13 +238,14 @@ $$
 
 **建議順序**：第一組看影片與速查頁半小時；第二組已在第 1、2 週筆記寫過，回頭翻即可；第三組是真正要花時間的，先用上面那段推導把四條定律串起來，再搜尋關鍵字做幾題串並聯與分壓練習；第四組的二極體本篇各實驗會反覆講，RC 電路等實驗四前再看。
 
-### 三個工具怎麼分工
+### 四個工具怎麼分工
 
 | 階段 | 工具 | 做什麼 | 不做什麼 |
 | --- | --- | --- | --- |
 | Lab 前一天 | **Falstad CircuitJS** | 點連結即開、已在跑模擬；看電流黃點的方向與快慢、看示波器波形怎麼隨元件值改變 | 不模仿實體接線，沒有麵包板 |
 | Lab 前一小時 | **Tinkercad Circuits** | 照配方在虛擬麵包板擺件、接儀器，確認接法正確、讀值合理 | 不拿它的數值當實驗數據 |
 | Lab 前，要精確數字 | **LTspice** | 用內建元件庫的真實 1N4007 模型跑出曲線與數字，當預報值、和實測對照 | 沒有麵包板與儀器外觀 |
+| 寫結報時 | **KiCad** | 畫正式的電路圖（含電表位置）貼進結報，ERC 檢查接線沒漏、匯出 SVG／PDF；原理圖檔在 [simulations/lab1/kicad/](https://github.com/singyichen/notecraft/tree/main/simulations/lab1/kicad) | 不跑模擬（數字仍以 LTspice 為準）、不預演接線 |
 | Lab 當天 | 實體器材 | 量測、記錄、拍波形 | 不在實驗室才開始想接法 |
 
 CircuitJS 的操作只需要四件事：下方兩格示波器左邊是 $V_{in}$、右邊是 $V_{out}$，格內文字有 Max、P-P、RMS 讀值；對任何元件按右鍵 → 編輯可以改值；右側「模擬速度」拉慢可以看清楚黃點；連結失效時，把本節最後附錄的文字檔貼到「檔案 → 從文字匯入」即可。
@@ -517,7 +518,7 @@ status: confirmed
 
 - **目標（Objective，第 4 頁）**：
   - 觀察並驗證順向偏壓（forward bias）下二極體的導通特性。
-  - 量測電流–電壓關係（I-V relationship），找出導通電壓（knee voltage，講義寫 Knee Voltage，直譯「膝點電壓」）。
+  - 量測電流–電壓關係（I-V relationship），找出導通電壓（knee voltage）。
   - 理解二極體的非線性行為（non-linear behavior）與基本應用。
 - **Fig. 1.1 PN junction diode**：P 區、N 區與中間的 **空乏區（depletion）**，外加電壓正端接 P、負端接 N——就是第 1 週講的順偏。
 
