@@ -27,3 +27,6 @@ recordings/
 
 # Subagent-driven-development 工作區（ledger / brief / review 暫存，不進 git）
 .superpowers/
+
+# python tooling under simulations/
+__pycache__/
