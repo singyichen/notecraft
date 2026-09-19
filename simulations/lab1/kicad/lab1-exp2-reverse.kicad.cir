@@ -1,0 +1,14 @@
+.title KiCad schematic
+.model __D1 D
++           is=90p
++           rs=40m
++           n=1.4
++           tt=5u
++           cjo=30p
++           bv=1000
++           ibv=5u
+V1 Net-_D1-K_ GND DC 1 
+D1 Net-_D1-A_ Net-_D1-K_ __D1
+R1 Net-_D1-A_ Net-_MES2-+_ 1k
+VMES2 Net-_MES2-+_ GND DC 0 
+.end

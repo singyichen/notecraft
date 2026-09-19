@@ -9,6 +9,7 @@ Tinkercad 的線路圖檢視不畫電表、會留開放端，結報要放的正�
 | `lab1-exp1-forward-sheet.svg` / `.pdf` | 結報用：A5 橫式含圖框與標題欄（標題、日期、版次） |
 | `lab1-exp1-forward.kicad.cir` | 由原理圖匯出的 SPICE 網表，用來和手寫的 `../lab1-exp1-forward.cir` 比對拓樸 |
 | `gen_exp1.py` | 產生器；共用的 S-expression 工具在 `../../tools/kicad_sexp.py` |
+| `lab1-exp2-reverse.*`、`gen_exp2.py` | 實驗二逆偏量測電路：與實驗一同拓樸，D1 旋轉 270° 反接（陰極朝 $V_s$ 正端），電壓表 + 端接陰極側所以讀值為正；同一套 `.svg`／`-sheet.svg`／`.pdf`／`.kicad.cir` 輸出，指令把檔名換成 `lab1-exp2-reverse` 即可 |
 
 ## 重新產生與驗證
 

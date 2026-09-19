@@ -68,14 +68,83 @@ def knee_tangent(vd, i_ma, frac=0.5):
     return float(-b / a), float(1e3 / a)
 
 
+def read_csv_reverse(path):
+    """實驗二：欄位 Vs, VD, I_uA；I_uA 空白就跳過該列（逆偏沒有可靠的歐姆定律反推）。回傳 (label, Vs, VD, I_uA)。"""
+    vs, vd, iu = [], [], []
+    with open(path, newline='', encoding='utf-8-sig') as f:
+        rows = list(csv.DictReader(f))
+    if not rows:
+        sys.exit(f'{path}: 沒有資料列')
+    cols = {k.strip().lower(): k for k in rows[0].keys()}
+    for want in ('vs', 'vd', 'i_ua'):
+        if want not in cols:
+            sys.exit(f'{path}: 缺少欄位 {want}（表頭要有 Vs, VD, I_uA）')
+    for r in rows:
+        try:
+            a, b, c = float(r[cols['vs']]), float(r[cols['vd']]), float(r[cols['i_ua']])
+        except (TypeError, ValueError):
+            continue
+        vs.append(a); vd.append(abs(b)); iu.append(abs(c))
+    label = os.path.splitext(os.path.basename(path))[0].replace('lab1-exp2-', '')
+    return label, np.array(vs), np.array(vd), np.array(iu)
+
+
+def main_reverse(args):
+    """實驗二：逆偏漏電流疊在 LTspice 曲線上（對數軸），加上 DMM 10 MΩ 輸入阻抗與 datasheet 上限兩條參考線。"""
+    _, st = read_raw(args.raw); s = st[0]
+    lt_v, lt_i = s['V(k)'], -s['I(D1)'] * 1e6   # 逆向電壓 (V)、逆向電流 (µA)
+    m = lt_v > 0.05; lt_v, lt_i = lt_v[m], lt_i[m]
+    series = []
+    for p, c in zip(args.csv, (S2, S3, S4)):
+        label, vs, vd, iu = read_csv_reverse(p)
+        if len(vs) == 0:
+            print(f'{p}: 沒有完整的列（Vs, VD, I_uA 都要有值），跳過'); continue
+        series.append((label, vs, vd, iu, c))
+
+    f, (a, b) = plt.subplots(1, 2, figsize=(11, 4.4), dpi=160)
+    vgrid = np.linspace(0.5, 20, 200)
+    a.plot(lt_v, lt_i, color=S1, label='LTspice 1N4007 漏電流')
+    a.plot(vgrid, vgrid / 10e6 * 1e6, color=INK2, linewidth=1, linestyle='--', label='DMM 10 MΩ 輸入阻抗分走的電流 $V/10\\,\\mathrm{M\\Omega}$')
+    a.axhline(5.0, color=S4, linewidth=1, linestyle=':', label='datasheet 上限 5 µA（1000 V、25 °C）')
+    for label, vs, vd, iu, c in series:
+        pos = iu > 0
+        a.plot(vd[pos], iu[pos], 'o', color=c, label=label, markersize=5, markeredgecolor=SURF, markeredgewidth=0.8)
+        b.plot(vs, vd, 'o', color=c, label=label, markersize=5, markeredgecolor=SURF, markeredgewidth=0.8)
+    a.set_yscale('log'); a.set_ylim(1e-5, 20); a.set_xlim(0, 21)
+    a.set_xlabel('逆向電壓 $-V_D$ (V)'); a.set_ylabel('逆向電流 (µA，對數)'); a.set_title('逆偏漏電流：實測點多半落在 DMM 那條線附近', loc='left')
+    a.legend(loc='center right', fontsize=8.5)
+    b.plot([0, 20], [0, 20], color=S1, label='$V_D = V_s$（電阻上沒有壓降）'); b.set_xlim(0, 21); b.set_ylim(0, 21)
+    b.set_xlabel('$V_s$ (V)'); b.set_ylabel('$-V_D$ (V)'); b.set_title('逆偏：電源加多少，二極體就吃多少', loc='left'); b.legend(loc='upper left')
+    f.tight_layout(); f.savefig(os.path.join(args.out, 'exp2-reverse-overlay.png'), facecolor=SURF); plt.close(f)
+
+    print('| 資料 | 20 V 附近的逆向電流 | 換算等效電阻 $V/I$ | 和 DMM 10 MΩ 線的比較 | $V_D / V_s$ 平均 |')
+    print('| --- | --- | --- | --- | --- |')
+    k = int(np.argmin(np.abs(lt_v - 20)))
+    print(f'| LTspice 1N4007 | {lt_i[k] * 1e3:.3g} nA | {20 / lt_i[k] / 1e6 * 1e6:.3g} MΩ | 小 4 個數量級 | 1.000 |')
+    for label, vs, vd, iu, c in series:
+        j = int(np.argmax(vs)); i20 = iu[j]
+        if i20 > 0:
+            req = vd[j] / (i20 * 1e-6) / 1e6; dmm = vd[j] / 10e6 * 1e6
+            cmp_ = '幾乎就是電壓表的電流' if 0.5 <= i20 / dmm <= 2 else ('比電壓表的電流大，二極體或接觸真的在漏' if i20 > 2 * dmm else '比 DMM 線還小，多半是電流表解析度')
+            print(f'| {label} | {i20:.3g} µA（{vs[j]:g} V） | {req:.3g} MΩ | {cmp_} | {np.mean(vd / vs):.3f} |')
+        else:
+            print(f'| {label} | 讀值為 0（{vs[j]:g} V） | 量不到 | 低於電流表解析度 | {np.mean(vd / vs):.3f} |')
+    print(f'\n圖：{os.path.join(args.out, "exp2-reverse-overlay.png")}')
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('csv', nargs='+', help='實測或 Tinkercad 的 CSV（可多個）')
+    ap.add_argument('--exp', type=int, default=1, choices=(1, 2), help='1 = 順偏（預設），2 = 逆偏')
     ap.add_argument('--out', default=os.path.join(HERE, '..', '..', 'public', 'note-images', 'ec-week3-measured'))
-    ap.add_argument('--raw', default=os.path.join(HERE, 'lab1-exp1-forward.raw'))
+    ap.add_argument('--raw', default=None, help='LTspice .raw，預設依 --exp 選 lab1-exp1-forward.raw 或 lab1-exp2-reverse.raw')
     ap.add_argument('--threshold', type=float, default=1.0, help='準則一的電流門檻 (mA)，預設 1 mA')
     args = ap.parse_args()
     os.makedirs(args.out, exist_ok=True)
+    if args.raw is None:
+        args.raw = os.path.join(HERE, 'lab1-exp1-forward.raw' if args.exp == 1 else 'lab1-exp2-reverse.raw')
+    if args.exp == 2:
+        return main_reverse(args)
 
     _, st = read_raw(args.raw); s = st[0]
     lt_vd, lt_i, lt_vs = s['V(a)'], s['I(D1)'] * 1e3, s['Vs']
