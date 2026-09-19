@@ -153,16 +153,17 @@ import EcWeek3Bridge from '@/components/generated/ec-week3-bridge'
 - 線調整率與負載調整率的區別
 - 限幅電路、波形位移器與電壓倍增器、二極體當電子開關
 
-## Lab 1 實驗執行手冊：CircuitJS 看波形 → Tinkercad 預演 → 進實驗室
+## Lab 1 實驗總覽：三個工具怎麼分工
 
-> `App_Lab1.pdf` 的逐頁詳解（目標、理論、講義問題）已寫在[第 2 週筆記的 Lab 1 段落](/notes/電子學實作系列第2週-二極體與eda模擬)，這裡不重複。本節是「做實驗當天要翻的那一頁」：每個實驗都拆成三段——先點 CircuitJS 連結把波形看懂，再照 Tinkercad 接線配方預演一次，最後帶著記錄表進實驗室。
+> `App_Lab1.pdf` 的逐頁詳解（目標、理論、講義問題）已寫在[第 2 週筆記的 Lab 1 段落](/notes/電子學實作系列第2週-二極體與eda模擬)，這裡不重複。本節是「做實驗當天要翻的那一頁」：四個實驗各自成章，每章固定五段——先點 CircuitJS 連結把波形看懂、照 Tinkercad 接線配方預演一次、用 LTspice 的真實型號結果當預報值、帶著記錄表進實驗室、最後對照檢查點。
 
-### 兩個工具怎麼分工
+### 三個工具怎麼分工
 
 | 階段 | 工具 | 做什麼 | 不做什麼 |
 | --- | --- | --- | --- |
 | Lab 前一天 | **Falstad CircuitJS** | 點連結即開、已在跑模擬；看電流黃點的方向與快慢、看示波器波形怎麼隨元件值改變 | 不模仿實體接線，沒有麵包板 |
 | Lab 前一小時 | **Tinkercad Circuits** | 照配方在虛擬麵包板擺件、接儀器，確認接法正確、讀值合理 | 不拿它的數值當實驗數據 |
+| Lab 前，要精確數字 | **LTspice** | 用內建元件庫的真實 1N4007 模型跑出曲線與數字，當預報值、和實測對照 | 沒有麵包板與儀器外觀 |
 | Lab 當天 | 實體器材 | 量測、記錄、拍波形 | 不在實驗室才開始想接法 |
 
 CircuitJS 的操作只需要四件事：下方兩格示波器左邊是 $V_{in}$、右邊是 $V_{out}$，格內文字有 Max、P-P、RMS 讀值；對任何元件按右鍵 → 編輯可以改值；右側「模擬速度」拉慢可以看清楚黃點；連結失效時，把本節最後附錄的文字檔貼到「檔案 → 從文字匯入」即可。
@@ -176,7 +177,15 @@ Tinkercad 儀器設定一次列齊，四個實驗共用（接法見[第 2 週的
 | Oscilloscope（放兩台） | Time per division／Volts per division | 不用 | 5 ms、2 V | 5 ms、1 V |
 | Multimeter | 檔位 | 一台切 A 串進迴路、一台切 V 跨在二極體兩端 | 不用 | 不用 |
 
-### 實驗一：順偏膝點電壓 Forward Bias: Knee Voltage
+### LTspice：真實型號的預報值怎麼來
+
+教授提到的進階工具。CircuitJS 與 Tinkercad 的二極體都是理想化模型，LTspice 內建元件庫有 Diodes Inc. 的 **1N4007** 參數（$I_S = 90$ pA、$n = 1.4$、$R_S = 40$ mΩ、$BV = 1000$ V），跑出來的數字可以直接和實驗室量到的比。
+
+九個網表放在專案的 [simulations/lab1/](https://github.com/singyichen/notecraft/tree/main/simulations/lab1)，每個檔案自足（`.model` 已內嵌）。三種跑法：本機 LTspice 用 File → Open 開 `.cir` 按 Run；[線上版](https://my.analog.com/en/app/)登入後上傳同一個檔案；或在專案裡在 `simulations/lab1/` 執行 `../tools/run-lt.sh *.cir` 批次產生數據，`plot.py` 重畫各實驗章節裡的圖。
+
+想改參數只要編輯 `.cir` 裡的一行，例如把 `RL p 0 10k` 改成 `1k` 看負載變重時漣波怎麼變，或把 `.step param C list` 換成自己的電容值，重跑一次就有新圖。
+
+## 實驗一：順偏膝點電壓 Forward Bias: Knee Voltage
 
 {/* @ai-reference
 id: w3-lab1-exp1
@@ -197,13 +206,15 @@ status: confirmed
 
 *實驗一電路：電源、1N4007、1 kΩ 串成一圈。*
 
-**先看懂：CircuitJS** → [開啟順偏 I-V 模擬](https://www.falstad.com/circuit/circuitjs.html?ctz=CQAgjCAMB0l3BWcMBMcUHYMGZIA4UA2ATmIxAUgpABZsKBTAWjDACgA3cFPEH3sDxDFCUMTSowkkqNARsATt14iQ2NMNFUw8NgBM1G1TTxVVKEHoYAzAIYBXADYAXNgHdapzZ6r8o7nz48ASE-SDYAc2UgkN51GXDsXgS+EAA1AGdZdgB7VMIacRQwEQQIaWgIKgARdiA)
+### 先看懂：CircuitJS
+
+[開啟順偏 I-V 模擬](https://www.falstad.com/circuit/circuitjs.html?ctz=CQAgjCAMB0l3BWcMBMcUHYMGZIA4UA2ATmIxAUgpABZsKBTAWjDACgA3cFPEH3sDxDFCUMTSowkkqNARsATt14iQ2NMNFUw8NgBM1G1TTxVVKEHoYAzAIYBXADYAXNgHdapzZ6r8o7nz48ASE-SDYAc2UgkN51GXDsXgS+EAA1AGdZdgB7VMIacRQwEQQIaWgIKgARdiA)
 
 - 右側有一支 **Vs** 滑桿（0 到 2 V，每格 0.1 V），拖它就是在做講義的「每次加 0.1 V」。
 - 0.4 V 以前黃點幾乎不動；0.5 V 附近開始流；再往上，每加 0.1 V 電流就跳一大截，而二極體兩端電壓 $V_D$ 幾乎停在 0.6 V 左右不再上升——多出來的電壓全落在 1 kΩ 上。這就是「膝點」的意思：過了它，二極體像一個固定 0.6–0.7 V 的電壓源。
 - 下方示波器顯示 D1 的電壓（綠）與電流（黃）。CircuitJS 預設二極體模型的膝點比 1N4007 略低（約 0.5–0.6 V），**看形狀、不抄數值**。
 
-**預演：Tinkercad 接線配方**
+### 預演：Tinkercad 接線配方
 
 | 步驟 | 從 | 到 | 備註 |
 | --- | --- | --- | --- |
@@ -215,7 +226,20 @@ status: confirmed
 
 按 Start Simulation，把電源電壓從 0 調到 2 V，每 0.1 V 讀一次兩台電表。
 
-**實驗室：記錄表**
+### LTspice 預報值：真實 1N4007 模型
+
+![LTspice 順偏 I-V 曲線：左圖 ID 對 VD，0.5 V 前幾乎為零、之後指數上升，標出 1 mA 時 VD 為 0.59 V；右圖 VD 與 VR 對 Vs，VD 在 0.5 V 後趨於平坦，VR 呈直線上升](/note-images/ec-week3-ltspice/exp1-forward-iv.png)
+
+*1N4007 的順偏曲線：1 mA 時 $V_D = 0.59$ V，2 V 時電流 1.40 mA。*
+
+| 量 | 教科書 | LTspice 1N4007 | Tinkercad | 實測（自己填） |
+| --- | --- | --- | --- | --- |
+| $V_D$ 於 $I = 1$ mA | 0.7 V | 0.59 V | 0.53 V | |
+| $I$ 於 $V_s = 2$ V | 1.3 mA | 1.40 mA | 1.46 mA | |
+
+三個「膝點」不一樣，正是 Lab 1 問題 1 要你解釋的：0.7 V 是課本用來手算的常數電壓模型，實際二極體的膝點取決於你把「明顯導通」定在多少電流，1N4007 在 1 mA 才到 0.59 V，而 Tinkercad 的通用模型又更低。
+
+### 實驗室：記錄表
 
 | $V_s$ (V) | $V_D$ (V) | $V_R = V_s - V_D$ (V) | $I = V_R / R$ (mA) | 電表 $I$ (mA) |
 | --- | --- | --- | --- | --- |
@@ -226,7 +250,7 @@ status: confirmed
 
 多算一欄 $V_R / R$ 是為了和電表讀到的電流互相驗證：兩者差太多，通常是電表接成並聯了。
 
-**檢查點**
+### 檢查點
 
 - 畫 $I$ 對 $V_D$ 的曲線，轉折點就是膝點電壓，預期 0.6–0.7 V。
 - 最高點的電流用定電壓模型估：
@@ -237,7 +261,7 @@ status: confirmed
 
 - 講義三題（膝點與理論值的差異、空乏區與多數載子如何解釋指數上升、限流電阻拿掉會怎樣）的提示見第 2 週筆記。
 
-### 實驗二：逆偏 Reverse Bias
+## 實驗二：逆偏 Reverse Bias
 
 {/* @ai-reference
 id: w3-lab1-exp2
@@ -258,16 +282,26 @@ status: confirmed
 
 *實驗二電路：只是把二極體翻過來。*
 
-**先看懂：CircuitJS**
+### 先看懂：CircuitJS
 
 - [開啟逆偏模擬](https://www.falstad.com/circuit/circuitjs.html?ctz=CQAgjCAMB0l3BWcMBMcUHYMGZIA4UA2ATmIxAUhDRABZsKBTAWjDACgA3cFPavPmF4hihKONpUkVGdATsATjz6iQ2Gqqph47ACZ08VVeqNiUIXYwBmAQwCuAGwAu7AO4HTH-n0huvvQWEAqHYAc2VvCJNxX2wfGOoqADUAZ3B2AHtqEEJaCRQwUQQIaWgIKgARDiA)：滑桿 0 到 20 V，黃點始終不動，示波器上 $V_D$ 跟著 $V_s$ 走到 −20 V、電流維持零。所有電壓都落在二極體上，電阻兩端為零。
 - [延伸：換成 5.6 V 齊納](https://www.falstad.com/circuit/circuitjs.html?ctz=CQAgjCAMB0l3BWcMBMcUHYMGZIA4UA2ATmIxAUmRABZsKBTAWjDACgA3cFPEH3sDxDFCUMTSr0q06AjYAnbrxEhsaYaKph4bAF608VFWqOaK0QmwDuB07b55eka-f5KHTtgHN3bwbxMxZ2wnIOoANQBnKGh2AHs+EEIacRQwEQQIJBgIKgAtBgA7Bnk2IA)：同一個電路把二極體換成齊納，滑桿拖過 5.6 V 的瞬間黃點開始流動，$V_D$ 被釘在 −5.6 V，多出來的電壓改落在電阻上。這就是講義問題 2、3 要的畫面：崩潰區的二極體像一個反向的電壓源，串聯電阻決定崩潰後流多少電流。
 
-**預演：Tinkercad 接線配方**
+### 預演：Tinkercad 接線配方
 
 與實驗一完全相同，只做一件事：點選 Diode 按 `R` 兩次讓它轉 180°，色環端改接電阻。電表 A 檔讀值應為 0（Tinkercad 的二極體逆向電流是零）。
 
-**實驗室：記錄表**
+### LTspice 預報值：真實 1N4007 模型
+
+![LTspice 逆偏曲線：左圖 0 到 20 V 逆向電流僅 0.1 nA 量級；右圖掃到 1200 V，在 1000 V 處電流垂直上升代表崩潰](/note-images/ec-week3-ltspice/exp2-reverse-iv.png)
+
+*逆偏：20 V 內漏電流只有 0.1 nA，崩潰在 1000 V，實驗室的 32 V 電源看不到。*
+
+| 量 | 教科書 | LTspice 1N4007 | Tinkercad | 實測（自己填） |
+| --- | --- | --- | --- | --- |
+| 逆偏 20 V 的漏電流 | ≤ 5 µA（datasheet 上限） | 0.1 nA | 0 | |
+
+### 實驗室：記錄表
 
 | $V_s$ (V) | $V_D$ (V) | $I$ (mA) |
 | --- | --- | --- |
@@ -276,13 +310,13 @@ status: confirmed
 | … | | |
 | 20 | | |
 
-**檢查點**
+### 檢查點
 
 - $V_D \approx V_s$、$I \approx 0$，電表切到 µA 檔才可能看到讀值。1N4007 datasheet 的逆向漏電流上限是 25 °C 時 5 µA，實際通常更小。
 - 崩潰電壓 $V_{BR}$ 額定 1000 V，GPE-3323 最高 32 V，**這個實驗量不到崩潰**；講義問題 1 要的答案就是「量不到，以及為什麼」。
 - 把實驗一與實驗二的數據合併畫在同一張 $I$-$V$ 圖上，就是完整的二極體特性曲線。
 
-### 實驗三：半波整流器 Half-Wave Rectifier
+## 實驗三：半波整流器 Half-Wave Rectifier
 
 {/* @ai-reference
 id: w3-lab1-exp3
@@ -304,7 +338,7 @@ status: confirmed
 
 *實驗三電路：訊號產生器、1N4007、10 kΩ。*
 
-**先看懂：CircuitJS，三個連結照順序點**
+### 先看懂：CircuitJS，三個連結照順序點
 
 1. [RC 電路複習：20 Hz、100 Ω、1 mF](https://www.falstad.com/circuit/circuitjs.html?ctz=CQAgjCAMB0l3BWcMBMcUHYMGZIA4UA2ATmIxAUgpABZsKBTAWjDACgA3cFPEH3sDxDFCUcHyoR6VGAjYAnbrxEhsaYaMlw2AY1XqVaqvzEw4ESGwDu+43gFCTlgOZK+9t0dNsA9mMG8VDQoYCKU1DAWIABqAJYAdr58bkEhYVRIkeLRPgCuAC5sQA)：輸入是以 3 V 為中心、±1 V 擺動的正弦。$\tau = RC = 0.1\ \text{s}$，遠大於 20 Hz 的週期 0.05 s，所以電容來不及跟：交流成分被壓到剩不到一成，直流 3 V 原封不動通過。這一格解釋了下一步「電容為什麼能填平空檔」。
 
@@ -317,7 +351,7 @@ status: confirmed
 2. [半波整流](https://www.falstad.com/circuit/circuitjs.html?ctz=CQAgjCAMB0l3BWcMBMcUHYMGZIA4UA2ATmIxAUgpABZsKBTAWjDACgA3cFPEH3sDxDFCUcCEJUkVGdARsAJt14iQ2NMNEoQChgDMAhgFcANgBc2AJzUbV6qvzFh4kNgHcbDvAKGPXAc2U+byD7MVcAezFCGjEaFDARSmoYCCoANQBLADs2KO0YuISkqShoCAh0iKMLIA)：右邊示波器只剩正半週，峰值比左邊低一個二極體壓降（模擬約 4.6 V，實體 1N4007 預期約 4.3 V）；負半週輸出為零，黃點靜止。
 3. [半波整流加 1 µF](https://www.falstad.com/circuit/circuitjs.html?ctz=CQAgjCAMB0l3BWcMBMcUHYMGZIA4UA2ATmIxAUgpABZsKBTAWjDACgA3cFPEH3sDxDFCUcCEJUkVGdARsAJt14iQ2NMNEoQChgDMAhgFcANgBc2AJzUbV6qvzFh4kNgHcbDvAKGPXAc2U+byD7MVcPMNUaMFFVVwBjWljNZK0Q2RdICAi04N4wvzYAezFCGjEaFDARSmoYHJAANQBLADsSvgkKqiqawjrpaAgIJuKjCyA)：輸出變成鋸齒——二極體導通時電容衝到峰值，截止時經 10 kΩ 放電。因為 $RC = 10\ \text{ms}$ 比週期 16.7 ms 還短，放電放得很深，鋸齒很明顯。對電容按右鍵改成 10 µF、100 µF，看鋸齒怎麼變平。
 
-**預演：Tinkercad 接線配方**
+### 預演：Tinkercad 接線配方
 
 | 步驟 | 從 | 到 | 備註 |
 | --- | --- | --- | --- |
@@ -328,7 +362,28 @@ status: confirmed
 | 5 | Oscilloscope 2 的兩支探棒 | 跨在 Resistor 兩端 | 看 $V_{out}$ |
 | 6（第二部分） | Capacitor 1 µF 兩端 | 與 Resistor 並聯 | 若拿 Polarized Capacitor，正極朝二極體那側 |
 
-**實驗室：記錄表**
+### LTspice 預報值：真實 1N4007 模型
+
+
+![LTspice 半波整流波形：Vin 為 ±5 V 正弦，Vout 只剩正半週，峰值 4.44 V](/note-images/ec-week3-ltspice/exp3-halfwave.png)
+
+*半波整流：輸出峰值 4.44 V，比輸入低一個二極體壓降 0.56 V。*
+
+![LTspice 半波整流加濾波電容三組比較：1 µF 為深鋸齒、10 µF 鋸齒變淺、100 µF 幾乎水平，圖例標出漣波 3.22、0.61、0.07 V](/note-images/ec-week3-ltspice/exp3-halfwave-rc.png)
+
+*同樣的半波整流，電容從 1 µF 加到 100 µF，漣波從 3.22 V 降到 0.07 V。*
+
+| 量 | 理想公式 | LTspice | 說明 |
+| --- | --- | --- | --- |
+| $V_{out,peak}$ | $5 - 0.7 = 4.3$ V | 4.44 V | 1N4007 在這個電流下壓降只有 0.56 V |
+| $V_{rms}$ | $V_p / 2 = 2.22$ V | 2.16 V | 二極體導通角略小於半週 |
+| $V_{avg}$ | $V_p / \pi = 1.41$ V | 1.33 V | 同上 |
+| η | 40.6% | 38.2% | $V_{avg}^2 / V_{rms}^2$ |
+| $V_R$，C = 1 µF | 7.2 V（線性近似失效） | 3.22 V | 電容放到 1.2 V 才被下一個峰值接住 |
+| $V_R$，C = 10 µF | 0.72 V | 0.61 V | 近似開始可用 |
+| $V_R$，C = 100 µF | 0.072 V | 0.07 V | 近似準確 |
+
+### 實驗室：記錄表
 
 | 電路 | 訊號 | $V_{peak}$ (V) | $V_{rms}$ (V) | efficiency | 波形照片 |
 | --- | --- | --- | --- | --- | --- |
@@ -336,7 +391,7 @@ status: confirmed
 | 半波（無 C） | $V_{out}$ | | | | |
 | 半波 + 1 µF | $V_{out}$ | | | 另記 $V_R$ | |
 
-**檢查點與公式**
+### 檢查點與公式
 
 - $V_{out,peak} \approx V_{in,peak} - V_{D,on} \approx 5 - 0.7 = 4.3\ \text{V}$。
 - 理想半波整流的輸出 rms 與平均值（$V_p$ 取輸出峰值）：
@@ -358,7 +413,7 @@ status: confirmed
 
   算出來比峰值還大，代表近似已失效、電容幾乎放光；實驗看到的是深鋸齒，而不是「小漣波」。這正是設計準則「$V_R$ 要小於 $V_p$ 的 5–10%」反過來告訴你的事：1 µF 對 10 kΩ、60 Hz 太小了。
 
-### 實驗四：全波橋式整流器與齊納穩壓 Full-Wave Bridge Rectifier / Zener Regulation
+## 實驗四：全波橋式整流器與齊納穩壓 Full-Wave Bridge Rectifier / Zener Regulation
 
 {/* @ai-reference
 id: w3-lab1-exp4
@@ -387,7 +442,7 @@ status: confirmed
 
 *第 27 頁：橋後並聯齊納與 10 kΩ。*
 
-**先看懂：CircuitJS，三個連結**
+### 先看懂：CircuitJS，三個連結
 
 1. [全波橋式整流](https://www.falstad.com/circuit/circuitjs.html?ctz=CQAgjCAMB0l3BWcMBMcUHYMGZIA4UA2ATmIxAUgpABZsKBTAWjDACgA3EYwkbBFN148o4EISopoSKrOlsA7kOVgJyyIvBqRqyShpRNukCn0n8JsxoAm5vJYPZsw3oOsMAZgEMArgBsAFzZbGkIDU0dnZTdPX0Dgvij+QTR7CJMQd29-INsnXmTaMIcMrLigpRFCkRpVQ0reWt4ENSb6ila6lr0DDSVuktDwq0185TGwGl7RqMnHSAM5wwAnPgXwKbX53uR4UfXcSIL1vsTjo74BQwBzM8vBMew8HY0Ae1FiqhoUMB5KahgECoADUAJYAOzY70m4h231+hH+MmgEAgwNePiCQA)：正半週黃點走左上與右下那對二極體，負半週換另一對，但流過中間 10 kΩ 的方向始終相同。輸出峰值比輸入低 **兩個** 二極體壓降（模擬 1.78 V，實體預期 $2.5 - 1.4 = 1.1$ V），弧與弧之間有一小段零電壓的死區。
 2. [橋式加 1 µF](https://www.falstad.com/circuit/circuitjs.html?ctz=CQAgjCAMB0l3BWcMBMcUHYMGZIA4UA2ATmIxAUgpABZsKBTAWjDACgA3EYwkbBFN148o4EISopoSKrOlsA7kOVgJyyIvBqRqyShpRNukCn0n8JsxoAm5vJYPZsw3oOsMAZgEMArgBsAFzZbGkIDU0dnZTdPX0Dgvij+QTR7CJMQd29-INsnXmTaMIcMrLigpRFCkRpVQ0reWt4ENSb6ila6lr0DDSVuktDwq0185TGwGl7RqMnHSAM5wwAnPgXwKbX53uR4UfXcSIL1vsTjo74BQwBzM8vBMew8HdOJzed7JY0AYz5CT-e-y2ohg8DgEFeQMOd2hGgA9qJilQaCgwDxKNQYBCQAA1ACWADs2AjJuIdii0YQMTJoBAIDi4T4gkA)：每半週充電一次，鋸齒頻率變成 120 Hz。同樣是 1 µF，漣波比半波那格小一半，但仍然幾乎放光。
@@ -395,7 +450,7 @@ status: confirmed
 
 第 3 個連結**沒有照第 27 頁的參數畫**，原因要先知道：5 Vpp 經橋式後峰值只剩約 1.1 V，市面上沒有那麼低電壓的齊納，第 27 頁的電路在 5 Vpp 下看起來會和第 25 頁一模一樣。連結改用第 24 頁概念圖的條件（±10 V 輸入、1 kΩ 限流電阻、$V_Z = 6.8$ V），才看得到「削平」。實驗當天以助教指定的齊納型號與輸入振幅為準；若維持 5 Vpp，「輸出與無齊納時相同」本身就是可以寫進報告的觀察，並解釋原因。
 
-**預演：Tinkercad 接線配方**
+### 預演：Tinkercad 接線配方
 
 橋式的四顆二極體最容易接反，先在麵包板上定四個節點：**A**（交流上端）、**B**（交流下端）、**P**（輸出 +）、**N**（輸出 −，當接地）。
 
@@ -418,7 +473,7 @@ status: confirmed
 | 6（第 26 頁） | Capacitor 1 µF | 與 Resistor 並聯 | 有極性的話正極接 P |
 | 7（第 27 頁） | Zener Diode | 色環（陰極）接 P、陽極接 N | 屬性面板填助教給的 $V_Z$ |
 
-**實驗室的接地陷阱（比接線本身更重要）**
+### 實驗室的接地陷阱（比接線本身更重要）
 
 Tinkercad 的示波器探棒是浮接的，兩台隨便跨都沒事。實體實驗室不是：訊號產生器的 − 端與示波器每一個通道的地夾，都接在同一個大地上。橋式整流的輸入端（A、B）和輸出端（P、N） **沒有任何共同節點**，如果 CH1 的地夾接 B、CH2 的地夾接 N，等於用大地把 B 和 N 短路，D_d 被繞過、波形整個不對，嚴重時燒二極體。實驗三沒有這個問題，因為那裡輸入與輸出本來就共地。實驗四的做法：
 
@@ -426,7 +481,31 @@ Tinkercad 的示波器探棒是浮接的，兩台隨便跨都沒事。實體實�
 - 或兩支探棒的地夾都接 N，CH1 接 A、CH2 接 B，用示波器的 Math 功能算 CH1 − CH2 得到 $V_{in}$。
 - 詳細的接地鐵律見[實驗器材速查](/notes/電子學實作系列-實驗器材速查)。
 
-**實驗室：記錄表**
+### LTspice 預報值：真實 1N4007 模型
+
+
+![LTspice 全波橋式整流波形：Vin 為 ±2.5 V 正弦，Vout 為峰值 1.46 V 的連續正弧，弧與弧之間有短暫零電壓死區](/note-images/ec-week3-ltspice/exp4-bridge.png)
+
+*橋式整流：輸出峰值 1.46 V，比輸入低兩個二極體壓降，過零附近有死區。*
+
+![LTspice 橋式整流加濾波電容三組比較：1 µF 鋸齒頻率 120 Hz 漣波 0.61 V、10 µF 漣波 0.08 V、100 µF 漣波 0.01 V](/note-images/ec-week3-ltspice/exp4-bridge-rc.png)
+
+*橋式加電容：每半週充電一次，同樣的 1 µF 漣波只有半波的一半。*
+
+![LTspice 橋式整流加齊納穩壓波形：Vin ±10 V 正弦，橋式輸出峰值 8.8 V，穩壓後的輸出每半週被削平在 6.8 V，過零時仍降到零](/note-images/ec-week3-ltspice/exp4-zener.png)
+
+*概念電路的齊納穩壓：峰值被夾在 6.8 V，沒有電容所以過零仍掉到零。*
+
+| 量 | 理想公式 | LTspice | 說明 |
+| --- | --- | --- | --- |
+| $V_{out,peak}$ | $2.5 - 1.4 = 1.1$ V | 1.46 V | 兩顆 1N4007 各只掉 0.52 V |
+| η | 81.2% | 63.5% | 輸入只有 2.5 V，死區佔比大，效率明顯低於理想值 |
+| $V_R$，C = 1 µF | 0.92 V | 0.61 V | 線性近似高估 |
+| $V_R$，C = 10 µF | 0.092 V | 0.08 V | 漣波比 $V_R / V_p = 6\%$，剛好落在 5–10% 的設計準則內 |
+| $V_R$，C = 100 µF | 0.009 V | 0.01 V | |
+| 齊納削平電壓 | 6.8 V | 6.81 V | |
+
+### 實驗室：記錄表
 
 | 電路 | 訊號 | $V_{peak}$ (V) | $V_{rms}$ (V) | efficiency | $V_R$ (V) | $V_R / V_p$ | $V_{drop}$ (V) |
 | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -435,7 +514,7 @@ Tinkercad 的示波器探棒是浮接的，兩台隨便跨都沒事。實體實�
 | 橋式 + 1 µF（第 26 頁） | $V_{out}$ | | | | | | |
 | 橋式 + 齊納（第 27 頁） | $V_{out}$ | | | | | | |
 
-**檢查點與公式**
+### 檢查點與公式
 
 - 輸出峰值 $V_p' = V_{in,peak} - 2V_{D,on} \approx 2.5 - 1.4 = 1.1\ \text{V}$；死區寬度對應 $|V_{in}| < 2V_{D,on}$ 的時間。
 - 理想全波整流（$V_p$ 取輸出峰值）：
@@ -463,82 +542,7 @@ Tinkercad 的示波器探棒是浮接的，兩台隨便跨都沒事。實體實�
 
 - 齊納：$V_{in}$ 高於 $V_Z$ 的區間輸出被夾在 $V_Z$；低於 $V_Z$ 的區間齊納不導通，輸出跟著輸入走，講義要記的 $V_{drop}$ 就是這段的落差。
 
-### 進階：用 LTspice 跑同一組實驗（真實 1N4007 模型）
-
-教授提到的進階工具。CircuitJS 與 Tinkercad 的二極體都是理想化模型，LTspice 內建元件庫有 Diodes Inc. 的 **1N4007** 參數（$I_S = 90$ pA、$n = 1.4$、$R_S = 40$ mΩ、$BV = 1000$ V），跑出來的數字可以直接和實驗室量到的比。三個工具的分工：
-
-| 工具 | 二極體模型 | 拿來做什麼 | 不做什麼 |
-| --- | --- | --- | --- |
-| CircuitJS | 通用模型，膝點約 0.5 V | 看電流流向與波形形狀，秒開 | 抄數值 |
-| Tinkercad | 通用模型 | 預演實體接線、儀器接法 | 精確數據 |
-| **LTspice** | 1N4007 真實參數 | 產生可放進報告的模擬曲線與數字、和實測對照 | 沒有麵包板與儀器外觀 |
-
-九個網表放在專案的 [simulations/lab1/](https://github.com/singyichen/notecraft/tree/main/simulations/lab1)，每個檔案自足（`.model` 已內嵌）。三種跑法：本機 LTspice 用 File → Open 開 `.cir` 按 Run；[線上版](https://my.analog.com/en/app/)登入後上傳同一個檔案；或在專案裡執行 `simulations/lab1/run-lt.sh` 批次產生數據，`plot.py` 重畫下面的圖。
-
-**實驗一、二：直流 I-V**
-
-![LTspice 順偏 I-V 曲線：左圖 ID 對 VD，0.5 V 前幾乎為零、之後指數上升，標出 1 mA 時 VD 為 0.59 V；右圖 VD 與 VR 對 Vs，VD 在 0.5 V 後趨於平坦，VR 呈直線上升](/note-images/ec-week3-ltspice/exp1-forward-iv.png)
-
-*1N4007 的順偏曲線：1 mA 時 $V_D = 0.59$ V，2 V 時電流 1.40 mA。*
-
-![LTspice 逆偏曲線：左圖 0 到 20 V 逆向電流僅 0.1 nA 量級；右圖掃到 1200 V，在 1000 V 處電流垂直上升代表崩潰](/note-images/ec-week3-ltspice/exp2-reverse-iv.png)
-
-*逆偏：20 V 內漏電流只有 0.1 nA，崩潰在 1000 V，實驗室的 32 V 電源看不到。*
-
-| 量 | 教科書 | LTspice 1N4007 | Tinkercad | 實測（自己填） |
-| --- | --- | --- | --- | --- |
-| $V_D$ 於 $I = 1$ mA | 0.7 V | 0.59 V | 0.53 V | |
-| $I$ 於 $V_s = 2$ V | 1.3 mA | 1.40 mA | 1.46 mA | |
-| 逆偏 20 V 的漏電流 | ≤ 5 µA（datasheet 上限） | 0.1 nA | 0 | |
-
-三個「膝點」不一樣，正是 Lab 1 問題 1 要你解釋的：0.7 V 是課本用來手算的常數電壓模型，實際二極體的膝點取決於你把「明顯導通」定在多少電流，1N4007 在 1 mA 才到 0.59 V，而 Tinkercad 的通用模型又更低。
-
-**實驗三：半波整流**
-
-![LTspice 半波整流波形：Vin 為 ±5 V 正弦，Vout 只剩正半週，峰值 4.44 V](/note-images/ec-week3-ltspice/exp3-halfwave.png)
-
-*半波整流：輸出峰值 4.44 V，比輸入低一個二極體壓降 0.56 V。*
-
-![LTspice 半波整流加濾波電容三組比較：1 µF 為深鋸齒、10 µF 鋸齒變淺、100 µF 幾乎水平，圖例標出漣波 3.22、0.61、0.07 V](/note-images/ec-week3-ltspice/exp3-halfwave-rc.png)
-
-*同樣的半波整流，電容從 1 µF 加到 100 µF，漣波從 3.22 V 降到 0.07 V。*
-
-| 量 | 理想公式 | LTspice | 說明 |
-| --- | --- | --- | --- |
-| $V_{out,peak}$ | $5 - 0.7 = 4.3$ V | 4.44 V | 1N4007 在這個電流下壓降只有 0.56 V |
-| $V_{rms}$ | $V_p / 2 = 2.22$ V | 2.16 V | 二極體導通角略小於半週 |
-| $V_{avg}$ | $V_p / \pi = 1.41$ V | 1.33 V | 同上 |
-| η | 40.6% | 38.2% | $V_{avg}^2 / V_{rms}^2$ |
-| $V_R$，C = 1 µF | 7.2 V（線性近似失效） | 3.22 V | 電容放到 1.2 V 才被下一個峰值接住 |
-| $V_R$，C = 10 µF | 0.72 V | 0.61 V | 近似開始可用 |
-| $V_R$，C = 100 µF | 0.072 V | 0.07 V | 近似準確 |
-
-**實驗四：橋式整流與齊納穩壓**
-
-![LTspice 全波橋式整流波形：Vin 為 ±2.5 V 正弦，Vout 為峰值 1.46 V 的連續正弧，弧與弧之間有短暫零電壓死區](/note-images/ec-week3-ltspice/exp4-bridge.png)
-
-*橋式整流：輸出峰值 1.46 V，比輸入低兩個二極體壓降，過零附近有死區。*
-
-![LTspice 橋式整流加濾波電容三組比較：1 µF 鋸齒頻率 120 Hz 漣波 0.61 V、10 µF 漣波 0.08 V、100 µF 漣波 0.01 V](/note-images/ec-week3-ltspice/exp4-bridge-rc.png)
-
-*橋式加電容：每半週充電一次，同樣的 1 µF 漣波只有半波的一半。*
-
-![LTspice 橋式整流加齊納穩壓波形：Vin ±10 V 正弦，橋式輸出峰值 8.8 V，穩壓後的輸出每半週被削平在 6.8 V，過零時仍降到零](/note-images/ec-week3-ltspice/exp4-zener.png)
-
-*概念電路的齊納穩壓：峰值被夾在 6.8 V，沒有電容所以過零仍掉到零。*
-
-| 量 | 理想公式 | LTspice | 說明 |
-| --- | --- | --- | --- |
-| $V_{out,peak}$ | $2.5 - 1.4 = 1.1$ V | 1.46 V | 兩顆 1N4007 各只掉 0.52 V |
-| η | 81.2% | 63.5% | 輸入只有 2.5 V，死區佔比大，效率明顯低於理想值 |
-| $V_R$，C = 1 µF | 0.92 V | 0.61 V | 線性近似高估 |
-| $V_R$，C = 10 µF | 0.092 V | 0.08 V | 漣波比 $V_R / V_p = 6\%$，剛好落在 5–10% 的設計準則內 |
-| $V_R$，C = 100 µF | 0.009 V | 0.01 V | |
-| 齊納削平電壓 | 6.8 V | 6.81 V | |
-
-想改參數只要編輯 `.cir` 裡的一行，例如把 `RL p 0 10k` 改成 `1k` 看負載變重時漣波怎麼變，或把 `.step param C list` 換成自己的電容值，重跑一次就有新圖。
-
-### 實驗報告對照清單
+## 實驗報告對照清單
 
 | 實驗 | 要交的圖 | 要交的數 | 對照的理論 |
 | --- | --- | --- | --- |
@@ -547,7 +551,7 @@ Tinkercad 的示波器探棒是浮接的，兩台隨便跨都沒事。實體實�
 | 三、半波 | $V_{in}$／$V_{out}$ 波形、加 C 後的鋸齒 | $V_{peak}$、$V_{rms}$、η、$V_R$ | $V_p - V_{D,on}$、$\eta \le 40.6\%$、$V_R \approx V_p / (R_L C f)$ |
 | 四、橋式 | 兩張波形、加 C、加齊納 | $V_{peak}$、$V_{rms}$、η、$V_R / V_p$、$V_{drop}$ | $V_p - 2V_{D,on}$、$\eta \le 81.2\%$、$V_R \approx V_p / (2 R_L C f)$ |
 
-### 附錄：CircuitJS 電路文字檔
+## 附錄：CircuitJS 電路文字檔
 
 連結若打不開，到 [falstad.com/circuit](https://www.falstad.com/circuit/) 選「檔案 → 從文字匯入」，貼上對應的文字檔即可；每行是一個元件，欄位依序是型別、兩端座標、旗標、參數。
 
