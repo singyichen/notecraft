@@ -216,8 +216,8 @@ import MlWeek1Concept from '@/components/generated/ml-week1-concept'
 ### 特徵前處理
 
 - **Feature scaling（特徵縮放）**：訓練前把不同量級的特徵拉到同一個尺度，讓每個特徵公平參與計算，避免數值範圍大的特徵主導模型。
-  - **Normalization（正規化）**：把特徵線性縮放到固定範圍（通常是 [0, 1]），公式為 $(x - \text{min}) / (\text{max} - \text{min})$；缺點是對離群值（outlier）敏感，一個極端值就會壓縮其他資料的分布範圍。
-  - **Standardization（標準化）**：把特徵轉換成平均值 0、標準差 1 的分布，公式為 $(x - \text{mean}) / \text{std}$（也稱 z-score normalization）；不設固定上下限，對離群值較穩健，是深度學習與多數線性模型更常用的做法。
+  - **Normalization（正規化）**：把特徵線性縮放到固定範圍（通常是 [0, 1]），公式為 $\frac{x - \text{min}}{\text{max} - \text{min}}$；缺點是對離群值（outlier）敏感，一個極端值就會壓縮其他資料的分布範圍。
+  - **Standardization（標準化）**：把特徵轉換成平均值 0、標準差 1 的分布，公式為 $\frac{x - \text{mean}}{\text{std}}$（也稱 z-score normalization）；不設固定上下限，對離群值較穩健，是深度學習與多數線性模型更常用的做法。
 - **Feature selection（特徵選取）v.s. Feature extraction（特徵提取）**：選取是從原始特徵中挑出有用的子集（欄位不變，只是刪減）；提取則是把原始特徵組合、轉換成新的、更精簡的特徵（例如 PCA 降維），欄位本身已經改變。
 
 老師對這幾個名詞的補充：

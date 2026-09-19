@@ -23,10 +23,43 @@ NoteCraft 的 markdown pipeline 已經接好 **KaTeX**（`astro.config.mjs` 的 
 
 | 情況 | 處理方式 |
 | --- | --- |
-| 單一個簡短符號或代換（例如 $V_T$、$N_A$、$E=V/L$） | 行內 `$...$` 即可，不用獨立成塊 |
+| 單一個簡短符號或代換（例如 $V_T$、$N_A$、$E=\frac{V}{L}$） | 行內 `$...$` 即可，不用獨立成塊 |
 | 一句話裡有**兩個以上**推導/代入步驟（設定 → 代入 → 求值） | 獨立成 `$$...$$` 區塊；三步以上用 `\begin{aligned}...\end{aligned}` 逐行對齊 |
 | 教科書 Example／例題的完整解法 | 一律獨立成塊，即使只有一步 | 
 | 反應式配平、多步驟合成路徑（化學） | 同樣獨立成塊，箭頭用 `\rightarrow` 或 `\xrightarrow{條件}` |
+
+## 分數一律用 `\frac{}{}`（分子在上、分母在下），不用斜線
+
+只要公式裡出現「某量除以某量」，不論行內或獨立區塊，一律寫成 `\frac{分子}{分母}`，**不要用斜線 `/` 湊成一行**——斜線寫法（`V/L`、`n_i^2/N_D`、`e^{V_D/V_T}`）跟教科書投影片上直式分數的排版差很多，讀者對照講義時會覺得對不起來。這條規則涵蓋：
+
+| 情境 | 錯誤（斜線） | 正確（直式分數） |
+| --- | --- | --- |
+| 行內簡短代換 | `$E=V/L$`、`$W/L$` | `$E=\frac{V}{L}$`、`$\frac{W}{L}$` |
+| 微分 | `$dn/dx$`、`$\partial z/\partial b$` | `$\frac{dn}{dx}$`、`$\frac{\partial z}{\partial b}$` |
+| 指數裡的分數 | `e^{V_D/V_T}`、`\exp(-x/L_d)` | `\exp\!\left(\frac{V_D}{V_T}\right)`、`\exp\!\left(-\frac{x}{L_d}\right)`（改用 `\exp(...)` 而不是把 `\frac` 塞進上標，上標裡的分數會縮到看不清） |
+| 對數／根號裡的分數 | `\ln(I_D/I_S)`、`\sqrt{1-V_R/V_0}` | `\ln\!\left(\frac{I_D}{I_S}\right)`、`\sqrt{1-\frac{V_R}{V_0}}` |
+| 分數的分子或分母本身又是分數 | `\frac{V_p/R}{C f_{in}}` | `\frac{\frac{V_p}{R}}{C f_{in}}`（巢狀 `\frac`，KaTeX 會自動把內層縮小） |
+| 數值代入 | `1350/480 = 2.81` | `\frac{1350}{480} = 2.81` |
+| 半整數次方 | `T^{3/2}` | `T^{\frac{3}{2}}` |
+
+行內用 `\frac`（textstyle，高度較小、不撐開行距）；獨立 `$$` 區塊裡最外層 `\frac` 自動是 displaystyle，若在 `aligned`／`cases` 內想強制放大再用 `\dfrac`。
+
+**例外，可以保留斜線：** 單位（`\text{cm}^2/(\text{V}\cdot\text{s})`、`\text{V/cm}`、`\text{A/cm}^2`、`\text{fF}/\mu\text{m}^2`），單位的斜線是標準寫法，改成直式反而怪。
+
+檢查方式：抓出所有 `$...$`／`$$...$$` 片段，去掉 `\text{...}` 後若還含 `/` 就要人工看一下是不是變數分數：
+
+```bash
+python3 - <<'PY'
+import re,glob
+pat=re.compile(r'\$\$(.*?)\$\$|(?<!\$)\$(?!\$)(.*?)(?<!\\)\$',re.S)
+for f in glob.glob('src/content/notes/*.mdx'):
+    s=open(f,encoding='utf-8').read()
+    for m in pat.finditer(s):
+        b=m.group(1) if m.group(1) is not None else m.group(2)
+        if '/' in re.sub(r'\\(?:text|mathrm)\{[^}]*\}','',b):
+            print(f, s.count('\n',0,m.start())+1, b.strip()[:100])
+PY
+```
 
 ## 向量／矩陣排版比照原始講義
 

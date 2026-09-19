@@ -154,7 +154,7 @@ $$
 \end{aligned}
 $$
 
-其中最後一步用到 $\sigma(z)=z$（恆等函數，微分為 1）以及 $z^{(i)}=\sum_k w_k x_k^{(i)}+b$ 對 $w_j$ 的偏微分就是 $x_j^{(i)}$。同樣的推導對 $b$ 做一次（$\partial z/\partial b=1$）：
+其中最後一步用到 $\sigma(z)=z$（恆等函數，微分為 1）以及 $z^{(i)}=\sum_k w_k x_k^{(i)}+b$ 對 $w_j$ 的偏微分就是 $x_j^{(i)}$。同樣的推導對 $b$ 做一次（$\frac{\partial z}{\partial b}=1$）：
 
 $$
 \frac{\partial L}{\partial b} = -\frac{2}{n}\sum_i\left(y^{(i)}-\sigma(z^{(i)})\right)
@@ -288,7 +288,7 @@ excerpt: Stochastic GD (SGD)：Update parameters incrementally for each training
 
 因為更新頻率高出很多，SGD 通常比全批次 GD 收斂更快，也因此天然支援**線上學習（online learning）**——新資料一筆一筆進來就能即時更新模型，不必等整批資料收集齊全再重新訓練一次。要注意的是每一輪（epoch）開始前**必須把訓練資料重新打散（shuffle）**，否則資料原本的排列順序（例如同一類別的樣本恰好排在一起）會讓參數更新落入規律的循環、無法真正收斂。
 
-因為每一步只看一筆樣本，SGD 走的路徑比全批次 GD 顛簸得多，損失曲面看起來更「吵雜（noisy）」——但這反而是優點：對於非凸（non-convex）的損失函數（例如後面多層神經網路的損失曲面），這種雜訊有機會幫助跳出較淺的局部最小值。實務上 SGD 也常搭配隨訓練過程遞減的**自適應學習率（adaptive learning rate）**，而不是固定一個 $\eta$ 用到底（[第 2 週作業一](/notes/機器學習實作系列第2週-python基礎)用的 $\eta_t=\eta_0/(1+\alpha t)$ 就是一種常見寫法）。
+因為每一步只看一筆樣本，SGD 走的路徑比全批次 GD 顛簸得多，損失曲面看起來更「吵雜（noisy）」——但這反而是優點：對於非凸（non-convex）的損失函數（例如後面多層神經網路的損失曲面），這種雜訊有機會幫助跳出較淺的局部最小值。實務上 SGD 也常搭配隨訓練過程遞減的**自適應學習率（adaptive learning rate）**，而不是固定一個 $\eta$ 用到底（[第 2 週作業一](/notes/機器學習實作系列第2週-python基礎)用的 $\eta_t=\frac{\eta_0}{1+\alpha t}$ 就是一種常見寫法）。
 
 ![一個吵雜、非凸的 3D 損失曲面圖，橫軸 Parameter X、縱軸 Parameter Y、高度為 Loss Value，曲面上有多個高低起伏的波峰波谷，紅色 X 標記全域最小值 Global Minimum 的位置](/note-images/ml-week3/05-sgd-noisy-error-surface.jpeg)
 
@@ -353,7 +353,7 @@ import MlWeek3OptimizerPaths from '@/components/generated/ml-week3-optimizer-pat
 
 ### 特徵縮放：為什麼 GD 需要它
 
-原始特徵常常落在完全不同的數值範圍——$[0,1]$、$[-1,1]$、$[0,255]$、甚至沒有固定上下界——數值範圍大的特徵會在淨輸入 $z=\boldsymbol{w}^T\boldsymbol{x}+b$ 裡不成比例地主導計算結果。許多依賴距離計算或梯度的 ML 演算法都需要某種**特徵縮放（feature scaling）**才能訓練得好，梯度下降正是其中之一。
+原始特徵常常落在完全不同的數值範圍——$[0,1]$、$[-1,1]$、$[0,255]$、甚至沒有固定上下界——數值範圍大的特徵會在淨輸入 $z=\boldsymbol{w}^T\boldsymbol{x}+b$ 裡不成比例地主導計算結果。許多依賴距離計算或梯度的 ML 演算法都需要某種**特徵縮放（feature scaling）** 才能訓練得好，梯度下降正是其中之一。
 
 {/* @ai-reference
 id: feature-scaling-why
@@ -1161,7 +1161,7 @@ status: generated
 
 第 3 週投影片最後的「Classwork／Assignment #1」重提的是**同一份作業**——用 Adaline SGD 分類模型，測試 `tech_employees.csv` 裡 4 種員工能力指標的不同組合，找出哪個指標對篩選「優秀員工」最具鑑別度。完整的題目說明、資料欄位、切分規則、數學推導（含這裡剛學過的 GD／SGD 更新式、標準化公式）、以及 7 種特徵組合實際跑出來的正確率排序與三張結果圖，都寫在[第 2 週筆記的「作業一：Adaline SGD 員工特徵分類」](/notes/機器學習實作系列第2週-python基礎)，這裡不重複整篇貼一次，只補第 3 週投影片新增的重點：
 
-- **自適應學習率**（見前面「隨機梯度下降（SGD）」一節提到的 $\eta_t=\eta_0/(1+\alpha t)$）被列為作業建議嘗試的訓練技巧之一，對應第 2 週結果裡「自適應學習率（0.84）優於固定學習率（0.81）」的實測結論
+- **自適應學習率**（見前面「隨機梯度下降（SGD）」一節提到的 $\eta_t=\frac{\eta_0}{1+\alpha t}$）被列為作業建議嘗試的訓練技巧之一，對應第 2 週結果裡「自適應學習率（0.84）優於固定學習率（0.81）」的實測結論
 - 「預期結果 2」明確要求針對每個雙特徵組合，個別畫出決策邊界區域與測試集樣本分佈——第 2 週的結果圖把全部 6 組畫成一張 2×3 網格方便對照，是同一個要求的呈現方式
 
 {/* @ai-reference

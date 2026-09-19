@@ -1036,7 +1036,7 @@ $$
 
 ![一張折線圖，橫軸 Epochs、縱軸 Mean Squared Error (loss)，兩條曲線對比同一個最佳特徵組合 Math_Skill & Coding_Skill 下，固定學習率 eta=0.01（acc=0.81）與自適應學習率（acc=0.84）的收斂過程，自適應學習率曲線中後段的 loss 略低且較平穩](/note-images/ml-week2/17-assignment1-adaptive-vs-fixed.png)
 
-*固定學習率與自適應學習率的對比（皆用正確率最高的 `Math_Skill & Coding_Skill` 組合）：自適應學習率（測試正確率 0.84）優於固定學習率（0.81），且中後段 loss 更低、更穩定——驗證了自適應學習率 $\eta_t=\eta_0/(1+\alpha t)$「前期步伐大、後期步伐小」的設計確實帶來更好的收斂結果。*
+*固定學習率與自適應學習率的對比（皆用正確率最高的 `Math_Skill & Coding_Skill` 組合）：自適應學習率（測試正確率 0.84）優於固定學習率（0.81），且中後段 loss 更低、更穩定——驗證了自適應學習率 $\eta_t=\frac{\eta_0}{1+\alpha t}$「前期步伐大、後期步伐小」的設計確實帶來更好的收斂結果。*
 
 ## 關鍵定義
 
@@ -1055,7 +1055,7 @@ $$
 | Adaline | 把感知器的階梯輸出換成連續線性輸出，改用均方誤差（MSE）當 loss function，可用標準梯度下降訓練 |
 | SGD（隨機梯度下降） | 每次只用一筆樣本估計梯度並立即更新，屬於隨機近似（stochastic approximation） |
 | Data leakage（資料洩漏） | 讓測試集的統計資訊（例如平均值、標準差）提早滲進訓練流程的錯誤 |
-| Adaptive learning rate（自適應學習率） | 隨 epoch 遞增而遞減的學習率，$\eta_t=\eta_0/(1+\alpha t)$，前期步伐大、後期步伐小 |
+| Adaptive learning rate（自適應學習率） | 隨 epoch 遞增而遞減的學習率，$\eta_t=\frac{\eta_0}{1+\alpha t}$，前期步伐大、後期步伐小 |
 | List／Tuple／Dict／Set（列表／元組／字典／集合） | Python 四種內建容器；依「要不要改、要不要順序、要不要查得快」三個問題選用 |
 | `__init__` ／ `self` | `__init__` 是建構子，物件建立時自動呼叫；`self` 代表呼叫這個方法的物件實例本身 |
 
@@ -1174,7 +1174,7 @@ $$
 
 #### 複習題 11
 
-> 自適應學習率 $\eta_t=\eta_0/(1+\alpha t)$，已知 $\eta_0=0.1$、$\alpha=0.05$，求第 10 個 epoch（$t=10$）時的學習率 $\eta_{10}$。
+> 自適應學習率 $\eta_t=\frac{\eta_0}{1+\alpha t}$，已知 $\eta_0=0.1$、$\alpha=0.05$，求第 10 個 epoch（$t=10$）時的學習率 $\eta_{10}$。
 
 **詳解**
 
