@@ -36,3 +36,7 @@ __pycache__/
 *-backups/
 simulations/**/erc.rpt
 ~*.lck
+
+# 結報：個人檔案（含學號）與建置暫存不進版控，範本與產生腳本才進
+simulations/*/report/*.docx
+simulations/*/report/build/

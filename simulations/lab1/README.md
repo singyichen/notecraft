@@ -32,3 +32,17 @@ python3 -m venv .venv && .venv/bin/pip install numpy matplotlib
 ```
 
 `../tools/ltraw.py` 是最小的 `.raw` 讀取器（UTF-16 標頭 + 二進位資料，支援 `.step` 分段），不依賴 PyLTSpice；`run-lt.sh` 也在 `../tools/`。
+
+## 結報（助教格式）
+
+格式依 `src/content/notes/_references/電子學實作系列/第二週/Lab_結報形式參考.pdf`；同資料夾的 `Lab_結報範本.docx` 是空白範本，由 `../tools/lab_report.py` 產生，之後每個 Lab 共用。
+
+```bash
+cd simulations/lab1
+.venv/bin/python ../tools/lab_report.py --lab 2 --title "實驗名稱" -o ~/Desktop/Lab2_空白.docx     # 任一 Lab 的空白範本
+.venv/bin/python report/build_lab1_report.py --id <學號> --name <姓名>                              # Lab 1 預填版 → report/<學號>_<姓名>_Lab1.docx
+```
+
+- 預填版已放入實驗一、二的 Tinkercad 截圖與掃描表、KiCad 電路圖、LTspice 網表與曲線、比較表；黃底是待填（照片、實測、自己的分析），綠底是要用自己的話改寫的草稿。
+- 實測數據填進 `measured/lab1-exp1-forward.csv`、`measured/lab1-exp2-reverse.csv` 後重跑，實測表與疊圖會自動帶入。已存在的 docx 不會被覆寫，要加 `--force` 或用 `-o` 另存，避免蓋掉在 Word 手改的內容。
+- `report/*.docx` 與 `report/build/` 已列入 `.gitignore`（含學號，且 repo 是公開的）。
