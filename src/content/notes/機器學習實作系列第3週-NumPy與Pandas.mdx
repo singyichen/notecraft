@@ -1184,3 +1184,279 @@ excerpt: Assignment #1 目的：使用 Adaline SGD 分類模型，透過測試�
 **在做什麼**：Part 2 建立 NumPy 陣列運算的核心直覺——用固定型別陣列取代 Python list 換取向量化速度；Part 3 學會用 `DataFrame`/`Series` 處理有欄位、有缺值、需要合併分組的真實表格資料。
 
 **關鍵概念**：ndarray、vectorization / ufuncs、aggregation、broadcasting、boolean masking、fancy indexing、`Series` / `DataFrame`、`.loc`/`.iloc`、missing data、groupby、concat/merge/join、pivot table、時間序列
+
+## 關鍵定義
+
+| 名詞 | 定義 |
+| --- | --- |
+| 自適應線性神經元（Adaline） | 保留感知器的淨輸入，但用連續的線性激活輸出計算均方誤差，讓模型能以梯度下降訓練的二元分類器 |
+| 淨輸入（net input） | 特徵與權重的內積加上偏差項，$z=\boldsymbol{w}^T\boldsymbol{x}+b$ |
+| 線性激活函數（linear activation function） | Adaline 訓練時使用的恆等函數 $\sigma(z)=z$；它保留連續誤差，與最終分類用的閾值函數角色不同 |
+| 均方誤差（Mean Squared Error, MSE） | 將每筆樣本的真實值與線性激活輸出之差平方後取平均；對 Adaline 而言是可微分的凸損失函數 |
+| 梯度（gradient） | 多元函數對各參數的偏微分所組成的向量，指向函數值上升最快的方向；負梯度則指向下降最快的方向 |
+| 學習率（learning rate） | 控制每次參數更新步幅的超參數；太大可能跨過最低點而發散，太小則收斂緩慢 |
+| 全批次梯度下降（full-batch GD） | 每次使用全部訓練樣本計算梯度，再更新一次參數；方向穩定，但大型資料集的單步成本較高 |
+| 隨機梯度下降（SGD） | 每看一筆樣本就估計梯度並立即更新參數；更新頻繁、路徑較吵雜，且能支援線上學習 |
+| Mini-batch 梯度下降 | 每次用一小批樣本估計梯度，是 full-batch GD 與 SGD 的折衷，兼顧向量化效率與訓練穩定性 |
+| 線上學習（online learning） | 模型不重新初始化權重，隨新資料到達持續更新；`AdalineSGD.partial_fit()` 就是本週的實作例子 |
+| 特徵縮放（feature scaling） | 把不同特徵調整到相近數值尺度，避免大數值特徵主導運算，並讓梯度下降更穩定 |
+| 標準化（standardization） | 每個特徵減去自身平均值再除以自身標準差，使平均值為 0、標準差為 1，但不會把資料變成常態分布 |
+| 多維陣列（ndarray） | NumPy 的固定型別多維陣列；元素連續儲存並帶有 `shape`、`ndim`、`dtype` 等資訊，適合大量數值運算 |
+| 向量化（vectorization） | 把逐筆 Python 迴圈改寫成對整個陣列的運算，由預先編譯的底層常式一次處理資料 |
+| 聚合（aggregation） | 用 `sum`、`mean`、`std` 等運算把一個維度的多個值壓縮成較少的統計值；`axis` 表示被壓縮的維度 |
+| 廣播（broadcasting） | NumPy 從最右邊維度開始比較形狀；每一對維度必須相等或其中一方為 1，才能在不實際複製資料的情況下延展運算 |
+| 布林遮罩（boolean masking） | 以逐元素比較產生布林陣列，再用該陣列篩出符合條件的元素或資料列 |
+| 花式索引（fancy indexing） | 把索引陣列放入中括號，一次取出任意位置；輸出形狀由索引陣列決定 |
+| `np.newaxis` | 在索引時插入一個長度為 1 的新軸，常用來調整形狀、刻意觸發廣播 |
+| 序列（`Series`） | Pandas 中帶有明確索引標籤的一維資料結構，可由 list、dict、ndarray 或純量建立 |
+| 資料框（`DataFrame`） | 多個共用同一索引、彼此對齊的 `Series` 所組成的二維表格，可容納不同型別與缺失值 |
+| `.loc` ／ `.iloc` | `.loc` 依標籤選取且切片包含尾端；`.iloc` 依整數位置選取且切片不包含尾端 |
+| 缺失值（missing data） | Pandas 以 `NaN` 或 `None` 表示缺少資料，常用 `isnull()`、`dropna()`、`fillna()` 檢查、刪除或補值 |
+| 分組運算（groupby） | 依鍵值把資料切成多組、對各組套用運算，再把結果合併，亦即 split–apply–combine |
+| 拼接（concat）v.s. 合併（merge／join） | `concat` 沿指定軸把資料疊起來；`merge`／`join` 則依共同鍵值配對資料列 |
+
+## 公式
+
+- 淨輸入：$z=\boldsymbol{w}^T\boldsymbol{x}+b$
+- Adaline 線性激活：$\sigma(z)=z$
+- Adaline 分類閾值：$T(\sigma(z))=1$ 若 $\sigma(z)\geq0.5$，否則為 $0$
+- 均方誤差：$L(\boldsymbol{w},b)=\frac{1}{n}\sum_{i=1}^{n}\left(y^{(i)}-\sigma(z^{(i)})\right)^2$
+- 梯度向量：$\nabla f(\boldsymbol{w})=\left[\frac{\partial f}{\partial w_1},\frac{\partial f}{\partial w_2},\dots,\frac{\partial f}{\partial w_m}\right]^T$
+- 梯度下降更新：$\boldsymbol{w}\leftarrow\boldsymbol{w}-\eta\nabla_{\boldsymbol{w}}L$，$b\leftarrow b-\eta\nabla_bL$
+- Adaline 權重偏微分：$\frac{\partial L}{\partial w_j}=-\frac{2}{n}\sum_i\left(y^{(i)}-\sigma(z^{(i)})\right)x_j^{(i)}$
+- Adaline 偏差偏微分：$\frac{\partial L}{\partial b}=-\frac{2}{n}\sum_i\left(y^{(i)}-\sigma(z^{(i)})\right)$
+- Adaline 全批次權重更新：$\Delta w_j=\eta\frac{2}{n}\sum_i\left(y^{(i)}-\sigma(z^{(i)})\right)x_j^{(i)}$
+- Adaline 全批次偏差更新：$\Delta b=\eta\frac{2}{n}\sum_i\left(y^{(i)}-\sigma(z^{(i)})\right)$
+- Adaline 單筆樣本更新：$\Delta w_j=2\eta\left(y^{(i)}-\sigma(z^{(i)})\right)x_j^{(i)}$，$\Delta b=2\eta\left(y^{(i)}-\sigma(z^{(i)})\right)$
+- 標準化：$x_j'=\frac{x_j-\mu_j}{\sigma_j}$
+- 自適應學習率：$\eta_t=\frac{\eta_0}{1+\alpha t}$
+- 向量內積：$\boldsymbol{v}\cdot\boldsymbol{w}=\sum_{k=1}^{m}v_kw_k$
+- 矩陣乘法元素：$(AC)_{ij}=\sum_{k=1}^{m}A_{ik}C_{kj}$
+- 二維歐幾里得距離：$d(\boldsymbol{a},\boldsymbol{b})=\sqrt{(a_1-b_1)^2+(a_2-b_2)^2}$
+
+單筆 SGD 的理論式有時會省略係數 2，把它吸收到學習率中；本週 `AdalineSGD._update_weights()` 的程式碼明確乘上 `2.0`，所以上表採用與實作一致的版本。
+
+## 考題
+
+### 概念辨析題
+
+#### 複習題 1
+
+> PLA 與 Adaline 都使用 $z=\boldsymbol{w}^T\boldsymbol{x}+b$，兩者真正的差異是什麼？為什麼 Adaline 能用標準梯度下降訓練？
+
+**詳解**
+
+兩者的淨輸入相同，差異在「拿哪一個輸出來計算誤差」。PLA 直接把閾值化後的離散類別與真實標籤比較，只知道答對或答錯；階梯函數不連續，因此無法形成處處可微的標準損失函數。Adaline 則在閾值化之前，用連續的線性激活輸出 $\sigma(z)=z$ 與真實標籤計算 MSE。MSE 對權重與偏差可微分，所以能算出梯度並沿負梯度更新。閾值函數只負責最後的類別預測，不參與權重更新。
+
+#### 複習題 2
+
+> Full-batch GD、SGD、Mini-batch GD 的核心差異是什麼？為什麼不能只用「哪一個每個 epoch 比較快」判斷優劣？
+
+**詳解**
+
+核心差異是**每次更新用多少資料估計梯度**：full-batch GD 用全部樣本，每個 epoch 只更新一次；SGD 每次用一筆，每個 epoch 更新 $n$ 次；mini-batch 每次用一小批，更新次數與穩定性介於兩者之間。因此不能只比較 epoch 數：同樣跑一個 epoch，三者實際做的參數更新次數完全不同。Full-batch 的方向穩定但單步昂貴；SGD 更新頻繁但路徑吵雜；mini-batch 則能利用向量化與硬體平行運算，是實務常見的折衷。
+
+#### 複習題 3
+
+> 為什麼 SGD 每個 epoch 前通常要重新打散資料？`partial_fit()` 又如何讓它支援線上學習？
+
+**詳解**
+
+SGD 的每一步只看一筆資料，若資料按類別或其他規律排序，固定順序可能讓更新方向反覆出現相同循環，破壞隨機梯度的估計效果；每個 epoch 重新 shuffle 能降低順序造成的偏差。`partial_fit()` 更新時不重新初始化權重，因此模型可以保留先前學到的參數，在新資料到達時繼續調整，這就是線上學習。
+
+#### 複習題 4
+
+> 學習率太大與太小會分別呈現什麼損失曲線？特徵標準化為什麼能擴大可用的學習率範圍？
+
+**詳解**
+
+學習率太大時，每一步容易跨過最低點，在兩側來回跳動且幅度愈來愈大，損失會發散；太小時損失雖然下降，但下降非常緩慢，需要大量 epoch 才可能收斂。不同特徵尺度相差很大時，損失等高線會被拉成細長橢圓，同一個學習率對某個權重可能合適，對另一個權重卻太大或太小。標準化把各特徵調到平均 0、標準差 1，使各方向尺度較平衡，梯度下降的路徑更直接，因此能安全使用較大的學習率。
+
+#### 複習題 5
+
+> 為什麼 `shape=(3,)`、`shape=(3,1)`、`shape=(1,3)` 不能視為同一種向量？對一維陣列使用 `.T` 會發生什麼事？
+
+**詳解**
+
+`(3,)` 是只有一個軸的一維陣列，沒有明確的列、欄方向；`(3,1)` 是 3 列 1 欄的二維欄向量，`(1,3)` 是 1 列 3 欄的二維列向量。矩陣乘法與廣播會依每個軸的長度判斷相容性，因此三者可能產生不同結果。對 `(3,)` 的一維陣列使用 `.T` 不會改變形狀，結果仍是 `(3,)`；若需要真正的欄向量，必須用 `reshape(3,1)` 或插入新軸。
+
+#### 複習題 6
+
+> NumPy 的 `A * B` 與 `A @ B` 有什麼差異？`np.dot()` 與 `np.matmul()` 在什麼情況下不能混為一談？
+
+**詳解**
+
+`A * B` 是逐元素乘法，對應位置彼此相乘；`A @ B` 是線性代數的矩陣乘法，要求左矩陣的欄數等於右矩陣的列數。對二維矩陣而言，`np.dot()`、`np.matmul()` 與 `@` 的結果相同；到了三維以上，`np.matmul()`／`@` 會把前面的維度視為一批矩陣並執行批次矩陣乘法，`np.dot()` 的高維規則不同，因此不能再把兩者當成完全等價。
+
+#### 複習題 7
+
+> NumPy 廣播如何判斷兩個 shape 是否相容？為什麼 `(4,3)` 可以和 `(3,)` 運算，卻不能和 `(4,)` 運算？
+
+**詳解**
+
+廣播從最右邊的維度開始逐一比較；每一對維度必須相等，或其中一方為 1，缺少的前導維度視為 1。`(4,3)` 與 `(3,)` 從右邊比較時是 3 對 3，剩下的 4 對缺少維度所補的 1，因此相容，結果 shape 為 `(4,3)`。`(4,3)` 與 `(4,)` 第一組比較就是 3 對 4，兩者不相等且都不是 1，因此立即失敗並產生 `ValueError`。
+
+#### 複習題 8
+
+> 什麼情況應使用 NumPy，什麼情況應使用 Pandas？兩者在一條機器學習資料管線中如何合作？
+
+**詳解**
+
+資料是同一型別、沒有欄名，重點是向量、矩陣、距離或其他大量數值運算時，使用 NumPy；資料有欄名、不同欄型別、缺失值，或需要依鍵值合併與分組時，使用 Pandas。典型管線會先由 Pandas 讀檔、清理缺值、合併表格與建立特徵，再用 `.to_numpy()` 轉成 ndarray，交給 scikit-learn 或其他模型進行向量化訓練。它們是前後接力，不是互斥選項。
+
+#### 複習題 9
+
+> `.loc` 與 `.iloc` 的差異是什麼？如果索引標籤本身就是整數，為什麼更應該明確使用它們？
+
+**詳解**
+
+`.loc` 一律依索引或欄位**標籤**選取，而且切片包含尾端；`.iloc` 一律依資料的整數**位置**選取，而且切片不包含尾端。當索引標籤也是整數時，單寫 `s[1]` 容易讓人分不清是標籤 1 還是第 2 個位置；明確寫成 `s.loc[1]` 或 `s.iloc[1]` 能消除歧義，也避免資料索引改變後悄悄選錯資料。
+
+#### 複習題 10
+
+> `pd.concat` 與 `merge`／`join` 分別解決什麼問題？若要替訂單表補上會員資料、又不能遺失任何訂單，該怎麼選？
+
+**詳解**
+
+`pd.concat` 是沿列或欄把資料直接堆疊，適合合併欄位相同的多個月份檔案；它會保留原索引，因此可能產生重複索引。`merge`／`join` 則依共同鍵值配對資料，對應資料庫的 join。要替訂單表補上會員資料又不能掉訂單，應以訂單表為左表，依會員鍵值做 left merge，例如 `orders.merge(members, on='member_id', how='left')`。
+
+### 計算題
+
+#### 複習題 11
+
+> Adaline 的權重 $\boldsymbol{w}=[0.2,-0.1]$、偏差 $b=0.05$，輸入 $\boldsymbol{x}=[3,2]$。求淨輸入與線性激活輸出，並依門檻 0.5 判斷最終類別。
+
+**詳解**
+
+$$
+\begin{aligned}
+z &= \boldsymbol{w}^T\boldsymbol{x}+b \\
+  &= (0.2)(3)+(-0.1)(2)+0.05 \\
+  &= 0.45 \\
+\sigma(z) &= z = 0.45
+\end{aligned}
+$$
+
+因為 $\sigma(z)=0.45<0.5$，所以閾值函數輸出類別 0。這題同時檢查「訓練用連續輸出」與「預測才套門檻」兩個步驟不能混在一起。
+
+#### 複習題 12
+
+> 三筆樣本的真實標籤為 $\boldsymbol{y}=[1,0,1]$，Adaline 線性激活輸出為 $\boldsymbol{\hat y}=[0.8,0.3,0.6]$。求 MSE。
+
+**詳解**
+
+$$
+\begin{aligned}
+L &= \frac{1}{3}\sum_{i=1}^{3}\left(y^{(i)}-\hat y^{(i)}\right)^2 \\
+  &= \frac{1}{3}\left[(1-0.8)^2+(0-0.3)^2+(1-0.6)^2\right] \\
+  &= \frac{1}{3}(0.04+0.09+0.16) \\
+  &= \frac{0.29}{3} \approx 0.0967
+\end{aligned}
+$$
+
+MSE 先把每筆誤差平方，再對全部樣本取平均；不能先把正負誤差相加，否則誤差可能彼此抵銷。
+
+#### 複習題 13
+
+> 使用本週 `AdalineSGD` 程式碼的單筆更新規則。已知 $\eta=0.1$、$\boldsymbol{x}=[2,-1]$、$y=1$、目前線性輸出 $\sigma(z)=0.4$，求 $\Delta\boldsymbol{w}$ 與 $\Delta b$。
+
+**詳解**
+
+$$
+\begin{aligned}
+e &= y-\sigma(z)=1-0.4=0.6 \\
+\Delta\boldsymbol{w} &= 2\eta e\boldsymbol{x} \\
+  &= 2(0.1)(0.6)[2,-1] \\
+  &= [0.24,-0.12] \\
+\Delta b &= 2\eta e=2(0.1)(0.6)=0.12
+\end{aligned}
+$$
+
+更新後第一個權重增加 0.24、第二個權重減少 0.12，偏差增加 0.12。題目指定依本週程式碼計算，因此保留 `_update_weights()` 中的係數 2。
+
+#### 複習題 14
+
+> 某特徵的平均值為 $\mu=50$、標準差為 $\sigma=10$。將兩筆樣本 $x_1=65$ 與 $x_2=40$ 標準化，並解釋結果代表的意義。
+
+**詳解**
+
+$$
+\begin{aligned}
+x_1' &= \frac{65-50}{10}=1.5 \\
+x_2' &= \frac{40-50}{10}=-1
+\end{aligned}
+$$
+
+$x_1'=1.5$ 代表原始值 65 比平均值高 1.5 個標準差；$x_2'=-1$ 代表原始值 40 比平均值低 1 個標準差。標準化改變位置與尺度，不會把資料的分布形狀強制變成常態分布。
+
+#### 複習題 15
+
+> 給定 $A=\begin{bmatrix}1&2\\3&4\end{bmatrix}$、$B=\begin{bmatrix}5&6\\7&8\end{bmatrix}$，分別求 NumPy 的 `A * B` 與 `A @ B`。
+
+**詳解**
+
+`A * B` 是逐元素乘法：
+
+$$
+A*B=
+\begin{bmatrix}
+1\times5 & 2\times6 \\
+3\times7 & 4\times8
+\end{bmatrix}
+=
+\begin{bmatrix}
+5&12\\
+21&32
+\end{bmatrix}
+$$
+
+`A @ B` 是矩陣乘法：
+
+$$
+\begin{aligned}
+A@B
+&=
+\begin{bmatrix}
+1\times5+2\times7 & 1\times6+2\times8 \\
+3\times5+4\times7 & 3\times6+4\times8
+\end{bmatrix} \\
+&=
+\begin{bmatrix}
+19&22\\
+43&50
+\end{bmatrix}
+\end{aligned}
+$$
+
+兩個結果不同，因為 `*` 不會執行「列乘欄再加總」；這題改編自講義 Example 2 的矩陣運算結構，僅使用該例已提供的數值。
+
+#### 複習題 16
+
+> 點集 $A=\begin{bmatrix}0&0\\1&1\end{bmatrix}$ 的 shape 是 $(2,2)$，點集 $B=\begin{bmatrix}0&1\\2&1\\1&3\end{bmatrix}$ 的 shape 是 $(3,2)$。使用 `A[:, np.newaxis, :] - B` 後，差值陣列與距離矩陣的 shape 各是多少？並求完整距離矩陣。
+
+**詳解**
+
+`A[:, np.newaxis, :]` 把 $A$ 從 $(2,2)$ 改成 $(2,1,2)$，再與 $(3,2)$ 的 $B$ 廣播相減，得到 shape $(2,3,2)$；最後沿座標軸 `axis=-1` 取 norm，得到 shape $(2,3)$。
+
+$$
+\begin{aligned}
+d((0,0),(0,1)) &= \sqrt{(0-0)^2+(0-1)^2}=1 \\
+d((0,0),(2,1)) &= \sqrt{(0-2)^2+(0-1)^2}=\sqrt{5} \\
+d((0,0),(1,3)) &= \sqrt{(0-1)^2+(0-3)^2}=\sqrt{10} \\
+d((1,1),(0,1)) &= \sqrt{(1-0)^2+(1-1)^2}=1 \\
+d((1,1),(2,1)) &= \sqrt{(1-2)^2+(1-1)^2}=1 \\
+d((1,1),(1,3)) &= \sqrt{(1-1)^2+(1-3)^2}=2
+\end{aligned}
+$$
+
+因此距離矩陣為：
+
+$$
+D=
+\begin{bmatrix}
+1&\sqrt{5}&\sqrt{10}\\
+1&1&2
+\end{bmatrix}
+$$
+
+這題沿用講義第 43–44 頁課堂練習「兩組點集合透過 `np.newaxis` 廣播後求歐幾里得距離矩陣」的題型結構，但座標與矩陣大小是另外設計的練習數字，不是講義原題。
