@@ -1,26 +1,382 @@
 ---
-title: "機器學習實作系列：第 5 週 - Matplotlib 與 Seaborn 資料視覺化"
-description: ""
+title: "機器學習實作系列：第 5 週 - 邏輯迴歸、Matplotlib 與 Seaborn"
+description: "從 Adaline 使用 MSE 做分類的限制出發，建立邏輯迴歸的條件機率、對數勝算、sigmoid、概似函數與二元交叉熵，推導梯度下降更新；整理 Matplotlib 的 Figure／Axes 層級與兩套介面，並說明作業二的晶圓驗收分類器、特徵工程、標準化與成果要求。"
 tags: ["機器學習實作系列"]
 createdAt: "2026-10-05"
-updatedAt: "2026-10-05"
+updatedAt: "2026-09-20"
 ---
 
-# 第 5 週：Matplotlib 與 Seaborn 資料視覺化
+# 第 5 週：邏輯迴歸、Matplotlib 與 Seaborn
 
-*Data Visualization in Python: Matplotlib and Seaborn*
+*Logistic Regression & Data Visualization in Python*
+
+import PdfRefChip from '@/components/islands/PdfRefChip.tsx'
 
 > 本週參考：[《Python Data Science Handbook》](/notes/python-data-science-handbook)
 
-## 本週摘要
+## 本週路線：Adaline 哪裡不對，邏輯迴歸就從哪裡長出來
+
+第 3 週的 Adaline 已經把分類訓練改寫成「最小化一個可微分的損失」，但它仍然拿線性輸出 $z=\boldsymbol{w}^T\boldsymbol{x}+b$ 去逼近二元標籤 $y\in\{0,1\}$。問題是：$z$ 的值域是整條實數線，而標籤只有 0 與 1。假設正類樣本的真實標籤是 $y=1$，模型給出 $z=5$，這其實代表模型非常有把握地判成正類；MSE 卻會把它算成巨大誤差：
+
+$$
+\left(y-z\right)^2 = \left(1-5\right)^2 = 16
+$$
+
+分類明明非常正確，損失卻很大，優化器還會把決策邊界往錯的方向拉。邏輯迴歸（logistic regression）的想法因此不是直接推翻 Adaline，而是保留同一個線性淨輸入與梯度下降骨架，只替換兩個零件：用 **sigmoid 激活函數** 把輸出限制在機率範圍，再用 **二元交叉熵** 衡量機率預測的好壞。
+
+{/* @ai-reference
+id: logistic-mse-problem
+file: _references/機器學習實作系列/第5週-Logistic Regression與Matplotlib.pdf
+page: 5
+status: suggested
+excerpt: 假設真實標籤 y=1，如果線性輸出 z=5，代表非常正確且有信心地分類為正類；但 MSE 會計算其損失為 (1−5)^2=16，迫使決策邊界迎合遠端樣本
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第5週-Logistic Regression與Matplotlib.pdf" page={5} status="suggested" excerpt={"假設真實標籤 y=1，如果線性輸出 z=5，代表非常正確且有信心地分類為正類；但 MSE 會計算其損失為 (1−5)^2=16，迫使決策邊界迎合遠端樣本"} client:visible />
+
+## 邏輯迴歸：把線性分數變成分類機率
+
+### 名字有 regression，做的卻是分類
+
+邏輯迴歸是用於**二元分類（binary classification）** 的線性模型。它的輸入是一筆特徵向量 $\boldsymbol{x}$，輸出是該樣本屬於正類的條件機率：
+
+$$
+p = p\!\left(y=1\mid\boldsymbol{x}\right), \qquad 0\leq p\leq1
+$$
+
+名稱裡的 regression 指的是模型對「對數勝算」建立線性關係，不是把最終任務做成連續值預測。只要記住它最後回答的是「屬於類別 1 的機率有多大」，就不會被名稱騙走。
+
+{/* @ai-reference
+id: logistic-binary-classifier
+file: _references/機器學習實作系列/第5週-Logistic Regression與Matplotlib.pdf
+page: 7
+status: suggested
+excerpt: Logistic Regression: A linear model for binary classification; despite its name, it is a model for classification, not regression
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第5週-Logistic Regression與Matplotlib.pdf" page={7} status="suggested" excerpt={"Logistic Regression: A linear model for binary classification; despite its name, it is a model for classification, not regression"} client:visible />
+
+### 從機率到勝算，再到對數勝算
+
+機率 $p$ 只能落在 $[0,1]$，但線性組合 $\boldsymbol{w}^T\boldsymbol{x}+b$ 可以是任意實數。要把兩者接起來，先將機率換成**勝算（odds）**：事件發生機率除以不發生機率。
+
+$$
+\operatorname{odds}(p)=\frac{p}{1-p}
+$$
+
+勝算的值域是 $[0,\infty)$；再取自然對數，就得到值域為整條實數線的**對數勝算（logit）**：
+
+$$
+\operatorname{logit}(p)=\ln\!\left(\frac{p}{1-p}\right)
+$$
+
+邏輯迴歸真正做的線性假設是：特徵與正類機率的**對數勝算**呈線性關係。
+
+$$
+\operatorname{logit}(p)
+= w_1x_1+\dots+w_mx_m+b
+= \boldsymbol{w}^T\boldsymbol{x}+b
+= z
+$$
+
+比如 $p=0.8$ 時，勝算是 $\frac{0.8}{0.2}=4$，意思是「發生」相對於「不發生」的比例為 4 比 1；取對數後得到的 logit 約為 1.386。機率低於 0.5 時 logit 為負，高於 0.5 時為正，$p=0.5$ 則剛好對應 $z=0$。
+
+{/* @ai-reference
+id: logistic-odds-logit
+file: _references/機器學習實作系列/第5週-Logistic Regression與Matplotlib.pdf
+page: 9
+status: suggested
+excerpt: logit(p) is the natural logarithm of the odds: logit(p)=log[p/(1−p)]; domain [0,1], range R=(−∞,∞)
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第5週-Logistic Regression與Matplotlib.pdf" page={9} status="suggested" excerpt={"logit(p) is the natural logarithm of the odds: logit(p)=log[p/(1−p)]; domain [0,1], range R=(−∞,∞)"} client:visible />
+
+### Sigmoid：把任意實數壓回機率區間
+
+我們已經有 $\operatorname{logit}(p)=z$，現在要反過來由 $z$ 求 $p$。logit 的反函數就是**邏輯 sigmoid 函數（logistic sigmoid function）**：
+
+$$
+p=\sigma(z)=\frac{1}{1+\exp(-z)}
+$$
+
+這條 S 形曲線把任何 $z\in\mathbb{R}$ 映射到 $(0,1)$：
+
+| 淨輸入 $z$ | 機率 $\sigma(z)$ 的意義 |
+| --- | --- |
+| $z\ll0$ | 接近 0，模型偏向類別 0 |
+| $z=0$ | 等於 0.5，正負類的分界點 |
+| $z\gg0$ | 接近 1，模型偏向類別 1 |
+
+若分類門檻取 0.5，預測規則就是：
+
+$$
+\hat y=\begin{cases}
+1, & \sigma(z)\geq0.5 \\
+0, & \sigma(z)<0.5
+\end{cases}
+$$
+
+因為 $\sigma(0)=0.5$ 且 sigmoid 單調遞增，這等價於檢查 $z\geq0$。因此決策邊界仍是 $\boldsymbol{w}^T\boldsymbol{x}+b=0$：sigmoid 改變的是輸出的解讀與訓練損失，不會把線性邊界自動變成曲線。
+
+{/* @ai-reference
+id: logistic-sigmoid
+file: _references/機器學習實作系列/第5週-Logistic Regression與Matplotlib.pdf
+page: 12
+status: suggested
+excerpt: Logistic sigmoid function is the inverse of the logit function: p=σ(z)=1/(1+e^(−z)); S-shaped curve with σ(0)=0.5
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第5週-Logistic Regression與Matplotlib.pdf" page={12} status="suggested" excerpt={"Logistic sigmoid function is the inverse of the logit function: p=σ(z)=1/(1+e^(−z)); S-shaped curve with σ(0)=0.5"} client:visible />
+
+### 從概似函數到二元交叉熵
+
+對第 $i$ 筆樣本，模型給出的正類機率是 $\sigma(z^{(i)})$，負類機率則是 $1-\sigma(z^{(i)})$。用 $y^{(i)}\in\{0,1\}$ 當開關，兩種情況可以合併成同一式：
+
+$$
+p\!\left(y^{(i)}\mid\boldsymbol{x}^{(i)};\boldsymbol{w},b\right)
+= \left[\sigma\!\left(z^{(i)}\right)\right]^{y^{(i)}}
+\left[1-\sigma\!\left(z^{(i)}\right)\right]^{1-y^{(i)}}
+$$
+
+假設各筆樣本彼此獨立，整份資料在參數 $\boldsymbol{w},b$ 下出現的**概似（likelihood）** 是所有樣本機率的乘積：
+
+$$
+\mathcal{L}(\boldsymbol{w},b)
+=\prod_{i=1}^{n}
+\left[\sigma\!\left(z^{(i)}\right)\right]^{y^{(i)}}
+\left[1-\sigma\!\left(z^{(i)}\right)\right]^{1-y^{(i)}}
+$$
+
+乘積很容易因為許多小機率相乘而發生數值下溢，也不方便微分。取自然對數可把乘積改成加總；再加上負號，就把「最大化對數概似」改寫成機器學習慣用的「最小化損失」：
+
+$$
+L(\boldsymbol{w},b)
+=-\frac{1}{n}\sum_{i=1}^{n}
+\left[
+y^{(i)}\ln\!\left(\sigma\!\left(z^{(i)}\right)\right)
++\left(1-y^{(i)}\right)\ln\!\left(1-\sigma\!\left(z^{(i)}\right)\right)
+\right]
+$$
+
+這就是**負對數概似（negative log-likelihood, NLL）**，在二元分類裡也稱為**二元交叉熵（binary cross-entropy, BCE）**。
+
+{/* @ai-reference
+id: logistic-bce
+file: _references/機器學習實作系列/第5週-Logistic Regression與Matplotlib.pdf
+page: 17
+status: suggested
+excerpt: Negative log-likelihood divided by n defines the logistic loss function, also called binary cross-entropy, to be minimized using gradient descent
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第5週-Logistic Regression與Matplotlib.pdf" page={17} status="suggested" excerpt={"Negative log-likelihood divided by n defines the logistic loss function, also called binary cross-entropy, to be minimized using gradient descent"} client:visible />
+
+### 單筆損失的物理意義：自信地答錯，代價最大
+
+對單一樣本，交叉熵可依真實標籤拆成：
+
+$$
+L\!\left(\sigma(z),y\right)=
+\begin{cases}
+-\ln\!\left(\sigma(z)\right), & y=1 \\
+-\ln\!\left(1-\sigma(z)\right), & y=0
+\end{cases}
+$$
+
+預測正確且機率接近真實標籤時，損失趨近 0；如果模型對錯誤答案非常有信心，損失就趨近無限大。這正是分類損失需要的行為：不是懲罰「線性分數離 0 或 1 很遠」，而是懲罰「給真實類別的機率太低」。
+
+{/* @ai-reference
+id: logistic-loss-meaning
+file: _references/機器學習實作系列/第5週-Logistic Regression與Matplotlib.pdf
+page: 18
+status: suggested
+excerpt: Loss approaches 0 for correct prediction and approaches infinity for wrong prediction; it penalizes wrong predictions with an increasingly larger loss
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第5週-Logistic Regression與Matplotlib.pdf" page={18} status="suggested" excerpt={"Loss approaches 0 for correct prediction and approaches infinity for wrong prediction; it penalizes wrong predictions with an increasingly larger loss"} client:visible />
+
+### 梯度下降：更新式和 Adaline 幾乎一樣
+
+以下推導需要鏈式法則；若只想先掌握實作，可以先記住結論：邏輯迴歸與 Adaline 的參數更新形式相同，差別是預測輸出由線性函數換成 sigmoid。
+
+令 $a=\sigma(z)$。對單筆樣本的損失求偏微分：
+
+$$
+\begin{aligned}
+\frac{\partial L}{\partial a}
+&= -\frac{y}{a}+\frac{1-y}{1-a}
+= \frac{a-y}{a(1-a)} \\
+\frac{\partial a}{\partial z}
+&=a(1-a) \\
+\frac{\partial z}{\partial w_j}
+&=x_j \\
+\frac{\partial L}{\partial w_j}
+&=\frac{\partial L}{\partial a}
+\frac{\partial a}{\partial z}
+\frac{\partial z}{\partial w_j}
+= (a-y)x_j
+\end{aligned}
+$$
+
+因此全批次梯度下降的平均梯度與更新規則為：
+
+$$
+\begin{aligned}
+\nabla_{\boldsymbol{w}}L
+&=\frac{1}{n}\boldsymbol{X}^T(\boldsymbol{a}-\boldsymbol{y}) \\
+\frac{\partial L}{\partial b}
+&=\frac{1}{n}\sum_{i=1}^{n}\left(a^{(i)}-y^{(i)}\right) \\
+\boldsymbol{w}
+&\leftarrow\boldsymbol{w}+\eta\frac{1}{n}\boldsymbol{X}^T(\boldsymbol{y}-\boldsymbol{a}) \\
+b
+&\leftarrow b+\eta\frac{1}{n}\sum_{i=1}^{n}\left(y^{(i)}-a^{(i)}\right)
+\end{aligned}
+$$
+
+你會發現 $a(1-a)$ 在鏈式法則中被約掉，最後仍回到「誤差乘上輸入」的熟悉形式。表面上程式只改兩行，實際上模型輸出的意義已從任意實數變成機率，損失也從 MSE 變成與 Bernoulli 機率模型一致的交叉熵。
+
+{/* @ai-reference
+id: logistic-gradient
+file: _references/機器學習實作系列/第5週-Logistic Regression與Matplotlib.pdf
+page: 19
+status: suggested
+excerpt: The partial derivative simplifies to ∂L/∂wj=(a−y)xj; the weight update has the same form as Adaline but uses a different activation function
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第5週-Logistic Regression與Matplotlib.pdf" page={19} status="suggested" excerpt={"The partial derivative simplifies to ∂L/∂wj=(a−y)xj; the weight update has the same form as Adaline but uses a different activation function"} client:visible />
+
+### Adaline 與邏輯迴歸對照
+
+| 比較項目 | Adaline | 邏輯迴歸 |
+| --- | --- | --- |
+| 淨輸入 | $z=\boldsymbol{w}^T\boldsymbol{x}+b$ | 相同 |
+| 激活函數 | $\sigma(z)=z$ | $\sigma(z)=\frac{1}{1+\exp(-z)}$ |
+| 輸出意義 | 任意實數 | 正類條件機率 |
+| 損失函數 | MSE | 二元交叉熵 |
+| 決策門檻 | 線性輸出再切成 0／1 | 機率通常以 0.5 切分 |
+| 決策邊界 | 線性超平面 | 線性超平面 |
+
+### 多元分類：OvR 與 Softmax
+
+二元邏輯迴歸可以用兩條路擴展到 $K$ 個類別：
+
+| 方法 | 做法 | 機率解讀 | 適合情境 |
+| --- | --- | --- | --- |
+| 一對其餘（One-vs-Rest, OvR） | 獨立訓練 $K$ 個「某類 vs. 其他」分類器 | 各分類器獨立輸出，總和不保證等於 1 | 實作簡單、類別很多或多標籤問題 |
+| 多項式邏輯迴歸（multinomial logistic regression） | 用 softmax 同時計算所有類別 | 所有類別機率總和嚴格等於 1 | 類別互斥、需要完整機率分布 |
+
+多類別（multiclass）與多標籤（multi-label）不是同一件事：多類別是「多選一」，多標籤則允許同一筆資料同時屬於多個類別。
+
+{/* @ai-reference
+id: logistic-multiclass
+file: _references/機器學習實作系列/第5週-Logistic Regression與Matplotlib.pdf
+page: 21
+status: suggested
+excerpt: OvR uses multiple independent sigmoid classifiers whose probabilities do not sum to 1; multinomial regression uses softmax and probabilities sum strictly to 1
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第5週-Logistic Regression與Matplotlib.pdf" page={21} status="suggested" excerpt={"OvR uses multiple independent sigmoid classifiers whose probabilities do not sum to 1; multinomial regression uses softmax and probabilities sum strictly to 1"} client:visible />
+
+## 從 AdalineGD 改成 LogisticRegressionGD
+
+課堂實作保留第 3 週 `AdalineGD` 的類別骨架，只替換激活函數與損失函數。`np.clip` 有兩個用途：限制 sigmoid 指數避免溢位，以及避免計算 $\ln(0)$。
+
+```python
+import numpy as np
+
+
+class LogisticRegressionGD:
+    def __init__(self, eta=0.01, n_iter=50, random_state=1):
+        self.eta = eta
+        self.n_iter = n_iter
+        self.random_state = random_state
+
+    def fit(self, X, y):
+        rgen = np.random.RandomState(self.random_state)
+        self.w_ = rgen.normal(loc=0.0, scale=0.01, size=X.shape[1])
+        self.b_ = np.float64(0.0)
+        self.losses_ = []
+
+        for _ in range(self.n_iter):
+            net_input = self.net_input(X)
+            output = self.activation(net_input)
+            errors = y - output
+
+            self.w_ += self.eta * (X.T @ errors) / X.shape[0]
+            self.b_ += self.eta * errors.mean()
+
+            output = np.clip(output, 1e-15, 1 - 1e-15)
+            loss = (-y @ np.log(output)
+                    - (1 - y) @ np.log(1 - output)) / X.shape[0]
+            self.losses_.append(loss)
+
+        return self
+
+    def net_input(self, X):
+        return X @ self.w_ + self.b_
+
+    def activation(self, z):
+        z = np.clip(z, -250, 250)
+        return 1.0 / (1.0 + np.exp(-z))
+
+    def predict_proba(self, X):
+        return self.activation(self.net_input(X))
+
+    def predict(self, X):
+        return np.where(self.predict_proba(X) >= 0.5, 1, 0)
+```
+
+訓練時至少要檢查兩張圖：**損失曲線**用來確認梯度下降是否收斂；**決策區域與訓練樣本**用來檢查模型到底用哪條邊界切資料。損失下降只能證明優化器有把訓練目標越做越好，不能單獨證明模型沒有過擬合，也不能證明資料量足夠。
+
+{/* @ai-reference
+id: logistic-gd-implementation
+file: _references/機器學習實作系列/第5週-Logistic Regression與Matplotlib.pdf
+page: 37
+status: suggested
+excerpt: LogisticRegressionGD modifies the Adaline implementation by replacing the loss with cross-entropy and the activation with the logistic sigmoid function
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第5週-Logistic Regression與Matplotlib.pdf" page={37} status="suggested" excerpt={"LogisticRegressionGD modifies the Adaline implementation by replacing the loss with cross-entropy and the activation with the logistic sigmoid function"} client:visible />
+
+## Matplotlib 與 Seaborn 資料視覺化
+
+Matplotlib 的標準工作流程可以固定成五步：匯入 `matplotlib.pyplot as plt`、準備 Python list 或 NumPy array、呼叫繪圖函式、加入標題／座標標籤／圖例，最後用 `plt.show()` 顯示或 `plt.savefig()` 匯出。這套流程在作業二會出現兩次：先畫 `losses_` 對 epoch 的損失曲線，再畫分類器的決策區域。
+
+{/* @ai-reference
+id: matplotlib-standard-workflow
+file: _references/機器學習實作系列/第5週-Logistic Regression與Matplotlib.pdf
+page: 25
+status: suggested
+excerpt: Standard Workflow: import pyplot as plt, prepare data, create plot, customize titles labels legends, and show or save
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第5週-Logistic Regression與Matplotlib.pdf" page={25} status="suggested" excerpt={"Standard Workflow: import pyplot as plt, prepare data, create plot, customize titles labels legends, and show or save"} client:visible />
 
 ### 兩套介面：初學者最容易踩的坑
 
 Matplotlib 最容易絆倒人的不是函式名稱，而是同一件事有兩種寫法。**狀態式（MATLAB 風格）** 介面靠 `plt.plot()`、`plt.title()` 這些呼叫，套件內部維持一個「目前這張圖」，指令默默作用在它身上——像白板只有一塊，不必指名要畫在哪裡，寫小圖很順手。**物件導向**介面則先 `fig, ax = plt.subplots()` 拿到把手，之後 `ax.plot()`、`ax.set_title()` 每次都指名對象。兩套的方法名常只差一個 `set_`（`plt.xlabel()` ↔ `ax.set_xlabel()`），照著網路範例混著抄就會出事。判準是「圖裡有幾個 Axes」：一旦有多個子圖、或把畫圖包成可重複呼叫的函式，「目前那張圖」就成了看不見的全域變數。順帶釐清層級：Figure 是整張畫布，Axes 是其中一個有座標軸的作圖區（一整張子圖，不是一條軸）。
 
+{/* @ai-reference
+id: matplotlib-object-hierarchy
+file: _references/機器學習實作系列/第5週-Logistic Regression與Matplotlib.pdf
+page: 26
+status: suggested
+excerpt: Figure is the entire canvas; Axes is the area where data is plotted, and one Figure can contain multiple Axes or subplots
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第5週-Logistic Regression與Matplotlib.pdf" page={26} status="suggested" excerpt={"Figure is the entire canvas; Axes is the area where data is plotted, and one Figure can contain multiple Axes or subplots"} client:visible />
+
+{/* @ai-reference
+id: matplotlib-two-interfaces
+file: _references/機器學習實作系列/第5週-Logistic Regression與Matplotlib.pdf
+page: 28
+status: suggested
+excerpt: Implicit interface uses pyplot-style module function calls; explicit interface uses object-oriented method calls on Axes objects
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第5週-Logistic Regression與Matplotlib.pdf" page={28} status="suggested" excerpt={"Implicit interface uses pyplot-style module function calls; explicit interface uses object-oriented method calls on Axes objects"} client:visible />
+
 ### `plt.plot` 與 `plt.scatter`：差別不在折線或散點
 
 `plt.plot` 給 $x$、$y$ 兩個序列就連成折線，第三個參數換成標記符號（如 `'o'`）一樣能畫散佈圖，那為何還需要 `plt.scatter`？差別在「每個點能不能長得不一樣」：`plt.plot` 全部共用一組樣式，畫十萬個點很快；`plt.scatter` 允許逐點指定大小（`s`）、顏色（`c`）、透明度（`alpha`），代價是點多時明顯較慢，好處是一張二維圖能塞進四個變數——例如各縣市的「通勤時間 vs. 房價」，再用點的大小代表人口、顏色代表所得中位數。
+
+課堂講義列出的常用圖形還包括 `plt.bar()` 比較類別數值、`plt.hist()` 觀察分布、`plt.pie()` 顯示整體比例。選圖時先問「資料之間是順序、兩兩關係、類別比較，還是分布」，比背函式名稱更可靠。
+
+{/* @ai-reference
+id: matplotlib-common-plots
+file: _references/機器學習實作系列/第5週-Logistic Regression與Matplotlib.pdf
+page: 32
+status: suggested
+excerpt: Common plots: line plot for sequences, scatter for two-variable correlations, bar chart for category comparison, histogram for distribution, and pie chart for proportions
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第5週-Logistic Regression與Matplotlib.pdf" page={32} status="suggested" excerpt={"Common plots: line plot for sequences, scatter for two-variable correlations, bar chart for category comparison, histogram for distribution, and pie chart for proportions"} client:visible />
 
 ### 誠實地畫出「不確定」與「分布」
 
@@ -163,7 +519,217 @@ status: generated
   <MlWeek5PlotSelector client:visible />
 </GeneratedFrame>
 
-## 教材預習重點
+## 作業二：晶圓驗收分類器
+
+### 任務背景與限制
+
+晶圓完成關鍵蝕刻與沉積製程後，需要接受晶圓驗收測試（Wafer Acceptance Test, WAT）。本作業要以兩個量測指標訓練邏輯迴歸模型，自動判斷晶圓是否合格。**不得使用 scikit-learn 完成本作業**；目的是親手完成特徵處理、標準化、sigmoid、交叉熵與梯度下降，而不是呼叫現成分類器。
+
+| 欄位 | 意義 | 單位／標籤 |
+| --- | --- | --- |
+| `x1` | 氧化層厚度偏差（oxide thickness deviation） | $\mathring{\mathrm{A}}$；目標為 0，偏差絕對值過大代表製程異常 |
+| `x2` | 微量金屬污染度（metal contamination） | $\text{ppm}$；越高代表漏電與失效風險越大 |
+| `y` | 晶圓驗收狀態 | 1：Pass；0：Fail |
+
+訓練集 `wat_train.csv` 有 15 筆資料，其中 Pass 7 筆、Fail 8 筆；待驗收的 `wat_test.csv` 則有 Wafer A 到 Wafer E 共 5 筆資料。
+
+{/* @ai-reference
+id: wat-assignment-background
+file: _references/機器學習實作系列/第5週-Assignment2.pdf
+page: 1
+status: suggested
+excerpt: 目的：晶圓驗收分類器；使用氧化層厚度偏差與微量金屬污染度，建立 logistic regression model，將晶圓分類為合格或不合格；不要使用 scikit-learn
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第5週-Assignment2.pdf" page={1} status="suggested" excerpt={"目的：晶圓驗收分類器；使用氧化層厚度偏差與微量金屬污染度，建立 logistic regression model，將晶圓分類為合格或不合格；不要使用 scikit-learn"} client:visible />
+
+原始資料可直接下載：
+
+- [訓練集 `wat_train.csv`](/notes-assets/_references/機器學習實作系列/第5週-Assignment2-wat_train.csv)
+- [待驗收資料 `wat_test.csv`](/notes-assets/_references/機器學習實作系列/第5週-Assignment2-wat_test.csv)
+
+### 特徵工程：線性模型看不懂「離 0 太遠」
+
+直接觀察資料會發現，`x1` 太正或太負都容易 Fail。例如 $x_1=4.2$ 與 $x_1=-4.0$ 都是失敗樣本。可是線性模型只會算 $w_1x_1$：正值與負值會被放到決策邊界的兩側，無法自然表達「不論方向，只要離 0 太遠就危險」。
+
+這個問題不能只靠多訓練幾輪解決，因為限制出在**特徵表示**。可考慮把原始 $x_1$ 轉換成：
+
+$$
+x_1' = \lvert x_1\rvert
+$$
+
+或
+
+$$
+x_1' = x_1^2
+$$
+
+兩者都把「偏差方向」拿掉，只保留「偏離目標值 0 的程度」。資料也支持這個判斷：原始 $x_1$ 在兩類的平均值很接近，Fail 組約為 0.15、Pass 組約為 0.257；改看 $\lvert x_1\rvert$ 後，Fail 組平均約為 2.975、Pass 組約為 0.971，區別立刻清楚許多。
+
+要注意：加入 $\lvert x_1\rvert$ 或 $x_1^2$ 後，模型在「轉換後的特徵空間」仍是線性的，但映射回原始 $x_1$ 空間時，決策形狀已經可以表達兩側偏差過大的情況。這就是特徵工程讓簡單模型解決非線性模式的典型例子。
+
+{/* @ai-reference
+id: wat-feature-engineering
+file: _references/機器學習實作系列/第5週-Assignment2.pdf
+page: 2
+status: suggested
+excerpt: x1 厚度偏差無論太正或太負都會導致 y=0；直接將 x1 送入線性 logistic regression model 好嗎？是否應先取絕對值或平方作為新的特徵？
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第5週-Assignment2.pdf" page={2} status="suggested" excerpt={"x1 厚度偏差無論太正或太負都會導致 y=0；直接將 x1 送入線性 logistic regression model 好嗎？是否應先取絕對值或平方作為新的特徵？"} client:visible />
+
+### 標準化：測試集只能沿用訓練集統計量
+
+特徵轉換後，利用訓練集每個特徵的平均值 $\mu_j$ 與標準差 $s_j$ 做標準化：
+
+$$
+x_{j,\mathrm{std}}^{(i)}
+=\frac{x_j^{(i)}-\mu_j^{(\mathrm{train})}}
+{s_j^{(\mathrm{train})}}
+$$
+
+待驗收資料必須做完全相同的特徵轉換，並沿用訓練集算出的 $\mu_j^{(\mathrm{train})}$ 與 $s_j^{(\mathrm{train})}$。不能在測試集重新計算平均值與標準差，否則模型看到的座標系會改變，也會引入資料洩漏。
+
+```python
+# 先做相同的特徵工程
+X_train = np.column_stack((np.abs(train['x1']), train['x2']))
+X_test = np.column_stack((np.abs(test['x1']), test['x2']))
+
+# 統計量只能由訓練集估計
+mean = X_train.mean(axis=0)
+std = X_train.std(axis=0)
+
+X_train_std = (X_train - mean) / std
+X_test_std = (X_test - mean) / std
+```
+
+{/* @ai-reference
+id: wat-consistent-preprocessing
+file: _references/機器學習實作系列/第5週-Assignment2.pdf
+page: 3
+status: suggested
+excerpt: 檢驗資料需要進行與訓練集一致的資料前處理：特徵轉換，以及使用訓練集得出的統計值進行特徵縮放
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第5週-Assignment2.pdf" page={3} status="suggested" excerpt={"檢驗資料需要進行與訓練集一致的資料前處理：特徵轉換，以及使用訓練集得出的統計值進行特徵縮放"} client:visible />
+
+### 建議實作流程
+
+1. 用 Pandas 載入 `wat_train.csv` 與 `wat_test.csv`，確認欄位、資料型別與缺失值。
+2. 先畫訓練資料散佈圖，觀察原始 `x1`、`x2` 與標籤的關係。
+3. 比較直接使用 $x_1$、改用 $\lvert x_1\rvert$、改用 $x_1^2$ 三種特徵表示。
+4. 只用訓練集估計標準化統計量，再把相同轉換套到測試集。
+5. 用前面的 `LogisticRegressionGD` 訓練模型，嘗試不同學習率並記錄每輪交叉熵。
+6. 畫出損失對 epoch 曲線，以及決策區域與訓練樣本分布。
+7. 對 5 片待驗收晶圓輸出 Pass 機率，並用 0.5 門檻轉成 Pass／Fail。
+8. 以 DataFrame 呈現 `Wafer ID`、原始特徵、轉換後特徵、通過機率與驗收結果。
+
+### 作業成果清單
+
+| 成果 | 必須回答的問題 |
+| --- | --- |
+| 損失曲線 | loss 是否穩定下降？不同學習率的收斂速度與震盪情況如何？ |
+| 決策區域圖 | 分類邊界如何切分 Pass／Fail？錯分點在哪裡？ |
+| 前處理說明 | 使用哪種 $x_1$ 轉換？測試集是否沿用訓練集統計量？ |
+| 驗收結果 DataFrame | 每片晶圓的 Pass 機率與最終 Pass／Fail 是什麼？ |
+| 限制說明 | 為何只看訓練 loss 不能判斷過擬合或泛化能力？ |
+
+講義提供的示範輸出如下，適合用來檢查實作方向；初始化、學習率、epoch 與數值穩定處理不同時，末位數字可能略有差異。
+
+| Wafer ID | $x_1$ | $x_2$ | $\lvert x_1\rvert$ | Pass Probability | Result |
+| --- | ---: | ---: | ---: | ---: | --- |
+| Wafer A | -1.1 | 0.9 | 1.1 | 99.65% | Pass |
+| Wafer B | 4.5 | 0.3 | 4.5 | 4.91% | Fail |
+| Wafer C | 0.0 | 4.8 | 0.0 | 0.06% | Fail |
+| Wafer D | -2.2 | 1.9 | 2.2 | 9.55% | Fail |
+| Wafer E | 0.3 | 0.5 | 0.3 | 100.00% | Pass |
+
+{/* @ai-reference
+id: wat-expected-results
+file: _references/機器學習實作系列/第5週-Assignment2.pdf
+page: 5
+status: suggested
+excerpt: 以 DataFrame 格式輸出個別晶圓的通過機率與驗收結果；示範結果為 Wafer A、E Pass，Wafer B、C、D Fail
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第5週-Assignment2.pdf" page={5} status="suggested" excerpt={"以 DataFrame 格式輸出個別晶圓的通過機率與驗收結果；示範結果為 Wafer A、E Pass，Wafer B、C、D Fail"} client:visible />
+
+## 關鍵定義
+
+| 名詞 | 定義 | 容易混淆的地方 |
+| --- | --- | --- |
+| 條件機率 | 已知特徵 $\boldsymbol{x}$ 時屬於正類的機率 $p(y=1\mid\boldsymbol{x})$ | 不是模型預測一定正確的機率 |
+| 勝算 | $\frac{p}{1-p}$，比較發生與不發生的相對可能性 | 機率 0.8 對應勝算 4，不是 0.8 |
+| 對數勝算 | $\ln\!\left(\frac{p}{1-p}\right)$，把 $(0,1)$ 映射到整條實數線 | 邏輯迴歸線性建模的是 logit，不是直接建模 $p$ |
+| sigmoid | logit 的反函數，把任意實數 $z$ 映射到 $(0,1)$ | 它不會讓線性決策邊界自動變成非線性 |
+| 概似 | 固定資料後，衡量某組參數讓這些標籤出現有多合理 | 概似是參數的函數，不是把參數當隨機事件的機率 |
+| 二元交叉熵 | Bernoulli 模型的平均負對數概似 | 自信地答錯會受到非常大的懲罰 |
+| 特徵工程 | 把原始量測轉成更適合模型使用的表示 | $\lvert x_1\rvert$ 能讓線性模型表達「離 0 太遠」 |
+| 資料洩漏 | 訓練時使用了本來不該知道的測試資料資訊 | 用測試集自己的平均值與標準差也是洩漏 |
+
+## 公式整理
+
+| 主題 | 公式 |
+| --- | --- |
+| 淨輸入 | $z=\boldsymbol{w}^T\boldsymbol{x}+b$ |
+| 勝算 | $\operatorname{odds}(p)=\frac{p}{1-p}$ |
+| 對數勝算 | $\operatorname{logit}(p)=\ln\!\left(\frac{p}{1-p}\right)$ |
+| sigmoid | $\sigma(z)=\frac{1}{1+\exp(-z)}$ |
+| BCE | $L=-\frac{1}{n}\sum_i[y^{(i)}\ln(a^{(i)})+(1-y^{(i)})\ln(1-a^{(i)})]$ |
+| 權重更新 | $\boldsymbol{w}\leftarrow\boldsymbol{w}+\eta\frac{1}{n}\boldsymbol{X}^T(\boldsymbol{y}-\boldsymbol{a})$ |
+| 偏差更新 | $b\leftarrow b+\eta\frac{1}{n}\sum_i(y^{(i)}-a^{(i)})$ |
+| 標準化 | $x_{j,\mathrm{std}}=\frac{x_j-\mu_j^{(\mathrm{train})}}{s_j^{(\mathrm{train})}}$ |
+
+## 考題
+
+### 概念辨析題
+
+1. 為什麼邏輯迴歸名稱裡有 regression，任務卻是 classification？
+   - 因為它假設特徵與對數勝算呈線性關係；最終輸出仍是類別機率與分類結果。
+2. 為什麼 MSE 不適合直接搭配 Adaline 的線性輸出做分類？
+   - 線性輸出沒有上下界，分類正確但遠離 0／1 的樣本仍可能產生巨大 MSE，扭曲優化方向。
+3. sigmoid 已經是非線性函數，為什麼邏輯迴歸的決策邊界仍是線性的？
+   - sigmoid 單調遞增，以 0.5 為門檻等價於檢查 $z\geq0$；邊界仍由 $\boldsymbol{w}^T\boldsymbol{x}+b=0$ 決定。
+4. 交叉熵為什麼特別重罰「自信地答錯」？
+   - 真實類別的預測機率趨近 0 時，負對數會趨近無限大。
+5. 最大化 log-likelihood 與最小化 BCE 有什麼關係？
+   - BCE 就是平均負 log-likelihood；乘上負號後，最大化問題變成等價的最小化問題。
+6. OvR 與 softmax 在機率解讀上有何差異？
+   - OvR 的各分類器獨立，輸出總和不保證為 1；softmax 同時計算互斥類別，機率總和為 1。
+7. 為什麼 WAT 作業應考慮 $\lvert x_1\rvert$ 或 $x_1^2$？
+   - 因為厚度偏差無論正負，只要絕對值過大都危險；原始線性項無法自然表達這種左右對稱模式。
+8. 為什麼測試集不能自己重新估計標準化參數？
+   - 模型必須使用訓練時的座標系；重新估計會改變特徵尺度，並洩漏測試資料的分布資訊。
+9. 損失曲線一路下降，能否證明模型沒有過擬合？
+   - 不能。它只表示訓練損失在下降；泛化能力必須用未參與訓練的驗證或測試資料評估。
+10. Matplotlib 的 Figure、Axes、Axis 分別是什麼？
+    - Figure 是整張畫布；Axes 是一個完整作圖區；Axis 是 Axes 裡的單一座標軸與刻度系統。
+
+### 計算與推導題
+
+1. 若模型輸出正類機率 $p=0.8$，求勝算與 logit。
+
+   $$
+   \begin{aligned}
+   \operatorname{odds}(p)
+   &=\frac{0.8}{1-0.8}=4 \\
+   \operatorname{logit}(p)
+   &=\ln(4)\approx1.386
+   \end{aligned}
+   $$
+
+2. 若某正類樣本的預測機率為 0.9，另一個正類樣本的預測機率為 0.1，分別求單筆 BCE。
+
+   $$
+   \begin{aligned}
+   L(p=0.9,y=1)&=-\ln(0.9)\approx0.105 \\
+   L(p=0.1,y=1)&=-\ln(0.1)\approx2.303
+   \end{aligned}
+   $$
+
+   後者自信地偏向錯誤類別，因此損失約為前者的 22 倍。
+
+3. 從 $L=-y\ln(a)-(1-y)\ln(1-a)$、$a=\sigma(z)$ 出發，推導 $\frac{\partial L}{\partial w_j}=(a-y)x_j$。
+4. WAT 資料若採用 $x_1'=\lvert x_1\rvert$，請說明為什麼模型在轉換後空間仍是線性的，但在原始 $x_1$ 空間能形成左右對稱的判斷。
+5. 給定訓練集平均值與標準差，計算一筆測試樣本的標準化結果，並說明為何不能改用測試集統計量。
+
+## 延伸預習重點
 
 > 摘自 `PythonDataScienceHandbook` 專案的 `STUDY_GUIDE_zh-TW.md`，對應 Part 4。上課後請依實際授課內容調整。
 
