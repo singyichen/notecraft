@@ -28,6 +28,9 @@ recordings/
 # Subagent-driven-development 工作區（ledger / brief / review 暫存，不進 git）
 .superpowers/
 
+# Upstream integration worktree（本機隔離作業，不進版控）
+.worktrees/
+
 # python tooling under simulations/
 __pycache__/
 
