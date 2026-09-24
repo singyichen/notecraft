@@ -99,8 +99,8 @@ export default function MlWeek7PipelineInFold() {
                   width={BAR_W}
                   height={BAR_H}
                   rx={8}
-                  fill={isCurrent ? 'var(--info-500)' : 'var(--success-50)'}
-                  stroke={isCurrent ? 'var(--info-500)' : 'var(--success-300)'}
+                  fill="var(--success-50)"
+                  stroke="var(--success-300)"
                   strokeWidth={1}
                 />
                 <text
@@ -109,25 +109,42 @@ export default function MlWeek7PipelineInFold() {
                   fontSize={12}
                   fontWeight={600}
                   textAnchor="middle"
-                  fill={isCurrent ? '#ffffff' : 'var(--success-500)'}
+                  fill="var(--success-500)"
                 >
-                  {isCurrent ? '驗證段（本折）' : '訓練段'}
+                  訓練段
                 </text>
               </g>
             )
           })}
 
+          {/* 目前這一折：用「同尺寸的高亮條平移」表示，而不是在色條外再套一圈外框。
+              列距 ROW_STEP - BAR_H 只有 8px，外框上下各 4px 會剛好把間隙塞滿、
+              與相鄰列擠在一起，看起來像邊框沒對齊（作者實際回報過的畫面問題）。
+              這裡蓋在底層色條正上方，尺寸完全相同，因此平移時不會露出任何邊緣。 */}
           <motion.rect
-            x={BAR_X - 6}
-            width={BAR_W + 12}
-            height={BAR_H + 8}
-            rx={11}
-            fill="none"
+            x={BAR_X}
+            width={BAR_W}
+            height={BAR_H}
+            rx={8}
+            fill="var(--info-500)"
             stroke="var(--info-500)"
-            strokeWidth={2.5}
-            animate={{ y: rowTop(currentFold - 1) - 4 }}
+            strokeWidth={1}
+            initial={false}
+            animate={{ y: rowTop(currentFold - 1) }}
             transition={transition}
           />
+          <motion.text
+            x={BAR_X + BAR_W / 2}
+            fontSize={12}
+            fontWeight={600}
+            textAnchor="middle"
+            fill="#ffffff"
+            initial={false}
+            animate={{ y: rowTop(currentFold - 1) + BAR_H / 2 + 4 }}
+            transition={transition}
+          >
+            驗證段（本折）
+          </motion.text>
         </svg>
       </div>
 
