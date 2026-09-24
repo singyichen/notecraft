@@ -36,7 +36,7 @@ import MlWeek7SearchStrategies from '@/components/generated/ml-week7-search-stra
 
 前兩節藏著同一個陷阱。**資料洩漏（data leakage）** 是評估時模型間接看到了不該看的資料，最典型的就是先對整份資料補缺值、標準化再切訓練與測試——補值的平均數混進了測試集，分數漂亮，上線就掉。**管線（pipeline）** 為此而生：把補值、編碼、縮放、模型串成單一物件，fit 時每段轉換器只用當下的訓練資料 fit，predict 時只做 transform。
 
-這在**$k$ 折交叉驗證（k-fold cross-validation）** 裡才真正致命：把訓練資料切 $k$ 份輪流當驗證、跑 $k$ 輪取平均與標準差，若前處理是在切 fold 之前做的，每輪驗證集都被污染、$k$ 個分數一起偏高。把整條 pipeline 當成「模型」丟給交叉驗證，前處理才會在每個 fold 內各自 fit 一次。
+這在 **$k$ 折交叉驗證（k-fold cross-validation）** 裡才真正致命：把訓練資料切 $k$ 份輪流當驗證、跑 $k$ 輪取平均與標準差，若前處理是在切 fold 之前做的，每輪驗證集都被污染、$k$ 個分數一起偏高。把整條 pipeline 當成「模型」丟給交叉驗證，前處理才會在每個 fold 內各自 fit 一次。
 
 ### 分類模型錯在哪
 

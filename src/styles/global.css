@@ -77,8 +77,8 @@ img { max-width: 100%; display: block; }
 .nc-prose > h1:first-child { margin-top: 8px; }
 .nc-prose h2 { font-size: var(--text-2xl); color: var(--text-strong); margin: 38px 0 14px; scroll-margin-top: 90px; }
 .nc-prose h3 { font-size: var(--text-xl); color: var(--text-strong); margin: 28px 0 10px; scroll-margin-top: 90px; }
-.nc-prose p { font-size: var(--text-md); color: var(--text-body); line-height: 1.85; margin: 0 0 16px; }
-.nc-prose ul, .nc-prose ol { margin: 0 0 18px; padding-left: 26px; color: var(--text-body); font-size: var(--text-md); line-height: 1.85; }
+.nc-prose p:not([data-nc-viz-body] *) { font-size: var(--text-md); color: var(--text-body); line-height: 1.85; margin: 0 0 16px; }
+.nc-prose :is(ul, ol):not([data-nc-viz-body] *) { margin: 0 0 18px; padding-left: 26px; color: var(--text-body); font-size: var(--text-md); line-height: 1.85; }
 .nc-prose ul { list-style: disc; }
 .nc-prose ol { list-style: decimal; }
 .nc-prose ul ul { list-style: circle; }
@@ -678,3 +678,20 @@ img { max-width: 100%; display: block; }
   border: none; background: none; padding: 0; margin: 0; cursor: pointer;
   font-family: var(--font-sans); color: inherit;
 }
+
+/* ── 生成元件的排版隔離（data-nc-viz-body）──────────────────────
+   AI 生成元件自帶完整排版，字級、行高、間距一律由元件內的 class 或 inline style 決定。
+   但 `.nc-prose p` 這類規則的特異度是 (0,1,1)，高於 Tailwind 單一 class 的 (0,1,0)，
+   會把元件裡的 `text-[10px]` 蓋成 `--text-md`（18px），導致文字溢出卡片、版面破圖。
+   元件常寫的 `not-prose` 擋不住——專案並未安裝 @tailwindcss/typography，那是個無效 class。
+   這裡以同特異度、但位置在後的規則，把 viz body 內的段落與清單還原為繼承。
+   必須放在所有 `.nc-prose` 規則之後，否則特異度相同時會輸給先前的宣告。 */
+[data-nc-viz-body] p,
+[data-nc-viz-body] ul,
+[data-nc-viz-body] ol,
+[data-nc-viz-body] li {
+  line-height: inherit; color: inherit;
+  margin: 0; padding: 0;
+}
+[data-nc-viz-body] ul, [data-nc-viz-body] ol { list-style: none; }
+[data-nc-viz-body] li::marker { color: inherit; }
