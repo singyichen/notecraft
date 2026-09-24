@@ -4,7 +4,133 @@
 
 格式依循 [Keep a Changelog 1.1.0](https://keepachangelog.com/zh-TW/1.1.0/)，版號依循 [Semantic Versioning](https://semver.org/lang/zh-TW/)。
 
-## [未發布]
+## [1.2.0] - 2026-09-22
+
+### 新增
+
+- 筆記目錄的子項目可展開與收合：有子項目的章節右側有展開鈕，點標題文字仍是跳轉；目錄標頭新增「全部展開／全部收合」按鈕（整篇沒有子項目時不顯示）
+- 目前位置藏在收合的分支裡時，由看得到的最近上層代為標示橘色左緣，不必展開也知道讀到哪一章
+- 設定頁新增「筆記 › 目錄預設狀態」（全部收合／全部展開，預設全部收合），存於 `nc-workbench-prefs-v1` 的 `tocDefault`；SSR 一律收合、掛載後才套用，目錄標頭的按鈕只影響當下頁面、不回寫設定
+
+## [1.1.1] - 2026-09-22
+
+### 移除
+
+- 資料檔頁（`/view/<路徑>`）底部的閱讀狀態、「已標記為完成」提示與系列導覽卡（上一章／下一章），頁面只渲染資料檔本身；屬於系列時仍在頁首以 pill 標示、可連到系列頁。資料檔章節因此不再自動標為「閱讀中」，也無法在此頁標記完成
+
+## [1.1.0] - 2026-09-22
+
+**筆記目錄支援 H1–H3 三層**。設計見 `docs/prototype/design_handoff_note_toc/`。
+
+### 新增
+
+- 筆記頁右側目錄從只列 H2 擴充為 H1 › H2 › H3 三層樹：依文件順序建樹、允許跳層；層級取相對深度，只有 H2／H3 的筆記外觀與改版前一致
+- 目錄的目前位置之外，其所有上層標題同步標示（藍字 600）；H2 前置圓點、H3 前置短橫線
+- 目錄標頭顯示各層數量（如 `H1×4 · H2×9 · H3×5`）
+- 目錄過長時限高 `100vh − 120px` 並自己捲動，不撐開頁面
+- 範例筆記 `http-caching`（4 章／9 節／5 小節）供目錄驗收
+
+### 變更
+
+- 內文 `# ` 標題改為「章」樣式：品牌藍、底線、上方 48px（內文第一個元素即為章標題時縮為 8px）。既有筆記開頭的單一 `# ` 會因此以章標題呈現，並成為目錄頂層
+- 目錄的捲動偵測與點擊跳轉改為自動尋找最近的捲動容器（找不到退回 `window`），不再寫死 `#nc-scroll`；偵測以 `requestAnimationFrame` 節流；`prefers-reduced-motion` 時跳轉不做平滑捲動
+
+### 修正
+
+- 窄版（主區 < 900px）目錄面板點標頭展不開：展開讓頁面變高，觸發 ResizeObserver 又把面板收回
+- 窄版點目錄項目會捲過頭：跳轉位置在面板收合前就計算，收合後內文上移約一個面板高
+
+## [1.0.1] - 2026-09-22
+
+### 變更
+
+- 筆記頁內文改為滿版，撐到目錄欄左緣（原本內文欄與 `.nc-prose` 各自限寬 760px，寬螢幕時與目錄之間空出一段）；資料檔頁（`PluginView`）的 `.nc-prose` 仍維持 760px
+
+## [1.0.0] - 2026-09-22
+
+**Workbench 工作台** —— 外殼整個換掉：Rail 52 + 檔案樹 Sidebar 240 + 壓縮頁首／工具列／內容，整頁不捲動。
+所有列表頁共用同一套資料列語彙。這是自 v0.1 以來最大的一次改版，殼與每個列表頁都重寫，因此直接進 **1.0.0**。設計見 `docs/notecraft-workbench.md`，像素級規格在 `docs/prototype/design_handoff_workbench/`。
+
+### 新增
+
+- **三欄工作台殼**：Sidebar 是不限層數的真實資料夾樹（viewer 使用者的 `My Notes/Deep Dir/` 原名顯示，不會被 slug 化）、系列進度、Plugin 資料檔、標籤；展開狀態與捲動位置跨頁保留
+- **`/notes` 四種 view**：List（依資料夾／系列／標籤／月份分組）、Board（三欄，拖曳改閱讀狀態）、Table、Timeline；篩選全在網址（`?folder=`、`?series=`、`?tag=`、`?pending=1`、`?hasAi=1`、`?nofm=1`、`?fav=1`、`?view=`），舊的 `?tag=` 連結照常
+- **Drawer 預覽**：單擊列開右側預覽（摘要、Metadata、標記、同系列章節），雙擊或列尾常駐的「開啟」圖示進筆記；`⌘`+點擊、中鍵開新分頁
+- **`⌘K` 指令面板**：每一頁都能開，筆記／系列／標籤／資料檔 + pagefind 全文；索引第一次開啟才載入
+- **Dashboard widget grid** + 總覽／本週／AI 佇列三個 Tab；近 7 日、近 30 日、近 8 週在瀏覽器以當地時區計算，不再是 build 當下的值
+- **`/plugins`**：資料檔依資料夾分組、已安裝外掛列表與 Plugin Drawer（manifest、映射規則、命中檔、options、外掛檔案）；`/plugins/folder/<dir>`
+- **Plugin 啟用／停用**：`plugins.json` 頂層 `disabled` 陣列；dev 下 `PUT /api/plugins/:id` 與列上的 Switch（只動 `disabled` 鍵、保留作者排版）；停用的 plugin 其規則等同不存在，壞掉的 plugin 先停用站仍 build 得出來
+- **`/settings`**：預設 view、List 預設分組（存 `nc-workbench-prefs-v1`）；「關於」顯示工作區與版本
+- **`meta.backTo`** 正式成為 app 層約定：只接受站內路徑，`https:`／`javascript:`／`//host` 一律忽略並 warn
+- 筆記頁首接手標題與動作：簡報、收藏星號、dev 的「⋯」選單（VS Code、重新生成提示、刪除）；標題最多兩行
+- 三段響應式（桌面／平板抽屜／手機底部 Tab bar）與無障礙底線：skip link、地標、`Escape` 關閉順序、reduced motion、pill 對比 ≥ 4.5:1
+- `GET /api/folders` 改為遞迴列出所有層；`DELETE /api/notes/:slug` 補進文件
+
+### 移除
+
+- 筆記列表的多標籤同時篩選與排序欄位切換（單一標籤改由 `?tag=` 承接；排序固定更新日倒序，Table 除外）
+- `/notes` 不再混排資料檔（入口改為 Rail 的 Plugin、Sidebar、`/plugins`、系列頁與 `⌘K`）；系列這條線仍完整混合顯示
+- `/about` 與 `/view` 列表頁（靜態轉址到 `/settings?tab=about` 與 `/plugins`；`/view/<路徑>` 渲染頁不變）
+- Dashboard 的「已生成簡報」統計與以建立日計的「本週／本月新增」
+- 舊側邊欄的「細條」模式（`nc:sidebar`）
+
+### 修正
+
+- viewer 模式下筆記頁尾與「複製生成提示」的路徑原本是一長串 `../…` 或寫死的 `src/content/notes/<slug>.mdx`，改為相對 notesDir／專案根的真實路徑
+- `daysAgo()` 預設基準日原本取 UTC，台灣時間早上八點前「今天」會算成昨天
+- 「待開始」統一為「未開始」
+
+### 變更
+
+- **er-diagram-renderer v1.1.0**：版面由橫向捲軸改為**可縮放平移的無限畫布**。
+  捲軸只能左右看、看不到全貌；要「先縮小看整體、再放大看局部」就得是畫布。
+  拖曳平移、⌘/Ctrl＋滾輪縮放（以指標為錨點）、雙擊空白處還原。開啟時自動 fit **寬度**而非整張圖：這種版面往下長，用寬高都塞得下的倍率去 fit 會被高度壓到只剩兩成、一個字都讀不到。
+  單純滾輪一律放行給頁面捲動 —— 頁面底下還有系列導覽，畫布把滾輪吃掉的話人就出不去了。
+  新增 `options.canvasHeight` 可指定畫布高度。
+
+---
+
+## [0.6.0] - 2026-09-18
+
+**Plugin System** —— 讓專案裡的結構化 JSON 資料檔，被一個可安裝的渲染器畫成頁面。
+
+起因是一支 751 行的 ER Diagram 元件，其中 48 KB 是寫死的表定義：那 600 行渲染邏輯對任何一份
+資料庫 schema 都通用，卻和某個專案的 36 張表焊死在同一個檔案裡。換一個專案要畫 ER 圖，
+只能整份 copy 再改資料。
+
+### 新增
+
+- **`.notecraft/plugins.json`** —— 一份映射說明「哪些檔案由哪個 plugin 渲染」，`files` 支援
+  `**/*.json` 萬用比對。沒有這個檔，整個功能零成本停用。
+- **`/view/<path>` 資料檔檢視頁** —— 滿版版型（不套 1120 版心），sticky 頁首帶原始檔路徑、
+  渲染它的 plugin 與更新時間。
+- **側邊欄新增「資料 Data」** 與資料檔清單頁 `/view`；裝兩個以上 plugin 時才出現篩選列。
+- **`/notes` 列表混排** —— 資料檔與筆記同節奏、橘系 Database icon 與 mono 路徑列可一眼分辨；
+  套用標籤篩選時退出列表（它們沒有標籤）。
+- **系列的一章可以是資料檔頁** —— `series.json` 的 `slugs` 混放 `view:<path>` 與筆記 slug，
+  一視同仁：有序號、計入進度分母、可標記為已完成。
+- **MDX 內嵌 `<PluginView src="..." />`** —— 沿用 `GeneratedFrame` 外框與放大檢視，只換標示。
+- **`notecraftapp install-plugin`** —— 不帶參數列出官方 store；支援 `owner/repo`、子目錄、
+  `#tag` 與本地路徑。安裝前一律確認，並擋下白名單外的 import、`dangerouslySetInnerHTML`、
+  可執行檔與路徑逃脫。`--list` / `--remove` / `--apply` / `--as` / `--force` / `--yes`。
+- **官方 plugin store**（repo 的 `plugins/`）與第一個 plugin **er-diagram-renderer**，
+  含轉檔腳本 `scripts/er-schema-from-tsx.mjs`。
+- **`npm run check-plugins`** —— 驗證 manifest、registry 無漂移、example 通過自己的 schema，
+  並實際配 example 資料 build 一次。`prepublishOnly` 會跑它。
+
+### 變更
+
+- 系列的章節識別碼從「筆記 slug」放寬為 slug 或 `view:<路徑>`；閱讀進度的 localStorage key
+  一律用未經轉換的識別碼原字串，避免筆記與資料檔撞 key。
+- 系列相關文案的量詞由「篇」改為「章」（一章可以不是文章之後，「篇」就是錯字）。
+- `GeneratedFrame` 與 `VizZoom` 支援自訂標示；預設行為與既有 AI 生成元件完全相同。
+- 新增依賴：`picomatch`（glob 比對）、`ajv`（資料驗證，同時讓資料檔能用 `$schema` 取得
+  編輯器補全）。
+
+### 修正
+
+- `series.json` 裡對不到的章節識別碼，警示訊息現在會區分「找不到筆記」「找不到資料檔」
+  與「檔案存在但沒有 plugin 認領」——三者要修的東西完全不同。
 
 ---
 

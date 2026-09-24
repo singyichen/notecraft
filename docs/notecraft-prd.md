@@ -1,7 +1,7 @@
 ---
 Project Name: NoteCraft
 文件類型: Project Requirement Document (PRD)
-文件版本: v1.11.1
+文件版本: v1.13.0
 開發模式: Waterfall
 技術選型: 確定
 技術架構: 確定
@@ -10,7 +10,7 @@ Project Name: NoteCraft
 文件作者: 建宇
 審核人: 建宇
 建立日期: 2026-06-12
-更新日期: 2026-08-12
+更新日期: 2026-09-22
 ---
 
 # NoteCraft — AI 互動筆記 Web App
@@ -76,8 +76,8 @@ Project Name: NoteCraft
 14. \* 為 [AI 生成內容外框卡片](#ai-生成內容外框卡片) 增加「複製提示詞」功能，讀者 / 作者可一鍵複製生成該元件的 `prompt`；對應 Skill 與 Subagent 在寫回時將 `prompt` 帶入 `GeneratedFrame`
 15. \* 提供可收合的側邊欄（[側邊欄收合](#側邊欄收合sidebar-collapse)）：桌面可在「完整 / icon 細條」間切換並記住偏好；平板與手機預設收合為 off-canvas 抽屜，靠漢堡鈕開啟
 16. \* 提供筆記收藏（[筆記收藏](#筆記收藏favorites)）：筆記卡片與檢視頁可用星號收藏 / 取消，收藏狀態存於瀏覽器 localStorage（正式環境亦可用），並在 [筆記列表頁面](#筆記列表頁面) 提供「只看收藏」篩選
-17. \* 提供「系列」功能：以集中式 [系列登錄](#系列資料模型series-data-model) 把相關筆記串成有順序的閱讀路徑，於 [系列總覽頁面](#系列總覽頁面series-overview)（`/series`）瀏覽 / 模糊查詢 / 篩選排序、於 [系列詳情頁面](#系列詳情頁面series-detail)（`/series/[id]`）檢視逐章清單與整體進度
-18. \* 提供個人化「閱讀進度」（待開始 / 閱讀中 / 已完成，存於瀏覽器 localStorage、正式環境亦可用）：筆記檢視頁可手動切換並於開啟時輕量自動轉為「閱讀中」，列表卡與 Dashboard 顯示進度，未發佈筆記不可追蹤且不計入系列進度（詳見 [閱讀進度與系列彙總](#閱讀進度與系列彙總reading-progress)）
+17. \* 提供「系列」功能：以集中式 [系列登錄](#系列資料模型series-data-model) 把相關筆記（以及由 plugin 渲染的資料檔頁）串成有順序的閱讀路徑，於 [系列總覽頁面](#系列總覽頁面series-overview)（`/series`）瀏覽 / 模糊查詢 / 篩選排序、於 [系列詳情頁面](#系列詳情頁面series-detail)（`/series/[id]`）檢視逐章清單與整體進度
+18. \* 提供個人化「閱讀進度」（待開始 / 閱讀中 / 已完成，存於瀏覽器 localStorage、正式環境亦可用）：筆記檢視頁可手動切換並於開啟時輕量自動轉為「閱讀中」，列表卡與 Dashboard 顯示進度，所有筆記與資料檔頁皆可追蹤、皆計入系列進度（詳見 [閱讀進度與系列彙總](#閱讀進度與系列彙總reading-progress)）
 19. \* 提供類 Material for MkDocs 的 [Markdown 擴充語法](#markdown-擴充語法admonitions--content-tabs--tooltips)：[Admonitions](#admonitions)（提示 / 警告框、可收合）、[Content tabs](#content-tabs)（內容分頁）、[Tooltips](#tooltips)（行內提示），以 `remark-directive` 於 build 階段渲染、樣式遵循 [trendlink-design](#skills)，正式環境同樣可用
 20. \* 提供類 Material for MkDocs 的 [程式碼區塊增強](#程式碼區塊增強code-block-enhancements)：行號、檔名標題、一鍵複製、行 highlight、可展開的 [Code annotations](#code-annotations)（行內編號標記 → 點擊展開說明），以 `astro-expressive-code` 於 build 階段渲染、樣式遵循 [trendlink-design](#skills)，正式環境同樣可用
 21. \* 提供 [Markdown 擴充語法 — Badge](#markdown-擴充語法badge)：行內標籤元件，支援多種 variant（語意色 × `outline` / `solid` 樣式），重用 [Task 14](#markdown-擴充語法admonitions--content-tabs--tooltips) 的 `remark-directive` 底座，純 CSS、零 JS，正式環境同樣可用
@@ -97,15 +97,20 @@ Project Name: NoteCraft
 ## 5. Site Map（網站地圖）
 
 ```
-NoteCraft
-├── /                       Dashboard（首頁，功能選單 + 統計）
-├── /notes                  筆記列表頁面
-├── /notes/[slug]           筆記檢視頁面（含「以 VS Code 編輯」按鈕）
+NoteCraft（v1.13.0 起為三欄工作台殼：Rail + 檔案樹 Sidebar + 主區，見 Phase 4.16）
+├── /                       Dashboard（widget grid + 總覽／本週／AI 佇列三個 Tab）
+├── /notes                  筆記列表（List／Board／Table／Timeline 四種 view + Drawer；篩選在 query string）
+├── /notes/[slug]           筆記檢視頁面（頁首接手標題與動作；dev 動作收進「⋯」選單）
 ├── /present/[slug]         簡報模式（檢視 + 全螢幕播放；播放正式環境亦可用）
-├── /series                 系列總覽頁（所有系列 + 模糊查詢 + 篩選排序 + 進度）
-├── /series/[id]            系列詳情頁（Hero + 整體進度 + 逐章清單）
-├── /tags                   標籤索引頁
-└── /about                  系統說明（簡單靜態頁，內容為一個 MDX，不需獨立 Spec）
+├── /series                 系列總覽頁（資料列 + stat strip + 進度）
+├── /series/[id]            系列詳情頁（stat strip + 進度帶 + 逐章清單與單鍵推進）
+├── /tags                   標籤索引頁（資料列 + inline 改名）
+├── /plugins                Plugin 資料檔（依資料夾分組）與已安裝外掛（含啟用／停用）
+├── /plugins/folder/[dir]   某資料夾底下的資料檔
+├── /view/[path]            由 plugin 渲染的資料檔頁
+├── /settings               設定（預設 view、List 預設分組）與關於
+├── /about  → /settings?tab=about   舊網址，靜態轉址
+└── /view   → /plugins              舊網址，靜態轉址
 ```
 
 ---
@@ -469,6 +474,8 @@ flowchart TD
 ## 規格
 
 - **單系列歸屬**：一篇筆記至多屬於一個系列；系列為**有序章節清單**，章節順序即閱讀順序。
+- **章節成員的種類**：章節可以是 **md/mdx 筆記**，也可以是 **由 plugin 渲染的資料檔頁**（`/view/<path>`，見 [Plugin System 設計文件](./notecraft-plugin-system.md) §7.6）。兩者在系列導覽、詳情頁章節列、閱讀進度中**一視同仁**——系列表達的是閱讀動線，而資料檔（例：一份 schema 的 ER 圖）往往正是該動線上的一站。
+  - 與 Dashboard 的「筆記篇數」統計刻意不同調：那個數字表達的是**內容產出量**，資料檔不計入。兩者分母不同不是不一致。
 - **集中式系列登錄（registry）**：因系列帶有「系列層級」的中繼資料（標題、eyebrow、描述、封面色系、icon、章節順序），無法只靠單篇筆記的 frontmatter 表達，故以**集中登錄檔**定義系列。建議實作為新的 Content Collection `series`（每個系列一個 `.json` / `.yaml`，或單一 `src/content/series.ts` data 檔），於 `astro build` 階段被 Content Collections 解析、預計算，**無執行時 API**。系列結構（權威來源：`docs/prototype/001-series/source_reference/data.jsx`）：
 
   ```ts
@@ -483,11 +490,15 @@ flowchart TD
   }
   ```
 
-  - `slugs` 的順序即章節序；以 `noteBySlug(slug)` 對應回筆記物件。
+  - `slugs` 的順序即章節序；陣列可混放兩種識別碼，由解析器 `seriesEntry(ref)` 統一解成同一種 entry。
+  - **識別碼形式**：筆記為既有 slug（如 `oauth-101`，副檔名 `.md` / `.mdx` 會被剝除）；資料檔為 **`view:` 前綴 + 路徑去副檔名**（如 `view:planning/schema`）。前綴同時決定導覽連結指向 `/notes/<slug>` 還是 `/view/<path>`。
+    - 採前綴而非靠副檔名推斷：明確、未來可擴充第三種頁面型別、且前綴後的字串與路由同形不需二次換算。
+  - **閱讀進度的 localStorage key 一律用未經轉換的識別碼原字串**（含 `view:` 前綴），避免筆記與資料檔撞 key。
   - 與既有 `series` / `order` frontmatter（[筆記關聯導覽](#筆記關聯導覽上一篇--下一篇)）的關係見〈待釐清 Q1〉——本功能以 registry 的 `slugs` 為章節順序的權威來源。
-- **閱讀進度（個人狀態）**：三種狀態，**屬於每篇筆記**（非系列）：`not-started`（待開始）｜ `reading`（閱讀中）｜ `done`（已完成）。
+- **閱讀進度（個人狀態）**：三種狀態，**屬於每個章節項目**（筆記或資料檔頁，非系列）：`not-started`（待開始）｜ `reading`（閱讀中）｜ `done`（已完成）。
   - **儲存**：瀏覽器 `localStorage`，key 建議 `nc-reading-progress-v1`，值為 `{ [slug]: "reading" | "done" }`（`not-started` 不寫入、以「無紀錄」表示）。此為**個人狀態、每裝置獨立、不進 git、正式環境亦可用**，與 [筆記收藏](#筆記收藏favorites) 同一性質。
   - **所有筆記皆可追蹤**（見〈待釐清 Q2〉收斂）：不引入「未發佈不可追蹤」概念。
+  - **資料檔頁同樣可追蹤**：進度機制不依賴捲動或內文長度——開頁由 `markReading` 轉為「閱讀中」、「已完成」一律由使用者手動標記，此語意對資料檔頁完全成立。
   - 核心 API（client 端，建議抽 `src/lib/reading-progress.ts`）：
 
     | API | 語意 |
@@ -505,7 +516,8 @@ flowchart TD
 
 ## 卡控機制
 
-- registry 中某 `slug` 找不到對應筆記 → build log 提示、該章節跳過，不中斷 build、不產死連結。
+- registry 中某識別碼對不到對應項目 → build log 提示、該章節跳過，不中斷 build、不產死連結。提示訊息須依三種情況區分，否則作者會照著錯誤的提示去修一個沒壞的東西：① 無前綴、對不到筆記；② 帶 `view:` 前綴、對不到資料檔（提示檢查 `plugins.json` 的 `files`）；③ 帶 `view:` 前綴、檔案存在但未被任何 plugin 認領（給出要補的設定片段）。
+- 帶 `view:` 前綴但該資料檔未被任何 plugin 認領 → 視同對不到，走上一條。
 - 同一 `slug` 出現在多個系列 → build log 警示（違反單系列歸屬）；以首次出現者為準。
 - `localStorage` 不可用（隱私模式）→ try/catch 降級，僅當前 session 有效，不報錯中斷。
 
@@ -517,6 +529,8 @@ flowchart TD
 | 自動轉換不降級 | 某章已是 `done` | 開啟該章呼叫 `markReading` | 狀態維持 `done`，不被降為 `reading` |
 | next 指向正確 | 系列首章 `done`、次章 `not-started` | 取 `seriesProgress().next` | 回傳次章 |
 | 重設清空進度 | 系列數章已 `done`/`reading` | 呼叫 `resetSeriesProgress` | 該系列所有章節回 `not-started`、`pct` = 0 |
+| 資料檔可作為章節 | 系列 `slugs` 含 `view:planning/schema`，該檔已被 plugin 認領 | 開啟系列詳情頁 | 該章節出現在章節列，連結指向 `/view/planning/schema`，並計入 `total` |
+| 資料檔計入進度 | 上述章節被標記 `done` | 計算 `seriesProgress` | `done` +1、`pct` 依全部章節數換算，與筆記章節無差別 |
 
 ## 待釐清
 
@@ -2577,6 +2591,30 @@ model: haiku
 
 **依據文件：** `docs/prototype/design_handoff_viz_zoom/README.md`（hifi handoff，規格唯一來源）、`docs/prototype/design_handoff_canvas_viewport/README.md`（前置依賴）。
 
+#### Phase 4.15 — Plugin System（v1.12.0 追加）
+
+**目標：讓專案裡的結構化 JSON 資料檔，被一個可安裝的渲染器畫成頁面**
+
+- `.notecraft/plugins.json` 映射哪些檔交給哪個 plugin（`files` glob、`exclude`、`options`；一檔被多條規則命中第一條勝）；`.notecraft/plugins/<id>/` 內固定 `notecraft-plugin.json` + `renderer.tsx` + `schema.json`
+- 路由 `/view/<路徑去副檔名>`；資料在 build 期 parse、ajv 驗證後 inline 成 island props，經 `PluginHost` 掛載；失敗一律 build fail，只有瀏覽器端 throw 走 `PluginErrorCard`
+- 系列章節可為資料檔頁（`view:` 前綴），與筆記一視同仁計入閱讀進度
+- `npx notecraftapp install-plugin`：官方 store（repo 根 `plugins/`，`registry.json`）與 GitHub 來源；安裝時檢查 manifest、engines、import 白名單
+- 對應實作 Task 46–58；完整設計見 [notecraft-plugin-system.md](./notecraft-plugin-system.md)
+
+#### Phase 4.16 — Workbench 工作台改版（v1.13.0 追加）
+
+**目標：把殼從「248px 側邊欄 + 卡片式頁面」換成三欄工作台，所有列表頁共用一套資料列語彙**
+
+- `WorkbenchLayout` 取代 `BaseLayout`：Rail 52 + Sidebar 240（遞迴檔案樹、系列進度、Plugin 資料檔、標籤）+ 主區（壓縮頁首／Toolbar 40／Body）；整頁不捲動，`#nc-scroll` 保留在 Body 上
+- 工作台索引 `src/lib/workbench.ts`（build 期、模組層快取）與靜態端點 `/wb-index.json`；資料夾與顯示用路徑一律來自真實檔案路徑，本機絕對路徑不得出現在輸出
+- `/notes` 四種 view（List 分組／Board 三欄拖曳改閱讀狀態／Table 六欄／Timeline）+ Drawer 預覽；篩選全在 query string（`?folder=`、`?series=`、`?tag=`、`?pending=1`、`?fav=1`、`?view=`）；列是容器內並排的按鈕與常駐的「開啟」連結
+- 指令面板 ⌘K：筆記／系列／標籤／資料檔 + pagefind 全文（延遲載入、取代 `/notes` 上方的獨立搜尋框）
+- Dashboard widget grid + 總覽／本週／AI 佇列；相對時間在瀏覽器以當地時區計算，不再寫死基準日
+- 新頁面 `/plugins`（資料檔、已安裝外掛、Plugin Drawer、啟用／停用 Switch）、`/plugins/folder/<dir>`、`/settings`；`/about` 與 `/view` 列表頁轉址
+- 三段響應式（>1100／861–1100／≤860）與無障礙底線（地標、focus ring、`Escape` 順序、reduced motion、pill 對比 ≥ 4.5:1）
+- **移除**：多標籤篩選、排序切換、`/notes` 的資料檔混排、Dashboard 的簡報統計；設計稿的字數、版型庫、Board「未發佈」欄、「不相容」「渲染錯誤」狀態皆不做
+- 對應實作 Task 59–75；完整設計見 [notecraft-workbench.md](./notecraft-workbench.md)（30 題定案紀錄在其 §16，實作後回填在 §17）
+
 #### Phase 5 — 部署與收尾
 
 **目標：上線**
@@ -2736,6 +2774,12 @@ gantt
 ---
 
 ## 11. Change Log（變更紀錄）
+
+### [1.13.0] - 2026-09-22
+- **Added**: 新增 Workbench 工作台改版規格與 Phase 4.16；補上 Phase 4.15 Plugin System 條目；Site Map 更新為三欄工作台的路由（含 /plugins、/settings 與舊網址轉址）
+
+### [1.12.0] - 2026-09-18
+- **Added**: 新增 Plugin System 規格，系列章節可為資料檔頁
 
 ### [1.11.1] - 2026-08-12
 - **Fixed**: 修正放大檢視紙張寬度寫死 880px、匯出寬度改固定值

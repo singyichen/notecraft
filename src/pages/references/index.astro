@@ -1,7 +1,8 @@
 ---
 // src/pages/references/index.astro
-import BaseLayout from "@/layouts/BaseLayout.astro";
-import PageHead from "@/components/PageHead.astro";
+// PDF 講義庫。ReferencesLibrary 是本專案自有的 island，不輸出工作台的 #nc-scroll.wb-body，
+// 所以這裡用 layout 預設的 Body（不加 bare / bareBody），由 WorkbenchLayout 提供捲動容器。
+import WorkbenchLayout from "@/layouts/WorkbenchLayout.astro";
 import ReferencesLibrary from "@/components/islands/ReferencesLibrary.tsx";
 import { listReferenceTree, type ReferenceFolder } from "@/lib/references";
 
@@ -12,7 +13,13 @@ function countPdfs(folder: ReferenceFolder): number {
 }
 const totalPdfs = countPdfs(tree);
 ---
-<BaseLayout title="原始講義" current="references" description="瀏覽課程原始 PDF 講義與手冊">
-  <PageHead eyebrow="REFERENCES" title="原始講義" sub={`共 ${totalPdfs} 份 PDF`} />
+
+<WorkbenchLayout
+  title="原始講義"
+  description="瀏覽課程原始 PDF 講義與手冊"
+  rail="references"
+  crumbs={[{ label: "NoteCraft", href: "/" }, { label: "原始講義" }]}
+  pills={[{ label: `${totalPdfs} 份 PDF`, tone: "muted" }]}
+>
   <ReferencesLibrary client:load tree={tree} />
-</BaseLayout>
+</WorkbenchLayout>

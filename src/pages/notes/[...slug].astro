@@ -1,12 +1,10 @@
 ---
 import { render } from "astro:content";
-import BaseLayout from "@/layouts/BaseLayout.astro";
+import WorkbenchLayout from "@/layouts/WorkbenchLayout.astro";
 import TagEditor from "@/components/islands/TagEditor.tsx";
 import Toc from "@/components/islands/Toc.tsx";
-import RegenerateButton from "@/components/islands/RegenerateButton.tsx";
-import DeleteNoteButton from "@/components/islands/DeleteNoteButton.tsx";
-import FavoriteButton from "@/components/islands/FavoriteButton.tsx";
-import GenerateDeckButton from "@/components/islands/GenerateDeckButton.tsx";
+import MoreMenu from "@/components/wb/MoreMenu.tsx";
+import { DeckAction, FavoriteIcon } from "@/components/wb/actions.tsx";
 import OnlineEditor from "@/components/islands/OnlineEditor.tsx";
 import ReadingControl from "@/components/islands/ReadingControl.tsx";
 import DonePrompt from "@/components/islands/DonePrompt.tsx";
@@ -17,6 +15,10 @@ import { getAllNotes, parseMarkers, tagStats } from "@/lib/notes";
 import { loadSeries, seriesOf } from "@/lib/series";
 import { fmtDate } from "@/lib/dates";
 import { hasDeck } from "@/lib/decks";
+import { getDataFiles } from "@/lib/plugins";
+import { noteRelPath, promptPathOf } from "@/lib/workbench";
+import { notesFolderHref } from "@/lib/wb-routes";
+import { ROOT_GROUP } from "@/lib/wb-types";
 
 export async function getStaticPaths() {
   const notes = await getAllNotes();
@@ -40,7 +42,7 @@ const vscodeHref = `vscode://file/${noteAbsPath.replace(/\\/g, "/").replace(/^\/
 const allNotes = await getAllNotes();
 const stats = tagStats(allNotes).map((t) => ({ name: t.name, count: t.count }));
 const seriesList = await loadSeries();
-const series = seriesOf(allNotes, note.id, seriesList);
+const series = seriesOf(allNotes, note.id, seriesList, getDataFiles());
 const seriesNavData = series
   ? {
       id: series.series.id,
@@ -48,23 +50,64 @@ const seriesNavData = series
       eyebrow: series.series.eyebrow,
       accent: series.series.accent,
       icon: series.series.icon,
-      chapters: series.chapters.map((c) => ({ slug: c.slug, title: c.title })),
+      chapters: series.chapters.map((c) => ({ ref: c.ref, href: c.href, title: c.title, kind: c.kind, relPath: c.relPath })),
       currentIndex: series.index,
     }
   : null;
 
-const toc = headings.filter((h) => h.depth === 2).map((h) => ({ id: h.slug, label: h.text }));
----
-<BaseLayout title={note.data.title} current="notes" description={note.data.description}>
-  <a
-    href="/notes"
-    style="display:inline-flex;align-items:center;gap:5px;color:var(--text-muted);font-size:13.5px;font-weight:600;text-decoration:none;margin-bottom:18px;"
-  >
-    <Icon name="chevronLeft" size={16} /> 返回筆記列表
-  </a>
+// 麵包屑第三段 = 筆記所在資料夾（真實路徑，不是 slug）
+const relPath = noteRelPath(note);
+const promptPath = promptPathOf(relPath);
+const folderPath = relPath.includes("/") ? relPath.slice(0, relPath.lastIndexOf("/")) : "";
+const aiPill =
+  pendingMarkers.length > 0
+    ? { label: `待生成 ${pendingMarkers.length}`, tone: "warn" as const }
+    : genCount > 0
+      ? { label: `已生成 ${genCount}`, tone: "ok" as const }
+      : { label: "無標記", tone: "muted" as const };
 
+// 目錄收 h1–h3，id 直接用 Astro 幫標題產生的 slug（與內文標題同一個函式，不會對不上）
+const toc = headings
+  .filter((h) => h.depth <= 3)
+  .map((h) => ({ id: h.slug, label: h.text, lv: h.depth as 1 | 2 | 3 }));
+---
+<WorkbenchLayout
+  title={note.data.title}
+  description={note.data.description}
+  back="/notes"
+  folderPath={folderPath}
+  crumbs={[
+    { label: "NoteCraft", href: "/" },
+    { label: "筆記", href: "/notes" },
+    { label: folderPath || ROOT_GROUP, href: notesFolderHref(folderPath) },
+  ]}
+  pills={[aiPill]}
+  clampTwo
+  pagefindTitle
+>
+  <Fragment slot="actions">
+    <DeckAction client:idle slug={note.id} hasDeck={noteHasDeck} promptPath={promptPath} isDev={isDev} />
+    <FavoriteIcon client:idle slug={note.id} />
+    {/* 線上編輯器只在正式環境出現；dev 環境走 MoreMenu 裡的 VS Code 編輯。 */}
+    {!isDev && (
+      <OnlineEditor client:idle slug={note.id} noteTitle={note.data.title} filePath={note.filePath} />
+    )}
+    {isDev && (
+      <MoreMenu
+        client:idle
+        slug={note.id}
+        title={note.data.title}
+        path={relPath}
+        promptPath={promptPath}
+        vscodeHref={vscodeHref}
+        pendingIds={pendingIds}
+        componentIds={markers.map((m) => m.id)}
+      />
+    )}
+  </Fragment>
+  <div class="wb-host">
   <div class={`nc-note-grid ${toc.length ? "has-toc" : ""}`}>
-    <article class="nc-note-article" style="min-width:0;max-width:760px;">
+    <article class="nc-note-article" style="min-width:0;">
       <div style="margin-bottom:14px;">
         <TagEditor
           client:load
@@ -75,9 +118,6 @@ const toc = headings.filter((h) => h.depth === 2).map((h) => ({ id: h.slug, labe
         />
       </div>
 
-      <h1 class="nc-note-title" style="color:var(--text-strong);line-height:1.2;margin:0 0 14px;font-weight:900;">
-        {note.data.title}
-      </h1>
       <p style="font-size:var(--text-lg);color:var(--text-muted);line-height:1.7;margin:0 0 18px;">
         {note.data.description}
       </p>
@@ -91,49 +131,8 @@ const toc = headings.filter((h) => h.depth === 2).map((h) => ({ id: h.slug, labe
           <span style="display:inline-flex;align-items:center;gap:5px;">
             <Icon name="clock" size={15} /> 更新於 {fmtDate(note.data.updatedAt)}
           </span>
-          {markers.length > 0 && (
-            <span style="display:inline-flex;align-items:center;gap:5px;">
-              <Icon name="sparkle" size={15} style="color:var(--orange-500);" />
-              {genCount}/{markers.length} 視覺化已生成
-            </span>
-          )}
           <ReadingControl client:idle slug={note.id} />
         </div>
-        <span class="nc-note-actions" style="display:inline-flex;gap:8px;flex-wrap:wrap;">
-          {noteHasDeck ? (
-            <a
-              href={`/present/${note.id.normalize("NFC")}`}
-              style="display:inline-flex;align-items:center;gap:6px;height:34px;padding:0 14px;border-radius:999px;background:var(--action-secondary);color:#fff;font-size:13px;font-weight:700;text-decoration:none;white-space:nowrap;"
-            >
-              <Icon name="play" size={15} /> 簡報
-            </a>
-          ) : isDev ? (
-            <GenerateDeckButton client:idle slug={note.id} notePath={note.filePath} />
-          ) : null}
-          <FavoriteButton client:idle slug={note.id} />
-          {isDev && (
-            <a
-              href={vscodeHref}
-              style="display:inline-flex;align-items:center;gap:6px;height:34px;padding:0 14px;border-radius:999px;background:var(--action-secondary);color:#fff;font-size:13px;font-weight:700;text-decoration:none;white-space:nowrap;"
-            >
-              <Icon name="edit" size={15} /> 以 VS Code 編輯
-            </a>
-          )}
-          {!isDev && (
-            <OnlineEditor client:idle slug={note.id} noteTitle={note.data.title} filePath={note.filePath} />
-          )}
-          {isDev && pendingIds.length > 0 && (
-            <RegenerateButton client:idle slug={note.id} pendingIds={pendingIds} />
-          )}
-          {isDev && (
-            <DeleteNoteButton
-              client:idle
-              slug={note.id}
-              title={note.data.title}
-              componentIds={markers.map((m) => m.id)}
-            />
-          )}
-        </span>
       </div>
 
       {/* 已生成的標記，其提示詞已由下方 GeneratedFrame 卡片（含複製按鈕）呈現，
@@ -158,7 +157,7 @@ const toc = headings.filter((h) => h.depth === 2).map((h) => ({ id: h.slug, labe
         style="margin-top:44px;padding-top:22px;border-top:1px solid var(--neutral-200);display:flex;justify-content:space-between;color:var(--text-muted);font-size:13px;"
       >
         <span>建立於 {fmtDate(note.data.createdAt)}</span>
-        <span style="font-family:var(--font-mono);">{note.filePath ?? `src/content/notes/${note.id}.mdx`}</span>
+        <span style="font-family:var(--font-mono);">{relPath}</span>
       </div>
 
       {seriesNavData && <SeriesNav client:visible series={seriesNavData} />}
@@ -170,24 +169,29 @@ const toc = headings.filter((h) => h.depth === 2).map((h) => ({ id: h.slug, labe
       </div>
     )}
   </div>
-</BaseLayout>
+  </div>
+</WorkbenchLayout>
 
 <style is:global>
+  /* 筆記頁內文滿版：解除 global.css 的 .nc-prose 760px 上限（PluginView 仍保留） */
+  .nc-note-article .nc-prose {
+    max-width: none;
+  }
   .nc-note-grid {
     display: grid;
     grid-template-columns: 1fr;
     gap: 40px;
     align-items: start;
   }
-  .nc-note-title {
-    font-size: var(--text-4xl);
+  /* TOC 斷點（Task 74）：以「內文欄至少 640px」為準，不看視窗寬。
+     新殼吃掉 Rail 52 + Sidebar 240，同樣的視窗寬主區窄很多；平板時 Sidebar 又收成抽屜，
+     用視窗寬換算要算兩套。改用 container query 量 .wb-host 的內容寬：
+     640（內文）+ 40（gap）+ 220（TOC）= 900。桌面約落在視窗 1256、平板約 1016。 */
+  .wb-host {
+    container-type: inline-size;
+    container-name: wbhost;
   }
-  @media (max-width: 1024px) {
-    .nc-note-title {
-      font-size: var(--text-3xl);
-    }
-  }
-  @media (min-width: 1025px) {
+  @container wbhost (min-width: 900px) {
     .nc-note-grid.has-toc {
       grid-template-columns: 1fr 220px;
     }
@@ -200,14 +204,26 @@ const toc = headings.filter((h) => h.depth === 2).map((h) => ({ id: h.slug, labe
   .nc-toc {
     position: sticky;
     top: 8px;
+    /* 目錄過長時自己捲，不撐開頁面 */
+    max-height: calc(100vh - 120px);
+    overflow-y: auto;
+    padding-right: 4px;
   }
+  /* 標頭列：標題按鈕（窄版時負責折疊面板）＋「全部展開／收合」按鈕 */
   .nc-toc-head {
     display: flex;
     align-items: center;
-    gap: 6px;
-    width: 100%;
-    padding: 0;
+    gap: 4px;
     margin-bottom: 12px;
+  }
+  .nc-toc-title {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 6px;
+    padding: 0;
     border: none;
     background: none;
     font-family: var(--font-sans);
@@ -218,13 +234,139 @@ const toc = headings.filter((h) => h.depth === 2).map((h) => ({ id: h.slug, labe
     color: var(--text-muted);
     cursor: default;
   }
+  .nc-toc-head-r {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .nc-toc-count {
+    font-size: 11px;
+    font-weight: 400;
+    letter-spacing: 0;
+    text-transform: none;
+    font-variant-numeric: tabular-nums;
+  }
   /* 桌面不需要折疊箭頭 */
   .nc-toc-chevron {
     display: none;
   }
 
-  /* 平板 / 手機：單欄 + 目錄改為可折疊面板置於內文上方 */
-  @media (max-width: 1024px) {
+  /* 扁平清單，用縮排表現層級：左 padding = 14 + depth × 12 */
+  .nc-toc-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    border-left: 2px solid var(--neutral-200);
+  }
+  /* 一列 = 連結 + 可選的展開鈕；連結不包在按鈕裡 */
+  .nc-toc-row {
+    display: flex;
+    align-items: center;
+  }
+  .nc-toc-row > .nc-toc-item {
+    flex: 1;
+    min-width: 0;
+  }
+  .nc-toc-twisty,
+  .nc-toc-all {
+    flex: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    padding: 0;
+    border: none;
+    border-radius: var(--radius-sm);
+    background: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: color 140ms, background 140ms;
+  }
+  .nc-toc-twisty:hover,
+  .nc-toc-all:hover {
+    color: var(--blue-700);
+    background: var(--neutral-100);
+  }
+  .nc-toc-twisty:focus-visible,
+  .nc-toc-all:focus-visible {
+    outline: 2px solid var(--blue-700);
+    outline-offset: -2px;
+  }
+  .nc-toc-twisty svg {
+    transition: transform 200ms ease-out;
+  }
+  .nc-toc-item {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    margin-left: -2px;
+    border-left: 2px solid transparent;
+    line-height: 1.5;
+    text-decoration: none;
+    transition: color 140ms, border-color 140ms;
+  }
+  .nc-toc-item.d0 {
+    padding: 5px 10px 5px 14px;
+    font-size: 13.5px;
+    font-weight: 600;
+    color: var(--text-muted);
+  }
+  .nc-toc-item.d1 {
+    padding: 3px 10px 3px 26px;
+    font-size: 12.5px;
+    font-weight: 400;
+    color: var(--text-body);
+  }
+  .nc-toc-item.d2 {
+    padding: 3px 10px 3px 38px;
+    font-size: 12px;
+    font-weight: 400;
+    color: var(--text-muted);
+    opacity: 0.85;
+  }
+  .nc-toc-mark {
+    flex: none;
+    background: var(--neutral-300);
+    transition: background 140ms;
+  }
+  .nc-toc-item.d1 .nc-toc-mark {
+    width: 4px;
+    height: 4px;
+    border-radius: 999px;
+  }
+  .nc-toc-item.d2 .nc-toc-mark {
+    width: 8px;
+    height: 1.5px;
+  }
+  .nc-toc-label {
+    min-width: 0;
+  }
+  .nc-toc-item:hover {
+    color: var(--blue-700);
+  }
+  /* 目前位置的祖先 */
+  .nc-toc-item.trail {
+    color: var(--blue-700);
+    font-weight: 600;
+    opacity: 1;
+  }
+  .nc-toc-item.on {
+    border-left-color: var(--orange-500);
+    color: var(--blue-700);
+    font-weight: 700;
+    opacity: 1;
+  }
+  /* 目前位置藏在收合的分支裡：看得到的最近祖先代為標橘色左緣 */
+  .nc-toc-item.proxy {
+    border-left-color: var(--orange-500);
+  }
+  .nc-toc-item.on .nc-toc-mark {
+    background: var(--orange-500);
+  }
+
+  /* 主區不夠寬：單欄 + 目錄改為可折疊面板置於內文上方 */
+  @container wbhost (max-width: 899.98px) {
     .nc-note-grid {
       gap: 0;
     }
@@ -234,6 +376,8 @@ const toc = headings.filter((h) => h.depth === 2).map((h) => ({ id: h.slug, labe
     }
     .nc-toc {
       position: static;
+      max-height: none;
+      overflow: visible;
       border: 1px solid var(--neutral-200);
       border-radius: var(--radius-lg);
       background: #fff;
@@ -241,25 +385,27 @@ const toc = headings.filter((h) => h.depth === 2).map((h) => ({ id: h.slug, labe
       box-shadow: var(--shadow-xs);
     }
     .nc-toc-head {
-      justify-content: space-between;
       margin-bottom: 0;
-      cursor: pointer;
     }
-    .nc-toc-head[aria-expanded="true"] {
+    .nc-toc-head:has(> .nc-toc-title[aria-expanded="true"]) {
       margin-bottom: 12px;
+    }
+    .nc-toc-title {
+      align-items: center;
+      cursor: pointer;
     }
     .nc-toc-chevron {
       display: inline-flex;
       transition: transform 200ms ease-out;
     }
-    /* 頁首動作鈕：自成一行、靠左、可換行，不再被壓窄 */
-    .nc-note-actions {
-      margin-left: 0 !important;
-      flex-basis: 100%;
-    }
   }
   @media (prefers-reduced-motion: reduce) {
-    .nc-toc-chevron {
+    .nc-toc-chevron,
+    .nc-toc-item,
+    .nc-toc-mark,
+    .nc-toc-twisty,
+    .nc-toc-twisty svg,
+    .nc-toc-all {
       transition: none;
     }
   }

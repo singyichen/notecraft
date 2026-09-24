@@ -1,0 +1,99 @@
+---
+// 資料檔檢視頁（Task 48）。
+//
+// 這條路由刻意不套 BaseLayout 的 1120 版心與 34/40/80 padding —— 資料檔頁就是滿版畫面。
+// ER 圖是橫向佈局，1120 都塞不下；渲染器自帶工具列、橫向捲動與全寬覆蓋層，
+// 外層再包一層外框卡片或放大檢視都是重複功能（Q22）。
+import path from "node:path";
+import WorkbenchLayout from "@/layouts/WorkbenchLayout.astro";
+import Icon from "@/components/Icon.astro";
+import RelativeTime from "@/components/wb/RelativeTime.tsx";
+import PluginHost from "@/components/islands/PluginHost.tsx";
+import { getDataFiles, getPlugins } from "@/lib/plugins";
+import { getAllNotes } from "@/lib/notes";
+import { loadSeries, seriesOf, dataRef } from "@/lib/series";
+import { fmtDate, daysAgo } from "@/lib/dates";
+
+export function getStaticPaths() {
+  return getDataFiles().map((f) => ({ params: { path: f.routePath }, props: { file: f } }));
+}
+
+const { file } = Astro.props;
+const plugin = getPlugins().get(file.pluginId);
+const isDev = import.meta.env.DEV;
+// renderer 的絕對路徑只給 dev 的「以 VS Code 編輯 renderer」用；正式 build 不傳（會 inline 進 island props、洩漏本機路徑）
+const rendererPath = isDev && plugin ? path.join(plugin.dir, "renderer.tsx") : undefined;
+const vscodeHref = `vscode://file/${file.absPath.replace(/\\/g, "/").replace(/^\/+/, "")}`;
+
+// meta.backTo 已在 src/lib/plugins.ts 解析時驗證過（只接受站內路徑），頁面不再自己去挖 file.data.meta。
+const backTo = file.backTo;
+const updatedDate = file.updatedAt.slice(0, 10);
+
+// 資料檔頁也可以是系列的一章（Q6′），識別碼是 `view:<routePath>`。
+// 這頁只渲染資料檔本身：系列只在頁首以 pill 標示，不放閱讀狀態與上一章／下一章。
+const ref = dataRef(file.routePath);
+const allNotes = await getAllNotes();
+const series = seriesOf(allNotes, ref, await loadSeries(), getDataFiles());
+---
+
+<WorkbenchLayout
+  title={file.title}
+  description={file.description}
+  rail="plugins"
+  back="/plugins"
+  flush
+  indexHeader
+  pagefindTitle
+  crumbs={[{ label: "NoteCraft", href: "/" }, { label: "Plugin", href: "/plugins" }, { label: file.relPath }]}
+  pills={[
+    { label: file.pluginId },
+    ...(series
+      ? [{ label: `${series.series.title} #${series.index + 1}`, href: `/series/${series.series.id}`, class: `series wb-acc-${series.series.accent}` }]
+      : []),
+  ]}
+>
+  <Fragment slot="pills">
+    {/* 「N 天前更新」在瀏覽器算（Q10）：SSR 輸出絕對日期，hydrate 後換成相對時間 */}
+    <RelativeTime client:idle date={updatedDate} suffix="更新" className="wb-pill muted tnum" />
+  </Fragment>
+  <Fragment slot="actions">
+    {backTo && (
+      <a href={backTo} class="wb-btn-ghost">
+        <Icon name="notes" size={14} stroke={1.7} /> 回到來源筆記
+      </a>
+    )}
+    {isDev && (
+      <a href={vscodeHref} class="wb-btn-ghost">
+        <Icon name="edit" size={14} stroke={1.7} /> 以 VS Code 編輯
+      </a>
+    )}
+  </Fragment>
+  {/* data-pagefind-body：這頁只索引標題（頁首 h1，由 indexHeader 標）與描述；渲染出來的上千個欄位名不進索引。
+      pagefind 處於「只索引有標記的區塊」模式，沒標記的頁面整頁不進索引 —— 標記一定要在。 */}
+  {file.description && (
+    <div slot="toolbar" class="wb-tb">
+      <span class="wb-tb-lbl" data-pagefind-body>{file.description}</span>
+    </div>
+  )}
+
+  <div class="nc-dv-stage">
+    <PluginHost
+      client:load
+      pluginId={file.pluginId}
+      data={file.data}
+      file={{ path: file.relPath, name: path.basename(file.relPath), updatedAt: file.updatedAt }}
+      options={file.options}
+      mode="page"
+      rendererPath={rendererPath}
+      isDev={isDev}
+    />
+  </div>
+</WorkbenchLayout>
+
+<style>
+  .nc-dv-stage {
+    min-height: 100%;
+    background: var(--surface-page);
+    padding: 18px clamp(12px, 3vw, 40px) 48px;
+  }
+</style>

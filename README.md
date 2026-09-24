@@ -18,6 +18,27 @@
 
 ![Dashboard](./docs/screenshots/dashboard.png)
 
+<details>
+<summary>更多畫面：筆記列表、Drawer 預覽、Board、Plugin 管理</summary>
+
+**筆記列表（List view）** — 依資料夾／系列／標籤／月份分組，篩選全在網址參數，`⌘K` 隨時跨頁跳轉。
+
+![Notes list](./docs/screenshots/notes-list.png)
+
+**Drawer 預覽** — 單擊一列在右側預覽摘要、Metadata、`@ai-visualize` 標記與同系列章節；雙擊或列尾的箭頭才進筆記。
+
+![Note drawer](./docs/screenshots/notes-drawer.png)
+
+**Board view** — 依閱讀狀態分三欄，拖曳卡片就改狀態。
+
+![Board view](./docs/screenshots/notes-board.png)
+
+**Plugin 管理** — 已安裝外掛、映射規則、命中的資料檔，dev 下可一鍵啟用／停用。
+
+![Plugins](./docs/screenshots/plugins.png)
+
+</details>
+
 ---
 
 ## 為什麼要 NoteCraftApp
@@ -28,8 +49,10 @@
 - **放大檢視** — 內文欄寬容不下的元件（並排結構圖、RACI 矩陣、寬表格），一鍵搬進全螢幕的可拖曳平移、可縮放畫布來讀，**互動完整保留**，還能匯出 100% 原尺寸 PNG
 - **筆記轉簡報** — 一篇筆記一鍵變成 16:9 多頁簡報，`/present/<slug>` 可全螢幕播放。**筆記裡的互動元件原樣搬進投影片，播放時照樣能點、能拖**
 - **即時 preview** — `serve` 內建背景 rebuild + SSE auto reload：Claude Code 在另一個 terminal 寫檔、viewer 這邊瀏覽器自動刷新，全程免手動重啟
-- **儀表板** — 統計 / 最近更新 / 標籤分布 / 系列進度、AI 視覺化生成率
-- **系列** — 多份筆記串成有順序的閱讀路徑，含進度條與繼續閱讀
+- **工作台（v1.0.0）** — 三欄殼：Rail + 檔案樹 Sidebar + 主區。筆記列表有 List／Board／Table／Timeline 四種 view 與側邊 Drawer 預覽，Board 拖曳即改閱讀狀態；`⌘K` 指令面板跨頁跳轉並含 pagefind 全文搜尋
+- **儀表板** — widget grid：筆記總數、近 8 週寫作頻率、最近更新、系列進度（一鍵繼續閱讀）、標籤分布、待生成標記；另有「本週」「AI 佇列」兩個 Tab
+- **系列** — 多份筆記串成有順序的閱讀路徑，含進度條與單鍵推進；資料檔頁也能是一章
+- **Plugin** — 結構化 JSON 交給可安裝的渲染器畫成頁面；`/plugins` 看得到映射規則、命中檔與外掛檔案，可在 dev 一鍵啟用／停用
 - **巢狀資料夾原生支援** — `guides/oauth/flow.mdx` 直接對到 `/notes/guides/oauth/flow`
 - **缺 frontmatter 也能顯示** — 標題從 H1 或檔名抓、日期從檔案 mtime 抓
 - **MDX 相對圖片路徑**（`![](./cover.png)`）自動解析
@@ -126,7 +149,7 @@ notecraftapp view ./docs
 
 ---
 
-## 四個子命令
+## 五個子命令
 
 ### `notecraftapp init-skill`
 
@@ -142,6 +165,35 @@ npx notecraftapp init-skill --dir <path> # 指定安裝目標 root
 衝突處理：有本地手改過的檔案時，走互動 prompt（`overwrite / skip / overwrite-all / skip-all / abort`）；非 TTY 環境（CI）且未帶 `--force` → 直接拒絕、exit 1。
 
 適合：**第一次要在自己專案跑 AI 視覺化的時候跑一次即可**。
+
+### `notecraftapp install-plugin [source]`
+
+裝一個 **plugin** —— 把專案裡的結構化 JSON 資料檔畫成頁面的渲染器。不帶參數時列出官方 store 讓你選。
+
+```bash
+npx notecraftapp install-plugin                          # 列官方 store、互動選擇
+npx notecraftapp install-plugin er-diagram-renderer      # 裝官方 plugin
+npx notecraftapp install-plugin owner/repo/plugins/foo   # 裝第三方（可帶 #v1.2.0 指定版本）
+npx notecraftapp install-plugin ./my-plugin              # 本地開發中的 plugin
+npx notecraftapp install-plugin --list                   # 只看清單
+npx notecraftapp install-plugin --remove er-diagram-renderer
+```
+
+裝完在 `.notecraft/plugins.json` 加一條映射，符合的檔案就會變成 `/view/<路徑>` 的頁面：
+
+```json
+{ "plugins": [{ "plugin": "er-diagram-renderer", "files": ["**/*.er.json"] }] }
+```
+
+（帶 `--apply "**/*.er.json"` 可以讓它直接幫你寫進去。）
+
+**安裝前一律要你確認一次。** 這是在你的 build 與瀏覽器裡執行別人寫的前端程式碼，
+所以確認前會先擋下：白名單外的 `import`、`dangerouslySetInnerHTML`、
+可執行檔（`*.sh`、`*.mjs`、`package.json`…）、路徑逃脫，以及 `engines` 不相容的版本。
+**不會執行任何安裝腳本。** CI 環境用 `--yes` 略過確認。
+
+資料檔可以和筆記一起排進系列（`series.json` 的 `slugs` 寫 `view:<路徑去副檔名>`），
+也可以用 `<PluginView src="..." />` 嵌在 MDX 內文裡。
 
 ### `notecraftapp view <dir>`
 
@@ -290,6 +342,19 @@ MDX 或 md 內 `![](./cover.png)` / `![](../shared/logo.svg)` 都會被自動 re
 | `--force`      | false  | 衝突檔直接覆寫，不 prompt                       |
 | `--check`      | false  | 只印安裝狀態與版本比對，不寫檔                  |
 | `--dir <path>` | cwd    | 安裝目標 root（一般不用）                       |
+
+### `install-plugin`
+
+| Flag             | 預設           | 說明                                      |
+| :--------------- | :------------- | :---------------------------------------- |
+| `--list`         | false          | 只列官方 store，不安裝                    |
+| `--remove <id>`  | —              | 移除已安裝的 plugin（會檢查設定是否殘留） |
+| `--apply <glob>` | —              | 安裝後把映射寫進 `plugins.json`           |
+| `--ref <tag>`    | 預設分支       | 指定 tag / branch / commit                |
+| `--as <id>`      | manifest 的 id | 改用別的目錄名安裝                        |
+| `--dir <path>`   | cwd            | 安裝目標 root                             |
+| `--force`        | false          | 目標已存在時覆寫，不 prompt               |
+| `--yes`          | false          | 略過安裝確認（CI 用）                     |
 
 ---
 
