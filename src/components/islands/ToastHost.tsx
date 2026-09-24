@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
-import { Check, X, Code2, Tag } from "lucide-react";
+import { Check, X, Code2, Tag, type LucideIcon } from "lucide-react";
 
 type Toast = { id: number; msg: string; icon?: string };
 
-const ICONS: Record<string, React.ComponentType<{ size?: number }>> = {
+const ICONS: Record<string, LucideIcon> = {
   check: Check,
   x: X,
   code: Code2,

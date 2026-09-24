@@ -122,7 +122,7 @@ excerpt: 如圖 3-2 所示的偏壓電路
 
 ### 樣式規範
 
-色票、字級、間距、圓角、陰影一律遵循 **`notecraft-design` Skill**（改編自 label-suite 的 indigo/emerald 配色系統，見 `.claude/skills/notecraft-design/SKILL.md`）。生成元件前先讀取其 SKILL.md 與 `src/styles/tokens.css`，優先使用既有 token / CSS 變數，**不要硬編碼色碼**。僅在 prompt 明確要求跳脫設計系統時例外，並在對話中說明。
+色票、字級、間距、圓角、陰影一律遵循 **`notecraft-design` Skill**（上游 TrendLink DS 的 blue/orange 配色，字體則保留本專案的 Crimson Pro + Inter；見 `.claude/skills/notecraft-design/SKILL.md`）。生成元件前先讀取其 SKILL.md 與 `src/styles/tokens.css`，優先使用既有 token / CSS 變數，**不要硬編碼色碼**。僅在 prompt 明確要求跳脫設計系統時例外，並在對話中說明。
 
 ## Workbench 工作台（v1.0.0）
 
@@ -226,7 +226,7 @@ trim 前後空白 → 過濾空字串 → 同篇內不分大小寫去重（保�
 - Dashboard 統計於 `astro build` 階段透過 Content Collections 預計算為 JSON，**無執行時 API**
 - 元件強制 TypeScript（`.tsx`），禁用 `any`（除非註解說明理由），不可有 required props
 - motion 元件預設 200–400ms ease-out，並用 `useReducedMotion()` 尊重 `prefers-reduced-motion`
-- **沒有 pre-push hook**（`.git/hooks` 只有 sample、也沒有 husky）。每次 commit 前自己跑 `npx tsc --noEmit && npx astro build`；動到 plugin 相關的再跑 `npm run check-plugins`
+- **pre-push hook 會跑 `tsc --noEmit` + `astro build`**（`.git/hooks/pre-push`，2026-09-24 建立；動到 `plugins/` 時額外跑 `npm run check-plugins`）。hook 不進版控，重新 clone 後要自己補。確定要推半成品時用 `git push --no-verify` 繞過
 - 筆記正文一律**以中文撰寫為主**，英文只在專有名詞第一次出現時以括號附在對應中文名詞後面，例如「導通電壓（knee voltage）」「順偏（forward bias）」；整理講義、投影片、Lab 手冊的目標／步驟／結論時直接用中文改寫，**不要把英文原句整句（尤其是粗體）放在前面再接中文翻譯**，也不要寫成「**English term（中文）**」這種英文在前的順序。縮寫（ENIAC、BJT、LED）、例題編號（`Example 2-3`）、軟體介面上的按鈕與選單名稱（`Start Simulation`）維持原文。術語譯名用台灣慣用寫法：knee voltage 寫「導通電壓」（不用「膝點」）、順偏／逆偏、空乏區、崩潰、漣波、整流器、穩壓器。寫回前跑自檢，兩條都應為 0（例外只剩上述縮寫與介面名稱）：`grep -nP '\*\*[A-Za-z][A-Za-z0-9 ,;:/&()\x27-]{15,}\*\*\s*[\p{Han}]' <筆記路徑>`（英文長句粗體後接中文）與 `grep -nP '\*\*[A-Za-z][A-Za-z -]*（[\p{Han}]' <筆記路徑>`（英文術語在前、中文在括號內）
 - `**粗體（英文術語）**` 這種右括號／`)` 收尾的粗體，只要後面沒有空格或標點、直接接中文字，remark 就不會把收尾的 `**` 當合法收尾（CommonMark 的 right-flanking 規則：`**` 前面是標點時，後面必須接空白或標點才能收尾），整段會照字面輸出 `**文字**`；多組這樣的粗體連續出現時，失效的收尾標記還會被下一組頂替，造成整段 bold 範圍位移一格。單一術語只要在 `）**`／`)**` 後面補一個半形空格即可修正（不影響排版）。筆記正文（非 `@ai-visualize` 生成元件）若要並列 3 個以上「名稱＋定義＋範例」的平行項目，改用 Markdown 表格，不要在同一段塞多組 `**粗體**`。任何一次寫入或改寫筆記正文（新增筆記、補逐字稿、整理投影片……）後，寫回前都跑一次自我檢查，抓到就照上述方式補空格再寫回：`grep -noP '[)）]\*\*(?![\s\p{P}\p{S}])' <筆記路徑>`（需要 PCRE；`grep -P` 不支援時改用 `python3 -c` 搭配 `unicodedata.category` 判斷後續字元是否為標點/符號）
 - 筆記正文出現數學／物理／化學公式與計算推導時，一律用 KaTeX（已接好 `remark-math` + `rehype-katex`）呈現，多步驟推導要獨立成 `$$...$$`（`aligned`）區塊，不要塞進同一句話裡用行內小字或反引號 unicode 上下標湊合，細節與換算對照見 `math-formula-notation` Skill

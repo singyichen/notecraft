@@ -1,6 +1,6 @@
 ---
 name: notecraft-design
-description: NoteCraft 自身的視覺設計系統（改編自 label-suite 的 indigo/emerald 配色與 Crimson Pro + Inter 字體）。AI 視覺化 / 簡報生成元件在決定色票、字級、圓角、陰影時應先讀這份文件，優先使用專案既有 CSS 變數與 class，不要硬編色碼。
+description: NoteCraft 自身的視覺設計系統（上游 TrendLink DS 的 blue/orange 配色，搭配本專案保留的 Crimson Pro + Inter 字體）。AI 視覺化 / 簡報生成元件在決定色票、字級、圓角、陰影時應先讀這份文件，優先使用專案既有 CSS 變數與 class，不要硬編色碼。
 user-invocable: true
 ---
 
@@ -14,24 +14,26 @@ Read this file before generating any visual component for NoteCraft (`content-vi
 
 ## Brand in one breath
 
-Adapted from [label-suite](../../.claude — sibling project, not shipped in this repo)'s design system: academic / research-tool mood — indigo primary, emerald accent, a serif display face for headings against an otherwise clean sans-serif UI. Softer, larger corner radii than a typical SaaS dashboard; shadows are subtle and carry a faint indigo tint rather than pure black. No skeuomorphic gradients except the sidebar's brand gradient and the primary-button's (near-flat, two adjacent emerald stops) accent gradient.
+Upstream's TrendLink DS: a calm documentation-tool mood — a deep **blue** primary with an **amber/orange** accent reserved for the single CTA, against neutral slate-blue grays. Tight corner radii (2–14px, noticeably crisper than a typical SaaS dashboard) and subtle shadows carrying a faint navy tint rather than pure black. No skeuomorphic gradients except the sidebar's brand gradient and the primary-button's accent gradient.
+
+**Typography is the one deliberate divergence from upstream**: this repo keeps Crimson Pro serif headings + Inter UI + JetBrains Mono. Colors, radii and shadows were realigned to upstream on 2026-09-24 (the earlier label-suite indigo/emerald repaint was reverted) — `workbench.css` maps its `--wb-*` tokens straight onto these, and its six hardcoded values were tuned against this palette.
 
 ## Color
 
-CSS variables carry historical names (`--blue-*`, `--orange-*`) but now hold an **indigo** ramp and an **emerald** ramp respectively — don't be misled by the literal names, read the hex.
+Variable names match their hue again: `--blue-*` is a blue ramp, `--orange-*` an amber/orange ramp.
 
 | Token | Value | Use |
 |---|---|---|
-| `--blue-500` | `#6366F1` (indigo) | primary brand — links, secondary buttons, active nav |
-| `--blue-950` | `#1E1B4B` | `--text-strong` — the "ink" color for headings/strong text |
-| `--orange-500` | `#10B981` (emerald) | `--action-primary` — the one CTA color per page |
-| `--orange-600` | `#059669` | CTA hover / `--text-accent` (eyebrows, list markers, sparkle icons) |
-| `--neutral-*` | slate scale | borders, muted text, sunken surfaces |
-| `--surface-page` | `#F5F3FF` | page background (violet-tinted, **not** neutral gray) |
+| `--blue-500` | `#2C6EBB` | primary brand — links, active nav, `--border-brand` |
+| `--blue-700` | `#1B4F9C` | `--action-secondary` / `--text-brand` — secondary buttons, eyebrow text |
+| `--orange-400` | `#ED9B26` | `--action-primary` — the one CTA color per page |
+| `--orange-500` | `#E37B24` | CTA hover / `--text-accent` (list markers, sparkle icons) |
+| `--neutral-900` | `#161C28` | `--text-strong` — the "ink" color for headings/strong text |
+| `--surface-page` | `#F6F8FB` | page background (neutral, very faintly blue) |
 | `--surface-card` | `#FFFFFF` | card/panel background |
-| `--success-500` / `--warning-500` / `--danger-500` / `--info-500` | `#15803D` / `#A16207` / `#B91C1C` / `#1D4ED8` | semantic state text — always pair with the matching `-50` background, never reuse the accent (emerald) for warning/danger |
+| `--success-500` / `--warning-500` / `--danger-500` / `--info-500` | `#2E9E6B` / `#E3A008` / `#D64545` / `#2C6EBB` | semantic state — always pair with the matching `-50` background, never reuse the accent for warning/danger. `--warning-500` is only 2.26:1 on white; use `--warning-700` (`#9A6600`) for warning **text**. |
 
-Rule: exactly one primary CTA button per page/section (uses `--action-primary`). Secondary actions use `--action-secondary` (indigo) or a ghost/outline style. Don't put two `--orange-500` (emerald) buttons side by side.
+Rule: exactly one primary CTA button per page/section (uses `--action-primary`, the orange). Secondary actions use `--action-secondary` (blue) or a ghost/outline style. Don't put two orange buttons side by side.
 
 ## Typography
 
@@ -42,13 +44,15 @@ Rule: exactly one primary CTA button per page/section (uses `--action-primary`).
 
 ## Radius & shadow
 
-- `--radius-sm` (4px): chips, small badges, tag pills' inner elements
-- `--radius-md` (8px): buttons, inputs
-- `--radius-lg` (12px): cards, panels — this is the default for `Card.astro`
-- `--radius-xl` (16px): modals, the `GeneratedFrame` viz frame
-- `--radius-pill` (9999px): pill buttons/tags (already how `Button.astro`/`TagChip.astro` are built)
-- `--shadow-sm` / `--shadow-md`: default card/button elevation
-- `--shadow-card`: the indigo-tinted glow (`0 4px 24px rgba(99,102,241,.10)`) — reach for this instead of `--shadow-md` on a floating/highlighted surface (e.g. a toast, or a viz card you want to visually lift) when you want the label-suite "glow" rather than a flat gray shadow.
+The scale is tight — resist rounding things more than this, it's what makes the UI read as crisp rather than bubbly.
+
+- `--radius-sm` (3px): chips, small badges, tag pills' inner elements
+- `--radius-md` (5px): buttons, inputs
+- `--radius-lg` (8px): cards, panels — this is the default for `Card.astro`
+- `--radius-xl` (11px): modals, the `GeneratedFrame` viz frame
+- `--radius-pill` (999px): pill buttons/tags (already how `Button.astro`/`TagChip.astro` are built)
+- `--shadow-sm` / `--shadow-md`: default card/button elevation (navy-tinted, `rgba(17,47,93,…)`)
+- `--shadow-card`: a softer wide glow (`0 4px 24px rgba(17,47,93,.10)`) — reach for this instead of `--shadow-md` on a floating/highlighted surface (a toast, or a viz card you want to visually lift). Not an upstream token; defined in this repo.
 
 ## Component patterns (for new AI-generated `.tsx`)
 
@@ -76,11 +80,11 @@ Match these shapes when a generated component needs its own button/badge/card ra
 }}>...</div>
 ```
 
-For charts (`recharts`/`d3`), pull series colors from the ramps in order: `var(--blue-500)` (indigo) → `var(--orange-500)` (emerald) → `var(--blue-300)` → `var(--warning-500)` — do not introduce a chart palette unrelated to these tokens.
+For charts (`recharts`/`d3`), pull series colors from the ramps in order: `var(--blue-500)` → `var(--orange-400)` → `var(--blue-300)` → `var(--success-500)` — do not introduce a chart palette unrelated to these tokens.
 
 ## What NOT to do
 
 - Don't hardcode hex values that already have a token (breaks re-theming if the palette changes again).
-- Don't reuse `--orange-*` (emerald/accent) to represent a warning or error state — use `--warning-*` / `--danger-*`. (This was a real bug fixed during the label-suite migration: `Badge.astro`'s `warning` tone used to borrow the accent color.)
+- Don't reuse `--orange-*` (the accent) to represent a warning or error state — use `--warning-*` / `--danger-*`. (`Badge.astro`'s `warning` tone used to borrow the accent color; that was a real bug.)
 - Don't add a second serif/display font — Crimson Pro is the only display face.
-- Don't introduce heavy drop shadows or skeuomorphic gloss — label-suite is a flat-design system; the one permitted "glow" is `--shadow-card`.
+- Don't introduce heavy drop shadows or skeuomorphic gloss — this is a flat-design system; the one permitted "glow" is `--shadow-card`.

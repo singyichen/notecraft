@@ -983,14 +983,14 @@ export default function ErDiagramRenderer({
                                       showTip(
                                         ev.currentTarget,
                                         `${c.name}　${c.type}${c.default ? `　預設 ${c.default}` : ''}`,
-                                        c.note,
+                                        c.note ?? '',
                                       )
                                     }
                                     onFocus={(ev) =>
                                       showTip(
                                         ev.currentTarget,
                                         `${c.name}　${c.type}${c.default ? `　預設 ${c.default}` : ''}`,
-                                        c.note,
+                                        c.note ?? '',
                                       )
                                     }
                                     onMouseLeave={() => setTip(null)}
