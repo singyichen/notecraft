@@ -3,13 +3,15 @@ title: "機器學習實作系列：第 6 週 - Scikit-learn 機器學習"
 description: ""
 tags: ["機器學習實作系列"]
 createdAt: "2026-10-12"
-updatedAt: "2026-10-12"
+updatedAt: "2026-09-25"
 ---
 
 import GeneratedFrame from '@/components/GeneratedFrame.astro'
 import MlWeek6ScalingDivide from '@/components/generated/ml-week6-scaling-divide'
 import MlWeek6CostTradeoff from '@/components/generated/ml-week6-cost-tradeoff'
 import MlWeek6ClassifierTable from '@/components/generated/ml-week6-classifier-table'
+import MlWeek6L1L2Geometry from '@/components/generated/ml-week6-l1-l2-geometry'
+import MlWeek6SklearnApiMap from '@/components/generated/ml-week6-sklearn-api-map'
 
 # 第 6 週：Scikit-learn 機器學習
 
@@ -168,6 +170,324 @@ status: generated
   <MlWeek6ClassifierTable />
 </GeneratedFrame>
 
+## 廣義的資料前處理：六個階段與黃金法則
+
+> 本節起對應課堂講義 `第6週-資料前處理與Scikit-learn.pdf`（Lecture 5）。講義開場引言：「數據和特徵決定了機器學習的上限，而模型和演算法只是逼近這個上限而已。」
+
+### 六個階段
+
+講義把日常說的「前處理」拆成六段，合稱廣義的資料前處理：
+
+| 階段 | 中文 | 做什麼 | 歸屬 |
+| --- | --- | --- | --- |
+| Raw Data | 原始資料 | 尚未處理的輸入 | — |
+| Data Cleaning | 資料清理 | 刪／補空值、剔除異常值 | 狹義前處理 |
+| Encoding | 資料編碼 | 把類別型資料轉成數值 | 狹義前處理 |
+| Feature Generation | 特徵衍生 | 取絕對值、特徵相乘、離散化 | 特徵工程 |
+| Feature Scaling | 特徵縮放 | 標準化、正規化 | 狹義前處理 |
+| Dimensionality Reduction | 降維 | 特徵選取、特徵提取 | 特徵工程 |
+
+分清楚哪幾段屬於**特徵工程（feature engineering）** 有個實際好處：特徵衍生與降維是「改變特徵集合本身」，而清理、編碼、縮放是「把既有欄位整理成模型吃得下的形式」，兩者出問題的徵兆不同。
+
+### 先切分，再處理
+
+講義稱這是黃金法則（The Golden Rule: Split Before Processing）。第 62 頁把它列成一張不可違反的清單：
+
+1. 先用 `train_test_split` 切分
+2. 轉換器（`SimpleImputer`、`StandardScaler`、`LabelEncoder`、`OneHotEncoder`）：**只在訓練集上 `fit`**
+3. 用 fit 好的轉換器 `transform` 訓練集，估計器再於訓練集上 `fit`
+4. 測試階段：用**同一組**已 fit 的轉換器 `transform` 測試集，再用已 fit 的估計器 `predict`
+
+**絕對不要在測試資料上呼叫 `fit()` 或 `fit_transform()`** 。違反的後果是**資料洩漏（data leakage）** ——測試集的統計量提前混進訓練流程，分數虛高，上線就掉。
+
+### 切分比例的權衡
+
+常用比例是 60:40、70:30、80:20，取決於原始資料量。這是一個兩難：測試集越大，學習演算法能用的資訊越少；測試集越小，**泛化誤差（generalization error）** 的估計越不準。沒有普世最佳解，只有在這條線上取平衡。
+
+## 髒資料：缺值與類別型欄位
+
+### 缺值的偵測與處理
+
+真實資料的缺值以空白、`NaN`、`NULL` 等形式出現，多數運算工具無法直接處理。偵測用 `isnull()` 取得布林 DataFrame，再接 `sum()` 數出每欄的缺值數量。
+
+有個容易誤判的細節：**空字串 `""` 會被視為有效資料**，不算缺值；`isnull()` 只對 `NaN`、`None`、`NaT` 回傳 `True`。
+
+處理只有刪與補兩條路：
+
+| 做法 | 手段 | 風險或適用場合 |
+| --- | --- | --- |
+| 刪除 | `dropna()` 移除整列或整欄 | 刪掉太多樣本會使分析失去可靠性；刪掉太多特徵欄則丟失分類器需要的資訊 |
+| 補值 | 平均數補值 | 快，但把該欄的變異壓平 |
+| 補值 | 最頻繁值補值 | 尤其適合類別型特徵 |
+| 補值 | KNN 補值 | 用 $k$ 個最近鄰的值（例如平均）推估，較貼近資料結構 |
+
+### 順序型與名義型要分開處理
+
+| 型別 | 中文 | 例子 | 處理方式 |
+| --- | --- | --- | --- |
+| Ordinal | 順序型 | T 恤尺寸（XL > L > M） | 依領域知識手動映射成整數，順序有意義，也可反向映射回字串 |
+| Nominal | 名義型 | T 恤顏色（紅、綠、藍） | 獨熱編碼；直接編成 0/1/2 會讓模型誤以為「綠 > 藍」 |
+
+**類別標籤（class label）不使用順序資訊** ——指派哪個整數給哪個字串標籤都無所謂，scikit-learn 的分類估計器內部本來就會把標籤轉成整數。
+
+### 獨熱編碼與共線性
+
+**獨熱編碼（one-hot encoding）** 為每個相異值建一個 0/1 的虛擬欄位：藍色樣本編成 `blue=1, green=0, red=0`，以此類推。pandas 的 `get_dummies()` 是便利的作法，它只轉換字串欄位、其餘欄位原樣保留。
+
+它有個副作用：產生的欄位彼此**完全相關（multi-collinearity）** 。對需要矩陣求逆的方法而言，高度相關的特徵會讓矩陣變得病態（ill-conditioned）而難以求逆。
+
+解法是刪掉其中一欄，而且**不會損失任何資訊**：若 `color_blue` 被刪，`color_green = 0` 且 `color_red = 0` 就唯一地表示這筆是藍色。
+
+## 特徵縮放與特徵選取
+
+### 標準化與正規化
+
+**正規化（normalization）** 把每欄壓到 $[0, 1]$，是 min-max 縮放的特例：
+
+$$
+x_{\text{norm}}^{(i)} = \frac{x^{(i)} - x_{\min}}{x_{\max} - x_{\min}}
+$$
+
+**標準化（standardization）** 則把每欄轉成平均 0、標準差 1：
+
+$$
+x_{\text{std}}^{(i)} = \frac{x^{(i)} - \mu}{\sigma}
+$$
+
+取捨很明確：需要有界區間時用正規化，但**單一個極端離群值就能把其餘資料擠壓進極小的子區間**；標準化保留了離群值的資訊，也讓演算法對它較不敏感，對梯度下降／隨機梯度下降的最佳化尤其實用。
+
+講義特別提醒：**獨熱編碼產生的 0/1 欄位不需要再做特徵縮放** 。
+
+### 特徵選取與特徵提取的分界
+
+降維有兩大類，差別在於新特徵是「挑出來的」還是「算出來的」：
+
+| 類別 | 中文 | 做法 |
+| --- | --- | --- |
+| Feature selection | 特徵選取 | 從原始特徵中挑一個子集，保留原本的物理意義 |
+| Feature extraction | 特徵提取 | 從特徵集推導資訊，建構新的特徵子空間（例如 PCA） |
+
+### 序列特徵選取：SFS 與 SBS
+
+**序列特徵選取（sequential feature selection）** 是一族**貪婪搜尋（greedy search）** 演算法，把 $d$ 維特徵空間縮到 $k < d$ 維：
+
+- **序列前向選取（sequential forward selection, SFS）** ——加法概念，從空集合開始逐個加入最有貢獻的特徵
+- **序列後向選取（sequential backward selection, SBS）** ——減法概念，從全集開始，每次剔除使**判準函數（criterion function）** $J$ 損失最小的那個特徵
+
+要理解代價：貪婪演算法在每一階段做局部最優選擇，通常得到次佳解；與之相對的窮舉搜尋會評估所有組合並找到最佳解，但在組合數上完全不可行。
+
+## 正則化：過擬合、欠擬合與 L1／L2
+
+### 過擬合與欠擬合
+
+| 現象 | 中文 | 症狀 | 成因 |
+| --- | --- | --- | --- |
+| Overfitting | 過擬合 | 抓住了訓練資料的規律卻無法泛化；高**變異（variance）** ，變異衡量的是一致性 | 參數太多、模型太複雜 |
+| Underfitting | 欠擬合 | 模型不夠複雜，連訓練資料的規律都抓不到，對未見資料同樣表現差；高**偏差（bias）** ，偏差衡量的是系統性誤差 | 模型太簡單 |
+
+防止過擬合的常見手段：蒐集更多訓練資料（通常不可行）、選更簡單的模型、用正則化引入複雜度懲罰、降維。後三者殊途同歸——都讓模型變簡單。
+
+### L2 正則化
+
+**正則化（regularization）** 在損失函數外加一項，懲罰過大的權重，可同時處理共線性、過濾雜訊、防止過擬合。
+
+$L_2$ 正則化（又稱 $L_2$ 收縮或**權重衰減（weight decay）** ）的正則化項為：
+
+$$
+\frac{\lambda}{2n}\lVert \mathbf{w} \rVert_2^2 = \frac{\lambda}{2n}\sum_{j} w_j^2
+$$
+
+其中 $\lambda$ 是**正則化參數（regularization parameter）** ，控制正則化強度（$\lambda$ 越大越趨向欠擬合）；$n$ 是樣本數，用來讓正則化項與損失項的尺度相當。
+
+兩點實務提醒：正則化要正常運作，**所有特徵必須在可比較的尺度上**（所以縮放要先做）；**偏置項（bias unit，即負門檻）通常不做正則化** 。
+
+在 scikit-learn 裡，正則化強度以 `C` 表示，它與 $\lambda$ 成反比：
+
+$$
+C \propto \frac{1}{\lambda}
+$$
+
+`C` 越小，懲罰越重，權重被壓得越接近零。
+
+### L1 正則化與稀疏解
+
+$L_1$ 正則化的正則化項改為絕對值和：
+
+$$
+\frac{\lambda}{n}\lVert \mathbf{w} \rVert_1 = \frac{\lambda}{n}\sum_{j} \lvert w_j \rvert
+$$
+
+$L_1$ 通常產生**稀疏（sparse）** 的特徵向量，多數權重會恰好為零，因此本身就可以當作特徵選取的手段。
+
+為什麼同樣是懲罰權重，一個把權重壓小、另一個卻把權重壓成零？講義用幾何解釋回答：正則化等價於在「約束區域內」找 MSE 最小的點，$L_2$ 的約束區域是圓、$L_1$ 是菱形，而菱形的角剛好長在座標軸上。
+
+{/* @ai-visualize
+id: ml-week6-l1-l2-geometry
+type: motion
+prompt: |
+  用幾何方式解釋「為什麼 L1 正則化會產生稀疏解、L2 不會」——這是本週最難只靠文字理解的一點。
+
+  版面：左右兩個並排的 2D 座標系（權重空間，橫軸 w1、縱軸 w2），左邊 L2、右邊 L1。
+  每個座標系裡畫三件事：
+  1. 未正則化的最小平方解（MSE 最佳點），畫成一個點，位置在第一象限偏外側、
+     刻意不在任何座標軸上（例如 w1=2.6, w2=1.4）
+  2. MSE 的等高線——以該點為中心的同心橢圓，畫 3 到 4 條
+  3. 約束區域——L2 是以原點為圓心的圓（半徑 r），L1 是以原點為中心的菱形（正方形轉 45 度，
+     頂點落在座標軸上）
+
+  解的位置：等高線由內往外擴張，第一次碰到約束區域的那一點就是正則化後的解。
+  - L2 的圓沒有角，接觸點幾乎不會落在座標軸上 → 兩個權重都變小但都不為零
+  - L1 的菱形有四個角，角就在座標軸上，等高線很容易先碰到角 → 其中一個權重恰好為 0
+
+  互動規則：一個共用的 lambda 滑桿（正則化強度，3 到 5 段即可）。
+  lambda 變大時，兩邊的約束區域同步縮小，解沿著各自的軌跡往原點移動，
+  並以 motion 平移。左右各即時顯示當前的 (w1, w2) 數值，
+  L1 那側在 w2 落到 0 的那一刻標出「w2 = 0，特徵被剔除」。
+
+  視覺要求：
+  - 兩個座標系用手寫 SVG，各自 viewBox 寬度不超過 320，並排後總寬不超過 660，
+    preserveAspectRatio="xMidYMid meet"
+  - 用 grid-cols-2 固定值排版，禁止使用 sm: / md: 等 viewport breakpoint
+    （內文欄實際只有 647px）
+  - 約束區域用半透明填色，MSE 等高線用細線，解點用強調色實心圓
+  - 中文標註放在 SVG 外的 DOM，不要塞進 SVG（中文在 SVG 裡最容易被裁切）
+  - 數值面板固定高度，避免拖動滑桿時版面跳動
+  - 尊重 prefers-reduced-motion
+
+  核心洞察：差別不在「懲罰多重」，而在約束區域的形狀有沒有角。
+  菱形的角剛好長在座標軸上，所以 L1 的解會被吸到軸上，某個權重就真的變成 0——
+  這就是 L1 順便做了特徵選取的原因。
+caption: L1 與 L2 的真正差別是約束區域的形狀：菱形有角、角在座標軸上，解被吸過去就成了 0；圓沒有角，權重只會一起變小。
+status: generated
+*/}
+
+<GeneratedFrame id="ml-week6-l1-l2-geometry" type="motion" prompt={"L1 與 L2 的幾何解釋：菱形約束區域的角使 L1 產生稀疏解。"} caption={"L1 與 L2 的真正差別是約束區域的形狀：菱形有角、角在座標軸上，解被吸過去就成了 0；圓沒有角，權重只會一起變小。"}>
+  <MlWeek6L1L2Geometry client:visible />
+</GeneratedFrame>
+
+## Scikit-learn 的兩套 API
+
+### Transformer API 與 Estimator API
+
+整個 scikit-learn 建立在兩個一致的介面上，分清楚這兩套是讀懂這個函式庫的關鍵：
+
+| API | 方法鏈 | 用途 | 代表類別 |
+| --- | --- | --- | --- |
+| Transformer API | `fit()` → `transform()`，或合併的 `fit_transform()` | 資料轉換 | `SimpleImputer`、`StandardScaler`、`MinMaxScaler`、`LabelEncoder`、`OneHotEncoder`、`FunctionTransformer` |
+| Estimator API | `fit()` → `predict()` | 估計器（如分類器） | `Perceptron`、`LogisticRegression`、`SVC` |
+
+`fit_transform()` 只是先呼叫 `fit` 再呼叫 `transform` 的捷徑。要被轉換的資料陣列，其特徵數必須與當初 fit 時的資料陣列相同。少數估計器（例如 PCA）同時具備 `transform` 方法。
+
+學到的參數一律放在結尾帶底線的屬性——`intercept_` 是偏置項、`coef_` 是權重——與建構子指定的超參數清楚分開。
+
+### 常用模組地圖
+
+| 模組 | 用途 | 講義提到的代表 |
+| --- | --- | --- |
+| `datasets` | 載入常見資料集與產生人工資料 | `load_iris()` |
+| `model_selection` | 交叉驗證與超參數調整 | `train_test_split()`（含 `stratify` 分層） |
+| `impute` | 缺值補值 | `SimpleImputer`（`mean`／`median`／`constant`／`most_frequent`） |
+| `preprocessing` | 縮放、置中、正規化、二值化 | `StandardScaler`、`MinMaxScaler`、`RobustScaler`、`LabelEncoder`、`OneHotEncoder`、`FunctionTransformer` |
+| `compose` | 組合式模型的元估計器 | `ColumnTransformer`（選擇性地轉換特定欄位） |
+| `feature_selection` | 特徵選取 | `SequentialFeatureSelector`、`SelectFromModel` |
+| `pipeline` | 串接轉換器與估計器 | `Pipeline`、`make_pipeline()` |
+| `metrics` | 評分函數與效能指標 | `accuracy_score()` |
+
+幾個實務細節：小資料集含有許多離群值時建議用 `RobustScaler`；`ColumnTransformer` 接受 `(name, transformer, columns)` 的元組列表，並可用 `'drop'` 丟棄欄位、`'passthrough'` 讓欄位原樣通過；`SelectFromModel` 搭配 $L_1$ 正則化時，建議設定 `l1_ratio=1.0` 與 `solver='liblinear'` 。
+
+scikit-learn 多數分類器預設就以**一對多（one-vs-all, OvA／OvR）** 支援多類別分類，三類鳶尾花可以一次餵給分類器。
+
+{/* @ai-visualize
+id: ml-week6-sklearn-api-map
+type: free
+prompt: |
+  一張 scikit-learn 的「兩套 API」結構圖，幫助讀者把散落的類別歸位。
+
+  上半部：兩個並排的欄位，代表兩套 API。
+  - 左欄「Transformer API」，方法鏈是 fit() → transform()（另有 fit_transform() 捷徑）
+  - 右欄「Estimator API」，方法鏈是 fit() → predict()
+
+  各欄底下列出講義提到的類別，每個類別標出它所屬的模組：
+  Transformer 側：
+  - SimpleImputer（impute）—— 補缺值
+  - StandardScaler（preprocessing）—— 標準化
+  - MinMaxScaler（preprocessing）—— 正規化
+  - RobustScaler（preprocessing）—— 抗離群值的縮放
+  - LabelEncoder（preprocessing）—— 標籤編碼
+  - OneHotEncoder（preprocessing）—— 獨熱編碼
+  - FunctionTransformer（preprocessing）—— 任意可呼叫物件
+  - ColumnTransformer（compose）—— 選擇性轉換特定欄位
+  - SequentialFeatureSelector（feature_selection）—— 序列特徵選取
+  - SelectFromModel（feature_selection）—— 依重要度選取
+  Estimator 側：
+  - Perceptron（linear_model）
+  - LogisticRegression（linear_model）
+  - SVC（svm）
+  - KNeighborsClassifier（neighbors）
+  - DecisionTreeClassifier（tree）
+  - RandomForestClassifier（ensemble）
+
+  下半部：一條 Pipeline 示意帶，說明兩套 API 如何串起來——
+  「n 個 Transformer 依序接，最後一個必須是 Estimator」，
+  並標註 PCA 這類特例同時具備 transform 方法。
+
+  互動規則：點選任一個類別，下方面板顯示三行：所屬模組、它在做什麼、
+  屬於哪一套 API 的哪個方法對。面板固定高度。
+
+  視覺要求：
+  - 整體用 DOM + Tailwind，不要做成 SVG（清單與標籤在 SVG 裡容易被裁切）
+  - 兩欄用 grid-cols-2 固定值，類別清單用 flex-wrap；
+    禁止使用 sm: / md: 等 viewport breakpoint（內文欄實際只有 647px）
+  - 兩套 API 用兩種色票區分，Pipeline 帶用中性色
+  - 方法名（fit / transform / predict）用等寬字體 var(--font-mono)
+  - 卡片不要自帶外框陰影（外框由 GeneratedFrame 統一提供）
+
+  核心洞察：scikit-learn 只有兩套介面——會變形的東西是 Transformer，會預測的東西是 Estimator。
+  認出一個類別屬於哪一套，就知道它該呼叫什麼方法、能不能放進 Pipeline 的哪個位置。
+caption: scikit-learn 的兩套介面：Transformer 做 fit → transform，Estimator 做 fit → predict，Pipeline 就是把前者串起來再接一個後者。
+status: generated
+*/}
+
+<GeneratedFrame id="ml-week6-sklearn-api-map" type="free" prompt={"scikit-learn 的兩套 API 結構圖：Transformer vs Estimator 與 Pipeline。"} caption={"scikit-learn 的兩套介面：Transformer 做 fit → transform，Estimator 做 fit → predict，Pipeline 就是把前者串起來再接一個後者。"}>
+  <MlWeek6SklearnApiMap client:visible />
+</GeneratedFrame>
+
+## Pipeline 與端到端實作
+
+### Pipeline 的內部運作
+
+**管線（pipeline）** 是串接工作流程的元估計器，把標準化、特徵選取、分類器等多個步驟組合成單一物件——依序經過清理、轉換、建模，最後直接拿這個物件做預測。
+
+內部運作分兩個方向：
+
+- **訓練時**：前面數個轉換器依序 `fit_transform`，最後一個估計器 `fit`
+- **預測時**：資料依序通過各轉換器的 `transform`，再交給估計器 `predict`
+
+建構方式有兩種：`Pipeline` 類別接受 `(name, transformer/estimator)` 的元組列表，`make_pipeline()` 函數則是不必命名的簡寫。
+
+價值不只是少寫幾行——流程自動化、標準化，避免手動分開執行造成的錯誤與重複程式碼，也更容易維護。更重要的是，它讓「轉換器只能用訓練資料 fit」這件事變成結構上保證，而不是靠人記得。
+
+### 實作案例：Breast Cancer Wisconsin 資料集
+
+| 項目 | 內容 |
+| --- | --- |
+| 資料 | `wdbc_missing.csv` ——真實醫學資料集，後製加入少許缺失值 |
+| 樣本 | 569 筆腫瘤細胞樣本（212 筆惡性、357 筆良性） |
+| 特徵 | 30 種，從顯微鏡影像中提取（細胞核大小、形狀、紋理等的平均值／標準誤差／極端值），為正實數或 `NaN` |
+| 標籤 | 二元字串標籤：`M` 惡性（malignant）、`B` 良性（benign） |
+
+這份資料同時需要四種前處理：資料清理、標籤編碼、特徵縮放、特徵選取——而且 30 個特徵的尺度差異很大。整條 pipeline 依序是：
+
+1. 資料切分：`train_test_split`
+2. 資料清理：`SimpleImputer` 補齊缺失值
+3. 資料編碼：`LabelEncoder` 轉譯文字標籤
+4. 特徵縮放：`StandardScaler` 標準化
+5. 特徵選取：`SelectFromModel(L1)` 移除雜訊特徵
+6. 模型訓練：`LogisticRegression` 分類器
+7. 模型評估：`classification_report` 分類效能指標
+
+講義稱這已經是一個完整的**端到端（end-to-end）** 機器學習專案原型，只欠缺高規格的模型驗證與超參數調整——那是下一週 `GridSearchCV`（交叉驗證＋格狀搜尋）要補上的部分。
+
 ## 教材預習重點
 
 > 摘自 `machine-learning-book` 專案的 `STUDY_GUIDE_zh-TW.md`，對應章節：ch02、ch03。上課後請依實際授課內容調整。
@@ -177,3 +497,197 @@ status: generated
 **關鍵概念**：perceptron learning rule、gradient descent、stochastic gradient descent (SGD)、feature scaling、logistic regression、regularization、SVM（kernel trick）、decision tree（information gain）、random forest、k-nearest neighbors
 
 **PDSH 對照**：`PythonDataScienceHandbook` 的 `05.01`–`05.02`（What Is ML / Introducing Scikit-Learn）、`05.07`（SVM）、`05.08`（Random Forests）篇幅較短、範例直觀，可以先讀建立直覺，再回來看這裡的數學推導。
+
+## 關鍵定義
+
+| 名詞 | 定義 |
+| --- | --- |
+| 廣義資料前處理 | 從原始資料到模型訓練之間的六個階段：資料清理、資料編碼、特徵衍生、特徵縮放、降維；其中特徵衍生與降維屬於特徵工程 |
+| 資料洩漏（data leakage） | 訓練過程中無意間讓模型取得了測試集的資訊；最典型的成因是在切分之前就對整份資料 fit 轉換器 |
+| 泛化誤差（generalization error） | 模型在未見過的資料上的預測誤差；測試集越小，對它的估計越不準 |
+| 順序型特徵（ordinal feature） | 類別之間有大小順序的特徵，例如 T 恤尺寸 XL > L > M；可依領域知識映射成整數 |
+| 名義型特徵（nominal feature） | 類別之間沒有順序的特徵，例如顏色；編成 0/1/2 會讓模型誤讀出不存在的大小關係 |
+| 獨熱編碼（one-hot encoding） | 為名義型特徵的每個相異值建立一個 0/1 虛擬欄位；代價是欄位膨脹且彼此完全相關 |
+| 多重共線性（multi-collinearity） | 特徵之間高度相關；對需要矩陣求逆的方法會使矩陣病態而難以求逆 |
+| 正規化（normalization） | min-max 縮放的特例，把特徵壓到 $[0,1]$；單一極端離群值就能把其餘資料擠進極小的子區間 |
+| 標準化（standardization） | 把特徵轉成平均 0、標準差 1；保留離群值資訊，對梯度下降類的最佳化較實用 |
+| 特徵選取（feature selection） | 從原始特徵中挑一個子集，保留原本的物理意義 |
+| 特徵提取（feature extraction） | 從特徵集推導資訊、建構新的特徵子空間，新特徵是算出來的 |
+| 序列後向選取（SBS） | 貪婪的特徵選取法，從全集開始，每次剔除使判準函數 $J$ 損失最小的那個特徵 |
+| 貪婪搜尋（greedy search） | 在每一階段做局部最優選擇的演算法；通常得到次佳解，但避開了窮舉的組合爆炸 |
+| 過擬合（overfitting） | 抓住訓練資料的規律卻無法泛化；表現為高變異，變異衡量的是一致性 |
+| 欠擬合（underfitting） | 模型不夠複雜，連訓練資料的規律都抓不到；表現為高偏差，偏差衡量的是系統性誤差 |
+| $L_2$ 正則化 | 在損失外加上權重平方和的懲罰，又稱權重衰減；把權重一起壓小，但很少壓成零 |
+| $L_1$ 正則化 | 在損失外加上權重絕對值和的懲罰；常產生稀疏解，可直接當作特徵選取 |
+| 正則化參數 $\lambda$ | 控制正則化強度；$\lambda$ 越大懲罰越重、越趨向欠擬合。scikit-learn 用與之成反比的 `C` 表示 |
+| Transformer API | scikit-learn 中負責資料轉換的介面，方法鏈為 `fit()` → `transform()` |
+| Estimator API | scikit-learn 中負責預測的介面，方法鏈為 `fit()` → `predict()` |
+| 管線（pipeline） | 把多個轉換器與最後一個估計器串成單一物件的元估計器；讓「只用訓練資料 fit」成為結構上的保證 |
+
+## 公式
+
+- 正規化（min-max 縮放）：$x_{\text{norm}}^{(i)}=\dfrac{x^{(i)}-x_{\min}}{x_{\max}-x_{\min}}$
+- 標準化：$x_{\text{std}}^{(i)}=\dfrac{x^{(i)}-\mu}{\sigma}$
+- 樣本平均：$\mu=\dfrac{1}{n}\sum_{i=1}^{n}x^{(i)}$
+- 樣本標準差（母體定義）：$\sigma=\sqrt{\dfrac{1}{n}\sum_{i=1}^{n}\left(x^{(i)}-\mu\right)^2}$
+- $L_2$ 正則化項：$\dfrac{\lambda}{2n}\lVert\mathbf{w}\rVert_2^2=\dfrac{\lambda}{2n}\sum_j w_j^2$
+- $L_1$ 正則化項：$\dfrac{\lambda}{n}\lVert\mathbf{w}\rVert_1=\dfrac{\lambda}{n}\sum_j\lvert w_j\rvert$
+- 正則化強度與 scikit-learn 參數的關係：$C\propto\dfrac{1}{\lambda}$
+- 獨熱編碼後的欄位數（丟棄一欄後）：$k-1$，其中 $k$ 為該名義型特徵的相異值個數
+
+## 考題
+
+### 概念辨析題
+
+#### 複習題 1
+
+> 為什麼「先對整份資料標準化，再切訓練與測試集」是錯的？分數會往哪個方向偏？
+
+**詳解**
+
+標準化需要先算出該欄的平均 $\mu$ 與標準差 $\sigma$。若在切分之前計算，這兩個統計量是用**包含測試集**的全部資料算出來的，等於讓訓練流程間接看到了測試集的分布資訊，這就是資料洩漏。後果是測試分數**偏高**：模型被評估的那份資料，其統計特性已經參與過訓練時的座標系建立，因此測試集不再是真正「未見過」的資料，估出來的泛化效能比實際上線時樂觀。正確順序是先 `train_test_split`，再只用訓練集 `fit` 轉換器，然後用同一組已 fit 的轉換器 `transform` 測試集。
+
+#### 複習題 2
+
+> 順序型特徵與名義型特徵各該怎麼編碼？把顏色編成 0/1/2 會造成什麼具體後果？
+
+**詳解**
+
+順序型特徵的類別之間有真實的大小關係（XL > L > M），把它映射成整數 1/2/3 是合理的，因為模型讀到的數值順序與現實一致。名義型特徵沒有這種順序，顏色的紅、綠、藍之間不存在誰大誰小。若強行編成紅 = 0、綠 = 1、藍 = 2，線性模型與任何依賴數值大小的演算法都會把「藍是綠的兩倍」「綠大於紅」當成真實資訊納入計算，學到的權重因此建立在一個不存在的順序上。正確作法是獨熱編碼，為每個相異值建一個 0/1 欄位，讓三個類別在數值上彼此等距、互不排序。
+
+#### 複習題 3
+
+> 獨熱編碼會引入多重共線性，為什麼刪掉其中一欄不會損失資訊？
+
+**詳解**
+
+獨熱編碼後的欄位有個結構性約束：對每一筆樣本，這組欄位恰有一個為 1、其餘為 0，因此它們的總和恆為 1——這正是完全相關的來源，會讓需要矩陣求逆的方法面對病態矩陣。刪掉任一欄之後，剩下的欄位仍能唯一地還原原始類別：若刪掉 `color_blue`，當 `color_green = 0` 且 `color_red = 0` 時，這筆樣本只可能是藍色。換句話說，被刪掉的那一欄本來就是其餘欄位的線性組合，不帶任何額外資訊。
+
+#### 複習題 4
+
+> 標準化與正規化該怎麼選？離群值在這個選擇裡扮演什麼角色？
+
+**詳解**
+
+需要輸出落在有界區間時（例如某些神經網路的輸入層）用正規化，它把資料壓進 $[0,1]$。但正規化的上下界由該欄的最小值與最大值決定，**單一個極端離群值就能把其餘所有資料擠壓進極小的子區間**，使正常樣本之間的差異幾乎消失。標準化以平均與標準差為基準，離群值雖然會影響 $\mu$ 與 $\sigma$，但不會把其餘資料壓平，因此保留了關於離群值的有用資訊，也讓演算法對它較不敏感。對梯度下降與隨機梯度下降的最佳化而言，標準化通常是更實用的選擇。若資料集小且離群值多，講義建議改用 `RobustScaler`。
+
+#### 複習題 5
+
+> $L_1$ 與 $L_2$ 正則化都在懲罰權重，為什麼只有 $L_1$ 會把權重壓成恰好為零？
+
+**詳解**
+
+把正則化看成「在一個約束區域內找 MSE 最小的點」。$L_2$ 的約束是 $\sum_j w_j^2 \le r^2$，區域是一個圓（高維是球），邊界處處光滑；MSE 的等高線由內往外擴張時，第一次接觸圓的位置幾乎不會落在座標軸上，因此所有權重都變小但都不為零。$L_1$ 的約束是 $\sum_j \lvert w_j \rvert \le r$，區域是一個菱形（高維是多面體），而**菱形的頂點恰好落在座標軸上**。等高線擴張時很容易先碰到頂點，而頂點代表某些座標為 0，也就是某些權重恰好為零。這就是 $L_1$ 產生稀疏解、可以順便當作特徵選取的幾何原因。
+
+#### 複習題 6
+
+> 為什麼正則化之前必須先做特徵縮放？偏置項為什麼通常不做正則化？
+
+**詳解**
+
+正則化項懲罰的是權重的大小，而權重的大小與該特徵的尺度直接相關：若某欄以公分計、另一欄以元計，後者的權重天生就得很小才能得到相同的貢獻。此時同一個 $\lambda$ 對兩欄的實際壓制力道完全不同，正則化等於在懲罰「單位選得不好」而非「模型太複雜」。把所有特徵放到可比較的尺度上，$\lambda$ 才對每個權重公平。至於偏置項，它不與任何特徵相乘，只負責整體平移決策邊界，不代表模型對某個特徵的依賴程度；懲罰它只會限制模型把邊界擺到正確位置的自由度，對控制複雜度沒有幫助。
+
+#### 複習題 7
+
+> 如何判斷一個 scikit-learn 類別屬於 Transformer API 還是 Estimator API？這個區分在組 Pipeline 時為什麼重要？
+
+**詳解**
+
+判準是它有沒有 `transform()`：Transformer 的方法鏈是 `fit()` → `transform()`（`fit_transform()` 是兩者的捷徑），負責把資料變形；Estimator 的方法鏈是 `fit()` → `predict()`，負責產生預測。`SimpleImputer`、`StandardScaler`、`OneHotEncoder`、`SelectFromModel` 都是 Transformer；`LogisticRegression`、`SVC`、`Perceptron` 是 Estimator。少數類別（例如 PCA）兩者兼具。這個區分決定它能放在 Pipeline 的哪個位置：**Pipeline 中間的每一步都必須是 Transformer，只有最後一步可以是 Estimator**，因為資料要能依序被 `transform` 傳遞下去，而預測只發生一次。
+
+#### 複習題 8
+
+> SFS 與 SBS 同屬貪婪搜尋，得到的一定是最佳特徵子集嗎？為什麼還要用它？
+
+**詳解**
+
+不一定。貪婪演算法在每一階段只做局部最優選擇——SBS 每次剔除當下讓判準函數 $J$ 損失最小的那個特徵——但一個特徵單獨看起來貢獻小，不代表它與其他特徵組合起來也沒價值，因此最終得到的通常是次佳解。會用它的理由是成本：要保證找到最佳子集必須窮舉所有組合，從 $d$ 個特徵中挑出所有可能子集共有 $2^d$ 種，$d = 30$ 時已超過十億種，完全不可行。貪婪法把搜尋成本壓到與 $d$ 的多項式相關，用「可能不是最好」換「算得完」。
+
+### 計算題
+
+> 以下的數值為自行設計的練習題，用來套用本週的公式，並非講義原有的習題。
+
+#### 複習題 1
+
+> 某特徵欄有五筆數值：$2, 4, 4, 4, 6$。請計算其平均與標準差（用母體定義），並求數值 $6$ 標準化後的結果。
+
+**詳解**
+
+$$
+\begin{aligned}
+\mu &= \frac{2+4+4+4+6}{5} = \frac{20}{5} = 4 \\[6pt]
+\sigma &= \sqrt{\frac{(2-4)^2+(4-4)^2 \times 3+(6-4)^2}{5}}
+      = \sqrt{\frac{4+0+4}{5}} = \sqrt{1.6} \approx 1.265 \\[6pt]
+x_{\text{std}} &= \frac{6-4}{1.265} \approx 1.581
+\end{aligned}
+$$
+
+#### 複習題 2
+
+> 同一欄資料 $2, 4, 4, 4, 6$，請計算數值 $4$ 正規化後的結果。若後續新增一筆離群值 $104$，同一個 $4$ 的正規化結果會變成多少？由此說明正規化的弱點。
+
+**詳解**
+
+原始資料的 $x_{\min}=2$、$x_{\max}=6$：
+
+$$
+x_{\text{norm}} = \frac{4-2}{6-2} = \frac{2}{4} = 0.5
+$$
+
+加入離群值後 $x_{\max}=104$：
+
+$$
+x_{\text{norm}} = \frac{4-2}{104-2} = \frac{2}{102} \approx 0.0196
+$$
+
+**考的觀念**：原本落在區間中央的數值，被一個離群值擠到接近 0 的位置；原本 $2$ 到 $6$ 之間的全部樣本現在都被壓縮在 $[0, 0.039]$ 這個極小的子區間內，彼此差異幾乎消失。這正是講義所說「單一個極端離群值就能把其餘資料擠壓進極小子區間」的具體數字。
+
+#### 複習題 3
+
+> 一份資料有三個名義型特徵，相異值個數分別為 4、3、7。若全部做獨熱編碼並各丟棄一欄以避免共線性，總共會產生多少個特徵欄？
+
+**詳解**
+
+$$
+\begin{aligned}
+(4-1) + (3-1) + (7-1) &= 3 + 2 + 6 \\
+&= 11
+\end{aligned}
+$$
+
+若不丟欄則是 $4+3+7=14$ 欄。丟棄的三欄各自都是同組其餘欄位的線性組合，不帶額外資訊。
+
+#### 複習題 4
+
+> 某模型設定 `C = 0.01`，另一設定為 `C = 100`。哪一個的正則化較強？權重會分別呈現什麼樣貌？若改用 $L_1$，較強的那一組會發生什麼？
+
+**詳解**
+
+由 $C \propto 1/\lambda$ 可知 $C$ 越小、$\lambda$ 越大、懲罰越重，因此 `C = 0.01` 的正則化遠強於 `C = 100`。
+
+- `C = 0.01`：權重被大幅壓向零，模型趨於簡單，有欠擬合的風險。
+- `C = 100`：懲罰幾乎不起作用，權重可以取到很大的值，模型接近未正則化的版本，有過擬合的風險。
+
+若改用 $L_1$，`C = 0.01` 這組不只是把權重壓小，而是會讓**相當多權重恰好變成 0**，等於同時完成了特徵選取；此時可用 `SelectFromModel` 把這些權重為零的特徵直接移除。
+
+#### 複習題 5
+
+> 若從 $d = 10$ 個特徵中選出 $k = 4$ 個，窮舉搜尋需要評估幾種組合？SBS 從 10 維降到 4 維總共需要評估幾次判準函數？
+
+**詳解**
+
+窮舉搜尋要評估所有大小為 4 的子集：
+
+$$
+\binom{10}{4} = \frac{10 \times 9 \times 8 \times 7}{4 \times 3 \times 2 \times 1} = 210
+$$
+
+SBS 每一輪從當前的 $m$ 個特徵中逐一試著剔除一個，因此該輪評估 $m$ 次；要從 10 維降到 4 維需要剔除 6 次：
+
+$$
+\begin{aligned}
+10 + 9 + 8 + 7 + 6 + 5 &= 45
+\end{aligned}
+$$
+
+**考的觀念**：210 對 45 的差距在 $d = 10$ 時還不算懸殊，但窮舉的成本隨 $d$ 呈組合爆炸，而 SBS 只呈多項式成長——這就是貪婪法用「可能不是最好」換來的東西。
