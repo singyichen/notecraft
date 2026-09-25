@@ -324,7 +324,7 @@ excerpt: Cross-validation + search strategy：Grid search／Randomized search／
 | --- | --- | --- | --- |
 | Grid search | 格狀搜尋 | 為每個超參數指定候選值清單，窮舉所有組合構成網格，逐一用交叉驗證評估 | 只要最佳組合在網格內就**保證找得到**；網格一大，成本急遽上升 |
 | Randomized search | 隨機搜尋 | 從分布或離散集合中隨機抽取超參數組合 | 用更低的成本與時間探索**更廣**的取值範圍 |
-| Successive halving | 逐次減半搜尋 | 先用少量資源評估所有候選，反覆淘汰表現差的、把資源集中到存活者，直到只剩一組 | 資源效率最高；講義的白話註解是「練蠱」 |
+| Successive halving | 逐次減半搜尋 | 先用少量資源評估所有候選，反覆淘汰表現差的、把資源集中到存活者，直到只剩一組 | 資源效率最高；講義在後面介紹 `HalvingRandomSearchCV` 時給的白話註解是「練蠱」 |
 
 {/* @ai-reference
 id: hp-search-grid
