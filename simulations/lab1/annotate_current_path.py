@@ -342,10 +342,14 @@ def paint_e3_neg(canvas, d, T):
     big, small, num = f(36), f(29), f(30)
     W = canvas.size[0]
 
-    faint = dict(col=GREEN_DASH, w=9, dash=True, period=24, arrow_min=70, arrow_size=20)
+    # 這半週整圈都沒有電流：細虛線、且不畫方向箭頭（有箭頭會讓人以為還有電流在跑）
+    faint = dict(col=GREEN_DASH, w=9, dash=True, period=24, arrows=False)
     path(d, [T(p) for p in reversed(E3_LOOP)], **faint)
     blocker(d, T((468, E3_I)), size=14)
     e3_scopes(d, T)
+    # 編號與正半週那張完全相同，兩張才能逐段對照（差別只在④被紅叉擋住）
+    for t, q in E3_BADGES:
+        badge(d, T(q), t, num)
 
     label(d, (W // 2, 26),
           "負半週：訊號產生器極性反過來 → 二極體逆偏 → 負載上沒有電流", big, GREEN_TXT, align="center")
@@ -396,17 +400,21 @@ def paint_e3_charge(canvas, d, T):
     for pts in (E3_TRUNK, E3_BR_LOAD, E3_BR_CAP, E3_RAIL_BACK):
         path(d, [T(p) for p in pts], w=12, arrow_min=70, arrow_size=24)
     e3_scopes(d, T)
-    for t, p in (("1", (468, 505)), ("2", (578, E3_H)), ("3", (507, 505)),
-                 ("4", (452, E3_MINUS))):
+    # 編號沿著電流走：產生器 → 跳線 → 二極體 → 分成兩路 → 回 − 軌
+    for t, p in (("1", (157.3, 505)), ("2", (colx3(5), 412)), ("3", (colx3(6.5), E3_G)),
+                 ("4", (colx3(11.6), E3_G)), ("5", (colx3(8.3), 512)),
+                 ("6", (colx3(11.5), E3_MINUS))):
         badge(d, T(p), t, num)
 
     label(d, (W // 2, 26),
           "充電（Vin 高於電容電壓）：二極體導通，一路餵負載、一路把電容充起來", big, GREEN_TXT, align="center")
     label(d, T((16, 545)),
-          "① 二極體順偏導通，第 9 欄成為輸出節點\n"
-          "② 一路往右流過 10 kΩ 負載\n"
-          "③ 一路往下把 1 µF 電容充到接近峰值\n"
-          "④ 兩路都經第 10、13 欄的黑跳線回 − 軌\n"
+          "① 訊號產生器(+)出發，上 + 軌\n"
+          "② 黃跳線把 + 軌搬進第 5 欄\n"
+          "③ 二極體順偏導通，第 9 欄成為輸出節點\n"
+          "④ 一路往右流過 10 kΩ 負載到第 13 欄\n"
+          "⑤ 另一路往下把 1 µF 電容充到接近峰值\n"
+          "⑥ 兩路都經第 10、13 欄的黑跳線回 − 軌\n"
           "電容與負載並聯：兩者跨在同一組節點上", small)
     label(d, T((604, 424)), "右示波器：峰值附近\n輸出跟著 Vin 往上爬", small, BLUE_TXT)
 
@@ -415,26 +423,29 @@ def paint_e3_discharge(canvas, d, T):
     big, small, num = f(36), f(29), f(30)
     W = canvas.size[0]
 
-    faint = dict(col=GREEN_DASH, w=9, dash=True, period=24, arrow_min=70, arrow_size=20)
+    # 訊號產生器那一整圈（含黃跳線與二極體）在放電期間沒有電流：細虛線、不畫箭頭
+    faint = dict(col=GREEN_DASH, w=9, dash=True, period=24, arrows=False)
     path(d, [T(p) for p in reversed(E3_TRUNK)], **faint)
     path(d, [T(p) for p in reversed(E3_RAIL_BACK[1:])], **faint)
     blocker(d, T((468, E3_I)), size=14)
     path(d, [T(p) for p in E3_DISCHARGE], w=12, arrow_min=70, arrow_size=24)
     e3_scopes(d, T)
-    for t, p in (("1", (468, 505)), ("2", (507, 505)), ("3", (578, E3_H)),
-                 ("4", (colx3(10), 410))):
+    for t, p in (("1", (colx3(6.5), E3_G)), ("2", (colx3(8.3), 512)),
+                 ("3", (colx3(11.6), E3_G)), ("4", (colx3(11.5), E3_MINUS))):
         badge(d, T(p), t, num)
 
     label(d, (W // 2, 26),
           "放電（Vin 低於電容電壓）：二極體截止，改由電容一個人供應負載", big, GREEN_TXT, align="center")
     label(d, T((16, 545)),
           "① Vin 掉到比電容還低 → 二極體逆偏截止（紅叉）\n"
-          "② 電容把存起來的電荷放出來\n"
+          "② 電容放電，把電荷從第 9 欄送出來\n"
           "③ 電流仍由第 9 欄流向第 13 欄，方向和充電時一樣\n"
-          "④ 經 − 軌回到電容另一腳，整圈不經過訊號產生器\n"
+          "④ 經 − 軌與第 10 欄的黑跳線回到電容另一腳\n"
           "細虛線那一圈這時候沒有電流：二極體把訊號產生器斷開了\n"
-          "放電快慢由 RC = 10 kΩ × 1 µF = 10 ms 決定，比 60 Hz 的\n"
-          "半週期長，輸出只掉一點點就被下個峰值補回來——這就是漣波", small)
+          "放電快慢由 RC = 10 kΩ × 1 µF = 10 ms 決定。半波整流兩個峰值\n"
+          "之間要撐將近一整個週期(16.7 ms)，比 τ 還長，所以輸出會從約\n"
+          "4.3 V 掉到約 1.3 V 才被下個峰值補回——這段下降就是漣波，\n"
+          "而且很明顯", small)
     label(d, T((604, 424)), "右示波器：峰值之後\n輸出沿著放電斜坡緩緩下降", small, BLUE_TXT)
 
 
@@ -461,19 +472,26 @@ E4_WIRE_A = [E4_FG_A, (161, 697.5), (335, 697.5), (335, 535), (colx4(5), 535), (
 E4_WIRE_B = [E4_FG_B, (180, 722.5), (360, 722.5), (360, 560), (colx4(17), 560), (colx4(17), E4_G)]
 E4_LOAD = [(colx4(25), E4_PLUS), (colx4(25), E4_H), (colx4(29), E4_H), (colx4(29), E4_MINUS)]
 
-# 四顆二極體的本體中心，用來擺紅叉
-E4_D1 = ((colx4(1) + colx4(5)) / 2, E4_I)      # 陽極 N(第1欄) → 陰極 A(第5欄)
-E4_D2 = ((colx4(5) + colx4(9)) / 2, E4_J)      # 陽極 A(第5欄) → 陰極 P(第9欄)
-E4_D3 = ((colx4(13) + colx4(17)) / 2, E4_J)    # 陽極 B(第17欄) → 陰極 P(第13欄)
-E4_D4 = ((colx4(17) + colx4(21)) / 2, E4_I)    # 陽極 N(第21欄) → 陰極 B(第17欄)
+# 四顆二極體的本體中心，用來擺紅叉與編號標籤。
+# 編號一律用「講義編號」（見筆記的節點表），不是 Tinkercad 依放置順序給的自動編號。
+E4_D2 = ((colx4(1) + colx4(5)) / 2, E4_I)      # 陽極 N(第1欄) → 陰極 A(第5欄)，負半週導通
+E4_D3 = ((colx4(5) + colx4(9)) / 2, E4_J)      # 陽極 A(第5欄) → 陰極 P(第9欄)，正半週導通
+E4_D4 = ((colx4(13) + colx4(17)) / 2, E4_J)    # 陽極 B(第17欄) → 陰極 P(第13欄)，負半週導通
+E4_D1 = ((colx4(17) + colx4(21)) / 2, E4_I)    # 陽極 N(第21欄) → 陰極 B(第17欄)，正半週導通
 
-# 正半週：A 為正 → D2、D4 導通
+# 四顆二極體的編號標籤：擺在同一顆二極體隔壁那一列的空孔上，不壓到導線
+E4_DLABELS = [
+    ("D3", (colx4(7.1), E4_I + 7)), ("D2", (colx4(2.6), E4_J - 2)),
+    ("D4", (colx4(15.1), E4_I + 7)), ("D1", (colx4(18.9), E4_J - 2)),
+]
+
+# 正半週：A 為正 → D3、D1 導通
 E4_POS = E4_WIRE_A + [
     (colx4(5), E4_J), (colx4(9), E4_J), (colx4(9), E4_PLUS),
 ] + E4_LOAD[:1] + E4_LOAD[1:] + [
     (colx4(21), E4_MINUS), (colx4(21), E4_I), (colx4(17), E4_I), (colx4(17), E4_G),
 ] + list(reversed(E4_WIRE_B))[1:]
-# 負半週：B 為正 → D3、D1 導通
+# 負半週：B 為正 → D4、D2 導通
 E4_NEG = E4_WIRE_B + [
     (colx4(17), E4_J), (colx4(13), E4_J), (colx4(13), E4_PLUS),
 ] + E4_LOAD + [
@@ -491,7 +509,15 @@ def e4_scopes(d, T):
         path(d, [T(p) for p in pts], col=BLUE, w=6, dash=True, period=22, arrows=False)
 
 
+def e4_diode_labels(d, T):
+    tag = f(26)
+    for t, p in E4_DLABELS:
+        x, y = T(p)
+        label(d, (x, y - 17), t, tag, align="center")
+
+
 def e4_common(d, T, small):
+    e4_diode_labels(d, T)
     label(d, T((14, 292)),
           "左示波器＝Vin：探棒跨在 A(第 5 欄) 與 B(第 17 欄)\n量的是訊號產生器原本的正弦波", small, BLUE_TXT)
     label(d, T((14, 366)),
@@ -503,25 +529,25 @@ def paint_e4_pos(canvas, d, T):
     W = canvas.size[0]
 
     path(d, [T(p) for p in E4_POS], w=12, arrow_min=70, arrow_size=24)
-    for c in (E4_D1, E4_D3):
+    for c in (E4_D2, E4_D4):
         blocker(d, T(c), size=15)
     e4_scopes(d, T)
-    for t, p in (("1", (161, 675)), ("2", (E4_D2[0], E4_F)), ("3", (620, E4_PLUS)),
-                 ("4", (838, E4_F)), ("5", (820, E4_MINUS)), ("6", (E4_D4[0], E4_F))):
+    for t, p in (("1", (161, 675)), ("2", (E4_D3[0], E4_F)), ("3", (colx4(10.3), E4_PLUS)),
+                 ("4", (838, E4_F)), ("5", (colx4(28), E4_MINUS)), ("6", (E4_D1[0], E4_F))):
         badge(d, T(p), t, num)
 
     label(d, (W // 2, 26),
-          "正半週：A 端(第 5 欄)為正 → D2、D4 導通", big, GREEN_TXT, align="center")
+          "正半週：A 端(第 5 欄)為正 → D3、D1 導通", big, GREEN_TXT, align="center")
     label(d, T((14, 30)),
           "① 訊號產生器的 A 端(深藍線)出發，走溝槽進第 5 欄\n"
-          "② D2 導通：第 5 欄 → 第 9 欄\n"
+          "② D3 導通：第 5 欄 → 第 9 欄\n"
           "③ 紅跳線把第 9 欄併到 + 軌，這裡就是輸出的 +\n"
           "④ 沿 + 軌到第 25 欄，由左向右流過 10 kΩ 負載\n"
           "⑤ 第 29 欄的黑跳線回 − 軌，這裡是輸出的 −\n"
-          "⑥ D4 導通：第 21 欄 → 第 17 欄，回到 B 端", small)
+          "⑥ D1 導通：第 21 欄 → 第 17 欄，回到 B 端", small)
     e4_common(d, T, small)
     label(d, T((400, 600)),
-          "另外兩顆(D1、D3)這半週逆偏，畫上紅叉：\n"
+          "另外兩顆(D2、D4)這半週逆偏，畫上紅叉：\n"
           "四顆二極體永遠是「對角線兩顆一起導通」", small)
 
 
@@ -530,22 +556,22 @@ def paint_e4_neg(canvas, d, T):
     W = canvas.size[0]
 
     path(d, [T(p) for p in E4_NEG], w=12, arrow_min=70, arrow_size=24)
-    for c in (E4_D2, E4_D4):
+    for c in (E4_D3, E4_D1):
         blocker(d, T(c), size=15)
     e4_scopes(d, T)
-    for t, p in (("1", (180, 690)), ("2", (E4_D3[0], E4_F)), ("3", (700, E4_PLUS)),
-                 ("4", (838, E4_F)), ("5", (600, E4_MINUS)), ("6", (E4_D1[0], E4_F))):
+    for t, p in (("1", (180, 690)), ("2", (E4_D4[0], E4_F)), ("3", (colx4(14.3), E4_PLUS)),
+                 ("4", (838, E4_F)), ("5", (600, E4_MINUS)), ("6", (E4_D2[0], E4_F))):
         badge(d, T(p), t, num)
 
     label(d, (W // 2, 26),
-          "負半週：B 端(第 17 欄)為正 → D1、D3 導通", big, GREEN_TXT, align="center")
+          "負半週：B 端(第 17 欄)為正 → D4、D2 導通", big, GREEN_TXT, align="center")
     label(d, T((14, 30)),
           "① 換 B 端(淺藍線)為正，走溝槽進第 17 欄\n"
-          "② D3 導通：第 17 欄 → 第 13 欄\n"
+          "② D4 導通：第 17 欄 → 第 13 欄\n"
           "③ 紅跳線把第 13 欄併到 + 軌——還是同一個輸出 +\n"
           "④ 負載上的電流仍然由左向右，方向和正半週完全一樣\n"
           "⑤ 第 29 欄回 − 軌，沿 − 軌一路走到第 1 欄\n"
-          "⑥ D1 導通：第 1 欄 → 第 5 欄，回到 A 端", small)
+          "⑥ D2 導通：第 1 欄 → 第 5 欄，回到 A 端", small)
     e4_common(d, T, small)
     label(d, T((400, 600)),
           "和正半週比一比：輸入端的極性反了，換另外兩顆導通，\n"
@@ -561,12 +587,13 @@ def paint_e4_zener(canvas, d, T):
     W = canvas.size[0]
 
     path(d, [T(p) for p in E4_POS], w=12, arrow_min=70, arrow_size=24)
-    for c in (E4_D1, E4_D3):
+    for c in (E4_D2, E4_D4):
         blocker(d, T(c), size=15)
     path(d, [T(p) for p in E4Z_BRANCH], col=GREEN_DASH, w=9, dash=True, period=24, arrows=False)
     blocker(d, T(((colx4(25) + colx4(29)) / 2, E4_F)), size=15)
     e4_scopes(d, T)
-    for t, p in (("1", (E4_D2[0], 435)), ("2", (838, E4_H - 14)), ("3", (760, E4_F))):
+    for t, p in (("1", (E4_D3[0], 435)), ("2", (838, E4_H - 14)),
+                 ("3", (colx4(23.6), E4_F))):
         badge(d, T(p), t, num)
 
     label(d, (W // 2, 26),
@@ -582,6 +609,101 @@ def paint_e4_zener(canvas, d, T):
     label(d, T((400, 600)),
           "判斷接反了沒有：齊納若插反會變順偏，輸出被箝在約 0.5 V 的平頂，\n"
           "連輸入正弦都會被削成梯形。現在兩台示波器都正常 → 方向是對的", small)
+
+
+# --------------------------------------------------------------------------
+# 實驗四 第 26 頁 橋式 + 1 µF 濾波電容：底圖 lab1-exp4-breadboard-rc.png
+# 這張底圖是在 Full-Wave Bridge Rectifier 的「複本」上放 1 µF 電容後截的，
+# 裁切與縮放刻意對齊 lab1-exp4-breadboard.png，所以 colx4()／E4_* 全部沿用。
+# Tinkercad 的求解器跑不動這個電路（見筆記提醒框），所以截圖時沒有開模擬，
+# 兩台示波器與產生器面板是空白的——這是刻意的，不是漏截。
+#   第 25 欄 = P（紅跳線 g25 → + 軌）、第 26 欄經黑跳線 g26 → − 軌 = N
+#   電容跨在 f25、f26 → 和 h25–h29 的 10 kΩ 並聯
+# --------------------------------------------------------------------------
+E4RC_CAP_F = (colx4(25), E4_F)          # 電容接 P 的那一腳
+E4RC_CAP_N = (colx4(26), E4_F)          # 電容接 N 的那一腳
+
+# 主幹：訊號產生器 A 端 → D3 → 第 9 欄 → + 軌 → 第 25 欄（分歧點）
+E4RC_TRUNK = E4_WIRE_A + [
+    (colx4(5), E4_J), (colx4(9), E4_J), (colx4(9), E4_PLUS), (colx4(25), E4_PLUS),
+]
+E4RC_BR_LOAD = [(colx4(25), E4_PLUS), (colx4(25), E4_H),
+                (colx4(29), E4_H), (colx4(29), E4_MINUS)]
+E4RC_BR_CAP = [(colx4(25), E4_PLUS), E4RC_CAP_F, E4RC_CAP_N,
+               (colx4(26), E4_G), (colx4(27), E4_MINUS)]
+# 兩路在 − 軌會合 → D1 → 回 B 端
+E4RC_RETURN = [(colx4(29), E4_MINUS), (colx4(27), E4_MINUS), (colx4(21), E4_MINUS),
+               (colx4(21), E4_I), (colx4(17), E4_I), (colx4(17), E4_G)] \
+    + list(reversed(E4_WIRE_B))[1:]
+# 放電：電容 → 負載 → − 軌 → 黑跳線 → 電容另一腳，完全不經過訊號產生器
+E4RC_LOOP = [E4RC_CAP_F, (colx4(25), E4_H), (colx4(29), E4_H), (colx4(29), E4_MINUS),
+             (colx4(27), E4_MINUS), (colx4(26), E4_G), E4RC_CAP_N]
+
+E4RC_NOTE = ("這張底圖沒有開模擬（兩台示波器與產生器面板因此是空白的）：\n"
+             "Tinkercad 的求解器跑不動「橋式 + 電容」，接線擺得出來、但波形不能信。\n"
+             "波形請看 CircuitJS 連結與 LTspice 圖。")
+
+
+def paint_e4rc_charge(canvas, d, T):
+    big, small, num = f(36), f(29), f(30)
+    W = canvas.size[0]
+
+    for pts in (E4RC_TRUNK, E4RC_BR_LOAD, E4RC_BR_CAP, E4RC_RETURN):
+        path(d, [T(p) for p in pts], w=12, arrow_min=70, arrow_size=24)
+    for c in (E4_D2, E4_D4):
+        blocker(d, T(c), size=15)
+    e4_diode_labels(d, T)
+    for t, p in (("1", (161, 675)), ("2", (E4_D3[0], E4_F)), ("3", (620, E4_PLUS)),
+                 ("4", (colx4(27.6), E4_G)), ("5", (colx4(23.2), E4_F)),
+                 ("6", (E4_D1[0], E4_F))):
+        badge(d, T(p), t, num)
+
+    label(d, (W // 2, 26),
+          "充電（正半週）：D3、D1 導通，電流到第 25 欄分成兩路——一路餵負載、一路充電容",
+          big, GREEN_TXT, align="center")
+    label(d, T((14, 30)),
+          "① 訊號產生器 A 端(第 5 欄)出發\n"
+          "② D3 導通：第 5 欄 → 第 9 欄 → 紅跳線上 + 軌\n"
+          "③ 沿 + 軌到第 25 欄＝輸出的 +（節點 P）\n"
+          "④ 一路往右流過 h 列 10 kΩ 到第 29 欄\n"
+          "⑤ 另一路往下充 f 列第 25、26 欄的 1 µF 電容\n"
+          "⑥ 兩路回 − 軌會合 → D1 → B 端（D2、D4 逆偏）", small)
+    label(d, T((14, 300)),
+          "電容與負載跨在同一組節點(P、N)上 → 並聯。\n"
+          "負半週也會充電，換成 D4、D2 導通，\n"
+          "但流進電容的方向一模一樣——所以全波是每半週充一次。", small, GREEN_TXT)
+    label(d, T((400, 600)), E4RC_NOTE, small)
+
+
+def paint_e4rc_discharge(canvas, d, T):
+    big, small, num = f(36), f(29), f(30)
+    W = canvas.size[0]
+
+    faint = dict(col=GREEN_DASH, w=9, dash=True, period=24, arrows=False)
+    for pts in (E4RC_TRUNK, E4RC_RETURN,
+                [(colx4(25), E4_PLUS), (colx4(25), E4_H)],
+                [(colx4(27), E4_MINUS), (colx4(21), E4_MINUS)]):
+        path(d, [T(p) for p in pts], **faint)
+    for c in (E4_D1, E4_D2, E4_D3, E4_D4):
+        blocker(d, T(c), size=15)
+    path(d, [T(p) for p in E4RC_LOOP], w=12, arrow_min=70, arrow_size=24)
+    e4_diode_labels(d, T)
+    for t, p in (("1", (E4_D3[0], E4_F)), ("2", (colx4(23.2), E4_F)),
+                 ("3", (colx4(27.6), E4_G)), ("4", (colx4(28), E4_MINUS))):
+        badge(d, T(p), t, num)
+
+    label(d, (W // 2, 26),
+          "放電：四顆二極體全部截止，改由電容一個人供應負載", big, GREEN_TXT, align="center")
+    label(d, T((14, 30)),
+          "① Vin 掉到比電容還低 → 四顆二極體全部逆偏（紅叉）\n"
+          "② 電容把存起來的電荷從第 25 欄放出來\n"
+          "③ 電流仍由左向右流過 10 kΩ，方向和充電時一樣\n"
+          "④ 經 − 軌與第 26 欄的黑跳線回到電容另一腳\n"
+          "細虛線那一圈這時候沒有電流，所以不畫方向箭頭", small)
+    label(d, T((14, 270)),
+          "放電只需要撐半個週期（全波的峰值間隔約 8.3 ms），\n"
+          "所以同樣的 RC，漣波約是半波的一半。", small, GREEN_TXT)
+    label(d, T((400, 600)), E4RC_NOTE, small)
 
 
 def main():
@@ -640,6 +762,10 @@ def main():
         os.path.join(IMG_DIR, "lab1-exp4-breadboard-zener-current.png"),
         paint_e4_zener, scale=E4_SCALE, pad=E4_PAD,
     )
+    for out, painter in (("lab1-exp4-breadboard-rc-charge-current.png", paint_e4rc_charge),
+                         ("lab1-exp4-breadboard-rc-discharge-current.png", paint_e4rc_discharge)):
+        compose(os.path.join(IMG_DIR, "lab1-exp4-breadboard-rc.png"),
+                os.path.join(IMG_DIR, out), painter, scale=E4_SCALE, pad=E4_PAD)
 
 
 if __name__ == "__main__":

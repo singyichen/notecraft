@@ -65,17 +65,19 @@ def path(d, pts, col=GREEN, w=13, dash=False, period=26,
     """
     for a, b in zip(pts, pts[1:]):
         if dash:
+            # 沿線長切等距的 period/2 實段（不是把整段均分成 n 份）——
+            # 均分法在短線段上只切得出一兩格，缺口又被中點的箭頭蓋住，
+            # 整段看起來就變成實線了（麵包板上一格才 16 px，很容易踩到）。
             L = math.dist(a, b)
-            n = max(1, int(L // period))
-            for i in range(0, n, 2):
-                t0, t1 = i / n, min(1.0, (i + 1) / n)
-                d.line(
-                    [
-                        (a[0] + (b[0] - a[0]) * t0, a[1] + (b[1] - a[1]) * t0),
-                        (a[0] + (b[0] - a[0]) * t1, a[1] + (b[1] - a[1]) * t1),
-                    ],
-                    fill=col, width=w,
-                )
+            if L < 1e-6:
+                continue
+            ux, uy = (b[0] - a[0]) / L, (b[1] - a[1]) / L
+            t = 0.0
+            while t < L:
+                t1 = min(L, t + period / 2)
+                d.line([(a[0] + ux * t, a[1] + uy * t),
+                        (a[0] + ux * t1, a[1] + uy * t1)], fill=col, width=w)
+                t += period
         else:
             d.line([a, b], fill=col, width=w)
         if arrows and math.dist(a, b) > arrow_min:
