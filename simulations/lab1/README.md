@@ -29,10 +29,15 @@
 ```bash
 cd simulations/lab1
 ../tools/run-lt.sh lab1-*.cir          # 產生 .raw / .log
-python3 -m venv .venv && .venv/bin/pip install numpy matplotlib
+python3 -m venv .venv && .venv/bin/pip install numpy matplotlib openpyxl
 .venv/bin/python plot.py               # 重新輸出八張 PNG 到 public/note-images/ec-week3-ltspice/
 .venv/bin/python ../tools/ltraw.py     # 在 lab1 目錄執行，印出峰值、rms、平均、漣波等數字（JSON）
+.venv/bin/python build_record_xlsx.py  # 重新產生 measured/Lab1-數據記錄.xlsx 與實驗三、四的 CSV 範本
 ```
+
+`.raw` 不進版控（見 `.gitignore`），而 `plot.py` 與 `build_record_xlsx.py` 都要讀它，
+所以重新 clone 之後**一定要先跑 `run-lt.sh`** 再跑後面兩支腳本。`openpyxl` 只有
+`build_record_xlsx.py` 用得到。
 
 `../tools/ltraw.py` 是最小的 `.raw` 讀取器（UTF-16 標頭 + 二進位資料，支援 `.step` 分段），不依賴 PyLTSpice；`run-lt.sh` 也在 `../tools/`。
 
