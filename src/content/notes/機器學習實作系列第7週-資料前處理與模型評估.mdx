@@ -137,10 +137,10 @@ status: generated
 id: model-selection-definition
 file: _references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf
 page: 1
-status: suggested
+status: confirmed
 excerpt: 在所有可行的方案中，找出對特定資料集泛化能力最好、預測誤差最小的模型
 */}
-<PdfRefChip file="_references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf" page={1} status="suggested" excerpt={"在所有可行的方案中，找出對特定資料集泛化能力最好、預測誤差最小的模型"} client:visible />
+<PdfRefChip file="_references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf" page={1} status="confirmed" excerpt={"在所有可行的方案中，找出對特定資料集泛化能力最好、預測誤差最小的模型"} client:visible />
 
 「模型選擇」這個詞在講義裡有寬窄兩義，分清楚才不會誤會該用哪套方法：
 
@@ -148,10 +148,10 @@ excerpt: 在所有可行的方案中，找出對特定資料集泛化能力最�
 id: model-selection-scope
 file: _references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf
 page: 4
-status: suggested
+status: confirmed
 excerpt: Hyperparameter Tuning (in the narrow sense)：Select the optimal values of tuning parameters；Algorithm Selection (in the broad sense)：Select the best model/algorithm
 */}
-<PdfRefChip file="_references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf" page={4} status="suggested" excerpt={"Hyperparameter Tuning (in the narrow sense)：Select the optimal values of tuning parameters；Algorithm Selection (in the broad sense)：Select the best model/algorithm"} client:visible />
+<PdfRefChip file="_references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf" page={4} status="confirmed" excerpt={"Hyperparameter Tuning (in the narrow sense)：Select the optimal values of tuning parameters；Algorithm Selection (in the broad sense)：Select the best model/algorithm"} client:visible />
 
 | 層次 | 中文 | 在選什麼 |
 | --- | --- | --- |
@@ -164,10 +164,10 @@ excerpt: Hyperparameter Tuning (in the narrow sense)：Select the optimal values
 id: model-selection-compare-count
 file: _references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf
 page: 5
-status: suggested
+status: confirmed
 excerpt: Compare at least a handful of different ML algorithms to select the best model
 */}
-<PdfRefChip file="_references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf" page={5} status="suggested" excerpt={"Compare at least a handful of different ML algorithms to select the best model"} client:visible />
+<PdfRefChip file="_references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf" page={5} status="confirmed" excerpt={"Compare at least a handful of different ML algorithms to select the best model"} client:visible />
 
 ![完整機器學習流程圖：原始資料經兩段前處理管線、訓練與交叉驗證、最終模型，再套用到新資料](/note-images/ml-week7/01-how-to-validate-a-model.png)
 
@@ -190,10 +190,10 @@ excerpt: Compare at least a handful of different ML algorithms to select the bes
 id: holdout-cv-basics
 file: _references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf
 page: 7
-status: suggested
+status: confirmed
 excerpt: Training dataset：Model fitting；Validation dataset：Model evaluation, Model selection；Test dataset：Generalization performance estimate。Disadvantage：Sensitive to how we partition the training dataset
 */}
-<PdfRefChip file="_references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf" page={7} status="suggested" excerpt={"Training dataset：Model fitting；Validation dataset：Model evaluation, Model selection；Test dataset：Generalization performance estimate。Disadvantage：Sensitive to how we partition the training dataset"} client:visible />
+<PdfRefChip file="_references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf" page={7} status="confirmed" excerpt={"Training dataset：Model fitting；Validation dataset：Model evaluation, Model selection；Test dataset：Generalization performance estimate。Disadvantage：Sensitive to how we partition the training dataset"} client:visible />
 
 ![Holdout 交叉驗證流程圖：原始資料切成訓練、驗證、測試三份，調超參數的迴圈只在訓練與驗證之間進行](/note-images/ml-week7/02-holdout-cross-validation.png)
 
@@ -212,10 +212,10 @@ excerpt: Training dataset：Model fitting；Validation dataset：Model evaluatio
 id: kfold-cv-basics
 file: _references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf
 page: 8
-status: suggested
+status: confirmed
 excerpt: Average performance of k models is less sensitive to the sub-partitioning of training data
 */}
-<PdfRefChip file="_references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf" page={8} status="suggested" excerpt={"Average performance of k models is less sensitive to the sub-partitioning of training data"} client:visible />
+<PdfRefChip file="_references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf" page={8} status="confirmed" excerpt={"Average performance of k models is less sensitive to the sub-partitioning of training data"} client:visible />
 
 ![k 折交叉驗證結構圖：十次迭代中測試折依序往左移動，每次產出一個效能估計，最後取平均](/note-images/ml-week7/03-k-fold-structure.png)
 
@@ -235,10 +235,10 @@ $k = 10$ 是常用的標準值。極端情況是 $k$ 等於訓練樣本數，稱
 id: kfold-cv-k-choice
 file: _references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf
 page: 9
-status: suggested
+status: confirmed
 excerpt: k = 10 (a good standard value)；Small dataset → Large k；Large dataset → Small k；leave-one-out cross-validation 為 k 等於訓練樣本數的特例
 */}
-<PdfRefChip file="_references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf" page={9} status="suggested" excerpt={"k = 10 (a good standard value)；Small dataset → Large k；Large dataset → Small k；leave-one-out cross-validation 為 k 等於訓練樣本數的特例"} client:visible />
+<PdfRefChip file="_references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf" page={9} status="confirmed" excerpt={"k = 10 (a good standard value)；Small dataset → Large k；Large dataset → Small k；leave-one-out cross-validation 為 k 等於訓練樣本數的特例"} client:visible />
 
 兩個容易忽略的細節：
 
@@ -249,10 +249,10 @@ excerpt: k = 10 (a good standard value)；Small dataset → Large k；Large data
 id: kfold-cv-details
 file: _references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf
 page: 10
-status: suggested
+status: confirmed
 excerpt: Once found satisfactory hyperparameter values, retrain the model on the complete training dataset；Stratified k-fold：Class label proportions are preserved in each fold
 */}
-<PdfRefChip file="_references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf" page={10} status="suggested" excerpt={"Once found satisfactory hyperparameter values, retrain the model on the complete training dataset；Stratified k-fold：Class label proportions are preserved in each fold"} client:visible />
+<PdfRefChip file="_references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf" page={10} status="confirmed" excerpt={"Once found satisfactory hyperparameter values, retrain the model on the complete training dataset；Stratified k-fold：Class label proportions are preserved in each fold"} client:visible />
 
 ## 診斷曲線：學習曲線與驗證曲線
 
@@ -274,10 +274,10 @@ excerpt: Once found satisfactory hyperparameter values, retrain the model on the
 id: learning-curve-diagnosis
 file: _references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf
 page: 12
-status: suggested
+status: confirmed
 excerpt: High bias：Both low training and cross-validation accuracy；High variance：Large gap between training and cross-validation accuracy，及各自的 solutions
 */}
-<PdfRefChip file="_references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf" page={12} status="suggested" excerpt={"High bias：Both low training and cross-validation accuracy；High variance：Large gap between training and cross-validation accuracy，及各自的 solutions"} client:visible />
+<PdfRefChip file="_references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf" page={12} status="confirmed" excerpt={"High bias：Both low training and cross-validation accuracy；High variance：Large gap between training and cross-validation accuracy，及各自的 solutions"} client:visible />
 
 ![三張學習曲線示意圖：高偏差時兩線都低且貼合、高變異時兩線之間有明顯的縫、良好折衷時兩線高且合攏](/note-images/ml-week7/04-learning-curve-bias-variance.png)
 
@@ -302,10 +302,10 @@ excerpt: High bias：Both low training and cross-validation accuracy；High vari
 id: learning-curve-caveat
 file: _references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf
 page: 11
-status: suggested
+status: confirmed
 excerpt: While collecting more training data usually tends to decrease the chance of overfitting, it may not always help, for example, if the training data is extremely noisy or the model is already very close to optimal
 */}
-<PdfRefChip file="_references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf" page={11} status="suggested" excerpt={"While collecting more training data usually tends to decrease the chance of overfitting, it may not always help, for example, if the training data is extremely noisy or the model is already very close to optimal"} client:visible />
+<PdfRefChip file="_references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf" page={11} status="confirmed" excerpt={"While collecting more training data usually tends to decrease the chance of overfitting, it may not always help, for example, if the training data is extremely noisy or the model is already very close to optimal"} client:visible />
 
 ## 超參數搜尋的三種策略
 
@@ -315,10 +315,10 @@ excerpt: While collecting more training data usually tends to decrease the chanc
 id: hp-search-strategy-intro
 file: _references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf
 page: 16
-status: suggested
+status: confirmed
 excerpt: Cross-validation + search strategy：Grid search／Randomized search／Successive halving search
 */}
-<PdfRefChip file="_references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf" page={16} status="suggested" excerpt={"Cross-validation + search strategy：Grid search／Randomized search／Successive halving search"} client:visible />
+<PdfRefChip file="_references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf" page={16} status="confirmed" excerpt={"Cross-validation + search strategy：Grid search／Randomized search／Successive halving search"} client:visible />
 
 | 策略 | 中文 | 做法 | 取捨 |
 | --- | --- | --- | --- |
@@ -330,28 +330,28 @@ excerpt: Cross-validation + search strategy：Grid search／Randomized search／
 id: hp-search-grid
 file: _references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf
 page: 17
-status: suggested
+status: confirmed
 excerpt: Guaranteed to find the optimal hyperparameter configuration if it is contained in the specified grid；Specifying large hyperparameter grids makes grid search very expensive in practice
 */}
-<PdfRefChip file="_references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf" page={17} status="suggested" excerpt={"Guaranteed to find the optimal hyperparameter configuration if it is contained in the specified grid；Specifying large hyperparameter grids makes grid search very expensive in practice"} client:visible />
+<PdfRefChip file="_references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf" page={17} status="confirmed" excerpt={"Guaranteed to find the optimal hyperparameter configuration if it is contained in the specified grid；Specifying large hyperparameter grids makes grid search very expensive in practice"} client:visible />
 
 {/* @ai-reference
 id: hp-search-random
 file: _references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf
 page: 18
-status: suggested
+status: confirmed
 excerpt: Explore a wider range of hyperparameter value settings in a more cost- and time-effective manner
 */}
-<PdfRefChip file="_references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf" page={18} status="suggested" excerpt={"Explore a wider range of hyperparameter value settings in a more cost- and time-effective manner"} client:visible />
+<PdfRefChip file="_references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf" page={18} status="confirmed" excerpt={"Explore a wider range of hyperparameter value settings in a more cost- and time-effective manner"} client:visible />
 
 {/* @ai-reference
 id: hp-search-halving
 file: _references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf
 page: 19
-status: suggested
+status: confirmed
 excerpt: The following steps are repeated until only one hyperparameter configuration remains；More resource-efficient hyperparameter search
 */}
-<PdfRefChip file="_references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf" page={19} status="suggested" excerpt={"The following steps are repeated until only one hyperparameter configuration remains；More resource-efficient hyperparameter search"} client:visible />
+<PdfRefChip file="_references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf" page={19} status="confirmed" excerpt={"The following steps are repeated until only one hyperparameter configuration remains；More resource-efficient hyperparameter search"} client:visible />
 
 {/* @ai-visualize
 id: ml-week7-search-strategies
@@ -404,10 +404,10 @@ status: generated
 id: nested-cv-basics
 file: _references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf
 page: 20
-status: suggested
+status: confirmed
 excerpt: Outer k-fold cross-validation loop to split the data into training and test folds；Inner loop is used to select the model；the test fold is then used to evaluate the model performance
 */}
-<PdfRefChip file="_references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf" page={20} status="suggested" excerpt={"Outer k-fold cross-validation loop to split the data into training and test folds；Inner loop is used to select the model；the test fold is then used to evaluate the model performance"} client:visible />
+<PdfRefChip file="_references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf" page={20} status="confirmed" excerpt={"Outer k-fold cross-validation loop to split the data into training and test folds；Inner loop is used to select the model；the test fold is then used to evaluate the model performance"} client:visible />
 
 - **外層** $k$ 折把資料切成訓練折與測試折
 - **內層**在外層的訓練折上再跑一次 $k$ 折交叉驗證，用來選模型（挑超參數）
@@ -419,10 +419,10 @@ excerpt: Outer k-fold cross-validation loop to split the data into training and 
 id: nested-cv-5x2-example
 file: _references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf
 page: 21
-status: suggested
+status: confirmed
 excerpt: Example：5 × 2 cross-validation；Model selection；Average performance used for algorithm selection
 */}
-<PdfRefChip file="_references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf" page={21} status="suggested" excerpt={"Example：5 × 2 cross-validation；Model selection；Average performance used for algorithm selection"} client:visible />
+<PdfRefChip file="_references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf" page={21} status="confirmed" excerpt={"Example：5 × 2 cross-validation；Model selection；Average performance used for algorithm selection"} client:visible />
 
 ![巢狀交叉驗證結構圖：外層迴圈切出訓練折與測試折，內層迴圈再把訓練折切成訓練與驗證折來調參](/note-images/ml-week7/07-nested-cv-5x2.png)
 
@@ -439,10 +439,10 @@ excerpt: Example：5 × 2 cross-validation；Model selection；Average performan
 id: confusion-matrix-def
 file: _references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf
 page: 23
-status: suggested
+status: confirmed
 excerpt: A square matrix that reports the counts of predictions of a classifier：True Positive (TP)／True Negative (TN)／False Positive (FP)／False Negative (FN)
 */}
-<PdfRefChip file="_references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf" page={23} status="suggested" excerpt={"A square matrix that reports the counts of predictions of a classifier：True Positive (TP)／True Negative (TN)／False Positive (FP)／False Negative (FN)"} client:visible />
+<PdfRefChip file="_references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf" page={23} status="confirmed" excerpt={"A square matrix that reports the counts of predictions of a classifier：True Positive (TP)／True Negative (TN)／False Positive (FP)／False Negative (FN)"} client:visible />
 
 ### 錯誤率與正確率
 
@@ -457,10 +457,10 @@ $$
 id: err-acc-formulas
 file: _references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf
 page: 24
-status: suggested
+status: confirmed
 excerpt: Prediction Error (ERR)（錯誤率）／Accuracy (ACC)（正確率）
 */}
-<PdfRefChip file="_references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf" page={24} status="suggested" excerpt={"Prediction Error (ERR)（錯誤率）／Accuracy (ACC)（正確率）"} client:visible />
+<PdfRefChip file="_references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf" page={24} status="confirmed" excerpt={"Prediction Error (ERR)（錯誤率）／Accuracy (ACC)（正確率）"} client:visible />
 
 ### 真陽率與偽陽率
 
@@ -470,10 +470,10 @@ excerpt: Prediction Error (ERR)（錯誤率）／Accuracy (ACC)（正確率）
 id: tpr-fpr-formulas
 file: _references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf
 page: 25
-status: suggested
+status: confirmed
 excerpt: True Positive Rate (TPR)（真陽率）／False Positive Rate (FPR)（偽陽率）。Useful for imbalanced class problems
 */}
-<PdfRefChip file="_references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf" page={25} status="suggested" excerpt={"True Positive Rate (TPR)（真陽率）／False Positive Rate (FPR)（偽陽率）。Useful for imbalanced class problems"} client:visible />
+<PdfRefChip file="_references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf" page={25} status="confirmed" excerpt={"True Positive Rate (TPR)（真陽率）／False Positive Rate (FPR)（偽陽率）。Useful for imbalanced class problems"} client:visible />
 
 $$
 \begin{aligned}
@@ -490,10 +490,10 @@ $$
 id: precision-recall-formulas
 file: _references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf
 page: 26
-status: suggested
+status: confirmed
 excerpt: Precision (PRE)（精確率）／Recall (REC)（召回率）
 */}
-<PdfRefChip file="_references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf" page={26} status="suggested" excerpt={"Precision (PRE)（精確率）／Recall (REC)（召回率）"} client:visible />
+<PdfRefChip file="_references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf" page={26} status="confirmed" excerpt={"Precision (PRE)（精確率）／Recall (REC)（召回率）"} client:visible />
 
 $$
 \begin{aligned}
@@ -508,10 +508,10 @@ $$
 id: f1-score-formula
 file: _references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf
 page: 27
-status: suggested
+status: confirmed
 excerpt: F1 Score：Harmonic mean of PRE and REC
 */}
-<PdfRefChip file="_references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf" page={27} status="suggested" excerpt={"F1 Score：Harmonic mean of PRE and REC"} client:visible />
+<PdfRefChip file="_references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf" page={27} status="confirmed" excerpt={"F1 Score：Harmonic mean of PRE and REC"} client:visible />
 
 $$
 \text{F1} = 2 \cdot \frac{\text{PRE} \times \text{REC}}{\text{PRE} + \text{REC}}
@@ -525,10 +525,10 @@ $$
 id: mcc-formula
 file: _references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf
 page: 27
-status: suggested
+status: confirmed
 excerpt: Matthews Correlation Coefficient (MCC)（馬修斯相關係數 或 Phi 相關係數），−1 ≤ MCC ≤ 1
 */}
-<PdfRefChip file="_references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf" page={27} status="suggested" excerpt={"Matthews Correlation Coefficient (MCC)（馬修斯相關係數 或 Phi 相關係數），−1 ≤ MCC ≤ 1"} client:visible />
+<PdfRefChip file="_references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf" page={27} status="confirmed" excerpt={"Matthews Correlation Coefficient (MCC)（馬修斯相關係數 或 Phi 相關係數），−1 ≤ MCC ≤ 1"} client:visible />
 
 $$
 \text{MCC} = \frac{TP \times TN - FP \times FN}{\sqrt{(TP + FP)(TP + FN)(TN + FP)(TN + FN)}}
@@ -542,10 +542,10 @@ $$
 id: roc-curve-def
 file: _references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf
 page: 28
-status: suggested
+status: confirmed
 excerpt: Receiver Operating Characteristic (ROC)：Curve of FPR v.s. TPR, computed by shifting the decision threshold；ROC AUC 範圍 [0,1]，Perfect／Random Guessing
 */}
-<PdfRefChip file="_references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf" page={28} status="suggested" excerpt={"Receiver Operating Characteristic (ROC)：Curve of FPR v.s. TPR, computed by shifting the decision threshold；ROC AUC 範圍 [0,1]，Perfect／Random Guessing"} client:visible />
+<PdfRefChip file="_references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf" page={28} status="confirmed" excerpt={"Receiver Operating Characteristic (ROC)：Curve of FPR v.s. TPR, computed by shifting the decision threshold；ROC AUC 範圍 [0,1]，Perfect／Random Guessing"} client:visible />
 
 ![三張 ROC 曲線並列：完美分類器 AUC 為 1.0、隨機猜測為對角線 AUC 0.5、典型分類器 AUC 0.84](/note-images/ml-week7/08-roc-curve-three-cases.png)
 
@@ -606,10 +606,10 @@ $k$ 類（$k > 2$）問題要把二元指標推廣，有兩種加權方式：
 id: micro-macro-average
 file: _references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf
 page: 29
-status: suggested
+status: confirmed
 excerpt: Micro-average（微平均）：Weight each instance equally，關注每一個樣本；Macro-average（宏平均）：Weight all classes equally，關注每一個類別
 */}
-<PdfRefChip file="_references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf" page={29} status="suggested" excerpt={"Micro-average（微平均）：Weight each instance equally，關注每一個樣本；Macro-average（宏平均）：Weight all classes equally，關注每一個類別"} client:visible />
+<PdfRefChip file="_references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf" page={29} status="confirmed" excerpt={"Micro-average（微平均）：Weight each instance equally，關注每一個樣本；Macro-average（宏平均）：Weight all classes equally，關注每一個類別"} client:visible />
 
 | 平均方式 | 中文 | 權重給誰 | 特性 |
 | --- | --- | --- | --- |
@@ -622,10 +622,10 @@ excerpt: Micro-average（微平均）：Weight each instance equally，關注每
 id: micro-avg-classification-report
 file: _references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf
 page: 46
-status: suggested
+status: confirmed
 excerpt: Micro avg corresponds to accuracy and would be the same for all metrics (total FP = total FN)
 */}
-<PdfRefChip file="_references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf" page={46} status="suggested" excerpt={"Micro avg corresponds to accuracy and would be the same for all metrics (total FP = total FN)"} client:visible />
+<PdfRefChip file="_references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf" page={46} status="confirmed" excerpt={"Micro avg corresponds to accuracy and would be the same for all metrics (total FP = total FN)"} client:visible />
 
 ### 類別不平衡的三種處理
 
@@ -635,10 +635,10 @@ excerpt: Micro avg corresponds to accuracy and would be the same for all metrics
 id: class-imbalance-strategies
 file: _references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf
 page: 30
-status: suggested
+status: confirmed
 excerpt: Focus on other metrics (e.g., precision or recall) than accuracy；Upsample the minority class, downsample the majority class, and generate synthetic training examples；setting class_weight='balanced'
 */}
-<PdfRefChip file="_references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf" page={30} status="suggested" excerpt={"Focus on other metrics (e.g., precision or recall) than accuracy；Upsample the minority class, downsample the majority class, and generate synthetic training examples；setting class_weight='balanced'"} client:visible />
+<PdfRefChip file="_references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf" page={30} status="confirmed" excerpt={"Focus on other metrics (e.g., precision or recall) than accuracy；Upsample the minority class, downsample the majority class, and generate synthetic training examples；setting class_weight='balanced'"} client:visible />
 
 1. **改看別的指標**——精確率或召回率，而不是正確率
 2. **動資料**——對少數類過採樣、對多數類欠採樣，或生成合成的訓練樣本
@@ -650,10 +650,10 @@ excerpt: Focus on other metrics (e.g., precision or recall) than accuracy；Upsa
 id: imbalance-mechanism-detail
 file: _references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf
 page: 30
-status: suggested
+status: confirmed
 excerpt: 當模型猜錯一個「小類」的樣本時，它所受到的懲罰 (Loss) 會乘以該權重，使其影響力等同於多個大類樣本；imbalanced-learn is a library focused on re-sampling techniques
 */}
-<PdfRefChip file="_references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf" page={30} status="suggested" excerpt={"當模型猜錯一個「小類」的樣本時，它所受到的懲罰 (Loss) 會乘以該權重，使其影響力等同於多個大類樣本；imbalanced-learn is a library focused on re-sampling techniques"} client:visible />
+<PdfRefChip file="_references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf" page={30} status="confirmed" excerpt={"當模型猜錯一個「小類」的樣本時，它所受到的懲罰 (Loss) 會乘以該權重，使其影響力等同於多個大類樣本；imbalanced-learn is a library focused on re-sampling techniques"} client:visible />
 
 ## Scikit-learn 對應 API 與實作
 
@@ -682,10 +682,10 @@ excerpt: 當模型猜錯一個「小類」的樣本時，它所受到的懲罰 (
 id: pipeline-double-underscore
 file: _references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf
 page: 36
-status: suggested
+status: confirmed
 excerpt: Inside a Pipeline, an estimator's parameter can be specified using '__' syntax
 */}
-<PdfRefChip file="_references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf" page={36} status="suggested" excerpt={"Inside a Pipeline, an estimator's parameter can be specified using '__' syntax"} client:visible />
+<PdfRefChip file="_references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf" page={36} status="confirmed" excerpt={"Inside a Pipeline, an estimator's parameter can be specified using '__' syntax"} client:visible />
 
 - scikit-learn 的**正類是標記為 class 1 的那一類**；`roc_auc_score` 在二元分類時要求輸入的分數代表「標籤較大的那一類」的機率。
 
@@ -693,10 +693,10 @@ excerpt: Inside a Pipeline, an estimator's parameter can be specified using '__'
 id: sklearn-positive-class
 file: _references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf
 page: 47
-status: suggested
+status: confirmed
 excerpt: The positive class in scikit-learn is the class labeled as class 1
 */}
-<PdfRefChip file="_references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf" page={47} status="suggested" excerpt={"The positive class in scikit-learn is the class labeled as class 1"} client:visible />
+<PdfRefChip file="_references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf" page={47} status="confirmed" excerpt={"The positive class in scikit-learn is the class labeled as class 1"} client:visible />
 
 巢狀交叉驗證在 scikit-learn 裡的寫法就是把兩者套起來：`cross_val_score(GridSearchCV(...))` ——外層是 $k$ 折，內層是 $k$ 折加格狀搜尋。
 
@@ -704,10 +704,10 @@ excerpt: The positive class in scikit-learn is the class labeled as class 1
 id: nested-cv-sklearn-code
 file: _references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf
 page: 41
-status: suggested
+status: confirmed
 excerpt: Nested cross-validation with grid search：cross_val_score(GridSearchCV)；Outer k-fold／Inner k-fold + grid search
 */}
-<PdfRefChip file="_references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf" page={41} status="suggested" excerpt={"Nested cross-validation with grid search：cross_val_score(GridSearchCV)；Outer k-fold／Inner k-fold + grid search"} client:visible />
+<PdfRefChip file="_references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf" page={41} status="confirmed" excerpt={"Nested cross-validation with grid search：cross_val_score(GridSearchCV)；Outer k-fold／Inner k-fold + grid search"} client:visible />
 
 ### 實作案例：把上週的 pipeline 調到最好
 
@@ -717,10 +717,10 @@ excerpt: Nested cross-validation with grid search：cross_val_score(GridSearchCV
 id: pipeline-best-model-implementation
 file: _references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf
 page: 52
-status: suggested
+status: confirmed
 excerpt: 用測試集進行評估，針對個別錯誤 (FN) 進行探討；fn_indices = np.where((y_test == 1) & (y_pred == 0))[0]
 */}
-<PdfRefChip file="_references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf" page={52} status="suggested" excerpt={"用測試集進行評估，針對個別錯誤 (FN) 進行探討；fn_indices = np.where((y_test == 1) & (y_pred == 0))[0]"} client:visible />
+<PdfRefChip file="_references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf" page={52} status="confirmed" excerpt={"用測試集進行評估，針對個別錯誤 (FN) 進行探討；fn_indices = np.where((y_test == 1) & (y_pred == 0))[0]"} client:visible />
 
 ```python
 fn_indices = np.where((y_test == 1) & (y_pred == 0))[0]
@@ -734,10 +734,10 @@ fn_indices = np.where((y_test == 1) & (y_pred == 0))[0]
 id: save-load-model
 file: _references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf
 page: 53
-status: suggested
+status: confirmed
 excerpt: Save and Load the Model
 */}
-<PdfRefChip file="_references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf" page={53} status="suggested" excerpt={"Save and Load the Model"} client:visible />
+<PdfRefChip file="_references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf" page={53} status="confirmed" excerpt={"Save and Load the Model"} client:visible />
 
 ## 作業三：手寫數字多類別分類器
 
@@ -747,10 +747,10 @@ excerpt: Save and Load the Model
 id: assignment3-intro
 file: _references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf
 page: 55
-status: suggested
+status: confirmed
 excerpt: 目的：低解析度手寫數字 (0-9) 多類別分類器；應用情境：光學字元辨識 (OCR)，假設字元定位與切割已經過預先處理
 */}
-<PdfRefChip file="_references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf" page={55} status="suggested" excerpt={"目的：低解析度手寫數字 (0-9) 多類別分類器；應用情境：光學字元辨識 (OCR)，假設字元定位與切割已經過預先處理"} client:visible />
+<PdfRefChip file="_references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf" page={55} status="confirmed" excerpt={"目的：低解析度手寫數字 (0-9) 多類別分類器；應用情境：光學字元辨識 (OCR)，假設字元定位與切割已經過預先處理"} client:visible />
 
 | 項目 | 要求 |
 | --- | --- |
@@ -765,10 +765,10 @@ excerpt: 目的：低解析度手寫數字 (0-9) 多類別分類器；應用情�
 id: assignment3-dataset-row
 file: _references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf
 page: 56
-status: suggested
+status: confirmed
 excerpt: 1797 張 8×8 灰階 (grayscale) 影像；64 維（像素值）特徵（整數值 [0,16]）；多類別標籤 0–9 共 10 類
 */}
-<PdfRefChip file="_references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf" page={56} status="suggested" excerpt={"1797 張 8×8 灰階 (grayscale) 影像；64 維（像素值）特徵（整數值 [0,16]）；多類別標籤 0–9 共 10 類"} client:visible />
+<PdfRefChip file="_references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf" page={56} status="confirmed" excerpt={"1797 張 8×8 灰階 (grayscale) 影像；64 維（像素值）特徵（整數值 [0,16]）；多類別標籤 0–9 共 10 類"} client:visible />
 
 ![load_digits 資料集的十張 8×8 灰階手寫數字影像範例](/note-images/ml-week7/09-digits-dataset-samples.png)
 
@@ -779,10 +779,10 @@ excerpt: 1797 張 8×8 灰階 (grayscale) 影像；64 維（像素值）特徵�
 id: assignment3-requirements-row
 file: _references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf
 page: 57
-status: suggested
+status: confirmed
 excerpt: 以 Logistic Regression 作為分類器；切分比例 80% 訓練（用於交叉驗證）、20% 測試；至少淘汰 20 個以上的特徵；整體正確率達 95% 以上
 */}
-<PdfRefChip file="_references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf" page={57} status="suggested" excerpt={"以 Logistic Regression 作為分類器；切分比例 80% 訓練（用於交叉驗證）、20% 測試；至少淘汰 20 個以上的特徵；整體正確率達 95% 以上"} client:visible />
+<PdfRefChip file="_references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf" page={57} status="confirmed" excerpt={"以 Logistic Regression 作為分類器；切分比例 80% 訓練（用於交叉驗證）、20% 測試；至少淘汰 20 個以上的特徵；整體正確率達 95% 以上"} client:visible />
 
 三項預期產出：
 
@@ -792,10 +792,10 @@ excerpt: 以 Logistic Regression 作為分類器；切分比例 80% 訓練（用
 id: assignment3-expected-result1
 file: _references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf
 page: 59
-status: suggested
+status: confirmed
 excerpt: 預期結果 1：視覺化（特徵選取遮罩）呈現特徵選取結果，0 淘汰、1 選取，標題含選取比例，必須在 44/64 以下
 */}
-<PdfRefChip file="_references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf" page={59} status="suggested" excerpt={"預期結果 1：視覺化（特徵選取遮罩）呈現特徵選取結果，0 淘汰、1 選取，標題含選取比例，必須在 44/64 以下"} client:visible />
+<PdfRefChip file="_references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf" page={59} status="confirmed" excerpt={"預期結果 1：視覺化（特徵選取遮罩）呈現特徵選取結果，0 淘汰、1 選取，標題含選取比例，必須在 44/64 以下"} client:visible />
 
 ![特徵選取遮罩視覺化：8×8 網格中深藍為選取、白色為淘汰的像素位置，標題顯示選取 40/64](/note-images/ml-week7/10-assignment3-feature-mask.png)
 
@@ -808,10 +808,10 @@ excerpt: 預期結果 1：視覺化（特徵選取遮罩）呈現特徵選取結
 id: assignment3-expected-result2
 file: _references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf
 page: 60
-status: suggested
+status: confirmed
 excerpt: 預期結果 2：輸出測試集的分類報告，視覺化呈現混淆矩陣，必須達 0.95 以上
 */}
-<PdfRefChip file="_references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf" page={60} status="suggested" excerpt={"預期結果 2：輸出測試集的分類報告，視覺化呈現混淆矩陣，必須達 0.95 以上"} client:visible />
+<PdfRefChip file="_references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf" page={60} status="confirmed" excerpt={"預期結果 2：輸出測試集的分類報告，視覺化呈現混淆矩陣，必須達 0.95 以上"} client:visible />
 
 ![分類報告輸出：十個類別各自的 precision、recall、f1-score 與 support，整體正確率 0.97](/note-images/ml-week7/11-assignment3-classification-report.png)
 
@@ -828,10 +828,10 @@ excerpt: 預期結果 2：輸出測試集的分類報告，視覺化呈現混淆
 id: assignment3-expected-result3
 file: _references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf
 page: 61
-status: suggested
+status: confirmed
 excerpt: 預期結果 3：輸出誤判的樣本總數，繪出所有誤判的樣本，標示真實標籤與預測結果，必須與混淆矩陣對應
 */}
-<PdfRefChip file="_references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf" page={61} status="suggested" excerpt={"預期結果 3：輸出誤判的樣本總數，繪出所有誤判的樣本，標示真實標籤與預測結果，必須與混淆矩陣對應"} client:visible />
+<PdfRefChip file="_references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf" page={61} status="confirmed" excerpt={"預期結果 3：輸出誤判的樣本總數，繪出所有誤判的樣本，標示真實標籤與預測結果，必須與混淆矩陣對應"} client:visible />
 
 ![所有誤判樣本的影像網格，每張標註真實標籤與預測結果](/note-images/ml-week7/13-assignment3-misclassified.png)
 
@@ -844,10 +844,10 @@ excerpt: 預期結果 3：輸出誤判的樣本總數，繪出所有誤判的樣
 id: assignment3-submission-rules
 file: _references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf
 page: 58
-status: suggested
+status: confirmed
 excerpt: 不要包含任何訓練或模型選取程式碼；助教將透過執行模型評估程式批閱作業（沒有時間進行交叉驗證與微調）
 */}
-<PdfRefChip file="_references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf" page={58} status="suggested" excerpt={"不要包含任何訓練或模型選取程式碼；助教將透過執行模型評估程式批閱作業（沒有時間進行交叉驗證與微調）"} client:visible />
+<PdfRefChip file="_references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf" page={58} status="confirmed" excerpt={"不要包含任何訓練或模型選取程式碼；助教將透過執行模型評估程式批閱作業（沒有時間進行交叉驗證與微調）"} client:visible />
 
 ## 教材預習重點
 

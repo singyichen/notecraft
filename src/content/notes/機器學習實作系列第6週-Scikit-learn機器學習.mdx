@@ -183,10 +183,10 @@ status: generated
 id: data-preprocessing-six-stages
 file: _references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf
 page: 5
-status: suggested
+status: confirmed
 excerpt: Raw Data → Data Cleaning 資料清理 → Encoding 資料編碼 → Feature Generation 特徵衍生 → Feature Scaling 特徵縮放 → Dimensionality Reduction 降維
 */}
-<PdfRefChip file="_references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf" page={5} status="suggested" excerpt={"Raw Data → Data Cleaning 資料清理 → Encoding 資料編碼 → Feature Generation 特徵衍生 → Feature Scaling 特徵縮放 → Dimensionality Reduction 降維"} client:visible />
+<PdfRefChip file="_references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf" page={5} status="confirmed" excerpt={"Raw Data → Data Cleaning 資料清理 → Encoding 資料編碼 → Feature Generation 特徵衍生 → Feature Scaling 特徵縮放 → Dimensionality Reduction 降維"} client:visible />
 
 | 階段 | 中文 | 做什麼 | 歸屬 |
 | --- | --- | --- | --- |
@@ -207,10 +207,10 @@ excerpt: Raw Data → Data Cleaning 資料清理 → Encoding 資料編碼 → F
 id: golden-rule-split-before-processing
 file: _references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf
 page: 62
-status: suggested
+status: confirmed
 excerpt: Reminder：You must strictly follow this order：Split → Fit transformers only on training set → Transform → Test
 */}
-<PdfRefChip file="_references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf" page={62} status="suggested" excerpt={"Reminder：You must strictly follow this order：Split → Fit transformers only on training set → Transform → Test"} client:visible />
+<PdfRefChip file="_references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf" page={62} status="confirmed" excerpt={"Reminder：You must strictly follow this order：Split → Fit transformers only on training set → Transform → Test"} client:visible />
 
 1. 先用 `train_test_split` 切分
 2. 轉換器（`SimpleImputer`、`StandardScaler`、`LabelEncoder`、`OneHotEncoder`）：**只在訓練集上 `fit`**
@@ -227,10 +227,10 @@ excerpt: Reminder：You must strictly follow this order：Split → Fit transfor
 id: train-test-split-ratio-tradeoff
 file: _references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf
 page: 7
-status: suggested
+status: confirmed
 excerpt: The larger the test set, the less valuable information the algorithm could benefit from；the smaller the test set, the more inaccurate the estimation of the generalization error
 */}
-<PdfRefChip file="_references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf" page={7} status="suggested" excerpt={"The larger the test set, the less valuable information the algorithm could benefit from；the smaller the test set, the more inaccurate the estimation of the generalization error"} client:visible />
+<PdfRefChip file="_references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf" page={7} status="confirmed" excerpt={"The larger the test set, the less valuable information the algorithm could benefit from；the smaller the test set, the more inaccurate the estimation of the generalization error"} client:visible />
 
 ## 髒資料：缺值與類別型欄位
 
@@ -242,10 +242,10 @@ excerpt: The larger the test set, the less valuable information the algorithm co
 id: missing-value-detection
 file: _references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf
 page: 10
-status: suggested
+status: confirmed
 excerpt: isnull() 回傳布林值：True 為缺值（NaN / None / NaT），False 為有效資料（包含空白字串 ""）
 */}
-<PdfRefChip file="_references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf" page={10} status="suggested" excerpt={"isnull() 回傳布林值：True 為缺值（NaN / None / NaT），False 為有效資料（包含空白字串 \"\"）"} client:visible />
+<PdfRefChip file="_references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf" page={10} status="confirmed" excerpt={"isnull() 回傳布林值：True 為缺值（NaN / None / NaT），False 為有效資料（包含空白字串 \"\"）"} client:visible />
 
 有個容易誤判的細節：**空字串 `""` 會被視為有效資料**，不算缺值；`isnull()` 只對 `NaN`、`None`、`NaT` 回傳 `True`。
 
@@ -255,10 +255,10 @@ excerpt: isnull() 回傳布林值：True 為缺值（NaN / None / NaT），False
 id: missing-value-imputation-methods
 file: _references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf
 page: 14
-status: suggested
+status: confirmed
 excerpt: Mean imputation／Most-frequent imputation（尤其適合類別型特徵）／KNN imputation（用 k 個最近鄰的值，例如平均）
 */}
-<PdfRefChip file="_references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf" page={14} status="suggested" excerpt={"Mean imputation／Most-frequent imputation（尤其適合類別型特徵）／KNN imputation（用 k 個最近鄰的值，例如平均）"} client:visible />
+<PdfRefChip file="_references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf" page={14} status="confirmed" excerpt={"Mean imputation／Most-frequent imputation（尤其適合類別型特徵）／KNN imputation（用 k 個最近鄰的值，例如平均）"} client:visible />
 
 | 做法 | 手段 | 風險或適用場合 |
 | --- | --- | --- |
@@ -273,10 +273,10 @@ excerpt: Mean imputation／Most-frequent imputation（尤其適合類別型特�
 id: ordinal-nominal-types
 file: _references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf
 page: 15
-status: suggested
+status: confirmed
 excerpt: Ordinal 順序型：可排序，如 T 恤尺寸 XL > L > M；Nominal 名義型：不隱含順序，如 T 恤顏色
 */}
-<PdfRefChip file="_references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf" page={15} status="suggested" excerpt={"Ordinal 順序型：可排序，如 T 恤尺寸 XL > L > M；Nominal 名義型：不隱含順序，如 T 恤顏色"} client:visible />
+<PdfRefChip file="_references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf" page={15} status="confirmed" excerpt={"Ordinal 順序型：可排序，如 T 恤尺寸 XL > L > M；Nominal 名義型：不隱含順序，如 T 恤顏色"} client:visible />
 
 | 型別 | 中文 | 例子 | 處理方式 |
 | --- | --- | --- | --- |
@@ -289,10 +289,10 @@ excerpt: Ordinal 順序型：可排序，如 T 恤尺寸 XL > L > M；Nominal �
 id: class-label-no-order
 file: _references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf
 page: 18
-status: suggested
+status: confirmed
 excerpt: Class labels are not ordinal：指派哪個整數給哪個字串標籤都無所謂，scikit-learn 的分類估計器內部會自動轉成整數
 */}
-<PdfRefChip file="_references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf" page={18} status="suggested" excerpt={"Class labels are not ordinal：指派哪個整數給哪個字串標籤都無所謂，scikit-learn 的分類估計器內部會自動轉成整數"} client:visible />
+<PdfRefChip file="_references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf" page={18} status="confirmed" excerpt={"Class labels are not ordinal：指派哪個整數給哪個字串標籤都無所謂，scikit-learn 的分類估計器內部會自動轉成整數"} client:visible />
 
 ### 獨熱編碼與共線性
 
@@ -302,10 +302,10 @@ excerpt: Class labels are not ordinal：指派哪個整數給哪個字串標籤�
 id: one-hot-get-dummies
 file: _references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf
 page: 21
-status: suggested
+status: confirmed
 excerpt: get_dummies() 只轉換字串欄位，其餘欄位原樣保留
 */}
-<PdfRefChip file="_references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf" page={21} status="suggested" excerpt={"get_dummies() 只轉換字串欄位，其餘欄位原樣保留"} client:visible />
+<PdfRefChip file="_references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf" page={21} status="confirmed" excerpt={"get_dummies() 只轉換字串欄位，其餘欄位原樣保留"} client:visible />
 
 它有個副作用：產生的欄位彼此**完全相關（multi-collinearity）** 。對需要矩陣求逆的方法而言，高度相關的特徵會讓矩陣變得病態（ill-conditioned）而難以求逆。
 
@@ -313,10 +313,10 @@ excerpt: get_dummies() 只轉換字串欄位，其餘欄位原樣保留
 id: one-hot-multicollinearity
 file: _references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf
 page: 22
-status: suggested
+status: confirmed
 excerpt: One-hot encoding introduces multi-collinearity：對需要矩陣求逆的方法而言，高度相關的特徵會讓矩陣病態（ill-conditioned）而難以求逆
 */}
-<PdfRefChip file="_references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf" page={22} status="suggested" excerpt={"One-hot encoding introduces multi-collinearity：對需要矩陣求逆的方法而言，高度相關的特徵會讓矩陣病態（ill-conditioned）而難以求逆"} client:visible />
+<PdfRefChip file="_references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf" page={22} status="confirmed" excerpt={"One-hot encoding introduces multi-collinearity：對需要矩陣求逆的方法而言，高度相關的特徵會讓矩陣病態（ill-conditioned）而難以求逆"} client:visible />
 
 ![講義投影片：one-hot 編碼後的 DataFrame，color_blue／color_green／color_red 三欄被黃色括號標示為彼此相關](/note-images/ml-week6/01-onehot-multicollinearity.png)
 
@@ -329,10 +329,10 @@ excerpt: One-hot encoding introduces multi-collinearity：對需要矩陣求逆�
 id: one-hot-drop-column
 file: _references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf
 page: 23
-status: suggested
+status: confirmed
 excerpt: 若 color_blue 被刪，color_green = 0 且 color_red = 0 就唯一地表示這筆是藍色，不會損失任何資訊
 */}
-<PdfRefChip file="_references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf" page={23} status="suggested" excerpt={"若 color_blue 被刪，color_green = 0 且 color_red = 0 就唯一地表示這筆是藍色，不會損失任何資訊"} client:visible />
+<PdfRefChip file="_references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf" page={23} status="confirmed" excerpt={"若 color_blue 被刪，color_green = 0 且 color_red = 0 就唯一地表示這筆是藍色，不會損失任何資訊"} client:visible />
 
 ## 特徵縮放與特徵選取
 
@@ -344,10 +344,10 @@ excerpt: 若 color_blue 被刪，color_green = 0 且 color_red = 0 就唯一地�
 id: normalization-formula
 file: _references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf
 page: 24
-status: suggested
+status: confirmed
 excerpt: Normalization：scaling to a range of [0, 1]，min-max 縮放的特例；x_min 為該欄最小值、x_max 為最大值
 */}
-<PdfRefChip file="_references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf" page={24} status="suggested" excerpt={"Normalization：scaling to a range of [0, 1]，min-max 縮放的特例；x_min 為該欄最小值、x_max 為最大值"} client:visible />
+<PdfRefChip file="_references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf" page={24} status="confirmed" excerpt={"Normalization：scaling to a range of [0, 1]，min-max 縮放的特例；x_min 為該欄最小值、x_max 為最大值"} client:visible />
 
 $$
 x_{\text{norm}}^{(i)} = \frac{x^{(i)} - x_{\min}}{x_{\max} - x_{\min}}
@@ -365,10 +365,10 @@ $$
 id: standardization-outlier-tradeoff
 file: _references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf
 page: 26
-status: suggested
+status: confirmed
 excerpt: 單一極端離群值就能把其餘資料擠壓進極小的子區間；標準化保留離群值資訊，對 GD／SGD 最佳化更實用
 */}
-<PdfRefChip file="_references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf" page={26} status="suggested" excerpt={"單一極端離群值就能把其餘資料擠壓進極小的子區間；標準化保留離群值資訊，對 GD／SGD 最佳化更實用"} client:visible />
+<PdfRefChip file="_references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf" page={26} status="confirmed" excerpt={"單一極端離群值就能把其餘資料擠壓進極小的子區間；標準化保留離群值資訊，對 GD／SGD 最佳化更實用"} client:visible />
 
 ![同一組輸入值 0.0 到 5.0 經標準化與 min-max 正規化後的數值對照表](/note-images/ml-week6/02-scaling-standardize-vs-normalize.png)
 
@@ -381,10 +381,10 @@ excerpt: 單一極端離群值就能把其餘資料擠壓進極小的子區間�
 id: one-hot-no-scaling-needed
 file: _references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf
 page: 24
-status: suggested
+status: confirmed
 excerpt: 注意：One-hot encoding 後產生的 0 與 1 特徵欄位不需要進行特徵縮放
 */}
-<PdfRefChip file="_references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf" page={24} status="suggested" excerpt={"注意：One-hot encoding 後產生的 0 與 1 特徵欄位不需要進行特徵縮放"} client:visible />
+<PdfRefChip file="_references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf" page={24} status="confirmed" excerpt={"注意：One-hot encoding 後產生的 0 與 1 特徵欄位不需要進行特徵縮放"} client:visible />
 
 ### 特徵選取與特徵提取的分界
 
@@ -394,10 +394,10 @@ excerpt: 注意：One-hot encoding 後產生的 0 與 1 特徵欄位不需要進
 id: feature-selection-vs-extraction
 file: _references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf
 page: 27
-status: suggested
+status: confirmed
 excerpt: Feature selection：挑原始特徵的子集；Feature extraction：從特徵集推導資訊、建構新的特徵子空間
 */}
-<PdfRefChip file="_references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf" page={27} status="suggested" excerpt={"Feature selection：挑原始特徵的子集；Feature extraction：從特徵集推導資訊、建構新的特徵子空間"} client:visible />
+<PdfRefChip file="_references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf" page={27} status="confirmed" excerpt={"Feature selection：挑原始特徵的子集；Feature extraction：從特徵集推導資訊、建構新的特徵子空間"} client:visible />
 
 | 類別 | 中文 | 做法 |
 | --- | --- | --- |
@@ -412,10 +412,10 @@ excerpt: Feature selection：挑原始特徵的子集；Feature extraction：從
 id: sfs-sbs-greedy-search
 file: _references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf
 page: 28
-status: suggested
+status: confirmed
 excerpt: Sequential feature selection 是一族 greedy search 演算法：SFS（加法概念）、SBS（減法概念）
 */}
-<PdfRefChip file="_references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf" page={28} status="suggested" excerpt={"Sequential feature selection 是一族 greedy search 演算法：SFS（加法概念）、SBS（減法概念）"} client:visible />
+<PdfRefChip file="_references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf" page={28} status="confirmed" excerpt={"Sequential feature selection 是一族 greedy search 演算法：SFS（加法概念）、SBS（減法概念）"} client:visible />
 
 - **序列前向選取（sequential forward selection, SFS）** ——加法概念，從空集合開始逐個加入最有貢獻的特徵
 - **序列後向選取（sequential backward selection, SBS）** ——減法概念，從全集開始，每次剔除使**判準函數（criterion function）** $J$ 損失最小的那個特徵
@@ -435,10 +435,10 @@ excerpt: Sequential feature selection 是一族 greedy search 演算法：SFS（
 id: overfitting-underfitting-definitions
 file: _references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf
 page: 31
-status: suggested
+status: confirmed
 excerpt: The model captures the patterns in the training data well but fails to generalize；high variance，variance measures the consistency
 */}
-<PdfRefChip file="_references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf" page={31} status="suggested" excerpt={"The model captures the patterns in the training data well but fails to generalize；high variance，variance measures the consistency"} client:visible />
+<PdfRefChip file="_references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf" page={31} status="confirmed" excerpt={"The model captures the patterns in the training data well but fails to generalize；high variance，variance measures the consistency"} client:visible />
 
 ![三張散佈圖並列：欠擬合的直線邊界、適配的平滑曲線邊界、過擬合的曲折邊界](/note-images/ml-week6/03-bias-variance-tradeoff.png)
 
@@ -455,10 +455,10 @@ excerpt: The model captures the patterns in the training data well but fails to 
 id: overfitting-prevention-methods
 file: _references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf
 page: 32
-status: suggested
+status: confirmed
 excerpt: Collect more training data／Choose a simpler model／Introduce a penalty via regularization／Reduce the dimensionality
 */}
-<PdfRefChip file="_references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf" page={32} status="suggested" excerpt={"Collect more training data／Choose a simpler model／Introduce a penalty via regularization／Reduce the dimensionality"} client:visible />
+<PdfRefChip file="_references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf" page={32} status="confirmed" excerpt={"Collect more training data／Choose a simpler model／Introduce a penalty via regularization／Reduce the dimensionality"} client:visible />
 
 ### L2 正則化
 
@@ -468,10 +468,10 @@ excerpt: Collect more training data／Choose a simpler model／Introduce a penal
 id: l2-regularization-concept
 file: _references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf
 page: 35
-status: suggested
+status: confirmed
 excerpt: A very useful method for handling collinearity, filtering out noise, preventing overfitting：在損失函數加上懲罰極端權重的項
 */}
-<PdfRefChip file="_references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf" page={35} status="suggested" excerpt={"A very useful method for handling collinearity, filtering out noise, preventing overfitting：在損失函數加上懲罰極端權重的項"} client:visible />
+<PdfRefChip file="_references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf" page={35} status="confirmed" excerpt={"A very useful method for handling collinearity, filtering out noise, preventing overfitting：在損失函數加上懲罰極端權重的項"} client:visible />
 
 $L_2$ 正則化（又稱 $L_2$ 收縮或**權重衰減（weight decay）** ）的正則化項為：
 
@@ -485,10 +485,10 @@ $$
 id: l2-regularization-term
 file: _references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf
 page: 36
-status: suggested
+status: confirmed
 excerpt: λ：regularization parameter，控制正則化強度；n：sample size，使正則化項與損失項尺度相當
 */}
-<PdfRefChip file="_references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf" page={36} status="suggested" excerpt={"λ：regularization parameter，控制正則化強度；n：sample size，使正則化項與損失項尺度相當"} client:visible />
+<PdfRefChip file="_references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf" page={36} status="confirmed" excerpt={"λ：regularization parameter，控制正則化強度；n：sample size，使正則化項與損失項尺度相當"} client:visible />
 
 兩點實務提醒：正則化要正常運作，**所有特徵必須在可比較的尺度上**（所以縮放要先做）；**偏置項（bias unit，即負門檻）通常不做正則化** 。
 
@@ -496,10 +496,10 @@ excerpt: λ：regularization parameter，控制正則化強度；n：sample size
 id: l2-bias-unit-not-regularized
 file: _references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf
 page: 37
-status: suggested
+status: confirmed
 excerpt: Note: The bias unit (negative threshold) is usually not regularized
 */}
-<PdfRefChip file="_references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf" page={37} status="suggested" excerpt={"Note: The bias unit (negative threshold) is usually not regularized"} client:visible />
+<PdfRefChip file="_references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf" page={37} status="confirmed" excerpt={"Note: The bias unit (negative threshold) is usually not regularized"} client:visible />
 
 在 scikit-learn 裡，正則化強度以 `C` 表示，它與 $\lambda$ 成反比：
 
@@ -538,10 +538,10 @@ $L_1$ 正則化的正則化項改為絕對值和：
 id: l1-regularization-sparse
 file: _references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf
 page: 39
-status: suggested
+status: confirmed
 excerpt: L1 regularization usually yields sparse feature vectors，多數特徵權重會是零，可當作特徵選取的手段
 */}
-<PdfRefChip file="_references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf" page={39} status="suggested" excerpt={"L1 regularization usually yields sparse feature vectors，多數特徵權重會是零，可當作特徵選取的手段"} client:visible />
+<PdfRefChip file="_references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf" page={39} status="confirmed" excerpt={"L1 regularization usually yields sparse feature vectors，多數特徵權重會是零，可當作特徵選取的手段"} client:visible />
 
 $$
 \frac{\lambda}{n}\lVert \mathbf{w} \rVert_1 = \frac{\lambda}{n}\sum_{j} \lvert w_j \rvert
@@ -614,10 +614,10 @@ status: generated
 id: transformer-estimator-api-table
 file: _references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf
 page: 47
-status: suggested
+status: confirmed
 excerpt: Transformer API in Scikit-learn：fit()／transform()／fit_transform()
 */}
-<PdfRefChip file="_references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf" page={47} status="suggested" excerpt={"Transformer API in Scikit-learn：fit()／transform()／fit_transform()"} client:visible />
+<PdfRefChip file="_references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf" page={47} status="confirmed" excerpt={"Transformer API in Scikit-learn：fit()／transform()／fit_transform()"} client:visible />
 
 ![Transformer API 流程圖：訓練資料與測試資料分別經過 fit 與 transform 後產出轉換後的資料](/note-images/ml-week6/04-transformer-api-flow.png)
 
@@ -639,10 +639,10 @@ excerpt: Transformer API in Scikit-learn：fit()／transform()／fit_transform()
 id: fit-transform-feature-count
 file: _references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf
 page: 47
-status: suggested
+status: confirmed
 excerpt: Any data array to be transformed needs to have the same number of features as the data array that was used to fit the model
 */}
-<PdfRefChip file="_references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf" page={47} status="suggested" excerpt={"Any data array to be transformed needs to have the same number of features as the data array that was used to fit the model"} client:visible />
+<PdfRefChip file="_references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf" page={47} status="confirmed" excerpt={"Any data array to be transformed needs to have the same number of features as the data array that was used to fit the model"} client:visible />
 
 學到的參數一律放在結尾帶底線的屬性——`intercept_` 是偏置項、`coef_` 是權重——與建構子指定的超參數清楚分開。
 
@@ -650,10 +650,10 @@ excerpt: Any data array to be transformed needs to have the same number of featu
 id: coef-intercept-attributes
 file: _references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf
 page: 60
-status: suggested
+status: confirmed
 excerpt: Access the bias unit and weight parameters：intercept_（例如 ppn.intercept_）、coef_（例如 ppn.coef_）
 */}
-<PdfRefChip file="_references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf" page={60} status="suggested" excerpt={"Access the bias unit and weight parameters：intercept_（例如 ppn.intercept_）、coef_（例如 ppn.coef_）"} client:visible />
+<PdfRefChip file="_references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf" page={60} status="confirmed" excerpt={"Access the bias unit and weight parameters：intercept_（例如 ppn.intercept_）、coef_（例如 ppn.coef_）"} client:visible />
 
 ### 常用模組地圖
 
@@ -674,10 +674,10 @@ excerpt: Access the bias unit and weight parameters：intercept_（例如 ppn.in
 id: select-from-model-l1-practical
 file: _references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf
 page: 56
-status: suggested
+status: confirmed
 excerpt: SelectFromModel：Meta-transformer for selecting features based on importance weights，建議設定 L1 regularization（l1_ratio=1.0, solver='liblinear'）
 */}
-<PdfRefChip file="_references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf" page={56} status="suggested" excerpt={"SelectFromModel：Meta-transformer for selecting features based on importance weights，建議設定 L1 regularization（l1_ratio=1.0, solver='liblinear'）"} client:visible />
+<PdfRefChip file="_references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf" page={56} status="confirmed" excerpt={"SelectFromModel：Meta-transformer for selecting features based on importance weights，建議設定 L1 regularization（l1_ratio=1.0, solver='liblinear'）"} client:visible />
 
 幾個實務細節：小資料集含有許多離群值時建議用 `RobustScaler`；`ColumnTransformer` 接受 `(name, transformer, columns)` 的元組列表，並可用 `'drop'` 丟棄欄位、`'passthrough'` 讓欄位原樣通過。
 
@@ -685,10 +685,10 @@ excerpt: SelectFromModel：Meta-transformer for selecting features based on impo
 id: sklearn-module-map
 file: _references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf
 page: 43
-status: suggested
+status: confirmed
 excerpt: General Modules：datasets／preprocessing, impute, compose／pipeline, feature_selection, decomposition／model_selection／metrics
 */}
-<PdfRefChip file="_references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf" page={43} status="suggested" excerpt={"General Modules：datasets／preprocessing, impute, compose／pipeline, feature_selection, decomposition／model_selection／metrics"} client:visible />
+<PdfRefChip file="_references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf" page={43} status="confirmed" excerpt={"General Modules：datasets／preprocessing, impute, compose／pipeline, feature_selection, decomposition／model_selection／metrics"} client:visible />
 
 scikit-learn 多數分類器預設就以**一對多（one-vs-all, OvA／OvR）** 支援多類別分類，三類鳶尾花可以一次餵給分類器。
 
@@ -696,10 +696,10 @@ scikit-learn 多數分類器預設就以**一對多（one-vs-all, OvA／OvR）**
 id: ova-ovr-multiclass
 file: _references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf
 page: 59
-status: suggested
+status: confirmed
 excerpt: Most classifiers in scikit-learn already support multiclass classification by default via the OvA (OvR) method，可一次把三類鳶尾花餵給分類器
 */}
-<PdfRefChip file="_references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf" page={59} status="suggested" excerpt={"Most classifiers in scikit-learn already support multiclass classification by default via the OvA (OvR) method，可一次把三類鳶尾花餵給分類器"} client:visible />
+<PdfRefChip file="_references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf" page={59} status="confirmed" excerpt={"Most classifiers in scikit-learn already support multiclass classification by default via the OvA (OvR) method，可一次把三類鳶尾花餵給分類器"} client:visible />
 
 {/* @ai-visualize
 id: ml-week6-sklearn-api-map
@@ -766,10 +766,10 @@ status: generated
 id: pipeline-concept
 file: _references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf
 page: 63
-status: suggested
+status: confirmed
 excerpt: 將多個步驟（例如標準化、特徵選擇、分類器）組合成一個物件（一條自動化產線），依序經過清理、轉換、建模，最後用於預測
 */}
-<PdfRefChip file="_references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf" page={63} status="suggested" excerpt={"將多個步驟（例如標準化、特徵選擇、分類器）組合成一個物件（一條自動化產線），依序經過清理、轉換、建模，最後用於預測"} client:visible />
+<PdfRefChip file="_references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf" page={63} status="confirmed" excerpt={"將多個步驟（例如標準化、特徵選擇、分類器）組合成一個物件（一條自動化產線），依序經過清理、轉換、建模，最後用於預測"} client:visible />
 
 內部運作分兩個方向：
 
@@ -777,10 +777,10 @@ excerpt: 將多個步驟（例如標準化、特徵選擇、分類器）組合�
 id: pipeline-inner-workings
 file: _references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf
 page: 64
-status: suggested
+status: confirmed
 excerpt: Inner workings of the Pipeline object：transformer(s) → estimator，建模與預測兩個方向
 */}
-<PdfRefChip file="_references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf" page={64} status="suggested" excerpt={"Inner workings of the Pipeline object：transformer(s) → estimator，建模與預測兩個方向"} client:visible />
+<PdfRefChip file="_references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf" page={64} status="confirmed" excerpt={"Inner workings of the Pipeline object：transformer(s) → estimator，建模與預測兩個方向"} client:visible />
 
 ![Pipeline 內部運作圖：訓練時各轉換器依序 fit 與 transform，預測時只做 transform 再交給最後的估計器](/note-images/ml-week6/06-pipeline-inner-workings.png)
 
@@ -796,10 +796,10 @@ excerpt: Inner workings of the Pipeline object：transformer(s) → estimator，
 id: pipeline-construction-methods
 file: _references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf
 page: 65
-status: suggested
+status: confirmed
 excerpt: Pipeline class：A sequence of data transformers with an optional final predictor；接受 (name, transformer/estimator) 的元組列表
 */}
-<PdfRefChip file="_references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf" page={65} status="suggested" excerpt={"Pipeline class：A sequence of data transformers with an optional final predictor；接受 (name, transformer/estimator) 的元組列表"} client:visible />
+<PdfRefChip file="_references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf" page={65} status="confirmed" excerpt={"Pipeline class：A sequence of data transformers with an optional final predictor；接受 (name, transformer/estimator) 的元組列表"} client:visible />
 
 價值不只是少寫幾行——流程自動化、標準化，避免手動分開執行造成的錯誤與重複程式碼，也更容易維護。更重要的是，它讓「轉換器只能用訓練資料 fit」這件事變成結構上保證，而不是靠人記得。
 
@@ -807,10 +807,10 @@ excerpt: Pipeline class：A sequence of data transformers with an optional final
 id: pipeline-automation-value
 file: _references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf
 page: 63
-status: suggested
+status: confirmed
 excerpt: 這樣的設計讓整個流程自動化、標準化，避免手動分開執行，減少錯誤與重複程式碼，也更容易維護
 */}
-<PdfRefChip file="_references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf" page={63} status="suggested" excerpt={"這樣的設計讓整個流程自動化、標準化，避免手動分開執行，減少錯誤與重複程式碼，也更容易維護"} client:visible />
+<PdfRefChip file="_references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf" page={63} status="confirmed" excerpt={"這樣的設計讓整個流程自動化、標準化，避免手動分開執行，減少錯誤與重複程式碼，也更容易維護"} client:visible />
 
 ### 實作案例：Breast Cancer Wisconsin 資料集
 
@@ -825,10 +825,10 @@ excerpt: 這樣的設計讓整個流程自動化、標準化，避免手動分�
 id: wdbc-dataset-details
 file: _references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf
 page: 69
-status: suggested
+status: confirmed
 excerpt: 569 筆腫瘤細胞的樣本（212 M 惡性、357 B 良性）；30 種特徵（從顯微鏡影像提取）；二元字串標籤
 */}
-<PdfRefChip file="_references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf" page={69} status="suggested" excerpt={"569 筆腫瘤細胞的樣本（212 M 惡性、357 B 良性）；30 種特徵（從顯微鏡影像提取）；二元字串標籤"} client:visible />
+<PdfRefChip file="_references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf" page={69} status="confirmed" excerpt={"569 筆腫瘤細胞的樣本（212 M 惡性、357 B 良性）；30 種特徵（從顯微鏡影像提取）；二元字串標籤"} client:visible />
 
 這份資料同時需要四種前處理：資料清理、標籤編碼、特徵縮放、特徵選取——而且 30 個特徵的尺度差異很大。整條 pipeline 依序是：
 
@@ -836,10 +836,10 @@ excerpt: 569 筆腫瘤細胞的樣本（212 M 惡性、357 B 良性）；30 種�
 id: wdbc-pipeline-requirement
 file: _references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf
 page: 70
-status: suggested
+status: confirmed
 excerpt: Preprocessing requirement：Data cleaning, label encoding, feature scaling and feature selection；30 features, scales differ
 */}
-<PdfRefChip file="_references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf" page={70} status="suggested" excerpt={"Preprocessing requirement：Data cleaning, label encoding, feature scaling and feature selection；30 features, scales differ"} client:visible />
+<PdfRefChip file="_references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf" page={70} status="confirmed" excerpt={"Preprocessing requirement：Data cleaning, label encoding, feature scaling and feature selection；30 features, scales differ"} client:visible />
 
 ![Breast Cancer Wisconsin 資料集前幾列，可見各特徵欄的數值尺度差異極大且含 NaN](/note-images/ml-week6/07-wdbc-samples-scales-differ.png)
 
@@ -860,10 +860,10 @@ excerpt: Preprocessing requirement：Data cleaning, label encoding, feature scal
 id: wdbc-end-to-end-summary
 file: _references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf
 page: 74
-status: suggested
+status: confirmed
 excerpt: 本範例完成了一個完整的端到端機器學習專案原型：資料切分／資料清理／資料編碼／特徵縮放／特徵選取／模型訓練／模型評估，只欠缺模型驗證與超參數調整
 */}
-<PdfRefChip file="_references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf" page={74} status="suggested" excerpt={"本範例完成了一個完整的端到端機器學習專案原型：資料切分／資料清理／資料編碼／特徵縮放／特徵選取／模型訓練／模型評估，只欠缺模型驗證與超參數調整"} client:visible />
+<PdfRefChip file="_references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf" page={74} status="confirmed" excerpt={"本範例完成了一個完整的端到端機器學習專案原型：資料切分／資料清理／資料編碼／特徵縮放／特徵選取／模型訓練／模型評估，只欠缺模型驗證與超參數調整"} client:visible />
 
 ## 教材預習重點
 

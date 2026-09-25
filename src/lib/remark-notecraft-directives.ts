@@ -509,6 +509,111 @@ function buildTooltip(node: MdNode, uid: number, file: VFileLike): void {
   node.children = [...visible, bubble];
 }
 
+/** 選項字母：A、B、C…（依清單順序指派；作者只在 answer 屬性裡寫字母，選項本身不必自己編號）。 */
+function optionLetter(i: number): string {
+  return String.fromCharCode(65 + i);
+}
+
+/**
+ * Choices（選擇題選項）：`:::choices{answer="B"}` 包一份 Markdown 清單。
+ *
+ * 字母依清單順序自動指派，`answer` 是正解的唯一來源（逗號分隔可標多個、大小寫不分），
+ * 因此作者重排選項時只需改 `answer`。沿用 Admonitions / Badge / Steps 的處理慣例：
+ * 任何寫法問題都只 `console.warn` 並退化，不讓 build 失敗、也不讓內容消失。
+ */
+function buildChoices(node: MdNode, file: VFileLike): void {
+  const where = file.path ? `（${file.path}）` : "";
+  const children = node.children || [];
+  const listNode = children.find((c) => c.type === "list");
+
+  node.data = node.data || {};
+
+  if (!listNode) {
+    console.warn(
+      `[notecraft-directives] :::choices 需含一份 Markdown 清單作為選項，已退化為一般區塊${where}`,
+    );
+    node.data.hName = "div";
+    node.data.hProperties = { className: ["nc-choices", "nc-choices--degraded"] };
+    return;
+  }
+
+  const items = listNode.children || [];
+  const letters = items.map((_, i) => optionLetter(i));
+  const answerAttr = ((node.attributes || {}).answer || "").trim();
+
+  const wanted = answerAttr
+    ? answerAttr.split(",").map((s) => s.trim().toUpperCase()).filter(Boolean)
+    : [];
+  if (!answerAttr) {
+    console.warn(
+      `[notecraft-directives] :::choices 缺 answer 屬性，正解不標記${where}`,
+    );
+  }
+  const unknown = wanted.filter((w) => !letters.includes(w));
+  if (unknown.length) {
+    console.warn(
+      `[notecraft-directives] :::choices answer=${unknown.join(",")} 超出選項範圍（共 ${items.length} 項），正解不標記${where}`,
+    );
+  }
+  // 有任何字母對不上就整組不標記——寧可沒有顏色，也不要標錯答案。
+  const correct = new Set(unknown.length ? [] : wanted);
+
+  const options: MdNode[] = items.map((item, i) => {
+    const letter = letters[i];
+    const isCorrect = correct.has(letter);
+    // listItem 通常是「單一段落包住選項文字」；拆掉那層 <p>，選項列才能維持單行 flex 版面。
+    const kids = item.children || [];
+    const body =
+      kids.length === 1 && kids[0].type === "paragraph" ? kids[0].children || [] : kids;
+
+    const parts: MdNode[] = [
+      el("span", { className: ["nc-choice__key"] }, [text(letter)]),
+      el("span", { className: ["nc-choice__text"] }, body),
+    ];
+    if (isCorrect) {
+      parts.push(
+        el(
+          "svg",
+          {
+            className: ["nc-choice__check"],
+            viewBox: "0 0 24 24",
+            width: 18,
+            height: 18,
+            fill: "none",
+            stroke: "currentColor",
+            "stroke-width": 2.4,
+            "stroke-linecap": "round",
+            "stroke-linejoin": "round",
+            "aria-hidden": "true",
+          },
+          [el("path", { d: "M20 6 9 17l-5-5" })],
+        ),
+        // 顏色與勾號對螢幕閱讀器無意義，補一段視覺隱藏文字說明這是正解。
+        el("span", { className: ["nc-choice__sr"] }, [text("正解")]),
+      );
+    }
+    return el(
+      "li",
+      { className: isCorrect ? ["nc-choice", "nc-choice--correct"] : ["nc-choice"] },
+      parts,
+    );
+  });
+
+  const strayNodes = children.filter((c) => c !== listNode);
+  if (strayNodes.length) {
+    console.warn(
+      `[notecraft-directives] :::choices 含 ${strayNodes.length} 個非清單子節點，已置於容器底部${where}`,
+    );
+  }
+
+  node.data.hName = "ul";
+  node.data.hProperties = { className: ["nc-choices"] };
+  // 雜項包在額外的 <li> 裡：內容不消失，<ul> 也不會多出非法的直接子節點。
+  node.children = strayNodes.length
+    ? [...options, el("li", { className: ["nc-choices__stray"] }, strayNodes)]
+    : options;
+}
+
 const DIRECTIVE_TYPES = new Set([
   "containerDirective",
   "leafDirective",
@@ -574,6 +679,11 @@ export default function remarkNotecraftDirectives() {
             }
           }
           buildSteps(child, file);
+          continue;
+        }
+        if (child.type === "containerDirective" && child.name === "choices") {
+          walk(child); // 選項文字內可含巢狀行內指令（:badge / :tip）
+          buildChoices(child, file);
           continue;
         }
         if (child.type === "textDirective" && child.name === "tip") {

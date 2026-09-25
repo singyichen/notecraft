@@ -5,7 +5,7 @@ tags:
   - 基本操作
 category: 系統說明
 createdAt: '2026-06-16'
-updatedAt: '2026-06-22'
+updatedAt: '2026-09-25'
 ---
 
 NoteCraft 在標準 Markdown / MDX 之外，提供三種類 Material for MkDocs 的內容增強語法，皆以 `remark-directive` 於 build 階段渲染、樣式遵循 trendlink-design，正式環境同樣可用。
@@ -67,6 +67,28 @@ yarn add notecraft
 - 帶 icon：:badge[新功能]{variant="success" icon="sparkle"} :badge[已完成]{variant="success" icon="check"} :badge[警告]{variant="warning" icon="warning"}
 - `size="sm"`（適合表格 cell 內）：:badge[必填]{variant="danger" size="sm"} :badge[選用]{variant="neutral" size="sm" outline}
 - 可點擊（有 `href`）：:badge[查看 Admonitions]{variant="info" href="#admonitions"} :badge[GitHub]{variant="neutral" icon="star" href="https://github.com/"}
+
+## Choices（選擇題選項）
+
+用 `:::choices{answer="B"}` 容器包一份 Markdown 清單，字母 A／B／C… 依清單順序自動指派——選項本身不必自己編號，重排選項時只要改 `answer`。正解整列以 tip 語意色標出，並附勾號與視覺隱藏的「正解」文字供螢幕閱讀器朗讀。
+
+:::choices{answer="B"}
+- 會損失該類別欄位的資訊
+- 被刪的那一欄是其餘欄位的線性組合
+- 只是為了節省記憶體
+- 只有樹模型需要這樣做
+:::
+
+`answer` 可用逗號分隔標多個正解（複選題），大小寫不分：
+
+:::choices{answer="a, c"}
+- 空乏區的寬度會隨逆偏電壓增加而變寬
+- 順偏時空乏區變寬
+- 導通電壓（knee voltage）約在 0.7 V 附近
+- 逆偏電流與溫度無關
+:::
+
+寫法出錯時只會在 build log 留 warn 並退化為不標記的一般清單，不會讓 build 失敗，也不會讓選項消失（`answer` 指到不存在的字母、或忘了寫 `answer` 都是如此）。
 
 ## Steps（步驟）
 

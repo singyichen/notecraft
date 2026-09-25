@@ -673,6 +673,75 @@ img { max-width: 100%; display: block; }
   font-size: var(--text-sm);
 }
 
+/* Choices（選擇題選項）───────────────────────────────────────
+   `:::choices{answer="B"}` 的輸出。正解沿用 tip tone（綠）：淡底 + 左色條 + 勾號 + 加粗，
+   不只靠色相區分，黑白列印與色弱視覺下仍讀得出來。選項字級與內文一致（--text-md）。 */
+.nc-prose .nc-choices {
+  margin: 22px 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.nc-prose .nc-choice {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin: 0;
+  padding: 7px 14px 7px 12px;
+  border-left: 4px solid transparent;
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  color: var(--text-body);
+  font-size: var(--text-md);
+  line-height: 1.7;
+}
+.nc-prose .nc-choice::marker { content: ""; }
+.nc-prose .nc-choice__key {
+  flex: none;
+  width: 22px;
+  color: var(--text-muted);
+  font-weight: var(--weight-medium);
+}
+.nc-prose .nc-choice__text { flex-grow: 1; }
+.nc-prose .nc-choice--correct {
+  border-left-color: var(--nc-tone-tip-fg);
+  background: var(--nc-tone-tip-bg);
+  color: var(--blue-800);
+}
+.nc-prose .nc-choice--correct .nc-choice__key {
+  color: var(--nc-tone-tip-fg);
+  font-weight: var(--weight-bold);
+}
+.nc-prose .nc-choice--correct .nc-choice__text { font-weight: var(--weight-medium); }
+.nc-prose .nc-choice__check {
+  flex: none;
+  margin-top: 5px;
+  color: var(--nc-tone-tip-fg);
+}
+/* 視覺隱藏但保留在無障礙樹中（專案目前僅此處需要，故不另立全域 utility）。 */
+.nc-prose .nc-choice__sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+/* :::choices 容器內非清單子節點的安全網 */
+.nc-prose .nc-choices__stray {
+  margin-top: 12px;
+  padding: 10px 12px;
+  border: 1px dashed var(--border-subtle);
+  border-radius: var(--radius-sm);
+  color: var(--text-muted);
+  font-size: var(--text-sm);
+  list-style: none;
+}
+
 /* ── unstyled button reset for ghost buttons ── */
 .nc-btn-reset {
   border: none; background: none; padding: 0; margin: 0; cursor: pointer;

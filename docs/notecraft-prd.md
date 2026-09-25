@@ -84,6 +84,7 @@ Project Name: NoteCraft
 22. \* 提供 [Markdown 擴充語法 — Steps](#markdown-擴充語法steps)：條列「步驟」內容，支援 `horizontal` 與 `vertical`（預設）兩種版型，重用 `remark-directive` 底座，純 CSS / 漸進增強，正式環境同樣可用
 23. \* 提供 [筆記轉簡報（Note → Presentation）](#筆記轉簡報note--presentation)：作者於 [筆記檢視頁面](#筆記檢視頁面) 功能列點「生成簡報」按鈕複製提示詞、貼進 Claude Code，由 AI 讀取整篇筆記（文字 ＋ 既有 [Generated 元件](#generated-元件)）重新編排為一份**多頁簡報**（每篇一份、獨立 slides 檔），並於 [簡報模式](#筆記轉簡報note--presentation)（`/present/[slug]`）以「檢視 / 播放」兩態呈現；生成為 dev-only、播放正式環境亦可用，版面遵循 [trendlink-design](#skills)。由獨立的 `content-present` Skill 與兩個新 Subagent 執行，**與既有 AI 視覺化管線完全隔離**
 24. \* 為每個 [Generated 元件](#generated-元件) 提供 [放大檢視](#ai-生成內容外框卡片--放大檢視viz-zoom)：從 [AI 生成內容外框卡片](#ai-生成內容外框卡片) 標題列點「放大檢視」，把元件搬進全螢幕可拖曳平移、可縮放的畫布閱讀（沿用簡報端既有的 `CanvasViewport`），互動完整保留、可匯出 100% 原尺寸 PNG；解決寬元件在內文欄寬下被擠壓、橫向溢出的問題，dev 與正式環境皆可用
+25. \* 提供 [Markdown 擴充語法 — Choices](#markdown-擴充語法choices)：把一份 Markdown 清單渲染為帶 A／B／C 字母的選擇題選項，並以容器屬性 `answer` 把正解整列以語意色標出（支援複選），重用 `remark-directive` 底座，純 CSS、零 JS，正式環境同樣可用；服務於 `exam-review` Skill 的選擇題模式
 
 ### 4.2 非目標（Out of Scope）
 
@@ -2412,6 +2413,85 @@ model: haiku
 - [ ] 其他
 
 > 已收斂（作者拍板 2026-06-22）：全支援巢狀；step 內可含 admonition / badge / code block / 清單 等任意 Markdown。
+
+---
+
+#### Markdown 擴充語法：Choices（選擇題選項）（\*）
+
+<a name="markdown-擴充語法choices"></a>
+
+## 目標
+
+為 [筆記用戶](#筆記用戶) 提供「選擇題選項」呈現語法 —— 把一份 Markdown 清單渲染為自帶 A／B／C 字母的選項列，並把正解整列以語意色標出。服務於 `exam-review` Skill 的**選擇題模式**（考試以選擇題為主的課程，逐篇筆記整理可能考題），讓「題幹 → 選項（正解著色）→ 詳解（收合）」三段能全部以作者手寫 Markdown 完成，不需為每題生成 React 元件。屬「作者手寫、build 階段渲染、正式環境一致」的內容增強，與 [AI 標記區塊](#ai-標記區塊) 正交。
+
+## 規格
+
+- **語法（重用 [Task 14](#markdown-擴充語法admonitions--content-tabs--tooltips) 的 `remark-directive` 底座 — 容器 directive）**：
+
+  ```mdx
+  :::choices{answer="B"}
+  - 會損失該類別欄位的資訊
+  - 被刪的那一欄是其餘欄位的線性組合
+  - 只是為了節省記憶體
+  - 只有樹模型需要這樣做
+  :::
+  ```
+
+  - 內容：**恰一份 Markdown 清單**（有序或無序皆可），一個 `listItem` 就是一個選項；選項內支援行內 Markdown 與巢狀行內 directive（`:badge` / `:tip`）與 KaTeX。
+  - 選項字母（A、B、C…）**依清單順序自動指派**，作者不在選項文字裡自己編號；重排選項時只需改 `answer`。
+  - 屬性：
+    - `answer`：正解字母，**大小寫不分**；逗號分隔可標多個（`answer="B,D"`）以支援複選題。題幹需自行註明「複選」。
+- **渲染**：產出 `<ul class="nc-choices">`，每個選項為 `<li class="nc-choice">`，內含 `.nc-choice__key`（字母）與 `.nc-choice__text`（選項內容）。正解那項加 `nc-choice--correct`，並附 `.nc-choice__check`（勾號 SVG）與 `.nc-choice__sr`（視覺隱藏的「正解」文字）。
+  - 正解樣式沿用 [Admonitions](#admonitions) 的 `tip` 語意色 token（淡綠底 + 左側 4px 色條 + 同色字母 + 勾號 + 選項文字加粗）：**不只靠色相區分**，黑白列印與色弱視覺下仍可辨識。
+  - 選項字級與內文一致（`--text-md`），不因標記而縮小；色票完全取自設計 token，不硬編色碼。
+- **互動 / a11y**：純展示，無互動、零 JS。語意為清單，字母保留在無障礙樹中（不加 `aria-hidden`），勾號為裝飾（`aria-hidden="true"`）並以視覺隱藏文字補述「正解」。
+- **環境**：純內容渲染，dev 與正式環境**行為一致**。
+
+## 卡控機制
+
+沿用 [Badge](#markdown-擴充語法badge) / [Steps](#markdown-擴充語法steps) 的處理慣例：任何寫法問題都只 `console.warn` 並退化，**不中斷 build、不讓內容消失**。
+
+- 容器內沒有清單 → 退化為 `<div class="nc-choices nc-choices--degraded">`（原內容保留）+ build log 警示。
+- `answer` 缺漏 → 整組不標記正解（照常渲染字母與選項）+ build log 警示。
+- `answer` 指到不存在的字母（如四個選項寫 `answer="E"`）→ **整組不標記**（寧可沒有顏色，也不要標錯答案）+ build log 警示。
+- 清單以外的雜項子節點 → 包進尾端 `<li class="nc-choices__stray">`（保留內容、`<ul>` 不出現非法直接子節點）+ build log 警示。
+
+## 驗收標準
+
+| Scenario | Given | When | Then |
+| --- | --- | --- | --- |
+| 字母自動指派 | `:::choices{answer="A"}` 含四個選項 | build 後檢視 | 四列依序顯示 A／B／C／D，選項文字不含作者手寫編號 |
+| 正解著色 | `answer="B"` | 檢視 | 第二列淡綠底 + 左側綠色條 + 綠色字母 + 勾號，其餘三列無底色 |
+| 複選 | `answer="a, c"` | 檢視 | 第一、三列同時標為正解 |
+| 字母超出範圍 | 四個選項但 `answer="E"` | build | log 警示、四列皆不標記，build 不中斷 |
+| 缺 answer | `:::choices` 未帶 `answer` | build | log 警示、照常渲染字母但不標記正解 |
+| 無清單 | 容器內只有段落 | build | log 警示、退化為一般區塊且文字不消失 |
+| 螢幕閱讀器 | 正解列 | 以報讀器朗讀 | 讀出字母、選項文字與「正解」 |
+| 正式環境一致 | Netlify 靜態站 | 檢視含 choices 的筆記 | 樣式正常，無執行時 API |
+
+## 待釐清
+
+### Q1. 正解如何指定？
+
+- [x] **容器屬性 `answer` + 字母依清單順序自動指派** —— 正解只有一個來源，重排選項不需逐項改標記
+- [ ] 每個選項各自一個 leaf directive（`::choice{correct}`）
+- [ ] 作者自行在選項文字裡寫 `(A)` 並以文字比對
+
+> 已收斂（作者拍板 2026-09-25）：採 `answer` 屬性。代價是「作者重排選項卻忘了改 `answer`」無法被機器偵測，靠 `exam-review` Skill 在寫入時同時產出兩者來規避。
+
+### Q2. 答案要直接著色，還是只放在收合的詳解裡？
+
+- [x] **選項直接著色，詳解另以 `:::tip{collapsible}` 收合** —— 定位是「複習閱讀」，掃過去就知道正解，詳解按需展開
+- [ ] 選項不著色，答案與詳解一併收合（可自我測驗）
+
+> 已收斂（作者拍板 2026-09-25）：採直接著色。作者明確要求「答案在題目上用顏色標記、解答用折疊呈現」；因此這一節不具備自我測驗功能，這是刻意的取捨。
+
+### Q3. 章節擺法？
+
+- [x] **`### 選擇題` 作為 `## 考題` 的第一個子小節** —— 考試以選擇題為主，最重要的擺最前面；右側目錄（收 h1–h3）會顯示為「考題」的子項
+- [ ] 獨立一個頂層 `## 選擇題`
+
+> 已收斂（作者拍板 2026-09-25）：收在 `## 考題` 底下、排在 `### 概念辨析題` 之前。`#### 選擇題 N` 為 h4，不進目錄。
 
 ---
 
