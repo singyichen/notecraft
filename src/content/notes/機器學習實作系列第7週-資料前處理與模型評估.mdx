@@ -6,6 +6,7 @@ createdAt: "2026-10-19"
 updatedAt: "2026-09-25"
 ---
 
+import PdfRefChip from '@/components/islands/PdfRefChip.tsx'
 import GeneratedFrame from '@/components/GeneratedFrame.astro'
 import MlWeek7LeakageContrast from '@/components/generated/ml-week7-leakage-contrast'
 import MlWeek7PipelineInFold from '@/components/generated/ml-week7-pipeline-in-fold'
@@ -132,7 +133,25 @@ status: generated
 
 > 本節起對應課堂講義 `第7週-特徵工程與模型選擇評估.pdf`（Lecture 6）。講義開場定義：模型選擇就是「在所有可行的方案中，找出對特定資料集泛化能力最好、預測誤差最小的模型」。
 
+{/* @ai-reference
+id: model-selection-definition
+file: _references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf
+page: 1
+status: suggested
+excerpt: 在所有可行的方案中，找出對特定資料集泛化能力最好、預測誤差最小的模型
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf" page={1} status="suggested" excerpt={"在所有可行的方案中，找出對特定資料集泛化能力最好、預測誤差最小的模型"} client:visible />
+
 「模型選擇」這個詞在講義裡有寬窄兩義，分清楚才不會誤會該用哪套方法：
+
+{/* @ai-reference
+id: model-selection-scope
+file: _references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf
+page: 4
+status: suggested
+excerpt: Hyperparameter Tuning (in the narrow sense)：Select the optimal values of tuning parameters；Algorithm Selection (in the broad sense)：Select the best model/algorithm
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf" page={4} status="suggested" excerpt={"Hyperparameter Tuning (in the narrow sense)：Select the optimal values of tuning parameters；Algorithm Selection (in the broad sense)：Select the best model/algorithm"} client:visible />
 
 | 層次 | 中文 | 在選什麼 |
 | --- | --- | --- |
@@ -140,6 +159,15 @@ status: generated
 | Algorithm selection（廣義） | 演算法選擇 | 比較不同模型／演算法各自的最佳表現，選出最好的那個 |
 
 兩者的差別在後面會直接影響驗證架構：狹義的調參用單層交叉驗證就夠，廣義的演算法比較則需要巢狀交叉驗證。講義的建議很直接：至少比較數個不同的機器學習演算法，再決定用哪一個。
+
+{/* @ai-reference
+id: model-selection-compare-count
+file: _references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf
+page: 5
+status: suggested
+excerpt: Compare at least a handful of different ML algorithms to select the best model
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf" page={5} status="suggested" excerpt={"Compare at least a handful of different ML algorithms to select the best model"} client:visible />
 
 ## 交叉驗證：從 Holdout 到 k 折
 
@@ -153,6 +181,15 @@ status: generated
 | 驗證集 | 模型評估、模型選擇 |
 | 測試集 | 模型評估、泛化效能估計 |
 
+{/* @ai-reference
+id: holdout-cv-basics
+file: _references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf
+page: 7
+status: suggested
+excerpt: Training dataset：Model fitting；Validation dataset：Model evaluation, Model selection；Test dataset：Generalization performance estimate。Disadvantage：Sensitive to how we partition the training dataset
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf" page={7} status="suggested" excerpt={"Training dataset：Model fitting；Validation dataset：Model evaluation, Model selection；Test dataset：Generalization performance estimate。Disadvantage：Sensitive to how we partition the training dataset"} client:visible />
+
 這裡的關鍵是驗證集與測試集**不能是同一份**：驗證集參與了選擇，已經不再「未見過」，拿它報告泛化效能會偏樂觀。
 
 缺點也很明顯：結果**對「訓練集與驗證集怎麼分」很敏感**——換一種切法，結論可能就變了。
@@ -160,6 +197,15 @@ status: generated
 ### k 折交叉驗證
 
 **$k$ 折交叉驗證（k-fold cross-validation）** 解決的正是這件事。把訓練資料隨機不放回地切成 $k$ 折，每輪取 $k-1$ 折訓練、剩下 1 折評估，重複 $k$ 次得到 $k$ 個模型與 $k$ 個效能估計。取平均後，對子分割方式的敏感度就大幅下降。
+
+{/* @ai-reference
+id: kfold-cv-basics
+file: _references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf
+page: 8
+status: suggested
+excerpt: Average performance of k models is less sensitive to the sub-partitioning of training data
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf" page={8} status="suggested" excerpt={"Average performance of k models is less sensitive to the sub-partitioning of training data"} client:visible />
 
 $k$ 的選法有個簡單的反向關係：
 
@@ -170,10 +216,28 @@ $k$ 的選法有個簡單的反向關係：
 
 $k = 10$ 是常用的標準值。極端情況是 $k$ 等於訓練樣本數，稱為**留一交叉驗證（leave-one-out cross-validation）** 。
 
+{/* @ai-reference
+id: kfold-cv-k-choice
+file: _references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf
+page: 9
+status: suggested
+excerpt: k = 10 (a good standard value)；Small dataset → Large k；Large dataset → Small k；leave-one-out cross-validation 為 k 等於訓練樣本數的特例
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf" page={9} status="suggested" excerpt={"k = 10 (a good standard value)；Small dataset → Large k；Large dataset → Small k；leave-one-out cross-validation 為 k 等於訓練樣本數的特例"} client:visible />
+
 兩個容易忽略的細節：
 
 - 找到滿意的超參數後，要**用完整的訓練集重新訓練一次**。我們要的是單一最終模型，而不是那 $k$ 個個別模型；訓練樣本越多，模型通常越準也越穩健。
 - **分層 $k$ 折交叉驗證（stratified k-fold cross-validation）** 會在每一折中保持類別標籤的比例，分類問題應優先使用。
+
+{/* @ai-reference
+id: kfold-cv-details
+file: _references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf
+page: 10
+status: suggested
+excerpt: Once found satisfactory hyperparameter values, retrain the model on the complete training dataset；Stratified k-fold：Class label proportions are preserved in each fold
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf" page={10} status="suggested" excerpt={"Once found satisfactory hyperparameter values, retrain the model on the complete training dataset；Stratified k-fold：Class label proportions are preserved in each fold"} client:visible />
 
 ## 診斷曲線：學習曲線與驗證曲線
 
@@ -191,19 +255,73 @@ $k = 10$ 是常用的標準值。極端情況是 $k$ 等於訓練樣本數，稱
 | 高偏差（欠擬合） | 訓練與交叉驗證的正確率**都低** | 增加模型參數數量、降低正則化強度 |
 | 高變異（過擬合） | 訓練與交叉驗證正確率之間**有明顯的縫** | 蒐集更多訓練資料、降低模型複雜度、提高正則化參數、減少特徵數 |
 
+{/* @ai-reference
+id: learning-curve-diagnosis
+file: _references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf
+page: 12
+status: suggested
+excerpt: High bias：Both low training and cross-validation accuracy；High variance：Large gap between training and cross-validation accuracy，及各自的 solutions
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf" page={12} status="suggested" excerpt={"High bias：Both low training and cross-validation accuracy；High variance：Large gap between training and cross-validation accuracy，及各自的 solutions"} client:visible />
+
 這張圖最實用的地方在於它能回答「該不該再去要資料」。高偏差時兩條線已經貼合且都低，再多資料也只是把同一條平線延長；高變異時兩條線之間有持續的縫，補資料才可能把縫拉近。
 
 講義也誠實標出這條經驗法則的邊界：蒐集更多訓練資料通常會降低過擬合的機會，但**並非總是有效**——例如訓練資料雜訊極大，或模型已經非常接近最佳。
 
+{/* @ai-reference
+id: learning-curve-caveat
+file: _references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf
+page: 11
+status: suggested
+excerpt: While collecting more training data usually tends to decrease the chance of overfitting, it may not always help, for example, if the training data is extremely noisy or the model is already very close to optimal
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf" page={11} status="suggested" excerpt={"While collecting more training data usually tends to decrease the chance of overfitting, it may not always help, for example, if the training data is extremely noisy or the model is already very close to optimal"} client:visible />
+
 ## 超參數搜尋的三種策略
 
 找到（次）最佳的超參數組合，靠的是「交叉驗證＋搜尋策略」。講義列了三種：
+
+{/* @ai-reference
+id: hp-search-strategy-intro
+file: _references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf
+page: 16
+status: suggested
+excerpt: Cross-validation + search strategy：Grid search／Randomized search／Successive halving search
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf" page={16} status="suggested" excerpt={"Cross-validation + search strategy：Grid search／Randomized search／Successive halving search"} client:visible />
 
 | 策略 | 中文 | 做法 | 取捨 |
 | --- | --- | --- | --- |
 | Grid search | 格狀搜尋 | 為每個超參數指定候選值清單，窮舉所有組合構成網格，逐一用交叉驗證評估 | 只要最佳組合在網格內就**保證找得到**；網格一大，成本急遽上升 |
 | Randomized search | 隨機搜尋 | 從分布或離散集合中隨機抽取超參數組合 | 用更低的成本與時間探索**更廣**的取值範圍 |
 | Successive halving | 逐次減半搜尋 | 先用少量資源評估所有候選，反覆淘汰表現差的、把資源集中到存活者，直到只剩一組 | 資源效率最高；講義的白話註解是「練蠱」 |
+
+{/* @ai-reference
+id: hp-search-grid
+file: _references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf
+page: 17
+status: suggested
+excerpt: Guaranteed to find the optimal hyperparameter configuration if it is contained in the specified grid；Specifying large hyperparameter grids makes grid search very expensive in practice
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf" page={17} status="suggested" excerpt={"Guaranteed to find the optimal hyperparameter configuration if it is contained in the specified grid；Specifying large hyperparameter grids makes grid search very expensive in practice"} client:visible />
+
+{/* @ai-reference
+id: hp-search-random
+file: _references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf
+page: 18
+status: suggested
+excerpt: Explore a wider range of hyperparameter value settings in a more cost- and time-effective manner
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf" page={18} status="suggested" excerpt={"Explore a wider range of hyperparameter value settings in a more cost- and time-effective manner"} client:visible />
+
+{/* @ai-reference
+id: hp-search-halving
+file: _references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf
+page: 19
+status: suggested
+excerpt: The following steps are repeated until only one hyperparameter configuration remains；More resource-efficient hyperparameter search
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf" page={19} status="suggested" excerpt={"The following steps are repeated until only one hyperparameter configuration remains；More resource-efficient hyperparameter search"} client:visible />
 
 {/* @ai-visualize
 id: ml-week7-search-strategies
@@ -252,17 +370,44 @@ status: generated
 
 要比較「不同演算法各自調到最好之後」誰比較強，單層交叉驗證是不夠的——超參數是在同一份資料上挑的，分數會樂觀。**巢狀交叉驗證（nested cross-validation）** 用兩層迴圈解決：
 
+{/* @ai-reference
+id: nested-cv-basics
+file: _references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf
+page: 20
+status: suggested
+excerpt: Outer k-fold cross-validation loop to split the data into training and test folds；Inner loop is used to select the model；the test fold is then used to evaluate the model performance
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf" page={20} status="suggested" excerpt={"Outer k-fold cross-validation loop to split the data into training and test folds；Inner loop is used to select the model；the test fold is then used to evaluate the model performance"} client:visible />
+
 - **外層** $k$ 折把資料切成訓練折與測試折
 - **內層**在外層的訓練折上再跑一次 $k$ 折交叉驗證，用來選模型（挑超參數）
 - 選完之後，用外層的測試折評估該模型的效能
 
 這樣得到的，才是「我們調完超參數、拿去面對沒看過的資料」時可以期待的合理估計。講義的範例是 **$5 \times 2$ 交叉驗證**——外層 5 折、內層 2 折，最後取外層 5 個分數的平均作為演算法選擇的依據。
 
+{/* @ai-reference
+id: nested-cv-5x2-example
+file: _references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf
+page: 21
+status: suggested
+excerpt: Example：5 × 2 cross-validation；Model selection；Average performance used for algorithm selection
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf" page={21} status="suggested" excerpt={"Example：5 × 2 cross-validation；Model selection；Average performance used for algorithm selection"} client:visible />
+
 ## 模型評估：混淆矩陣與效能指標
 
 ### 混淆矩陣
 
 **混淆矩陣（confusion matrix）** 是一個方陣，記錄分類器各種預測的計數：真陽性（TP）、真陰性（TN）、偽陽性（FP）、偽陰性（FN）。本節所有指標都從這四個數字長出來——把它們當成八個要背的公式，不如記住它們是同四格數字的八種讀法。
+
+{/* @ai-reference
+id: confusion-matrix-def
+file: _references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf
+page: 23
+status: suggested
+excerpt: A square matrix that reports the counts of predictions of a classifier：True Positive (TP)／True Negative (TN)／False Positive (FP)／False Negative (FN)
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf" page={23} status="suggested" excerpt={"A square matrix that reports the counts of predictions of a classifier：True Positive (TP)／True Negative (TN)／False Positive (FP)／False Negative (FN)"} client:visible />
 
 ### 錯誤率與正確率
 
@@ -273,9 +418,27 @@ $$
 \end{aligned}
 $$
 
+{/* @ai-reference
+id: err-acc-formulas
+file: _references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf
+page: 24
+status: suggested
+excerpt: Prediction Error (ERR)（錯誤率）／Accuracy (ACC)（正確率）
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf" page={24} status="suggested" excerpt={"Prediction Error (ERR)（錯誤率）／Accuracy (ACC)（正確率）"} client:visible />
+
 ### 真陽率與偽陽率
 
 處理**類別不平衡（class imbalance）** 時，下面這兩個比正確率有用：
+
+{/* @ai-reference
+id: tpr-fpr-formulas
+file: _references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf
+page: 25
+status: suggested
+excerpt: True Positive Rate (TPR)（真陽率）／False Positive Rate (FPR)（偽陽率）。Useful for imbalanced class problems
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf" page={25} status="suggested" excerpt={"True Positive Rate (TPR)（真陽率）／False Positive Rate (FPR)（偽陽率）。Useful for imbalanced class problems"} client:visible />
 
 $$
 \begin{aligned}
@@ -288,6 +451,15 @@ $$
 
 **精確率（precision）** 與**召回率（recall）** 問的是不同的問題——前者問「我說是陽性的，有幾成真的是」，後者問「所有真的陽性，我抓到了幾成」：
 
+{/* @ai-reference
+id: precision-recall-formulas
+file: _references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf
+page: 26
+status: suggested
+excerpt: Precision (PRE)（精確率）／Recall (REC)（召回率）
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf" page={26} status="suggested" excerpt={"Precision (PRE)（精確率）／Recall (REC)（召回率）"} client:visible />
+
 $$
 \begin{aligned}
 \text{PRE} &= \frac{TP}{TP + FP} \\[6pt]
@@ -297,6 +469,15 @@ $$
 
 兩者要合成單一數字時用 **F1 分數**，取的是調和平均——調和平均對「兩者中較小的那個」特別敏感，所以只有兩邊都高，F1 才會高：
 
+{/* @ai-reference
+id: f1-score-formula
+file: _references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf
+page: 27
+status: suggested
+excerpt: F1 Score：Harmonic mean of PRE and REC
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf" page={27} status="suggested" excerpt={"F1 Score：Harmonic mean of PRE and REC"} client:visible />
+
 $$
 \text{F1} = 2 \cdot \frac{\text{PRE} \times \text{REC}}{\text{PRE} + \text{REC}}
 $$
@@ -305,6 +486,15 @@ $$
 
 **馬修斯相關係數（Matthews correlation coefficient, MCC）** ——又稱 Phi 相關係數——同時吃四格數字，因此在類別不平衡時比 F1 更不容易被單邊表現騙過，值域是 $-1 \le \text{MCC} \le 1$：
 
+{/* @ai-reference
+id: mcc-formula
+file: _references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf
+page: 27
+status: suggested
+excerpt: Matthews Correlation Coefficient (MCC)（馬修斯相關係數 或 Phi 相關係數），−1 ≤ MCC ≤ 1
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf" page={27} status="suggested" excerpt={"Matthews Correlation Coefficient (MCC)（馬修斯相關係數 或 Phi 相關係數），−1 ≤ MCC ≤ 1"} client:visible />
+
 $$
 \text{MCC} = \frac{TP \times TN - FP \times FN}{\sqrt{(TP + FP)(TP + FN)(TN + FP)(TN + FN)}}
 $$
@@ -312,6 +502,15 @@ $$
 ### ROC 曲線與 AUC
 
 前面所有指標都綁在某一個決策門檻上。**受試者操作特徵曲線（receiver operating characteristic curve, ROC）** 換一個角度：把門檻從最嚴掃到最鬆，畫出 FPR 對 TPR 的軌跡，量的是模型的**排序能力**而非單一門檻下的表現。
+
+{/* @ai-reference
+id: roc-curve-def
+file: _references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf
+page: 28
+status: suggested
+excerpt: Receiver Operating Characteristic (ROC)：Curve of FPR v.s. TPR, computed by shifting the decision threshold；ROC AUC 範圍 [0,1]，Perfect／Random Guessing
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf" page={28} status="suggested" excerpt={"Receiver Operating Characteristic (ROC)：Curve of FPR v.s. TPR, computed by shifting the decision threshold；ROC AUC 範圍 [0,1]，Perfect／Random Guessing"} client:visible />
 
 曲線下面積 **ROC AUC** 落在 $[0, 1]$——完美分類器是 1，隨機猜測是 0.5，也就是對角線。
 
@@ -363,6 +562,15 @@ status: generated
 
 $k$ 類（$k > 2$）問題要把二元指標推廣，有兩種加權方式：
 
+{/* @ai-reference
+id: micro-macro-average
+file: _references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf
+page: 29
+status: suggested
+excerpt: Micro-average（微平均）：Weight each instance equally，關注每一個樣本；Macro-average（宏平均）：Weight all classes equally，關注每一個類別
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf" page={29} status="suggested" excerpt={"Micro-average（微平均）：Weight each instance equally，關注每一個樣本；Macro-average（宏平均）：Weight all classes equally，關注每一個類別"} client:visible />
+
 | 平均方式 | 中文 | 權重給誰 | 特性 |
 | --- | --- | --- | --- |
 | Micro-average | 微平均 | 每一個樣本（或預測）等權 | 關注「每一個樣本」，由樣本數多的類別主導 |
@@ -370,15 +578,42 @@ $k$ 類（$k > 2$）問題要把二元指標推廣，有兩種加權方式：
 
 補充一個容易混淆的點：在 `classification_report` 裡，micro avg 等同於正確率，而且各指標的值會相同（因為總 FP 等於總 FN）。
 
+{/* @ai-reference
+id: micro-avg-classification-report
+file: _references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf
+page: 46
+status: suggested
+excerpt: Micro avg corresponds to accuracy and would be the same for all metrics (total FP = total FN)
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf" page={46} status="suggested" excerpt={"Micro avg corresponds to accuracy and would be the same for all metrics (total FP = total FN)"} client:visible />
+
 ### 類別不平衡的三種處理
 
 當一個或多個類別（多數類）在資料集中被過度代表時：
+
+{/* @ai-reference
+id: class-imbalance-strategies
+file: _references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf
+page: 30
+status: suggested
+excerpt: Focus on other metrics (e.g., precision or recall) than accuracy；Upsample the minority class, downsample the majority class, and generate synthetic training examples；setting class_weight='balanced'
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf" page={30} status="suggested" excerpt={"Focus on other metrics (e.g., precision or recall) than accuracy；Upsample the minority class, downsample the majority class, and generate synthetic training examples；setting class_weight='balanced'"} client:visible />
 
 1. **改看別的指標**——精確率或召回率，而不是正確率
 2. **動資料**——對少數類過採樣、對多數類欠採樣，或生成合成的訓練樣本
 3. **動損失**——對少數類的錯誤預測給予更大的懲罰，在 scikit-learn 分類器中設定 `class_weight='balanced'`
 
 第三種的機制是：模型猜錯一個小類樣本時，所受的損失會乘上該權重，使其影響力等同於多個大類樣本。講義也提到 `imbalanced-learn` 是專門處理重採樣技術的函式庫。
+
+{/* @ai-reference
+id: imbalance-mechanism-detail
+file: _references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf
+page: 30
+status: suggested
+excerpt: 當模型猜錯一個「小類」的樣本時，它所受到的懲罰 (Loss) 會乘以該權重，使其影響力等同於多個大類樣本；imbalanced-learn is a library focused on re-sampling techniques
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf" page={30} status="suggested" excerpt={"當模型猜錯一個「小類」的樣本時，它所受到的懲罰 (Loss) 會乘以該權重，使其影響力等同於多個大類樣本；imbalanced-learn is a library focused on re-sampling techniques"} client:visible />
 
 ## Scikit-learn 對應 API 與實作
 
@@ -402,13 +637,50 @@ $k$ 類（$k > 2$）問題要把二元指標推廣，有兩種加權方式：
 兩個關鍵細節：
 
 - **在 Pipeline 內指定估計器的參數要用雙底線 `__` 語法**（例如 `logisticregression__C`）。
+
+{/* @ai-reference
+id: pipeline-double-underscore
+file: _references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf
+page: 36
+status: suggested
+excerpt: Inside a Pipeline, an estimator's parameter can be specified using '__' syntax
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf" page={36} status="suggested" excerpt={"Inside a Pipeline, an estimator's parameter can be specified using '__' syntax"} client:visible />
+
 - scikit-learn 的**正類是標記為 class 1 的那一類**；`roc_auc_score` 在二元分類時要求輸入的分數代表「標籤較大的那一類」的機率。
 
+{/* @ai-reference
+id: sklearn-positive-class
+file: _references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf
+page: 47
+status: suggested
+excerpt: The positive class in scikit-learn is the class labeled as class 1
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf" page={47} status="suggested" excerpt={"The positive class in scikit-learn is the class labeled as class 1"} client:visible />
+
 巢狀交叉驗證在 scikit-learn 裡的寫法就是把兩者套起來：`cross_val_score(GridSearchCV(...))` ——外層是 $k$ 折，內層是 $k$ 折加格狀搜尋。
+
+{/* @ai-reference
+id: nested-cv-sklearn-code
+file: _references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf
+page: 41
+status: suggested
+excerpt: Nested cross-validation with grid search：cross_val_score(GridSearchCV)；Outer k-fold／Inner k-fold + grid search
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf" page={41} status="suggested" excerpt={"Nested cross-validation with grid search：cross_val_score(GridSearchCV)；Outer k-fold／Inner k-fold + grid search"} client:visible />
 
 ### 實作案例：把上週的 pipeline 調到最好
 
 延續上週的 Breast Cancer Wisconsin 資料集，這週補上缺的兩塊：用**訓練集**做交叉驗證式格狀搜尋（5 折平均）選出最佳模型，再用**測試集**評估（混淆矩陣＋分類報告），並針對個別的偽陰性（FN）逐筆檢視：
+
+{/* @ai-reference
+id: pipeline-best-model-implementation
+file: _references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf
+page: 52
+status: suggested
+excerpt: 用測試集進行評估，針對個別錯誤 (FN) 進行探討；fn_indices = np.where((y_test == 1) & (y_pred == 0))[0]
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf" page={52} status="suggested" excerpt={"用測試集進行評估，針對個別錯誤 (FN) 進行探討；fn_indices = np.where((y_test == 1) & (y_pred == 0))[0]"} client:visible />
 
 ```python
 fn_indices = np.where((y_test == 1) & (y_pred == 0))[0]
@@ -418,9 +690,27 @@ fn_indices = np.where((y_test == 1) & (y_pred == 0))[0]
 
 最後用 `joblib.dump()` 把訓練好的最佳模型（指整條 pipeline）存成檔案，之後可直接載入評估。
 
+{/* @ai-reference
+id: save-load-model
+file: _references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf
+page: 53
+status: suggested
+excerpt: Save and Load the Model
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf" page={53} status="suggested" excerpt={"Save and Load the Model"} client:visible />
+
 ## 作業三：手寫數字多類別分類器
 
 **Assignment #3** 是低解析度手寫數字（0–9）的多類別分類器，情境是**光學字元辨識（optical character recognition, OCR）** 中已完成定位與切割後的字元辨識任務：
+
+{/* @ai-reference
+id: assignment3-intro
+file: _references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf
+page: 55
+status: suggested
+excerpt: 目的：低解析度手寫數字 (0-9) 多類別分類器；應用情境：光學字元辨識 (OCR)，假設字元定位與切割已經過預先處理
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf" page={55} status="suggested" excerpt={"目的：低解析度手寫數字 (0-9) 多類別分類器；應用情境：光學字元辨識 (OCR)，假設字元定位與切割已經過預先處理"} client:visible />
 
 | 項目 | 要求 |
 | --- | --- |
@@ -431,9 +721,69 @@ fn_indices = np.where((y_test == 1) & (y_pred == 0))[0]
 | 效能門檻 | 測試集（約 360 筆）整體正確率達 **95% 以上** |
 | 模型儲存 | 用 `joblib.dump()` 存下最佳模型（指整條 pipeline） |
 
-三項預期產出：特徵選取遮罩的視覺化（0 為淘汰、1 為選取，標題含選取比例）、測試集的分類報告與混淆矩陣視覺化、所有誤判樣本的圖（標註真實標籤與預測結果，且必須與混淆矩陣對應）。
+{/* @ai-reference
+id: assignment3-dataset-row
+file: _references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf
+page: 56
+status: suggested
+excerpt: 1797 張 8×8 灰階 (grayscale) 影像；64 維（像素值）特徵（整數值 [0,16]）；多類別標籤 0–9 共 10 類
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf" page={56} status="suggested" excerpt={"1797 張 8×8 灰階 (grayscale) 影像；64 維（像素值）特徵（整數值 [0,16]）；多類別標籤 0–9 共 10 類"} client:visible />
+
+{/* @ai-reference
+id: assignment3-requirements-row
+file: _references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf
+page: 57
+status: suggested
+excerpt: 以 Logistic Regression 作為分類器；切分比例 80% 訓練（用於交叉驗證）、20% 測試；至少淘汰 20 個以上的特徵；整體正確率達 95% 以上
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf" page={57} status="suggested" excerpt={"以 Logistic Regression 作為分類器；切分比例 80% 訓練（用於交叉驗證）、20% 測試；至少淘汰 20 個以上的特徵；整體正確率達 95% 以上"} client:visible />
+
+三項預期產出：
+
+1. 特徵選取遮罩的視覺化（0 為淘汰、1 為選取，標題含選取比例）
+
+{/* @ai-reference
+id: assignment3-expected-result1
+file: _references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf
+page: 59
+status: suggested
+excerpt: 預期結果 1：視覺化（特徵選取遮罩）呈現特徵選取結果，0 淘汰、1 選取，標題含選取比例，必須在 44/64 以下
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf" page={59} status="suggested" excerpt={"預期結果 1：視覺化（特徵選取遮罩）呈現特徵選取結果，0 淘汰、1 選取，標題含選取比例，必須在 44/64 以下"} client:visible />
+
+2. 測試集的分類報告與混淆矩陣視覺化
+
+{/* @ai-reference
+id: assignment3-expected-result2
+file: _references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf
+page: 60
+status: suggested
+excerpt: 預期結果 2：輸出測試集的分類報告，視覺化呈現混淆矩陣，必須達 0.95 以上
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf" page={60} status="suggested" excerpt={"預期結果 2：輸出測試集的分類報告，視覺化呈現混淆矩陣，必須達 0.95 以上"} client:visible />
+
+3. 所有誤判樣本的圖（標註真實標籤與預測結果，且必須與混淆矩陣對應）
+
+{/* @ai-reference
+id: assignment3-expected-result3
+file: _references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf
+page: 61
+status: suggested
+excerpt: 預期結果 3：輸出誤判的樣本總數，繪出所有誤判的樣本，標示真實標籤與預測結果，必須與混淆矩陣對應
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf" page={61} status="suggested" excerpt={"預期結果 3：輸出誤判的樣本總數，繪出所有誤判的樣本，標示真實標籤與預測結果，必須與混淆矩陣對應"} client:visible />
 
 繳交規則要特別注意：只上傳**模型評估**部分的程式碼與模型檔（打包成單一 `.zip`），**不包含任何訓練或模型選取程式碼**——助教是直接執行評估程式批閱，沒有時間跑交叉驗證與微調。
+
+{/* @ai-reference
+id: assignment3-submission-rules
+file: _references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf
+page: 58
+status: suggested
+excerpt: 不要包含任何訓練或模型選取程式碼；助教將透過執行模型評估程式批閱作業（沒有時間進行交叉驗證與微調）
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf" page={58} status="suggested" excerpt={"不要包含任何訓練或模型選取程式碼；助教將透過執行模型評估程式批閱作業（沒有時間進行交叉驗證與微調）"} client:visible />
 
 ## 教材預習重點
 

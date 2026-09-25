@@ -6,6 +6,7 @@ createdAt: "2026-10-12"
 updatedAt: "2026-09-25"
 ---
 
+import PdfRefChip from '@/components/islands/PdfRefChip.tsx'
 import GeneratedFrame from '@/components/GeneratedFrame.astro'
 import MlWeek6ScalingDivide from '@/components/generated/ml-week6-scaling-divide'
 import MlWeek6CostTradeoff from '@/components/generated/ml-week6-cost-tradeoff'
@@ -178,6 +179,15 @@ status: generated
 
 講義把日常說的「前處理」拆成六段，合稱廣義的資料前處理：
 
+{/* @ai-reference
+id: data-preprocessing-six-stages
+file: _references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf
+page: 5
+status: suggested
+excerpt: Raw Data → Data Cleaning 資料清理 → Encoding 資料編碼 → Feature Generation 特徵衍生 → Feature Scaling 特徵縮放 → Dimensionality Reduction 降維
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf" page={5} status="suggested" excerpt={"Raw Data → Data Cleaning 資料清理 → Encoding 資料編碼 → Feature Generation 特徵衍生 → Feature Scaling 特徵縮放 → Dimensionality Reduction 降維"} client:visible />
+
 | 階段 | 中文 | 做什麼 | 歸屬 |
 | --- | --- | --- | --- |
 | Raw Data | 原始資料 | 尚未處理的輸入 | — |
@@ -193,6 +203,15 @@ status: generated
 
 講義稱這是黃金法則（The Golden Rule: Split Before Processing）。第 62 頁把它列成一張不可違反的清單：
 
+{/* @ai-reference
+id: golden-rule-split-before-processing
+file: _references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf
+page: 62
+status: suggested
+excerpt: Reminder：You must strictly follow this order：Split → Fit transformers only on training set → Transform → Test
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf" page={62} status="suggested" excerpt={"Reminder：You must strictly follow this order：Split → Fit transformers only on training set → Transform → Test"} client:visible />
+
 1. 先用 `train_test_split` 切分
 2. 轉換器（`SimpleImputer`、`StandardScaler`、`LabelEncoder`、`OneHotEncoder`）：**只在訓練集上 `fit`**
 3. 用 fit 好的轉換器 `transform` 訓練集，估計器再於訓練集上 `fit`
@@ -204,15 +223,42 @@ status: generated
 
 常用比例是 60:40、70:30、80:20，取決於原始資料量。這是一個兩難：測試集越大，學習演算法能用的資訊越少；測試集越小，**泛化誤差（generalization error）** 的估計越不準。沒有普世最佳解，只有在這條線上取平衡。
 
+{/* @ai-reference
+id: train-test-split-ratio-tradeoff
+file: _references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf
+page: 7
+status: suggested
+excerpt: The larger the test set, the less valuable information the algorithm could benefit from；the smaller the test set, the more inaccurate the estimation of the generalization error
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf" page={7} status="suggested" excerpt={"The larger the test set, the less valuable information the algorithm could benefit from；the smaller the test set, the more inaccurate the estimation of the generalization error"} client:visible />
+
 ## 髒資料：缺值與類別型欄位
 
 ### 缺值的偵測與處理
 
 真實資料的缺值以空白、`NaN`、`NULL` 等形式出現，多數運算工具無法直接處理。偵測用 `isnull()` 取得布林 DataFrame，再接 `sum()` 數出每欄的缺值數量。
 
+{/* @ai-reference
+id: missing-value-detection
+file: _references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf
+page: 10
+status: suggested
+excerpt: isnull() 回傳布林值：True 為缺值（NaN / None / NaT），False 為有效資料（包含空白字串 ""）
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf" page={10} status="suggested" excerpt={"isnull() 回傳布林值：True 為缺值（NaN / None / NaT），False 為有效資料（包含空白字串 \"\"）"} client:visible />
+
 有個容易誤判的細節：**空字串 `""` 會被視為有效資料**，不算缺值；`isnull()` 只對 `NaN`、`None`、`NaT` 回傳 `True`。
 
 處理只有刪與補兩條路：
+
+{/* @ai-reference
+id: missing-value-imputation-methods
+file: _references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf
+page: 14
+status: suggested
+excerpt: Mean imputation／Most-frequent imputation（尤其適合類別型特徵）／KNN imputation（用 k 個最近鄰的值，例如平均）
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf" page={14} status="suggested" excerpt={"Mean imputation／Most-frequent imputation（尤其適合類別型特徵）／KNN imputation（用 k 個最近鄰的值，例如平均）"} client:visible />
 
 | 做法 | 手段 | 風險或適用場合 |
 | --- | --- | --- |
@@ -223,6 +269,15 @@ status: generated
 
 ### 順序型與名義型要分開處理
 
+{/* @ai-reference
+id: ordinal-nominal-types
+file: _references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf
+page: 15
+status: suggested
+excerpt: Ordinal 順序型：可排序，如 T 恤尺寸 XL > L > M；Nominal 名義型：不隱含順序，如 T 恤顏色
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf" page={15} status="suggested" excerpt={"Ordinal 順序型：可排序，如 T 恤尺寸 XL > L > M；Nominal 名義型：不隱含順序，如 T 恤顏色"} client:visible />
+
 | 型別 | 中文 | 例子 | 處理方式 |
 | --- | --- | --- | --- |
 | Ordinal | 順序型 | T 恤尺寸（XL > L > M） | 依領域知識手動映射成整數，順序有意義，也可反向映射回字串 |
@@ -230,19 +285,64 @@ status: generated
 
 **類別標籤（class label）不使用順序資訊** ——指派哪個整數給哪個字串標籤都無所謂，scikit-learn 的分類估計器內部本來就會把標籤轉成整數。
 
+{/* @ai-reference
+id: class-label-no-order
+file: _references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf
+page: 18
+status: suggested
+excerpt: Class labels are not ordinal：指派哪個整數給哪個字串標籤都無所謂，scikit-learn 的分類估計器內部會自動轉成整數
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf" page={18} status="suggested" excerpt={"Class labels are not ordinal：指派哪個整數給哪個字串標籤都無所謂，scikit-learn 的分類估計器內部會自動轉成整數"} client:visible />
+
 ### 獨熱編碼與共線性
 
 **獨熱編碼（one-hot encoding）** 為每個相異值建一個 0/1 的虛擬欄位：藍色樣本編成 `blue=1, green=0, red=0`，以此類推。pandas 的 `get_dummies()` 是便利的作法，它只轉換字串欄位、其餘欄位原樣保留。
 
+{/* @ai-reference
+id: one-hot-get-dummies
+file: _references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf
+page: 21
+status: suggested
+excerpt: get_dummies() 只轉換字串欄位，其餘欄位原樣保留
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf" page={21} status="suggested" excerpt={"get_dummies() 只轉換字串欄位，其餘欄位原樣保留"} client:visible />
+
 它有個副作用：產生的欄位彼此**完全相關（multi-collinearity）** 。對需要矩陣求逆的方法而言，高度相關的特徵會讓矩陣變得病態（ill-conditioned）而難以求逆。
 
+{/* @ai-reference
+id: one-hot-multicollinearity
+file: _references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf
+page: 22
+status: suggested
+excerpt: One-hot encoding introduces multi-collinearity：對需要矩陣求逆的方法而言，高度相關的特徵會讓矩陣病態（ill-conditioned）而難以求逆
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf" page={22} status="suggested" excerpt={"One-hot encoding introduces multi-collinearity：對需要矩陣求逆的方法而言，高度相關的特徵會讓矩陣病態（ill-conditioned）而難以求逆"} client:visible />
+
 解法是刪掉其中一欄，而且**不會損失任何資訊**：若 `color_blue` 被刪，`color_green = 0` 且 `color_red = 0` 就唯一地表示這筆是藍色。
+
+{/* @ai-reference
+id: one-hot-drop-column
+file: _references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf
+page: 23
+status: suggested
+excerpt: 若 color_blue 被刪，color_green = 0 且 color_red = 0 就唯一地表示這筆是藍色，不會損失任何資訊
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf" page={23} status="suggested" excerpt={"若 color_blue 被刪，color_green = 0 且 color_red = 0 就唯一地表示這筆是藍色，不會損失任何資訊"} client:visible />
 
 ## 特徵縮放與特徵選取
 
 ### 標準化與正規化
 
 **正規化（normalization）** 把每欄壓到 $[0, 1]$，是 min-max 縮放的特例：
+
+{/* @ai-reference
+id: normalization-formula
+file: _references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf
+page: 24
+status: suggested
+excerpt: Normalization：scaling to a range of [0, 1]，min-max 縮放的特例；x_min 為該欄最小值、x_max 為最大值
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf" page={24} status="suggested" excerpt={"Normalization：scaling to a range of [0, 1]，min-max 縮放的特例；x_min 為該欄最小值、x_max 為最大值"} client:visible />
 
 $$
 x_{\text{norm}}^{(i)} = \frac{x^{(i)} - x_{\min}}{x_{\max} - x_{\min}}
@@ -256,11 +356,38 @@ $$
 
 取捨很明確：需要有界區間時用正規化，但**單一個極端離群值就能把其餘資料擠壓進極小的子區間**；標準化保留了離群值的資訊，也讓演算法對它較不敏感，對梯度下降／隨機梯度下降的最佳化尤其實用。
 
+{/* @ai-reference
+id: standardization-outlier-tradeoff
+file: _references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf
+page: 26
+status: suggested
+excerpt: 單一極端離群值就能把其餘資料擠壓進極小的子區間；標準化保留離群值資訊，對 GD／SGD 最佳化更實用
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf" page={26} status="suggested" excerpt={"單一極端離群值就能把其餘資料擠壓進極小的子區間；標準化保留離群值資訊，對 GD／SGD 最佳化更實用"} client:visible />
+
 講義特別提醒：**獨熱編碼產生的 0/1 欄位不需要再做特徵縮放** 。
+
+{/* @ai-reference
+id: one-hot-no-scaling-needed
+file: _references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf
+page: 24
+status: suggested
+excerpt: 注意：One-hot encoding 後產生的 0 與 1 特徵欄位不需要進行特徵縮放
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf" page={24} status="suggested" excerpt={"注意：One-hot encoding 後產生的 0 與 1 特徵欄位不需要進行特徵縮放"} client:visible />
 
 ### 特徵選取與特徵提取的分界
 
 降維有兩大類，差別在於新特徵是「挑出來的」還是「算出來的」：
+
+{/* @ai-reference
+id: feature-selection-vs-extraction
+file: _references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf
+page: 27
+status: suggested
+excerpt: Feature selection：挑原始特徵的子集；Feature extraction：從特徵集推導資訊、建構新的特徵子空間
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf" page={27} status="suggested" excerpt={"Feature selection：挑原始特徵的子集；Feature extraction：從特徵集推導資訊、建構新的特徵子空間"} client:visible />
 
 | 類別 | 中文 | 做法 |
 | --- | --- | --- |
@@ -270,6 +397,15 @@ $$
 ### 序列特徵選取：SFS 與 SBS
 
 **序列特徵選取（sequential feature selection）** 是一族**貪婪搜尋（greedy search）** 演算法，把 $d$ 維特徵空間縮到 $k < d$ 維：
+
+{/* @ai-reference
+id: sfs-sbs-greedy-search
+file: _references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf
+page: 28
+status: suggested
+excerpt: Sequential feature selection 是一族 greedy search 演算法：SFS（加法概念）、SBS（減法概念）
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf" page={28} status="suggested" excerpt={"Sequential feature selection 是一族 greedy search 演算法：SFS（加法概念）、SBS（減法概念）"} client:visible />
 
 - **序列前向選取（sequential forward selection, SFS）** ——加法概念，從空集合開始逐個加入最有貢獻的特徵
 - **序列後向選取（sequential backward selection, SBS）** ——減法概念，從全集開始，每次剔除使**判準函數（criterion function）** $J$ 損失最小的那個特徵
@@ -285,11 +421,38 @@ $$
 | Overfitting | 過擬合 | 抓住了訓練資料的規律卻無法泛化；高**變異（variance）** ，變異衡量的是一致性 | 參數太多、模型太複雜 |
 | Underfitting | 欠擬合 | 模型不夠複雜，連訓練資料的規律都抓不到，對未見資料同樣表現差；高**偏差（bias）** ，偏差衡量的是系統性誤差 | 模型太簡單 |
 
+{/* @ai-reference
+id: overfitting-underfitting-definitions
+file: _references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf
+page: 31
+status: suggested
+excerpt: The model captures the patterns in the training data well but fails to generalize；high variance，variance measures the consistency
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf" page={31} status="suggested" excerpt={"The model captures the patterns in the training data well but fails to generalize；high variance，variance measures the consistency"} client:visible />
+
 防止過擬合的常見手段：蒐集更多訓練資料（通常不可行）、選更簡單的模型、用正則化引入複雜度懲罰、降維。後三者殊途同歸——都讓模型變簡單。
+
+{/* @ai-reference
+id: overfitting-prevention-methods
+file: _references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf
+page: 32
+status: suggested
+excerpt: Collect more training data／Choose a simpler model／Introduce a penalty via regularization／Reduce the dimensionality
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf" page={32} status="suggested" excerpt={"Collect more training data／Choose a simpler model／Introduce a penalty via regularization／Reduce the dimensionality"} client:visible />
 
 ### L2 正則化
 
 **正則化（regularization）** 在損失函數外加一項，懲罰過大的權重，可同時處理共線性、過濾雜訊、防止過擬合。
+
+{/* @ai-reference
+id: l2-regularization-concept
+file: _references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf
+page: 35
+status: suggested
+excerpt: A very useful method for handling collinearity, filtering out noise, preventing overfitting：在損失函數加上懲罰極端權重的項
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf" page={35} status="suggested" excerpt={"A very useful method for handling collinearity, filtering out noise, preventing overfitting：在損失函數加上懲罰極端權重的項"} client:visible />
 
 $L_2$ 正則化（又稱 $L_2$ 收縮或**權重衰減（weight decay）** ）的正則化項為：
 
@@ -299,9 +462,36 @@ $$
 
 其中 $\lambda$ 是**正則化參數（regularization parameter）** ，控制正則化強度（$\lambda$ 越大越趨向欠擬合）；$n$ 是樣本數，用來讓正則化項與損失項的尺度相當。
 
+{/* @ai-reference
+id: l2-regularization-term
+file: _references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf
+page: 36
+status: suggested
+excerpt: λ：regularization parameter，控制正則化強度；n：sample size，使正則化項與損失項尺度相當
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf" page={36} status="suggested" excerpt={"λ：regularization parameter，控制正則化強度；n：sample size，使正則化項與損失項尺度相當"} client:visible />
+
 兩點實務提醒：正則化要正常運作，**所有特徵必須在可比較的尺度上**（所以縮放要先做）；**偏置項（bias unit，即負門檻）通常不做正則化** 。
 
+{/* @ai-reference
+id: l2-bias-unit-not-regularized
+file: _references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf
+page: 37
+status: suggested
+excerpt: Note: The bias unit (negative threshold) is usually not regularized
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf" page={37} status="suggested" excerpt={"Note: The bias unit (negative threshold) is usually not regularized"} client:visible />
+
 在 scikit-learn 裡，正則化強度以 `C` 表示，它與 $\lambda$ 成反比：
+
+{/* @ai-reference
+id: c-lambda-inverse-relation
+file: _references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf
+page: 72
+status: suggested
+excerpt: Regularization strength ∝ 1/C；≡ L1、≡ L2 的參數對照
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf" page={72} status="suggested" excerpt={"Regularization strength ∝ 1/C；≡ L1、≡ L2 的參數對照"} client:visible />
 
 $$
 C \propto \frac{1}{\lambda}
@@ -313,6 +503,15 @@ $$
 
 $L_1$ 正則化的正則化項改為絕對值和：
 
+{/* @ai-reference
+id: l1-regularization-sparse
+file: _references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf
+page: 39
+status: suggested
+excerpt: L1 regularization usually yields sparse feature vectors，多數特徵權重會是零，可當作特徵選取的手段
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf" page={39} status="suggested" excerpt={"L1 regularization usually yields sparse feature vectors，多數特徵權重會是零，可當作特徵選取的手段"} client:visible />
+
 $$
 \frac{\lambda}{n}\lVert \mathbf{w} \rVert_1 = \frac{\lambda}{n}\sum_{j} \lvert w_j \rvert
 $$
@@ -320,6 +519,15 @@ $$
 $L_1$ 通常產生**稀疏（sparse）** 的特徵向量，多數權重會恰好為零，因此本身就可以當作特徵選取的手段。
 
 為什麼同樣是懲罰權重，一個把權重壓小、另一個卻把權重壓成零？講義用幾何解釋回答：正則化等價於在「約束區域內」找 MSE 最小的點，$L_2$ 的約束區域是圓、$L_1$ 是菱形，而菱形的角剛好長在座標軸上。
+
+{/* @ai-reference
+id: l1-l2-geometric-interpretation
+file: _references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf
+page: 40
+status: suggested
+excerpt: L1 Regularization：Geometric interpretation（MSE 等高線與約束區域的幾何圖示）
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf" page={40} status="suggested" excerpt={"L1 Regularization：Geometric interpretation（MSE 等高線與約束區域的幾何圖示）"} client:visible />
 
 {/* @ai-visualize
 id: ml-week6-l1-l2-geometry
@@ -371,6 +579,15 @@ status: generated
 
 整個 scikit-learn 建立在兩個一致的介面上，分清楚這兩套是讀懂這個函式庫的關鍵：
 
+{/* @ai-reference
+id: transformer-estimator-api-table
+file: _references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf
+page: 47
+status: suggested
+excerpt: Transformer API in Scikit-learn：fit()／transform()／fit_transform()
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf" page={47} status="suggested" excerpt={"Transformer API in Scikit-learn：fit()／transform()／fit_transform()"} client:visible />
+
 | API | 方法鏈 | 用途 | 代表類別 |
 | --- | --- | --- | --- |
 | Transformer API | `fit()` → `transform()`，或合併的 `fit_transform()` | 資料轉換 | `SimpleImputer`、`StandardScaler`、`MinMaxScaler`、`LabelEncoder`、`OneHotEncoder`、`FunctionTransformer` |
@@ -378,7 +595,25 @@ status: generated
 
 `fit_transform()` 只是先呼叫 `fit` 再呼叫 `transform` 的捷徑。要被轉換的資料陣列，其特徵數必須與當初 fit 時的資料陣列相同。少數估計器（例如 PCA）同時具備 `transform` 方法。
 
+{/* @ai-reference
+id: fit-transform-feature-count
+file: _references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf
+page: 47
+status: suggested
+excerpt: Any data array to be transformed needs to have the same number of features as the data array that was used to fit the model
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf" page={47} status="suggested" excerpt={"Any data array to be transformed needs to have the same number of features as the data array that was used to fit the model"} client:visible />
+
 學到的參數一律放在結尾帶底線的屬性——`intercept_` 是偏置項、`coef_` 是權重——與建構子指定的超參數清楚分開。
+
+{/* @ai-reference
+id: coef-intercept-attributes
+file: _references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf
+page: 60
+status: suggested
+excerpt: Access the bias unit and weight parameters：intercept_（例如 ppn.intercept_）、coef_（例如 ppn.coef_）
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf" page={60} status="suggested" excerpt={"Access the bias unit and weight parameters：intercept_（例如 ppn.intercept_）、coef_（例如 ppn.coef_）"} client:visible />
 
 ### 常用模組地圖
 
@@ -393,9 +628,38 @@ status: generated
 | `pipeline` | 串接轉換器與估計器 | `Pipeline`、`make_pipeline()` |
 | `metrics` | 評分函數與效能指標 | `accuracy_score()` |
 
-幾個實務細節：小資料集含有許多離群值時建議用 `RobustScaler`；`ColumnTransformer` 接受 `(name, transformer, columns)` 的元組列表，並可用 `'drop'` 丟棄欄位、`'passthrough'` 讓欄位原樣通過；`SelectFromModel` 搭配 $L_1$ 正則化時，建議設定 `l1_ratio=1.0` 與 `solver='liblinear'` 。
+`SelectFromModel` 搭配 $L_1$ 正則化時，建議設定 `l1_ratio=1.0` 與 `solver='liblinear'` 。
+
+{/* @ai-reference
+id: select-from-model-l1-practical
+file: _references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf
+page: 56
+status: suggested
+excerpt: SelectFromModel：Meta-transformer for selecting features based on importance weights，建議設定 L1 regularization（l1_ratio=1.0, solver='liblinear'）
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf" page={56} status="suggested" excerpt={"SelectFromModel：Meta-transformer for selecting features based on importance weights，建議設定 L1 regularization（l1_ratio=1.0, solver='liblinear'）"} client:visible />
+
+幾個實務細節：小資料集含有許多離群值時建議用 `RobustScaler`；`ColumnTransformer` 接受 `(name, transformer, columns)` 的元組列表，並可用 `'drop'` 丟棄欄位、`'passthrough'` 讓欄位原樣通過。
+
+{/* @ai-reference
+id: sklearn-module-map
+file: _references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf
+page: 43
+status: suggested
+excerpt: General Modules：datasets／preprocessing, impute, compose／pipeline, feature_selection, decomposition／model_selection／metrics
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf" page={43} status="suggested" excerpt={"General Modules：datasets／preprocessing, impute, compose／pipeline, feature_selection, decomposition／model_selection／metrics"} client:visible />
 
 scikit-learn 多數分類器預設就以**一對多（one-vs-all, OvA／OvR）** 支援多類別分類，三類鳶尾花可以一次餵給分類器。
+
+{/* @ai-reference
+id: ova-ovr-multiclass
+file: _references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf
+page: 59
+status: suggested
+excerpt: Most classifiers in scikit-learn already support multiclass classification by default via the OvA (OvR) method，可一次把三類鳶尾花餵給分類器
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf" page={59} status="suggested" excerpt={"Most classifiers in scikit-learn already support multiclass classification by default via the OvA (OvR) method，可一次把三類鳶尾花餵給分類器"} client:visible />
 
 {/* @ai-visualize
 id: ml-week6-sklearn-api-map
@@ -458,14 +722,50 @@ status: generated
 
 **管線（pipeline）** 是串接工作流程的元估計器，把標準化、特徵選取、分類器等多個步驟組合成單一物件——依序經過清理、轉換、建模，最後直接拿這個物件做預測。
 
+{/* @ai-reference
+id: pipeline-concept
+file: _references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf
+page: 63
+status: suggested
+excerpt: 將多個步驟（例如標準化、特徵選擇、分類器）組合成一個物件（一條自動化產線），依序經過清理、轉換、建模，最後用於預測
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf" page={63} status="suggested" excerpt={"將多個步驟（例如標準化、特徵選擇、分類器）組合成一個物件（一條自動化產線），依序經過清理、轉換、建模，最後用於預測"} client:visible />
+
 內部運作分兩個方向：
+
+{/* @ai-reference
+id: pipeline-inner-workings
+file: _references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf
+page: 64
+status: suggested
+excerpt: Inner workings of the Pipeline object：transformer(s) → estimator，建模與預測兩個方向
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf" page={64} status="suggested" excerpt={"Inner workings of the Pipeline object：transformer(s) → estimator，建模與預測兩個方向"} client:visible />
 
 - **訓練時**：前面數個轉換器依序 `fit_transform`，最後一個估計器 `fit`
 - **預測時**：資料依序通過各轉換器的 `transform`，再交給估計器 `predict`
 
 建構方式有兩種：`Pipeline` 類別接受 `(name, transformer/estimator)` 的元組列表，`make_pipeline()` 函數則是不必命名的簡寫。
 
+{/* @ai-reference
+id: pipeline-construction-methods
+file: _references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf
+page: 65
+status: suggested
+excerpt: Pipeline class：A sequence of data transformers with an optional final predictor；接受 (name, transformer/estimator) 的元組列表
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf" page={65} status="suggested" excerpt={"Pipeline class：A sequence of data transformers with an optional final predictor；接受 (name, transformer/estimator) 的元組列表"} client:visible />
+
 價值不只是少寫幾行——流程自動化、標準化，避免手動分開執行造成的錯誤與重複程式碼，也更容易維護。更重要的是，它讓「轉換器只能用訓練資料 fit」這件事變成結構上保證，而不是靠人記得。
+
+{/* @ai-reference
+id: pipeline-automation-value
+file: _references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf
+page: 63
+status: suggested
+excerpt: 這樣的設計讓整個流程自動化、標準化，避免手動分開執行，減少錯誤與重複程式碼，也更容易維護
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf" page={63} status="suggested" excerpt={"這樣的設計讓整個流程自動化、標準化，避免手動分開執行，減少錯誤與重複程式碼，也更容易維護"} client:visible />
 
 ### 實作案例：Breast Cancer Wisconsin 資料集
 
@@ -476,7 +776,25 @@ status: generated
 | 特徵 | 30 種，從顯微鏡影像中提取（細胞核大小、形狀、紋理等的平均值／標準誤差／極端值），為正實數或 `NaN` |
 | 標籤 | 二元字串標籤：`M` 惡性（malignant）、`B` 良性（benign） |
 
+{/* @ai-reference
+id: wdbc-dataset-details
+file: _references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf
+page: 69
+status: suggested
+excerpt: 569 筆腫瘤細胞的樣本（212 M 惡性、357 B 良性）；30 種特徵（從顯微鏡影像提取）；二元字串標籤
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf" page={69} status="suggested" excerpt={"569 筆腫瘤細胞的樣本（212 M 惡性、357 B 良性）；30 種特徵（從顯微鏡影像提取）；二元字串標籤"} client:visible />
+
 這份資料同時需要四種前處理：資料清理、標籤編碼、特徵縮放、特徵選取——而且 30 個特徵的尺度差異很大。整條 pipeline 依序是：
+
+{/* @ai-reference
+id: wdbc-pipeline-requirement
+file: _references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf
+page: 70
+status: suggested
+excerpt: Preprocessing requirement：Data cleaning, label encoding, feature scaling and feature selection；30 features, scales differ
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf" page={70} status="suggested" excerpt={"Preprocessing requirement：Data cleaning, label encoding, feature scaling and feature selection；30 features, scales differ"} client:visible />
 
 1. 資料切分：`train_test_split`
 2. 資料清理：`SimpleImputer` 補齊缺失值
@@ -487,6 +805,15 @@ status: generated
 7. 模型評估：`classification_report` 分類效能指標
 
 講義稱這已經是一個完整的**端到端（end-to-end）** 機器學習專案原型，只欠缺高規格的模型驗證與超參數調整——那是下一週 `GridSearchCV`（交叉驗證＋格狀搜尋）要補上的部分。
+
+{/* @ai-reference
+id: wdbc-end-to-end-summary
+file: _references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf
+page: 74
+status: suggested
+excerpt: 本範例完成了一個完整的端到端機器學習專案原型：資料切分／資料清理／資料編碼／特徵縮放／特徵選取／模型訓練／模型評估，只欠缺模型驗證與超參數調整
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf" page={74} status="suggested" excerpt={"本範例完成了一個完整的端到端機器學習專案原型：資料切分／資料清理／資料編碼／特徵縮放／特徵選取／模型訓練／模型評估，只欠缺模型驗證與超參數調整"} client:visible />
 
 ## 教材預習重點
 
