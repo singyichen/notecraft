@@ -443,10 +443,12 @@ Lab 1 的四個電路都已經接好、存成獨立的設計，開啟後按 `Sta
 | 三 半波整流 | Half-Wave Rectifier | [開啟](https://www.tinkercad.com/things/d55wQxQs1FC) | 已並聯 1 µF（第 20 頁那一版）；要看第 18 頁的無電容版就把電容和第 10 欄那條跳線刪掉 |
 | 四 全波橋式整流 | Full-Wave Bridge Rectifier | [開啟](https://www.tinkercad.com/things/384Ncqz5XD3) | 已換上稽納二極體（第 27 頁那一版）；刪掉它就回到第 25 頁的純橋式 |
 
-兩件事先說在前面：
+三件事先說在前面：
 
 - **這四個設計是私人的**，只有登入作者本人的 Tinkercad 帳號才打得開；別人點連結會被導到登入頁。要讓同學或助教也看得到，得在設計頁右上角開啟「共用連結」。
 - **改動會直接存回同一份設計**，Tinkercad 沒有「另存新檔再改」的提示。想試不同參數（例如把電容從 1 µF 改成 10 µF）又想保留原狀態，先用儀表板上該設計的「複製」再改。
+- **四張圖的配線顏色是有意義的**，照著顏色就能追訊號怎麼走：<span style={{color:'#d32f2f'}}>■</span> 紅＝電源正端與 + 軌（實驗四是整流輸出的 P）、<span style={{color:'#333'}}>■</span> 黑＝接地與 − 軌（實驗四是 N）、<span style={{color:'#e6b800'}}>■</span> 黃＝軌道到元件的短跳線、<span style={{color:'#f57c00'}}>■</span> 橘＝儀器的紅（正）探棒、<span style={{color:'#888'}}>■</span> 灰＝儀器的黑（負）探棒。實驗四另外用 <span style={{color:'#1565c0'}}>■</span> 藍與 <span style={{color:'#00838f'}}>■</span> 青綠分別標出交流輸入的 A、B 兩端。實體實驗沒有這個規定，但自己接的時候照同一套配色，事後看照片會好認很多。
+- **每次讀值之前先確認這一輪模擬可不可信**，判準只有一條：看量輸入的那台示波器。$V_{in}$ 應該是平滑的正弦，而且峰對峰值等於函數波產生器上設定的振幅。只要正弦出現折點、或是振幅明顯短少（例如設 5 V 卻只畫出 3.8 V），就代表求解器沒跟上，這一輪的所有數字與波形都要丟掉——不是電路接錯。二極體愈多、又帶電容的電路愈容易這樣，實驗四加濾波電容那一版尤其明顯（見該節的提醒）。
 
 
 ### 註冊與登入（第 1–3 頁）
@@ -706,7 +708,7 @@ status: confirmed
 
 <div style={{display: 'flex', flexWrap: 'wrap', gap: '1rem', alignItems: 'flex-start', margin: '1rem 0'}}>
   <figure style={{flex: '1 1 340px', margin: 0}}>
-    <img src="/note-images/ec-week3-tinkercad/lab1-exp1-breadboard.png" alt="Tinkercad 麵包板版實驗一電路：左側電源供應器 0.7 V 的紅黑線接到麵包板上方的正負電源軌；二極體橫插在 i 列第 5 到 9 欄、電阻橫插在 h 列第 9 到 13 欄；上方兩台萬用表，左邊量電壓讀 494 mV、右邊量電流讀 206 µA" />
+    <img src="/note-images/ec-week3-tinkercad/lab1-exp1-breadboard.png" alt="Tinkercad 麵包板版實驗一電路：左下電源供應器設 700 mV，紅線接 + 軌、黑線接 − 軌；黃色短跳線從 + 軌接到第 5 欄；二極體橫插在 i 列第 5 到 9 欄、電阻橫插在 h 列第 9 到 13 欄；上方兩台萬用表以橘色（紅探棒）與灰色（黑探棒）的直角折線接到板上，左邊量電壓讀 494 mV、右邊量電流讀 206 µA" />
     <figcaption style={{fontSize: '0.9em', opacity: 0.75, marginTop: '0.4rem'}}>模擬圖：正極經上方 + 軌與一條短跳線進第 5 欄，電流依序流過二極體、電阻、電流表回到 − 軌；0.7 V 時 V<sub>D</sub> = 494 mV、I = 206 µA。</figcaption>
   </figure>
   <figure style={{flex: '1 1 260px', margin: 0}}>
@@ -973,7 +975,7 @@ import EcWeek2LabIvMeasurement from '@/components/generated/ec-week2-lab-iv-meas
 
 <div style={{display: 'flex', flexWrap: 'wrap', gap: '1rem', alignItems: 'flex-start', margin: '1rem 0'}}>
   <figure style={{flex: '1 1 340px', margin: 0}}>
-    <img src="/note-images/ec-week3-tinkercad/lab1-exp2-breadboard.png" alt="Tinkercad 麵包板版實驗二電路：電源供應器 10.0 V 接上方電源軌，二極體橫插在 i 列第 5 到 9 欄、色環（陰極）在第 5 欄靠 + 軌那側，電阻在 h 列第 9 到 13 欄；上方兩台萬用表，左邊電壓表讀 10.0 V、右邊電流表讀 0.00 A" />
+    <img src="/note-images/ec-week3-tinkercad/lab1-exp2-breadboard.png" alt="Tinkercad 麵包板版實驗二電路：和實驗一同一張板子與同一套配線顏色，電源供應器設 10.0 V；二極體橫插在 i 列第 5 到 9 欄但色環（陰極）改在第 5 欄、緊鄰黃色跳線那側；上方兩台萬用表，左邊電壓表讀 10.0 V、右邊電流表讀 0.00 A" />
     <figcaption style={{fontSize: '0.9em', opacity: 0.75, marginTop: '0.4rem'}}>模擬圖：電源 10 V 時電壓表讀 10.0 V、電流表 0.00 A。和實驗一同一張板子，只有二極體色環換了邊。</figcaption>
   </figure>
   <figure style={{flex: '1 1 260px', margin: 0}}>
@@ -1201,7 +1203,7 @@ $$
 
 <div style={{display: 'flex', flexWrap: 'wrap', gap: '1rem', alignItems: 'flex-start', margin: '1rem 0'}}>
   <figure style={{flex: '1 1 340px', margin: 0}}>
-    <img src="/note-images/ec-week3-tinkercad/lab1-exp3-breadboard.png" alt="Tinkercad 麵包板版實驗三電路：左側函數波產生器設 60 Hz、10 V、0 V 偏置，紅黑線接到麵包板上方電源軌；二極體橫插在 i 列第 5 到 9 欄、10 kΩ 電阻在 h 列第 9 到 13 欄；上方兩台示波器，左邊顯示完整正弦波、右邊只剩正半週的脈動波形" />
+    <img src="/note-images/ec-week3-tinkercad/lab1-exp3-breadboard.png" alt="Tinkercad 麵包板版實驗三電路：左側函數波產生器設 60 Hz、10 V、0 V 偏置，紅線接 + 軌、黑線接 − 軌；黃色跳線把 + 軌帶到第 5 欄；二極體橫插在 i 列第 5 到 9 欄、10 kΩ 電阻在 h 列第 9 到 13 欄；上方兩台示波器以橘色與灰色折線接到板上，左邊顯示完整正弦波、右邊只剩正半週的脈動波形" />
     <figcaption style={{fontSize: '0.9em', opacity: 0.75, marginTop: '0.4rem'}}>第一部分（無濾波電容）：左邊示波器是 V<sub>in</sub> 的完整正弦，右邊是 V<sub>out</sub>，負半週被二極體切掉、只剩一座座山丘。</figcaption>
   </figure>
   <figure style={{flex: '1 1 340px', margin: 0}}>
@@ -1417,7 +1419,7 @@ $\frac{V_R}{V_p}$ 這個比值對應 CH3 第 29 頁「漣波峰對峰值須低�
 
 <div style={{display: 'flex', flexWrap: 'wrap', gap: '1rem', alignItems: 'flex-start', margin: '1rem 0'}}>
   <figure style={{flex: '1 1 360px', margin: 0}}>
-    <img src="/note-images/ec-week3-tinkercad/lab1-exp4-breadboard.png" alt="Tinkercad 麵包板版實驗四橋式整流電路：函數波產生器設 60 Hz、5 V、0 V 偏置放在左側，四顆二極體分別插在 j 列第 5 到 9 欄、i 列第 1 到 5 欄、j 列第 13 到 17 欄、i 列第 17 到 21 欄，10 kΩ 負載在 h 列第 25 到 29 欄；上方兩台示波器，左邊顯示完整正弦、右邊顯示頻率加倍的連續正弧" />
+    <img src="/note-images/ec-week3-tinkercad/lab1-exp4-breadboard.png" alt="Tinkercad 麵包板版實驗四橋式整流電路：函數波產生器設 60 Hz、5 V、0 V 偏置放在左下，藍與青綠兩條線繞過板子下方、從溝槽進到第 5 欄（A）與第 17 欄（B）；四顆二極體分別插在 j 列第 5 到 9 欄、i 列第 1 到 5 欄、j 列第 13 到 17 欄、i 列第 17 到 21 欄，三條紅色直立跳線把輸出正端併到 + 軌、三條黑色併到 − 軌；10 kΩ 負載在 h 列第 25 到 29 欄；上方兩台示波器左邊顯示完整正弦、右邊顯示頻率加倍的連續正弧" />
     <figcaption style={{fontSize: '0.9em', opacity: 0.75, marginTop: '0.4rem'}}>第 25 頁的橋式整流：同一段 50 ms 裡，左邊 V<sub>in</sub> 走完 3 個週期，右邊 V<sub>out</sub> 出現 6 座山丘——負半週被翻正了，這就是全波。</figcaption>
   </figure>
   <figure style={{flex: '1 1 360px', margin: 0}}>
@@ -1426,7 +1428,9 @@ $\frac{V_R}{V_p}$ 這個比值對應 CH3 第 29 頁「漣波峰對峰值須低�
   </figure>
 </div>
 
-> **Tinkercad 跑不動橋式加濾波電容**：把 1 µF（或 10 µF）併到負載兩端之後，模擬器會卡住——20 秒只推進 43 ms 的模擬時間，示波器畫出來的正弦嚴重失真，畫面還會跳出「This shouldn't take so long」。刪掉一台示波器也一樣，所以不是儀器數量的問題，是四顆二極體加電容讓它的求解器收斂不了。**第 26 頁那一版在 Tinkercad 只能拿來確認接線，波形要看 CircuitJS 連結與下面的 LTspice 圖**。實驗三的半波加電容沒有這個問題，可以正常跑。
+> **Tinkercad 跑不動橋式加濾波電容**：把 1 µF（或 10 µF）併到負載兩端之後，四顆二極體加電容會讓它的求解器收斂不了。**第 26 頁那一版在 Tinkercad 只能拿來確認接線，波形要看 CircuitJS 連結與下面的 LTspice 圖**。實驗三的半波加電容沒有這個問題，可以正常跑。
+>
+> 症狀有兩種，都要當成失敗：一種是**直接卡住**——20 秒只推進 43 ms 的模擬時間，畫面還會跳出「This shouldn't take so long」；另一種是**跑得完但結果是錯的**，示波器照常畫出波形，但量輸入的那一台會露餡：正弦出現折點、峰值被壓平，振幅也短少（設 5 Vpp 卻只畫出約 3.8 V）。第二種比第一種危險，因為畫面看起來是成功的。判準見[上方](#四個實驗的-tinkercad-設計)。刪掉一台示波器兩種都不會改善，所以不是儀器數量的問題。
 >
 > 另外，Tinkercad 的線路圖檢視會把橋式攤平成一直線，而且二極體是照**放置順序**自動編號（本節的擺放順序讓 Tinkercad 的 D1 其實是講義的 D3），和講義編號對不起來，所以這裡不放線路圖，對照請看講義的電路圖。
 
@@ -1476,6 +1480,8 @@ $\frac{V_R}{V_p}$ 這個比值對應 CH3 第 29 頁「漣波峰對峰值須低�
 | 13 | Oscilloscope 1／2 | 板子上方 | 1 號正探棒 → h5、負探棒 → h17，看 $V_{in}$；2 號正探棒 → + 軌、負探棒 → − 軌，看 $V_{out}$；兩台都設 5 ms/div（面板標的 50.0 ms 是整個畫面十格的總長） |
 | 14（第 26 頁） | Capacitor 1 µF | 橫放在 f 列第 **25、26** 欄，再補一條跳線 g26 → − 軌 | 電容兩腳只隔一欄，拉不到第 29 欄；按 `R` 六次讓本體朝下掛進溝槽。**接得起來但模擬跑不動**，見上面的提醒 |
 | 15（第 27 頁） | Zener Diode（搜尋「稽納二極體」） | 先拆掉電容與那條跳線，橫放在 f 列第 25 到 29 欄，**陰極（色環）第 25 欄**、陽極第 29 欄 | 腳距剛好四欄，直接跨在 P、N 之間，不用額外跳線。屬性面板填助教給的 $V_Z$（Tinkercad 預設 5.10 V） |
+
+> **齊納的方向是這個實驗最容易錯的一步**：穩壓要的是**逆偏**，所以色環（陰極）一定朝輸出的 **+** 端，也就是第 25 欄那側——講義第 27 頁的圖也是這樣畫的（齊納符號的橫線在上、接 $V_{out}$ 的 +）。插反了不會有任何錯誤訊息，畫面照跑，但齊納變成順偏、等同一顆普通二極體，會把輸出箝在約 0.5 V；而且它幾乎等於把輸出短路，連帶把輸入的正弦削成梯形。所以**看到「輸出是一條約 0.5 V 的平頂、輸入也變成梯形」就是接反了**，不用回頭數色環。方向正確時，因為 5 Vpp 經橋式後峰值只剩約 1 V、遠低於任何常見的 $V_Z$，輸出應該和沒接齊納時一模一樣。
 
 模擬跑起來後先看電流方向：正半週黃點走 A → D3 → P → R → N → D1 → B，負半週走 B → D4 → P → R → N → D2 → A，兩個半週流過 R 的方向一樣才是接對。
 
