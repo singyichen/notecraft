@@ -83,6 +83,14 @@ img { max-width: 100%; display: block; }
 .nc-prose h5 { font-size: var(--text-md); color: var(--text-strong); margin: 20px 0 6px; scroll-margin-top: 90px; }
 .nc-prose h6 { font-size: var(--text-base); color: var(--text-muted); margin: 18px 0 6px; scroll-margin-top: 90px; }
 .nc-prose p:not([data-nc-viz-body] *) { font-size: var(--text-md); color: var(--text-body); line-height: 1.85; margin: 0 0 16px; }
+/* 圖說：緊接在圖片段落下方、整段都是斜體的那一段。中文沒有真正的義大利體，
+   瀏覽器只會把字形拉斜，所以這裡改回正體，改用小一級 + 轉淡與圖片區隔。 */
+.nc-prose p:has(> img):has(+ p > em:only-child):not([data-nc-viz-body] *) { margin-bottom: 8px; }
+/* 圖片偶爾會黏在清單項目裡（原始碼沒空行），所以前一個兄弟也可能是 ul／ol */
+.nc-prose :is(p, ul, ol):has(img) + p:has(> em:only-child):not([data-nc-viz-body] *) {
+  font-size: var(--text-base); color: var(--text-muted); line-height: 1.7; margin: 0 0 24px;
+}
+.nc-prose :is(p, ul, ol):has(img) + p:has(> em:only-child):not([data-nc-viz-body] *) > em { font-style: normal; }
 .nc-prose :is(ul, ol):not([data-nc-viz-body] *) { margin: 0 0 18px; padding-left: 26px; color: var(--text-body); font-size: var(--text-md); line-height: 1.85; }
 .nc-prose ul { list-style: disc; }
 .nc-prose ol { list-style: decimal; }

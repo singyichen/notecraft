@@ -41,6 +41,8 @@ Rule: exactly one primary CTA button per page/section (uses `--action-primary`, 
 - H3 and body/UI text: **Inter** via `var(--font-sans)`, falling back to `Noto Sans TC`.
 - Code / meta / ids (e.g. an `@ai-visualize` id shown as a caption): `var(--font-mono)` → JetBrains Mono.
 - Chinese body copy: keep `line-height: var(--leading-relaxed)` (1.8) — already the project default for `.nc-prose p`.
+- Note-body heading scale (`.nc-prose`): H1 `--text-3xl` / H2 `--text-2xl` / H3 `--text-xl` / **H4 `--text-lg`** / H5 `--text-md` / H6 `--text-base`. H4–H6 need explicit rules — without them they inherit the global `h1..h6 { margin: 0 }` and the browser default `font-size: 1em`, which renders a heading *smaller* than body copy (`--text-md`, 18px) and with no spacing at all.
+- Figure captions in notes are written as a whole-paragraph italic line directly under the image (`*…*` on its own line in MDX). CSS turns that back into upright type at `--text-base` in `--text-muted` — never rely on the italic itself, Chinese has no true italic and browsers just slant the glyphs. Keep one blank line between the caption and the next image, or the two collapse into one paragraph and the caption loses the style.
 
 ## Radius & shadow
 
