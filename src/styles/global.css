@@ -676,7 +676,10 @@ img { max-width: 100%; display: block; }
 /* Choices（選擇題選項）───────────────────────────────────────
    `:::choices{answer="B"}` 的輸出。正解沿用 tip tone（綠）：淡底 + 左色條 + 勾號 + 加粗，
    不只靠色相區分，黑白列印與色弱視覺下仍讀得出來。選項字級與內文一致（--text-md）。 */
-.nc-prose .nc-choices {
+/* 選擇器必須帶 `ul` 限定：上方 `.nc-prose :is(ul, ol):not([data-nc-viz-body] *)` 的 specificity
+   是 (0,2,1)（`:is()` / `:not()` 取其引數中最高者），會蓋掉 `.nc-prose .nc-choices`（0,2,0）的
+   padding / margin 重設，導致選項多出 26px 縮排。`ul.nc-choices` 同為 (0,2,1) 且位於後方，故勝出。 */
+.nc-prose ul.nc-choices {
   margin: 22px 0;
   padding: 0;
   list-style: none;

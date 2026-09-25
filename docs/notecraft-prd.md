@@ -1,7 +1,7 @@
 ---
 Project Name: NoteCraft
 文件類型: Project Requirement Document (PRD)
-文件版本: v1.13.0
+文件版本: v1.14.0
 開發模式: Waterfall
 技術選型: 確定
 技術架構: 確定
@@ -10,7 +10,7 @@ Project Name: NoteCraft
 文件作者: 建宇
 審核人: 建宇
 建立日期: 2026-06-12
-更新日期: 2026-09-22
+更新日期: 2026-09-25
 ---
 
 # NoteCraft — AI 互動筆記 Web App
@@ -2854,6 +2854,9 @@ gantt
 ---
 
 ## 11. Change Log（變更紀錄）
+
+### [1.14.0] - 2026-09-25
+- **Added**: 新增 Markdown 擴充語法 Choices（選擇題選項），服務 exam-review 的選擇題模式
 
 ### [1.13.0] - 2026-09-22
 - **Added**: 新增 Workbench 工作台改版規格與 Phase 4.16；補上 Phase 4.15 Plugin System 條目；Site Map 更新為三欄工作台的路由（含 /plugins、/settings 與舊網址轉址）
