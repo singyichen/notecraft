@@ -132,10 +132,76 @@ def main_reverse(args):
     print(f'\n圖：{os.path.join(args.out, "exp2-reverse-overlay.png")}')
 
 
+
+def read_scalar_csv(path):
+    """實驗三、四的純量記錄表：區段, 量測項目, 實測, 預報_LTspice, 理想公式。"""
+    rows = []
+    with open(path, encoding='utf-8-sig') as fh:
+        for d in csv.DictReader(fh):
+            g = lambda k: (d.get(k) or '').strip()
+            f = lambda k: float(g(k)) if g(k) else float('nan')
+            if not g('量測項目'):
+                continue
+            rows.append(dict(sec=g('區段'), item=g('量測項目'), meas=f('實測'),
+                             lt=f('預報_LTspice'), ideal=f('理想公式')))
+    return rows
+
+
+def main_scalar(args):
+    """實測 vs 預報的長條對照圖（實驗三、四）。"""
+    rows = read_scalar_csv(args.csv[0])
+    pct = [r for r in rows if r['sec'] == '推算值']
+    volt = [r for r in rows if r['sec'] != '推算值']
+    if not volt:
+        sys.exit('CSV 裡沒有可畫的列')
+
+    def draw(ax, data, scale, ylabel, title):
+        n = len(data)
+        x = np.arange(n)
+        w = 0.27 if n > 2 else 0.18
+        for k, (key, name, c) in enumerate([('meas', '實測', S2), ('lt', 'LTspice 預報', S1), ('ideal', '理想公式', S3)]):
+            vals = [r[key] * scale for r in data]
+            if all(np.isnan(v) for v in vals):
+                continue
+            ax.bar(x + (k - 1) * w, [0 if np.isnan(v) else v for v in vals], w, label=name, color=c,
+                   edgecolor=SURF, linewidth=0.8)
+        ax.set_xticks(x)
+        ax.set_xticklabels(['%s\n%s' % (r['sec'].replace('輸出 ', ''), r['item'].replace(' (V)', '')) for r in data],
+                           fontsize=8)
+        ax.set_ylabel(ylabel)
+        ax.set_title(title, loc='left')
+        top = max((r[k] * scale for r in data for k in ('meas', 'lt', 'ideal') if not np.isnan(r[k])), default=1)
+        ax.set_ylim(0, top * 1.3)                      # 留白給圖例，不要壓到最高的長條
+        if n <= 2:
+            ax.set_xlim(-0.6, n - 0.4)
+        ax.legend(loc='upper right', fontsize=9, ncol=3 if n > 2 else 1)
+
+    ncol = 2 if pct else 1
+    f, axes = plt.subplots(1, ncol, figsize=(6.2 * ncol + 4, 4.6), dpi=160,
+                           gridspec_kw={'width_ratios': [3, 1]} if pct else None)
+    ax_v = axes[0] if pct else axes
+    draw(ax_v, volt, 1.0, '電壓 (V)', f'實驗{args.exp}：實測 vs 預報')
+    if pct:
+        draw(axes[1], pct, 100.0, '百分比 (%)', '效率與漣波比')
+    f.tight_layout()
+    out = os.path.join(args.out, f'exp{args.exp}-compare.png')
+    f.savefig(out, facecolor=SURF)
+    plt.close(f)
+    print('wrote', out)
+
+    print('\n| 量 | 實測 | LTspice 預報 | 誤差 % | 理想公式 |')
+    print('| --- | --- | --- | --- | --- |')
+    for r in rows:
+        fmt = (lambda v: '' if np.isnan(v) else f'{v:.3f}')
+        err = '' if (np.isnan(r['meas']) or np.isnan(r['lt']) or r['lt'] == 0) else f"{(r['meas'] - r['lt']) / r['lt'] * 100:+.1f}%"
+        print(f"| {r['sec']}／{r['item']} | {fmt(r['meas'])} | {fmt(r['lt'])} | {err} | {fmt(r['ideal'])} |")
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('csv', nargs='+', help='實測或 Tinkercad 的 CSV（可多個）')
-    ap.add_argument('--exp', type=int, default=1, choices=(1, 2), help='1 = 順偏（預設），2 = 逆偏')
+    ap.add_argument('--exp', type=int, default=1, choices=(1, 2, 3, 4),
+                    help='1 = 順偏（預設），2 = 逆偏，3 = 半波，4 = 橋式；3／4 讀純量記錄表畫長條對照圖')
     ap.add_argument('--out', default=os.path.join(HERE, '..', '..', 'public', 'note-images', 'ec-week3-measured'))
     ap.add_argument('--raw', default=None, help='LTspice .raw，預設依 --exp 選 lab1-exp1-forward.raw 或 lab1-exp2-reverse.raw')
     ap.add_argument('--threshold', type=float, default=1.0, help='準則一的電流門檻 (mA)，預設 1 mA')
@@ -143,6 +209,8 @@ def main():
     os.makedirs(args.out, exist_ok=True)
     if args.raw is None:
         args.raw = os.path.join(HERE, 'lab1-exp1-forward.raw' if args.exp == 1 else 'lab1-exp2-reverse.raw')
+    if args.exp in (3, 4):
+        return main_scalar(args)
     if args.exp == 2:
         return main_reverse(args)
 
