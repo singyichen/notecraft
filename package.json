@@ -64,6 +64,8 @@
     "new-note": "node scripts/new-note.mjs",
     "sync-skill": "node scripts/sync-skill-template.mjs",
     "check-plugins": "node scripts/check-plugins.mjs",
+    "check-bold": "node --experimental-strip-types scripts/check-bold.mjs",
+    "test": "node --experimental-strip-types --test src/lib/*.test.ts src/lib/*.test.mjs",
     "prepublishOnly": "npm run sync-skill && npm run check-plugins",
     "viewer:view": "node bin/notecraftapp.mjs view",
     "viewer:build": "node bin/notecraftapp.mjs build",

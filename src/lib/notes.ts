@@ -1,6 +1,9 @@
 import fs from "node:fs";
 import path from "node:path";
 import { getCollection, type CollectionEntry } from "astro:content";
+import { excerpt } from "./excerpt.ts";
+// excerpt 搬到獨立模組以便單元測試；此處轉出以維持既有 `@/lib/notes` 的匯入路徑。
+export { excerpt };
 
 // RawNote：直接從 astro:content 讀出來的 entry，data 的 title/createdAt/updatedAt 可能 undefined。
 export type RawNote = CollectionEntry<"notes">;
@@ -152,20 +155,4 @@ export function tagStats(notes: Note[]): TagStat[] {
     }
   }
   return Array.from(m.values()).sort((a, b) => b.count - a.count || a.name.localeCompare(b.name));
-}
-
-export function excerpt(body: string | undefined | null, fallback: string): string {
-  if (!body) return fallback.replace(/\s+/g, " ").slice(0, 220);
-  const stripped = body
-    .replace(/^---[\s\S]*?---/, "")
-    .replace(/\{\/\*[\s\S]*?\*\/\}/g, "")
-    .replace(/^import[^\n]*$/gm, "")
-    .replace(/<[A-Z][^>]*\/?>/g, "")
-    .replace(/```[\s\S]*?```/g, "")
-    .replace(/^#+\s.*$/gm, "")
-    .replace(/^\s*[-*]\s.*$/gm, "")
-    .replace(/^>\s.*$/gm, "")
-    .trim();
-  const para = stripped.split(/\n{2,}/).find((p) => p.trim().length > 0);
-  return (para || fallback).replace(/\s+/g, " ").slice(0, 220);
 }
