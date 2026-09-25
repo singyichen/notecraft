@@ -39,6 +39,27 @@ python3 -m venv .venv && .venv/bin/pip install numpy matplotlib openpyxl
 所以重新 clone 之後**一定要先跑 `run-lt.sh`** 再跑後面兩支腳本。`openpyxl` 只有
 `build_record_xlsx.py` 用得到。
 
+### 改完 xlsx 之後要驗算並修回字型
+
+openpyxl 寫出來的公式沒有快取值，任何讀快取的工具（Excel 以外的預覽器、pandas）都會讀到空的，
+所以要用 LibreOffice 重算一次。但 LibreOffice 存檔時會把字型換成它自己的 `Linux Libertine G`
+（本機不存在，Excel 會亂代用），所以重算完要把字型改回來：
+
+```bash
+cd simulations/lab1
+SK=~/.claude/skills/synced/*/xlsx                       # xlsx skill 的位置
+.venv/bin/python $SK/scripts/recalc.py measured/Lab1-數據記錄.xlsx 180   # 要 status: success、total_errors: 0
+rm -rf /tmp/fix && mkdir /tmp/fix && cd /tmp/fix
+unzip -q <repo>/simulations/lab1/measured/Lab1-數據記錄.xlsx
+sed -i '' 's/Linux Libertine G/Arial/g' xl/styles.xml
+rm <repo>/simulations/lab1/measured/Lab1-數據記錄.xlsx
+zip -Xrq <repo>/simulations/lab1/measured/Lab1-數據記錄.xlsx .
+```
+
+驗過的結果：162 條公式、0 錯誤；六張圖與所有儲存格內容不變；40 條公式帶有快取值
+（其餘 122 條在沒填數據時本來就是空字串）。重打包後再跑一次 `recalc.py` 仍是 success，
+確認檔案沒有因為重壓縮而損壞。
+
 `../tools/ltraw.py` 是最小的 `.raw` 讀取器（UTF-16 標頭 + 二進位資料，支援 `.step` 分段），不依賴 PyLTSpice；`run-lt.sh` 也在 `../tools/`。
 
 ## 結報（助教格式）
