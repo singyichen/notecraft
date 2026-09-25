@@ -169,6 +169,11 @@ excerpt: Compare at least a handful of different ML algorithms to select the bes
 */}
 <PdfRefChip file="_references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf" page={5} status="suggested" excerpt={"Compare at least a handful of different ML algorithms to select the best model"} client:visible />
 
+![完整機器學習流程圖：原始資料經兩段前處理管線、訓練與交叉驗證、最終模型，再套用到新資料](/note-images/ml-week7/01-how-to-validate-a-model.png)
+
+*講義的全景圖：前處理管線 1 與 2、交叉驗證迭代、最終模型——本週談的都是右下角那條「評估與挑選」的路徑。*
+
+
 ## 交叉驗證：從 Holdout 到 k 折
 
 ### Holdout 交叉驗證與它的弱點
@@ -190,6 +195,11 @@ excerpt: Training dataset：Model fitting；Validation dataset：Model evaluatio
 */}
 <PdfRefChip file="_references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf" page={7} status="suggested" excerpt={"Training dataset：Model fitting；Validation dataset：Model evaluation, Model selection；Test dataset：Generalization performance estimate。Disadvantage：Sensitive to how we partition the training dataset"} client:visible />
 
+![Holdout 交叉驗證流程圖：原始資料切成訓練、驗證、測試三份，調超參數的迴圈只在訓練與驗證之間進行](/note-images/ml-week7/02-holdout-cross-validation.png)
+
+*注意那條迴圈只繞過驗證集：測試集全程不參與調參，最後才用一次做泛化估計。*
+
+
 這裡的關鍵是驗證集與測試集**不能是同一份**：驗證集參與了選擇，已經不再「未見過」，拿它報告泛化效能會偏樂觀。
 
 缺點也很明顯：結果**對「訓練集與驗證集怎麼分」很敏感**——換一種切法，結論可能就變了。
@@ -206,6 +216,11 @@ status: suggested
 excerpt: Average performance of k models is less sensitive to the sub-partitioning of training data
 */}
 <PdfRefChip file="_references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf" page={8} status="suggested" excerpt={"Average performance of k models is less sensitive to the sub-partitioning of training data"} client:visible />
+
+![k 折交叉驗證結構圖：十次迭代中測試折依序往左移動，每次產出一個效能估計，最後取平均](/note-images/ml-week7/03-k-fold-structure.png)
+
+*十次迭代，黑色的測試折每輪換一個位置；右邊十個 E 取平均，就是對子分割方式不敏感的估計。*
+
 
 $k$ 的選法有個簡單的反向關係：
 
@@ -263,6 +278,19 @@ status: suggested
 excerpt: High bias：Both low training and cross-validation accuracy；High variance：Large gap between training and cross-validation accuracy，及各自的 solutions
 */}
 <PdfRefChip file="_references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf" page={12} status="suggested" excerpt={"High bias：Both low training and cross-validation accuracy；High variance：Large gap between training and cross-validation accuracy，及各自的 solutions"} client:visible />
+
+![三張學習曲線示意圖：高偏差時兩線都低且貼合、高變異時兩線之間有明顯的縫、良好折衷時兩線高且合攏](/note-images/ml-week7/04-learning-curve-bias-variance.png)
+
+*三種長相對應三種處方。高偏差時兩線已貼合，再加資料只是把平線延長；高變異時的縫才是補資料能拉近的。*
+
+![實際的學習曲線圖：訓練正確率與驗證正確率隨訓練樣本數增加而逐漸靠攏](/note-images/ml-week7/05-learning-curve-example.png)
+
+*實際跑出來的樣子：陰影是交叉驗證各折的標準差範圍，樣本數增加後兩線逐漸收斂。*
+
+![實際的驗證曲線圖：橫軸為超參數值，驗證正確率在中段見頂後開始下滑](/note-images/ml-week7/06-validation-curve-example.png)
+
+*驗證曲線換成橫軸是超參數：中段見頂、右端訓練續升而驗證掉頭，峰值就是該選的值。*
+
 
 這張圖最實用的地方在於它能回答「該不該再去要資料」。高偏差時兩條線已經貼合且都低，再多資料也只是把同一條平線延長；高變異時兩條線之間有持續的縫，補資料才可能把縫拉近。
 
@@ -394,6 +422,11 @@ excerpt: Example：5 × 2 cross-validation；Model selection；Average performan
 */}
 <PdfRefChip file="_references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf" page={21} status="suggested" excerpt={"Example：5 × 2 cross-validation；Model selection；Average performance used for algorithm selection"} client:visible />
 
+![巢狀交叉驗證結構圖：外層迴圈切出訓練折與測試折，內層迴圈再把訓練折切成訓練與驗證折來調參](/note-images/ml-week7/07-nested-cv-5x2.png)
+
+*兩層迴圈的分工：外層（藍）只負責評估，內層（橘）才負責挑超參數——測試折從頭到尾沒參與選擇。*
+
+
 ## 模型評估：混淆矩陣與效能指標
 
 ### 混淆矩陣
@@ -511,6 +544,11 @@ status: suggested
 excerpt: Receiver Operating Characteristic (ROC)：Curve of FPR v.s. TPR, computed by shifting the decision threshold；ROC AUC 範圍 [0,1]，Perfect／Random Guessing
 */}
 <PdfRefChip file="_references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf" page={28} status="suggested" excerpt={"Receiver Operating Characteristic (ROC)：Curve of FPR v.s. TPR, computed by shifting the decision threshold；ROC AUC 範圍 [0,1]，Perfect／Random Guessing"} client:visible />
+
+![三張 ROC 曲線並列：完美分類器 AUC 為 1.0、隨機猜測為對角線 AUC 0.5、典型分類器 AUC 0.84](/note-images/ml-week7/08-roc-curve-three-cases.png)
+
+*三種極端：左為完美、中間的對角線就是瞎猜、右邊是實際會看到的樣子，A、B、C 是不同門檻下的位置。*
+
 
 曲線下面積 **ROC AUC** 落在 $[0, 1]$——完美分類器是 1，隨機猜測是 0.5，也就是對角線。
 
@@ -730,6 +768,11 @@ excerpt: 1797 張 8×8 灰階 (grayscale) 影像；64 維（像素值）特徵�
 */}
 <PdfRefChip file="_references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf" page={56} status="suggested" excerpt={"1797 張 8×8 灰階 (grayscale) 影像；64 維（像素值）特徵（整數值 [0,16]）；多類別標籤 0–9 共 10 類"} client:visible />
 
+![load_digits 資料集的十張 8×8 灰階手寫數字影像範例](/note-images/ml-week7/09-digits-dataset-samples.png)
+
+*作業要分類的就是這種 8×8 灰階圖：解析度低到肉眼都要想一下，64 個像素值就是 64 維特徵。*
+
+
 {/* @ai-reference
 id: assignment3-requirements-row
 file: _references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf
@@ -752,6 +795,11 @@ excerpt: 預期結果 1：視覺化（特徵選取遮罩）呈現特徵選取結
 */}
 <PdfRefChip file="_references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf" page={59} status="suggested" excerpt={"預期結果 1：視覺化（特徵選取遮罩）呈現特徵選取結果，0 淘汰、1 選取，標題含選取比例，必須在 44/64 以下"} client:visible />
 
+![特徵選取遮罩視覺化：8×8 網格中深藍為選取、白色為淘汰的像素位置，標題顯示選取 40/64](/note-images/ml-week7/10-assignment3-feature-mask.png)
+
+*預期產出一：被淘汰的多半是四周邊緣的像素——那些位置幾乎總是空白，對辨識沒有貢獻。*
+
+
 2. 測試集的分類報告與混淆矩陣視覺化
 
 {/* @ai-reference
@@ -763,6 +811,15 @@ excerpt: 預期結果 2：輸出測試集的分類報告，視覺化呈現混淆
 */}
 <PdfRefChip file="_references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf" page={60} status="suggested" excerpt={"預期結果 2：輸出測試集的分類報告，視覺化呈現混淆矩陣，必須達 0.95 以上"} client:visible />
 
+![分類報告輸出：十個類別各自的 precision、recall、f1-score 與 support，整體正確率 0.97](/note-images/ml-week7/11-assignment3-classification-report.png)
+
+*預期產出二之一：每個數字類別各自的三項指標，最下方是整體正確率與宏平均、加權平均。*
+
+![十類別混淆矩陣熱圖：對角線為正確分類數，少數非對角線格子有 1 到 2 筆誤判](/note-images/ml-week7/12-assignment3-confusion-matrix.png)
+
+*預期產出二之二：對角線越深越好，非對角線的零星數字就是誤判——它們必須與下一張圖逐一對應。*
+
+
 3. 所有誤判樣本的圖（標註真實標籤與預測結果，且必須與混淆矩陣對應）
 
 {/* @ai-reference
@@ -773,6 +830,11 @@ status: suggested
 excerpt: 預期結果 3：輸出誤判的樣本總數，繪出所有誤判的樣本，標示真實標籤與預測結果，必須與混淆矩陣對應
 */}
 <PdfRefChip file="_references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf" page={61} status="suggested" excerpt={"預期結果 3：輸出誤判的樣本總數，繪出所有誤判的樣本，標示真實標籤與預測結果，必須與混淆矩陣對應"} client:visible />
+
+![所有誤判樣本的影像網格，每張標註真實標籤與預測結果](/note-images/ml-week7/13-assignment3-misclassified.png)
+
+*預期產出三：把誤判的樣本全部畫出來。看過這些圖才知道模型是「差一點」還是「完全認錯」。*
+
 
 繳交規則要特別注意：只上傳**模型評估**部分的程式碼與模型檔（打包成單一 `.zip`），**不包含任何訓練或模型選取程式碼**——助教是直接執行評估程式批閱，沒有時間跑交叉驗證與微調。
 

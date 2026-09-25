@@ -318,6 +318,11 @@ excerpt: One-hot encoding introduces multi-collinearity：對需要矩陣求逆�
 */}
 <PdfRefChip file="_references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf" page={22} status="suggested" excerpt={"One-hot encoding introduces multi-collinearity：對需要矩陣求逆的方法而言，高度相關的特徵會讓矩陣病態（ill-conditioned）而難以求逆"} client:visible />
 
+![講義投影片：one-hot 編碼後的 DataFrame，color_blue／color_green／color_red 三欄被黃色括號標示為彼此相關](/note-images/ml-week6/01-onehot-multicollinearity.png)
+
+*講義用黃色標註圈出三個獨熱欄位：每列恰有一個 1，三欄加總恆為 1，這就是共線性的來源。*
+
+
 解法是刪掉其中一欄，而且**不會損失任何資訊**：若 `color_blue` 被刪，`color_green = 0` 且 `color_red = 0` 就唯一地表示這筆是藍色。
 
 {/* @ai-reference
@@ -364,6 +369,11 @@ status: suggested
 excerpt: 單一極端離群值就能把其餘資料擠壓進極小的子區間；標準化保留離群值資訊，對 GD／SGD 最佳化更實用
 */}
 <PdfRefChip file="_references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf" page={26} status="suggested" excerpt={"單一極端離群值就能把其餘資料擠壓進極小的子區間；標準化保留離群值資訊，對 GD／SGD 最佳化更實用"} client:visible />
+
+![同一組輸入值 0.0 到 5.0 經標準化與 min-max 正規化後的數值對照表](/note-images/ml-week6/02-scaling-standardize-vs-normalize.png)
+
+*同一欄資料兩種縮放的實際數字：標準化後落在 −1.46 到 1.46、以 0 為中心；正規化後被壓進 0 到 1。*
+
 
 講義特別提醒：**獨熱編碼產生的 0/1 欄位不需要再做特徵縮放** 。
 
@@ -429,6 +439,11 @@ status: suggested
 excerpt: The model captures the patterns in the training data well but fails to generalize；high variance，variance measures the consistency
 */}
 <PdfRefChip file="_references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf" page={31} status="suggested" excerpt={"The model captures the patterns in the training data well but fails to generalize；high variance，variance measures the consistency"} client:visible />
+
+![三張散佈圖並列：欠擬合的直線邊界、適配的平滑曲線邊界、過擬合的曲折邊界](/note-images/ml-week6/03-bias-variance-tradeoff.png)
+
+*同一份資料的三種擬合程度。左邊界太簡單抓不住規律（高偏差），右邊界彎來彎去把雜訊也記住（高變異）。*
+
 
 防止過擬合的常見手段：蒐集更多訓練資料（通常不可行）、選更簡單的模型、用正則化引入複雜度懲罰、降維。後三者殊途同歸——都讓模型變簡單。
 
@@ -588,6 +603,15 @@ excerpt: Transformer API in Scikit-learn：fit()／transform()／fit_transform()
 */}
 <PdfRefChip file="_references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf" page={47} status="suggested" excerpt={"Transformer API in Scikit-learn：fit()／transform()／fit_transform()"} client:visible />
 
+![Transformer API 流程圖：訓練資料與測試資料分別經過 fit 與 transform 後產出轉換後的資料](/note-images/ml-week6/04-transformer-api-flow.png)
+
+*Transformer 的三步：① 只用訓練資料 `fit`，② `transform` 訓練資料，③ 用同一個已 fit 的物件 `transform` 測試資料。*
+
+![Estimator API 流程圖：訓練資料與標籤經 fit 產出模型，測試資料經 predict 產出預測標籤](/note-images/ml-week6/05-estimator-api-flow.png)
+
+*Estimator 只有兩步：① `fit(X_train, y_train)` 學出模型，② `predict(X_test)` 產出預測標籤。*
+
+
 | API | 方法鏈 | 用途 | 代表類別 |
 | --- | --- | --- | --- |
 | Transformer API | `fit()` → `transform()`，或合併的 `fit_transform()` | 資料轉換 | `SimpleImputer`、`StandardScaler`、`MinMaxScaler`、`LabelEncoder`、`OneHotEncoder`、`FunctionTransformer` |
@@ -742,6 +766,11 @@ excerpt: Inner workings of the Pipeline object：transformer(s) → estimator，
 */}
 <PdfRefChip file="_references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf" page={64} status="suggested" excerpt={"Inner workings of the Pipeline object：transformer(s) → estimator，建模與預測兩個方向"} client:visible />
 
+![Pipeline 內部運作圖：訓練時各轉換器依序 fit 與 transform，預測時只做 transform 再交給最後的估計器](/note-images/ml-week6/06-pipeline-inner-workings.png)
+
+*同一個 Pipeline 物件的兩條路徑：`fit()` 時每段轉換器 fit 加 transform，`predict()` 時只有 transform。*
+
+
 - **訓練時**：前面數個轉換器依序 `fit_transform`，最後一個估計器 `fit`
 - **預測時**：資料依序通過各轉換器的 `transform`，再交給估計器 `predict`
 
@@ -795,6 +824,11 @@ status: suggested
 excerpt: Preprocessing requirement：Data cleaning, label encoding, feature scaling and feature selection；30 features, scales differ
 */}
 <PdfRefChip file="_references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf" page={70} status="suggested" excerpt={"Preprocessing requirement：Data cleaning, label encoding, feature scaling and feature selection；30 features, scales differ"} client:visible />
+
+![Breast Cancer Wisconsin 資料集前幾列，可見各特徵欄的數值尺度差異極大且含 NaN](/note-images/ml-week6/07-wdbc-samples-scales-differ.png)
+
+*實際資料長相：mean area 是上千、mean fractal dimension 是 0.0x，尺度差了四個數量級，且看得到 NaN 缺值。*
+
 
 1. 資料切分：`train_test_split`
 2. 資料清理：`SimpleImputer` 補齊缺失值
