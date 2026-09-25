@@ -26,4 +26,7 @@
 
 - `build-lab1-exp1.js`：以 `./run.sh 001 < build-lab1-exp1.js` 執行，會重新載入指定設計、清空畫布、照講義畫法重建實驗一並跑模擬截圖。改設計網址與元件即可套到其他實驗。（寫在 `helpers.cjs` 之前，函式是內嵌的。）
 
-- 已建好的設計：實驗一 `jKblOBzuo2v`（Forward Bias: Knee Voltage）、實驗二 `2oSQv0GjSSi`（Reverse Bias）、實驗三 `d55wQxQs1FC`（Half-Wave Rectifier）、實驗四 `384Ncqz5XD3`（Full-Wave Bridge Rectifier）。
+- 麵包板在元件庫叫**電路試驗板**；四個實驗用的 30 欄板子是「小型電路試驗板」。搜尋框會過濾清單，用 `H.place(name, x, y)`（它會先清空搜尋框）。
+- 點工具列（配線顏色）之前先把 `.root_container` 的 `scrollTop` 歸零，否則頁首被捲掉、`wireColor()` 會靜默失敗；歸零後所有 y 座標會位移，要重讀 `H.geom()`。
+
+- 已建好的設計：實驗一 `jKblOBzuo2v`（Forward Bias: Knee Voltage）、實驗二 `2oSQv0GjSSi`（Reverse Bias）、實驗三 `d55wQxQs1FC`（Half-Wave Rectifier）、實驗四 `384Ncqz5XD3`（Full-Wave Bridge Rectifier）；課前教學用的 `fUK2JBC2tGl`（Preclass: Series Resistors & Meters）、`8A3v53Rb7JM`（Preclass: Same Column = Short Circuit）。

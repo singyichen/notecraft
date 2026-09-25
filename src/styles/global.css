@@ -77,6 +77,11 @@ img { max-width: 100%; display: block; }
 .nc-prose > h1:first-child { margin-top: 8px; }
 .nc-prose h2 { font-size: var(--text-2xl); color: var(--text-strong); margin: 38px 0 14px; scroll-margin-top: 90px; }
 .nc-prose h3 { font-size: var(--text-xl); color: var(--text-strong); margin: 28px 0 10px; scroll-margin-top: 90px; }
+/* h4–h6 若不定義，會吃到全域 `h1..h6 { margin: 0 }` 與瀏覽器預設的 font-size: 1em，
+   結果是「標題比內文（--text-md, 1.125rem）還小、而且完全沒有上下間距」。 */
+.nc-prose h4 { font-size: var(--text-lg); color: var(--text-strong); margin: 24px 0 8px; scroll-margin-top: 90px; }
+.nc-prose h5 { font-size: var(--text-md); color: var(--text-strong); margin: 20px 0 6px; scroll-margin-top: 90px; }
+.nc-prose h6 { font-size: var(--text-base); color: var(--text-muted); margin: 18px 0 6px; scroll-margin-top: 90px; }
 .nc-prose p:not([data-nc-viz-body] *) { font-size: var(--text-md); color: var(--text-body); line-height: 1.85; margin: 0 0 16px; }
 .nc-prose :is(ul, ol):not([data-nc-viz-body] *) { margin: 0 0 18px; padding-left: 26px; color: var(--text-body); font-size: var(--text-md); line-height: 1.85; }
 .nc-prose ul { list-style: disc; }
