@@ -9,6 +9,8 @@ Tinkercad 的線路圖檢視不畫電表、會留開放端，結報要放的正�
 | `lab1-exp1-forward-sheet.svg` / `.pdf` | 結報用：A5 橫式含圖框與標題欄（標題、日期、版次） |
 | `lab1-exp1-forward.kicad.cir` | 由原理圖匯出的 SPICE 網表，用來和手寫的 `../lab1-exp1-forward.cir` 比對拓樸 |
 | `gen_exp1.py` | 產生器；共用的 S-expression 工具在 `../../tools/kicad_sexp.py` |
+| `lab1-exp3-halfwave.*`、`gen_exp3.py` | 實驗三半波整流量測電路：$V_{in}$ 正弦 60 Hz／10 Vpp → D1 1N4007 → $V_{out}$ → R1 10 kΩ ∥ C1 1 µF → GND。C1 是講義第 20 頁才並上去的，圖上有註明第 18 頁先不要接；示波器不畫符號，改用文字說明 CH1／CH2 接在哪 |
+| `lab1-exp4-bridge.*`、`gen_exp4.py` | 實驗四全波橋式量測電路：$V_{in}$ 正弦 60 Hz／5 Vpp 接 A、B 兩節點，D1–D4 1N4007 組成橋，左分支中點是 N（接地）、右分支中點是 P，$R_L$ 10 kΩ 跨在 P、N 之間。二極體編號與講義第 25 頁一致；圖上註明第 26／27 頁要並上的 C 與齊納 |
 | `lab1-exp2-reverse.*`、`gen_exp2.py` | 實驗二逆偏量測電路：與實驗一同拓樸，D1 旋轉 270° 反接（陰極朝 $V_s$ 正端），電壓表 + 端接陰極側所以讀值為正；同一套 `.svg`／`-sheet.svg`／`.pdf`／`.kicad.cir` 輸出，指令把檔名換成 `lab1-exp2-reverse` 即可 |
 
 ## 重新產生與驗證
@@ -16,7 +18,7 @@ Tinkercad 的線路圖檢視不畫電表、會留開放端，結報要放的正�
 ```bash
 cd simulations/lab1/kicad
 KC=/Applications/KiCad/KiCad.app/Contents/MacOS/kicad-cli
-python3 gen_exp1.py lab1-exp1-forward.kicad_sch
+python3 gen_exp1.py lab1-exp1-forward.kicad_sch   # 實驗二、三、四：gen_exp2/3/4.py，檔名換成 lab1-exp2-reverse / lab1-exp3-halfwave / lab1-exp4-bridge
 $KC sch erc --severity-all --exit-code-violations -o erc.rpt lab1-exp1-forward.kicad_sch   # 0 違規才算過
 $KC sch upgrade --force lab1-exp1-forward.kicad_sch     # 轉成 KiCad 10 格式，GUI 開啟才不會警告「舊版建立」
 $KC sch export svg -o svg lab1-exp1-forward.kicad_sch && mv svg/lab1-exp1-forward.svg lab1-exp1-forward-sheet.svg
@@ -37,3 +39,9 @@ cp lab1-exp1-forward.svg ../../../public/note-images/ec-week3-kicad/
 - kicad-cli 跑完會留下 `.kicad_prl`（個人偏好）與 `erc.rpt`，GUI 開檔會留 `~*.lck`，都不進版控。
 - 跑 ERC 時不要把輸出接 `tail`，會吃掉退出碼；補線後一定看網表有沒有 `unconnected-` 節點。
 - 在 GUI 開著檔案時重跑產生器，KiCad 會提示檔案已被外部修改，選重新載入即可；GUI 手動改過的內容不要再跑產生器，否則會被蓋掉。
+
+## 驗證過的結果
+
+四張圖的 ERC 都是 **0 errors**（只有 `kicad-cli` 沒載入符號庫表造成的 `lib_symbol_issues` 警告，GUI 開啟時不會出現）。
+實驗三、四另外把匯出的 SPICE 網表和手寫的 `../lab1-exp3-halfwave.cir`、`../lab1-exp4-bridge.cir` 比對過，
+節點關係完全一致——橋式那張特別要比，四顆二極體的方向是最容易畫反的地方。
