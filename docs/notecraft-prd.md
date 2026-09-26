@@ -1,7 +1,7 @@
 ---
 Project Name: NoteCraft
 文件類型: Project Requirement Document (PRD)
-文件版本: v1.14.0
+文件版本: v1.15.0
 開發模式: Waterfall
 技術選型: 確定
 技術架構: 確定
@@ -10,7 +10,7 @@ Project Name: NoteCraft
 文件作者: 建宇
 審核人: 建宇
 建立日期: 2026-06-12
-更新日期: 2026-09-25
+更新日期: 2026-09-26
 ---
 
 # NoteCraft — AI 互動筆記 Web App
@@ -85,6 +85,7 @@ Project Name: NoteCraft
 23. \* 提供 [筆記轉簡報（Note → Presentation）](#筆記轉簡報note--presentation)：作者於 [筆記檢視頁面](#筆記檢視頁面) 功能列點「生成簡報」按鈕複製提示詞、貼進 Claude Code，由 AI 讀取整篇筆記（文字 ＋ 既有 [Generated 元件](#generated-元件)）重新編排為一份**多頁簡報**（每篇一份、獨立 slides 檔），並於 [簡報模式](#筆記轉簡報note--presentation)（`/present/[slug]`）以「檢視 / 播放」兩態呈現；生成為 dev-only、播放正式環境亦可用，版面遵循 [trendlink-design](#skills)。由獨立的 `content-present` Skill 與兩個新 Subagent 執行，**與既有 AI 視覺化管線完全隔離**
 24. \* 為每個 [Generated 元件](#generated-元件) 提供 [放大檢視](#ai-生成內容外框卡片--放大檢視viz-zoom)：從 [AI 生成內容外框卡片](#ai-生成內容外框卡片) 標題列點「放大檢視」，把元件搬進全螢幕可拖曳平移、可縮放的畫布閱讀（沿用簡報端既有的 `CanvasViewport`），互動完整保留、可匯出 100% 原尺寸 PNG；解決寬元件在內文欄寬下被擠壓、橫向溢出的問題，dev 與正式環境皆可用
 25. \* 提供 [Markdown 擴充語法 — Choices](#markdown-擴充語法choices)：把一份 Markdown 清單渲染為帶 A／B／C 字母的選擇題選項，並以容器屬性 `answer` 把正解整列以語意色標出（支援複選），重用 `remark-directive` 底座，純 CSS、零 JS，正式環境同樣可用；服務於 `exam-review` Skill 的選擇題模式
+26. \* 提供 [Markdown 擴充語法 — English](#markdown-擴充語法english)：以行內 `:en[...]` 標出同一句話的英文對照，渲染為「中文在上、英文另一行轉淡縮小」，重用 `remark-directive` 底座，純 CSS、零 JS，正式環境同樣可用；服務於 `exam-review` Skill 的雙語題幹與雙語選項
 
 ### 4.2 非目標（Out of Scope）
 
@@ -2495,6 +2496,71 @@ model: haiku
 
 ---
 
+#### Markdown 擴充語法：English（雙語對照行）（\*）
+
+<a name="markdown-擴充語法english"></a>
+
+## 目標
+
+為 [筆記用戶](#筆記用戶) 提供「同一句話的英文對照」呈現語法 —— 中文寫一行、英文接一行，渲染成「中文在上、英文另一行轉淡縮小」。服務於 `exam-review` Skill：教授可能以英文出題，複習時題幹與選項需要同時讀得到中英兩種說法，但「考的觀念」與「詳解」仍維持純中文（那是自己讀懂用的，不是應考時要辨認的字面）。屬「作者手寫、build 階段渲染、正式環境一致」的內容增強，與 [AI 標記區塊](#ai-標記區塊) 正交。
+
+## 規格
+
+- **語法（重用 [Task 14](#markdown-擴充語法admonitions--content-tabs--tooltips) 的 `remark-directive` 底座 — 行內 directive）**：
+
+  ```mdx
+  > N 型半導體的摻雜濃度 $N_D$ 提高為十倍，電洞濃度 $p$ 會怎麼變？
+  > :en[If the doping concentration $N_D$ of an N-type semiconductor increases tenfold, how does the hole concentration $p$ change?]
+
+  :::choices{answer="A"}
+  - 降為原來的十分之一 :en[Drops to one-tenth of its original value]
+  - 提高為原來的十倍 :en[Rises to ten times its original value]
+  :::
+  ```
+
+  - 內容：`[...]` 內支援行內 Markdown、巢狀行內 directive 與 KaTeX（英文題幹裡的符號仍以 `$...$` 寫）。
+  - **刻意採行內（text）directive 而非 leaf directive（`::en[...]`）**：選項是清單項目、題幹是 blockquote 段落，英文必須與中文待在**同一個區塊節點**內，才不會被拆成兩個段落、也才能同時用在這兩處。換行效果由 CSS 的 `display: block` 達成，不是由 Markdown 的區塊結構達成。
+- **渲染**：產出 `<span class="nc-en" lang="en">`。樣式為 `display: block` + `--text-sm` + `--text-muted` + `--weight-regular`，色票與字級完全取自設計 token，不硬編色碼。
+  - `color` 與 `font-weight` 明確宣告而非繼承：`:::choices` 正解列的 `--blue-800` 與加粗（`.nc-choice--correct .nc-choice__text`）因此不會套到英文那行，中英兩層的視覺主從關係在任何情境下一致。
+- **互動 / a11y**：純展示，無互動、零 JS。`lang="en"` 讓螢幕閱讀器以英文發音朗讀該行，不把英文當中文念。
+- **環境**：純內容渲染，dev 與正式環境**行為一致**。
+
+## 卡控機制
+
+沿用 [Badge](#markdown-擴充語法badge) / [Choices](#markdown-擴充語法choices) 的處理慣例：任何寫法問題都只 `console.warn` 並退化，**不中斷 build、不讓內容消失**。
+
+- `:en` 未帶 `[英文內容]` → 還原為字面文字 `:en`（作者找得到漏寫處）+ build log 警示。
+
+## 驗收標準
+
+| Scenario | Given | When | Then |
+| --- | --- | --- | --- |
+| 題幹雙語 | blockquote 內中文一行、`:en[...]` 一行 | build 後檢視 | 中文在上、英文另一行轉淡縮小，兩行同屬一個 blockquote |
+| 選項雙語 | `:::choices` 選項行尾接 `:en[...]` | 檢視 | 字母與中文同一行，英文自成一行，選項列版面不亂 |
+| 正解列不繼承 | 正解選項含 `:en[...]` | 檢視 | 中文為藍色加粗、英文仍為轉淡的一般字重 |
+| 英文內含 KaTeX | `:en[... $N_D$ ...]` | build | 公式正常渲染，無 `katex-error` |
+| 缺標籤 | 寫成 `:en` 而無 `[...]` | build | log 警示、輸出字面 `:en`，build 不中斷 |
+| 正式環境一致 | Netlify 靜態站 | 檢視含 `:en` 的筆記 | 樣式正常，無執行時 API |
+
+## 待釐清
+
+### Q1. 中英怎麼排？
+
+- [x] **中文一行、英文另一行，英文轉淡縮小** —— 掃讀最快，也最接近雙語試卷的版面
+- [ ] 英文以括號附在同一行（`降為原來的十分之一（drops to one-tenth）`）
+- [ ] 只有題幹加英文，選項維持中文
+
+> 已收斂（作者拍板 2026-09-26）：採兩行制。括號式在選項一長就換行、版面會亂；只加題幹則應付不了全英文的選項。
+
+### Q2. 哪些內容要有英文？
+
+- [x] **`## 考題` 底下的題幹（三種題型皆同）與選擇題選項** —— 考試當下要辨認的就是這些
+- [ ] 連「考的觀念」與「詳解」一起雙語
+
+> 已收斂（作者拍板 2026-09-26）：詳解與考的觀念維持純中文。那是理解用的，雙語只會讓篇幅加倍、複習變慢。
+
+---
+
 ## 8. Schedule（時間表）
 
 根據 PRD 的功能依賴關係，建議按**依賴順序**分為 5 個 Phase。
@@ -2854,6 +2920,9 @@ gantt
 ---
 
 ## 11. Change Log（變更紀錄）
+
+### [1.15.0] - 2026-09-26
+- **Added**: 新增 Markdown 擴充語法 English（:en 雙語對照行），服務 exam-review 的雙語題幹與選項
 
 ### [1.14.0] - 2026-09-25
 - **Added**: 新增 Markdown 擴充語法 Choices（選擇題選項），服務 exam-review 的選擇題模式

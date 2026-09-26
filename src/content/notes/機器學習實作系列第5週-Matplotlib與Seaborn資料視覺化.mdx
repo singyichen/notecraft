@@ -3,7 +3,7 @@ title: "機器學習實作系列：第 5 週 - 邏輯迴歸、Matplotlib 與 Sea
 description: "從 Adaline 使用 MSE 做分類的限制出發，建立邏輯迴歸的條件機率、對數勝算、sigmoid、概似函數與二元交叉熵，推導梯度下降更新；整理 Matplotlib 的 Figure／Axes 層級與兩套介面，並說明作業二的晶圓驗收分類器、特徵工程、標準化與成果要求。"
 tags: ["機器學習實作系列"]
 createdAt: "2026-10-05"
-updatedAt: "2026-09-25"
+updatedAt: "2026-09-26"
 ---
 
 # 第 5 週：邏輯迴歸、Matplotlib 與 Seaborn
@@ -683,12 +683,13 @@ excerpt: 以 DataFrame 格式輸出個別晶圓的通過機率與驗收結果；
 #### 選擇題 1
 
 > 某事件發生的機率是 $0.8$，它的勝算（odds）是多少？
+> :en[An event has probability $0.8$. What are its odds?]
 
 :::choices{answer="A"}
-- $4$
-- $0.8$
-- $0.2$
-- $1.25$
+- $4$ :en[$4$]
+- $0.8$ :en[$0.8$]
+- $0.2$ :en[$0.2$]
+- $1.25$ :en[$1.25$]
 :::
 
 :::tip{collapsible title="詳解"}
@@ -702,12 +703,13 @@ $\operatorname{odds}(p) = \dfrac{p}{1-p} = \dfrac{0.8}{0.2} = 4$，意思是發�
 #### 選擇題 2
 
 > 邏輯迴歸用線性模型建模的對象是什麼？
+> :en[What quantity does logistic regression model with a linear model?]
 
 :::choices{answer="C"}
-- 機率 $p$ 本身
-- 勝算 $\dfrac{p}{1-p}$
-- 對數勝算 $\ln\!\left(\dfrac{p}{1-p}\right)$
-- 類別標籤 $y$
+- 機率 $p$ 本身 :en[The probability $p$ itself]
+- 勝算 $\dfrac{p}{1-p}$ :en[The odds $\dfrac{p}{1-p}$]
+- 對數勝算 $\ln\!\left(\dfrac{p}{1-p}\right)$ :en[The log-odds $\ln\!\left(\dfrac{p}{1-p}\right)$]
+- 類別標籤 $y$ :en[The class label $y$]
 :::
 
 :::tip{collapsible title="詳解"}
@@ -721,12 +723,13 @@ $\operatorname{odds}(p) = \dfrac{p}{1-p} = \dfrac{0.8}{0.2} = 4$，意思是發�
 #### 選擇題 3
 
 > 加上 sigmoid 之後，邏輯迴歸的決策邊界會變成什麼？
+> :en[Once a sigmoid is applied, what does the decision boundary of logistic regression become?]
 
 :::choices{answer="B"}
-- 變成非線性的曲面
-- 仍然是線性的超平面
-- 邊界形狀由資料分布決定
-- 沒有明確的決策邊界
+- 變成非線性的曲面 :en[It becomes a non-linear surface]
+- 仍然是線性的超平面 :en[It is still a linear hyperplane]
+- 邊界形狀由資料分布決定 :en[The shape of the boundary is set by the data distribution]
+- 沒有明確的決策邊界 :en[There is no well-defined decision boundary]
 :::
 
 :::tip{collapsible title="詳解"}
@@ -740,12 +743,13 @@ sigmoid 是單調函數，判斷 $\sigma(z) \geq 0.5$ 等價於判斷 $z \geq 0$
 #### 選擇題 4
 
 > 「概似（likelihood）」是什麼的函數？
+> :en[The likelihood is a function of what?]
 
 :::choices{answer="D"}
-- 資料的函數，參數固定
-- 預測正確率的函數
-- 機率的函數，值域為 $[0,1]$
-- 參數的函數，資料固定
+- 資料的函數，參數固定 :en[A function of the data, with the parameters held fixed]
+- 預測正確率的函數 :en[A function of the prediction accuracy]
+- 機率的函數，值域為 $[0,1]$ :en[A function of probability, with range $[0,1]$]
+- 參數的函數，資料固定 :en[A function of the parameters, with the data held fixed]
 :::
 
 :::tip{collapsible title="詳解"}
@@ -759,12 +763,13 @@ sigmoid 是單調函數，判斷 $\sigma(z) \geq 0.5$ 等價於判斷 $z \geq 0$
 #### 選擇題 5
 
 > 二元交叉熵損失對哪一種預測懲罰最重？
+> :en[Which kind of prediction does binary cross-entropy loss punish most heavily?]
 
 :::choices{answer="A"}
-- 很有自信卻答錯（例如預測 0.99 但真實標籤是 0）
-- 很有自信且答對
-- 沒有自信但答對（預測 0.51）
-- 沒有自信且答錯（預測 0.49）
+- 很有自信卻答錯（例如預測 0.99 但真實標籤是 0） :en[Confident and wrong (predicting 0.99 when the true label is 0)]
+- 很有自信且答對 :en[Confident and right]
+- 沒有自信但答對（預測 0.51） :en[Unconfident but right (predicting 0.51)]
+- 沒有自信且答錯（預測 0.49） :en[Unconfident and wrong (predicting 0.49)]
 :::
 
 :::tip{collapsible title="詳解"}
@@ -778,12 +783,13 @@ BCE 的每一項是 $-\ln(a)$ 或 $-\ln(1-a)$。預測 $0.99$ 而真實為 0 時
 #### 選擇題 6
 
 > 把特徵 $x_1$ 改成 $\lvert x_1 \rvert$ 送進線性模型，是為了表達什麼？
+> :en[Feeding $\lvert x_1 \rvert$ instead of $x_1$ into a linear model expresses what?]
 
 :::choices{answer="C"}
-- $x_1$ 的正負號
-- $x_1$ 的平方關係
-- 「離 0 太遠」這個概念
-- $x_1$ 與其他特徵的交互作用
+- $x_1$ 的正負號 :en[The sign of $x_1$]
+- $x_1$ 的平方關係 :en[A quadratic relation in $x_1$]
+- 「離 0 太遠」這個概念 :en[The notion of "too far from 0"]
+- $x_1$ 與其他特徵的交互作用 :en[The interaction between $x_1$ and the other features]
 :::
 
 :::tip{collapsible title="詳解"}
@@ -797,12 +803,13 @@ BCE 的每一項是 $-\ln(a)$ 或 $-\ln(1-a)$。預測 $0.99$ 而真實為 0 時
 #### 選擇題 7
 
 > Matplotlib 裡的 Figure 與 Axes 分別是什麼？
+> :en[What are Figure and Axes in Matplotlib?]
 
 :::choices{answer="B"}
-- Figure 是一條座標軸，Axes 是整張畫布
-- Figure 是整張畫布，Axes 是其中一個有座標軸的作圖區
-- Figure 與 Axes 是同一個物件的別名
-- Figure 是資料容器，Axes 是樣式設定
+- Figure 是一條座標軸，Axes 是整張畫布 :en[Figure is one coordinate axis, Axes is the whole canvas]
+- Figure 是整張畫布，Axes 是其中一個有座標軸的作圖區 :en[Figure is the whole canvas, Axes is one plotting area on it with coordinate axes]
+- Figure 與 Axes 是同一個物件的別名 :en[Figure and Axes are two names for the same object]
+- Figure 是資料容器，Axes 是樣式設定 :en[Figure is the data container, Axes the style settings]
 :::
 
 :::tip{collapsible title="詳解"}
@@ -816,12 +823,13 @@ Figure 是整張畫布，一張 Figure 可以包含多個 Axes；每個 Axes 是
 #### 選擇題 8
 
 > `plt.plot` 與 `plt.scatter` 的關鍵差別是什麼？
+> :en[What is the key difference between `plt.plot` and `plt.scatter`?]
 
 :::choices{answer="D"}
-- 前者只能畫折線，後者只能畫散點
-- 前者用於連續資料，後者用於離散資料
-- 前者較慢，後者較快
-- 後者能逐點指定大小、顏色與透明度
+- 前者只能畫折線，後者只能畫散點 :en[The former draws only lines, the latter only points]
+- 前者用於連續資料，後者用於離散資料 :en[The former is for continuous data, the latter for discrete data]
+- 前者較慢，後者較快 :en[The former is slower, the latter faster]
+- 後者能逐點指定大小、顏色與透明度 :en[The latter can set size, colour and transparency point by point]
 :::
 
 :::tip{collapsible title="詳解"}
@@ -835,12 +843,13 @@ Figure 是整張畫布，一張 Figure 可以包含多個 Axes；每個 Axes 是
 #### 選擇題 9
 
 > 直方圖的箱寬（bin width）設得太寬，會發生什麼？
+> :en[What happens when the bin width of a histogram is set too wide?]
 
 :::choices{answer="A"}
-- 可能把雙峰分布壓成單峰，掩蓋結構
-- 整張圖變成雜訊，看不出趨勢
-- 樣本總數被改變
-- 不影響圖形，只影響顯示速度
+- 可能把雙峰分布壓成單峰，掩蓋結構 :en[A bimodal distribution may be flattened into one peak, hiding the structure]
+- 整張圖變成雜訊，看不出趨勢 :en[The whole plot turns to noise and no trend is visible]
+- 樣本總數被改變 :en[The total number of samples is changed]
+- 不影響圖形，只影響顯示速度 :en[The plot is unaffected; only the rendering speed changes]
 :::
 
 :::tip{collapsible title="詳解"}
@@ -854,12 +863,13 @@ Figure 是整張畫布，一張 Figure 可以包含多個 Axes；每個 Axes 是
 #### 選擇題 10
 
 > 要用顏色編碼「溫度距平」這種有意義中點的量，該選哪一類色盤？
+> :en[To colour-code a quantity with a meaningful midpoint, such as a temperature anomaly, which kind of palette should be chosen?]
 
 :::choices{answer="C"}
-- 質性（qualitative）色盤
-- 連續（sequential）色盤
-- 發散（divergent）色盤
-- 彩虹型色盤
+- 質性（qualitative）色盤 :en[A qualitative palette]
+- 連續（sequential）色盤 :en[A sequential palette]
+- 發散（divergent）色盤 :en[A divergent palette]
+- 彩虹型色盤 :en[A rainbow palette]
 :::
 
 :::tip{collapsible title="詳解"}
@@ -873,12 +883,13 @@ Figure 是整張畫布，一張 Figure 可以包含多個 Axes；每個 Axes 是
 #### 選擇題 11
 
 > 用 `plt.text` 標註時，把座標系指定為 `transAxes` 代表什麼？
+> :en[When annotating with `plt.text`, what does setting the coordinate system to `transAxes` mean?]
 
 :::choices{answer="B"}
-- 文字位置跟著資料座標跑
-- 用子圖內 0 到 1 的相對位置定位
-- 相對整張畫布定位
-- 文字永遠置中於圖形正中央
+- 文字位置跟著資料座標跑 :en[The text position follows the data coordinates]
+- 用子圖內 0 到 1 的相對位置定位 :en[The text is placed by relative position from 0 to 1 within the subplot]
+- 相對整張畫布定位 :en[The text is placed relative to the whole canvas]
+- 文字永遠置中於圖形正中央 :en[The text is always centred in the middle of the plot]
 :::
 
 :::tip{collapsible title="詳解"}
@@ -892,12 +903,13 @@ Figure 是整張畫布，一張 Figure 可以包含多個 Axes；每個 Axes 是
 #### 選擇題 12
 
 > 什麼時候該用 Seaborn、什麼時候該回到 Matplotlib？
+> :en[When should Seaborn be used, and when is it time to go back to Matplotlib?]
 
 :::choices{answer="D"}
-- Seaborn 功能較強，應該全程使用
-- Matplotlib 較精確，應該全程使用
-- 依資料量決定，大資料用 Seaborn
-- 探索階段用 Seaborn，溝通階段用 Matplotlib
+- Seaborn 功能較強，應該全程使用 :en[Seaborn is more capable and should be used throughout]
+- Matplotlib 較精確，應該全程使用 :en[Matplotlib is more precise and should be used throughout]
+- 依資料量決定，大資料用 Seaborn :en[It depends on data size; large data calls for Seaborn]
+- 探索階段用 Seaborn，溝通階段用 Matplotlib :en[Seaborn for exploration, Matplotlib for communication]
 :::
 
 :::tip{collapsible title="詳解"}
@@ -913,6 +925,7 @@ Seaborn 架在 Matplotlib 之上，API 更高階、原生吃 DataFrame、還把�
 #### 複習題 1
 
 > 為什麼邏輯迴歸名稱裡有 regression，任務卻是 classification？
+> :en[Why does logistic regression carry "regression" in its name when its task is classification?]
 
 **詳解**
 
@@ -921,6 +934,7 @@ Seaborn 架在 Matplotlib 之上，API 更高階、原生吃 DataFrame、還把�
 #### 複習題 2
 
 > 為什麼 MSE 不適合直接搭配 Adaline 的線性輸出做分類？
+> :en[Why is MSE unsuitable for classification directly on top of Adaline's linear output?]
 
 **詳解**
 
@@ -929,6 +943,7 @@ Seaborn 架在 Matplotlib 之上，API 更高階、原生吃 DataFrame、還把�
 #### 複習題 3
 
 > sigmoid 已經是非線性函數，為什麼邏輯迴歸的決策邊界仍是線性的？
+> :en[The sigmoid is already a non-linear function, so why is the decision boundary of logistic regression still linear?]
 
 **詳解**
 
@@ -937,6 +952,7 @@ sigmoid 是單調遞增函數，以 0.5 為門檻等價於檢查 $z \geq 0$。�
 #### 複習題 4
 
 > 交叉熵為什麼特別重罰「自信地答錯」？
+> :en[Why does cross-entropy punish a confident wrong answer especially hard?]
 
 **詳解**
 
@@ -945,6 +961,7 @@ sigmoid 是單調遞增函數，以 0.5 為門檻等價於檢查 $z \geq 0$。�
 #### 複習題 5
 
 > 最大化 log-likelihood 與最小化 BCE 有什麼關係？
+> :en[How is maximizing the log-likelihood related to minimizing BCE?]
 
 **詳解**
 
@@ -953,6 +970,7 @@ BCE 就是平均負 log-likelihood。乘上負號後，最大化概似的問題�
 #### 複習題 6
 
 > OvR 與 softmax 在機率解讀上有何差異？
+> :en[How do OvR and softmax differ in how their probabilities may be read?]
 
 **詳解**
 
@@ -961,6 +979,7 @@ OvR 為每個類別各訓練一個獨立的二元分類器，各自回答「是�
 #### 複習題 7
 
 > 為什麼 WAT 作業應考慮 $\lvert x_1 \rvert$ 或 $x_1^2$？
+> :en[Why should the WAT assignment consider $\lvert x_1 \rvert$ or $x_1^2$?]
 
 **詳解**
 
@@ -969,6 +988,7 @@ OvR 為每個類別各訓練一個獨立的二元分類器，各自回答「是�
 #### 複習題 8
 
 > 為什麼測試集不能自己重新估計標準化參數？
+> :en[Why must the test set not re-estimate its own standardization parameters?]
 
 **詳解**
 
@@ -977,6 +997,7 @@ OvR 為每個類別各訓練一個獨立的二元分類器，各自回答「是�
 #### 複習題 9
 
 > 損失曲線一路下降，能否證明模型沒有過擬合？
+> :en[If the loss curve falls throughout, does that prove the model is not overfitting?]
 
 **詳解**
 
@@ -985,6 +1006,7 @@ OvR 為每個類別各訓練一個獨立的二元分類器，各自回答「是�
 #### 複習題 10
 
 > Matplotlib 的 Figure、Axes、Axis 分別是什麼？
+> :en[What are Matplotlib's Figure, Axes and Axis?]
 
 **詳解**
 
@@ -997,6 +1019,7 @@ OvR 為每個類別各訓練一個獨立的二元分類器，各自回答「是�
 #### 複習題 1
 
 > 若模型輸出正類機率 $p=0.8$，求勝算與 logit。
+> :en[If a model outputs a positive-class probability $p=0.8$, find the odds and the logit.]
 
 **詳解**
 
@@ -1012,6 +1035,7 @@ $$
 #### 複習題 2
 
 > 若某正類樣本的預測機率為 0.9，另一個正類樣本的預測機率為 0.1，分別求單筆 BCE。
+> :en[One positive sample is predicted with probability 0.9 and another positive sample with probability 0.1. Find the per-sample BCE of each.]
 
 **詳解**
 
@@ -1027,6 +1051,7 @@ $$
 #### 複習題 3
 
 > 從 $L=-y\ln(a)-(1-y)\ln(1-a)$、$a=\sigma(z)$、$z=\boldsymbol{w}^T\boldsymbol{x}+b$ 出發，推導 $\dfrac{\partial L}{\partial w_j}=(a-y)x_j$。
+> :en[Starting from $L=-y\ln(a)-(1-y)\ln(1-a)$, $a=\sigma(z)$ and $z=\boldsymbol{w}^T\boldsymbol{x}+b$, derive $\dfrac{\partial L}{\partial w_j}=(a-y)x_j$.]
 
 **詳解**
 
@@ -1065,6 +1090,7 @@ $$
 #### 複習題 4
 
 > WAT 資料若採用 $x_1'=\lvert x_1 \rvert$，請說明為什麼模型在轉換後空間仍是線性的，但在原始 $x_1$ 空間能形成左右對稱的判斷。
+> :en[If the WAT data uses $x_1'=\lvert x_1 \rvert$, explain why the model is still linear in the transformed space yet can make a left-right symmetric decision in the original $x_1$ space.]
 
 **詳解**
 
@@ -1083,6 +1109,7 @@ $$
 #### 複習題 5
 
 > 訓練集某特徵的平均值 $\mu = 50$、標準差 $\sigma = 8$。測試集中有一筆樣本該特徵為 $66$，求其標準化結果。若改用測試集自己的統計量（$\mu' = 60$、$\sigma' = 5$），結果會變成多少？說明為何不能這樣做。
+> :en[A training set feature has mean $\mu = 50$ and standard deviation $\sigma = 8$. A test sample has the value $66$ for that feature; find its standardized value. If the test set's own statistics ($\mu' = 60$, $\sigma' = 5$) were used instead, what would the result be? Explain why this must not be done.]
 
 **詳解**
 

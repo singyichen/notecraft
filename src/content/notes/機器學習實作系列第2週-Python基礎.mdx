@@ -3,7 +3,7 @@ title: "機器學習實作系列：第 2 週 - PLA 與 Python 基礎"
 description: "感知器學習演算法（PLA）的模型、線性代數基礎、訓練規則、收斂定理與多元分類延伸；Python 基礎涵蓋型別、容器、控制流程、檔案與例外處理、物件導向；並完整實作一個物件導向的 Perceptron 類別，訓練在 Iris 資料集上。"
 tags: ["機器學習實作系列"]
 createdAt: "2026-09-14"
-updatedAt: "2026-09-25"
+updatedAt: "2026-09-26"
 ---
 
 # 第 2 週：PLA 與 Python 基礎（測試）
@@ -1078,12 +1078,13 @@ $$
 #### 選擇題 1
 
 > PLA 在某一筆樣本上分類正確時，會對權重做什麼？
+> :en[When the PLA classifies a sample correctly, what does it do to the weights?]
 
 :::choices{answer="A"}
-- 完全不更新
-- 往正確方向小幅更新
-- 更新量減半
-- 把該筆樣本移出訓練集
+- 完全不更新 :en[It does not update them at all]
+- 往正確方向小幅更新 :en[It updates them slightly in the right direction]
+- 更新量減半 :en[It halves the size of the update]
+- 把該筆樣本移出訓練集 :en[It removes that sample from the training set]
 :::
 
 :::tip{collapsible title="詳解"}
@@ -1097,12 +1098,13 @@ $$
 #### 選擇題 2
 
 > Novikoff 收斂定理保證 PLA 在有限步內收斂，前提是什麼？
+> :en[Novikoff's convergence theorem guarantees the PLA converges in a finite number of steps. On what premise?]
 
 :::choices{answer="C"}
-- 學習率必須夠小
-- 特徵必須先標準化
-- 訓練資料必須線性可分
-- 樣本數必須大於特徵數
+- 學習率必須夠小 :en[The learning rate must be small enough]
+- 特徵必須先標準化 :en[The features must be standardized first]
+- 訓練資料必須線性可分 :en[The training data must be linearly separable]
+- 樣本數必須大於特徵數 :en[The number of samples must exceed the number of features]
 :::
 
 :::tip{collapsible title="詳解"}
@@ -1116,12 +1118,13 @@ $$
 #### 選擇題 3
 
 > Adaline 把感知器的階梯函數換成連續線性輸出，最關鍵的好處是什麼？
+> :en[Adaline replaces the perceptron's step function with a continuous linear output. What is the key benefit?]
 
 :::choices{answer="B"}
-- 輸出值被限制在 $[0,1]$ 之間
-- 損失函數變得可微分，能用梯度下降訓練
-- 可以直接處理多元分類
-- 不再需要設定學習率
+- 輸出值被限制在 $[0,1]$ 之間 :en[The output value is confined to $[0,1]$]
+- 損失函數變得可微分，能用梯度下降訓練 :en[The loss becomes differentiable, so gradient descent can train it]
+- 可以直接處理多元分類 :en[It can handle multi-class classification directly]
+- 不再需要設定學習率 :en[A learning rate no longer has to be set]
 :::
 
 :::tip{collapsible title="詳解"}
@@ -1135,12 +1138,13 @@ $$
 #### 選擇題 4
 
 > 在 $\boldsymbol{w}^T\boldsymbol{x} + b = 0$ 這個超平面中，$\boldsymbol{w}$ 與 $b$ 各決定什麼？
+> :en[In the hyperplane $\boldsymbol{w}^T\boldsymbol{x} + b = 0$, what does each of $\boldsymbol{w}$ and $b$ determine?]
 
 :::choices{answer="D"}
-- $\boldsymbol{w}$ 決定位置，$b$ 決定方向
-- 兩者共同決定方向，位置由資料決定
-- $\boldsymbol{w}$ 決定維度，$b$ 決定傾斜程度
-- $\boldsymbol{w}$ 決定法向量方向，$b$ 決定離原點多遠
+- $\boldsymbol{w}$ 決定位置，$b$ 決定方向 :en[$\boldsymbol{w}$ sets the position, $b$ sets the orientation]
+- 兩者共同決定方向，位置由資料決定 :en[Together they set the orientation; the data sets the position]
+- $\boldsymbol{w}$ 決定維度，$b$ 決定傾斜程度 :en[$\boldsymbol{w}$ sets the dimension, $b$ sets the degree of tilt]
+- $\boldsymbol{w}$ 決定法向量方向，$b$ 決定離原點多遠 :en[$\boldsymbol{w}$ sets the direction of the normal vector, $b$ how far it sits from the origin]
 :::
 
 :::tip{collapsible title="詳解"}
@@ -1154,12 +1158,13 @@ $\boldsymbol{w}$ 是超平面的法向量，決定它的朝向；$b$ 則把這�
 #### 選擇題 5
 
 > One-versus-All（OvA）怎麼把二元分類器推廣到多元分類？
+> :en[How does One-versus-All (OvA) extend a binary classifier to multi-class classification?]
 
 :::choices{answer="A"}
-- 每個類別各訓練一個二元分類器，取信心最高者
-- 每兩個類別訓練一個分類器，最後投票
-- 訓練一個分類器，輸出層改成多個神經元
-- 把多個類別合併成兩個大類後再細分
+- 每個類別各訓練一個二元分類器，取信心最高者 :en[Train one binary classifier per class and take the most confident one]
+- 每兩個類別訓練一個分類器，最後投票 :en[Train one classifier for every pair of classes and vote at the end]
+- 訓練一個分類器，輸出層改成多個神經元 :en[Train one classifier and give its output layer several neurons]
+- 把多個類別合併成兩個大類後再細分 :en[Merge the classes into two large groups, then subdivide]
 :::
 
 :::tip{collapsible title="詳解"}
@@ -1173,12 +1178,13 @@ OvA 為每一個類別訓練一個「這類 vs 其餘」的二元分類器，預
 #### 選擇題 6
 
 > 自適應學習率 $\eta_t = \dfrac{\eta_0}{1 + \alpha t}$ 的用意是什麼？
+> :en[What is the point of the adaptive learning rate $\eta_t = \dfrac{\eta_0}{1 + \alpha t}$?]
 
 :::choices{answer="C"}
-- 讓學習率隨損失下降而自動上升
-- 避免模型過擬合訓練資料
-- 前期步伐大快速接近，後期步伐小穩定收斂
-- 讓每個權重各自擁有不同的學習率
+- 讓學習率隨損失下降而自動上升 :en[It makes the learning rate rise automatically as the loss falls]
+- 避免模型過擬合訓練資料 :en[It stops the model from overfitting the training data]
+- 前期步伐大快速接近，後期步伐小穩定收斂 :en[Large steps approach quickly early on, small steps settle stably later]
+- 讓每個權重各自擁有不同的學習率 :en[It gives every weight a learning rate of its own]
 :::
 
 :::tip{collapsible title="詳解"}
@@ -1192,12 +1198,13 @@ $t$ 是 epoch 數，分母隨訓練進行而變大，學習率因此單調遞減
 #### 選擇題 7
 
 > 選用 Python 的 list、tuple、dict、set 時，主要看哪三個問題？
+> :en[When choosing between Python's list, tuple, dict and set, which three questions matter most?]
 
 :::choices{answer="B"}
-- 要不要排序、要不要去重、要不要轉型
-- 要不要改、要不要順序、要不要查得快
-- 資料量多大、型別是否一致、會不會跨執行緒
-- 要不要巢狀、要不要序列化、要不要比較大小
+- 要不要排序、要不要去重、要不要轉型 :en[Whether to sort, whether to deduplicate, whether to cast types]
+- 要不要改、要不要順序、要不要查得快 :en[Whether it must change, whether order matters, whether lookup must be fast]
+- 資料量多大、型別是否一致、會不會跨執行緒 :en[How large the data is, whether types are uniform, whether threads are involved]
+- 要不要巢狀、要不要序列化、要不要比較大小 :en[Whether to nest, whether to serialize, whether to compare sizes]
 :::
 
 :::tip{collapsible title="詳解"}
@@ -1211,12 +1218,13 @@ $t$ 是 epoch 數，分母隨訓練進行而變大，學習率因此單調遞減
 #### 選擇題 8
 
 > Python 類別方法中的 `self` 代表什麼？
+> :en[What does `self` stand for in a Python class method?]
 
 :::choices{answer="D"}
-- 類別本身，而非實例
-- 目前所在的模組
-- 一個保留字，不能改名
-- 呼叫這個方法的那個物件實例
+- 類別本身，而非實例 :en[The class itself, rather than an instance]
+- 目前所在的模組 :en[The module currently being executed]
+- 一個保留字，不能改名 :en[A reserved word that cannot be renamed]
+- 呼叫這個方法的那個物件實例 :en[The object instance on which this method was called]
 :::
 
 :::tip{collapsible title="詳解"}
@@ -1230,12 +1238,13 @@ $t$ 是 epoch 數，分母隨訓練進行而變大，學習率因此單調遞減
 #### 選擇題 9
 
 > PLA 遇到非線性可分的資料會發生什麼？
+> :en[What happens when the PLA meets data that is not linearly separable?]
 
 :::choices{answer="A"}
-- 錯誤次數永遠降不到零，權重持續震盪
-- 自動停止並回報無解
-- 收斂到誤差最小的那個超平面
-- 自動增加特徵維度直到可分
+- 錯誤次數永遠降不到零，權重持續震盪 :en[The error count never reaches zero and the weights keep oscillating]
+- 自動停止並回報無解 :en[It stops automatically and reports that no solution exists]
+- 收斂到誤差最小的那個超平面 :en[It converges to the hyperplane with the smallest error]
+- 自動增加特徵維度直到可分 :en[It adds feature dimensions automatically until the data is separable]
 :::
 
 :::tip{collapsible title="詳解"}
@@ -1249,12 +1258,13 @@ $t$ 是 epoch 數，分母隨訓練進行而變大，學習率因此單調遞減
 #### 選擇題 10
 
 > 梯度下降的學習率設得太大，會發生什麼？
+> :en[What happens when the learning rate of gradient descent is set too large?]
 
 :::choices{answer="C"}
-- 收斂變慢，但最終仍會到達最低點
-- 模型過擬合訓練資料
-- 在谷壁兩側越彈越高，損失發散
-- 梯度消失，權重不再更新
+- 收斂變慢，但最終仍會到達最低點 :en[Convergence slows down, but the minimum is still reached in the end]
+- 模型過擬合訓練資料 :en[The model overfits the training data]
+- 在谷壁兩側越彈越高，損失發散 :en[It bounces ever higher off the walls of the valley and the loss diverges]
+- 梯度消失，權重不再更新 :en[The gradient vanishes and the weights stop updating]
 :::
 
 :::tip{collapsible title="詳解"}
@@ -1268,12 +1278,13 @@ $t$ 是 epoch 數，分母隨訓練進行而變大，學習率因此單調遞減
 #### 選擇題 11
 
 > tuple 與 list 最主要的差別是什麼？
+> :en[What is the main difference between a tuple and a list?]
 
 :::choices{answer="B"}
-- tuple 只能存放同一種型別
-- tuple 建立後內容不可變更
-- tuple 沒有順序，無法用索引存取
-- tuple 的查詢速度比 list 快得多
+- tuple 只能存放同一種型別 :en[A tuple may hold only one type of element]
+- tuple 建立後內容不可變更 :en[A tuple cannot be changed once created]
+- tuple 沒有順序，無法用索引存取 :en[A tuple has no order and cannot be indexed]
+- tuple 的查詢速度比 list 快得多 :en[A tuple is looked up far faster than a list]
 :::
 
 :::tip{collapsible title="詳解"}
@@ -1287,12 +1298,13 @@ tuple 是不可變容器，建立之後不能新增、刪除或改寫元素；li
 #### 選擇題 12
 
 > Adaline 訓練時用連續的線性輸出算損失，那實際要輸出類別時怎麼辦？
+> :en[Adaline computes its loss from a continuous linear output during training. How does it emit an actual class?]
 
 :::choices{answer="D"}
-- 直接四捨五入到最接近的類別編號
-- 用階梯函數對淨輸入取符號
-- 再訓練一個額外的分類器
-- 對淨輸入套用分類閾值，超過就判為正類
+- 直接四捨五入到最接近的類別編號 :en[Round directly to the nearest class number]
+- 用階梯函數對淨輸入取符號 :en[Take the sign of the net input with a step function]
+- 再訓練一個額外的分類器 :en[Train one additional classifier on top]
+- 對淨輸入套用分類閾值，超過就判為正類 :en[Apply a classification threshold to the net input; above it the class is positive]
 :::
 
 :::tip{collapsible title="詳解"}
@@ -1308,6 +1320,7 @@ tuple 是不可變容器，建立之後不能新增、刪除或改寫元素；li
 #### 複習題 1
 
 > 感知器的訓練目標可以理解成「找一個能把兩類完全分開的超平面」，為什麼？$\boldsymbol{w}$ 與 $b$ 在這個超平面裡各扮演什麼角色？
+> :en[The perceptron's training goal can be read as "find a hyperplane that separates the two classes completely" — why? What role does each of $\boldsymbol{w}$ and $b$ play in that hyperplane?]
 
 **詳解**
 
@@ -1316,6 +1329,7 @@ $\boldsymbol{w}^T\boldsymbol{x}+b=0$ 這個方程式定義了一個超平面，�
 #### 複習題 2
 
 > Novikoff 收斂定理的前提是什麼？如果資料不是線性可分（例如 XOR 問題），PLA 會發生什麼事？
+> :en[What is the premise of Novikoff's convergence theorem? What happens to the PLA if the data is not linearly separable (the XOR problem, say)?]
 
 **詳解**
 
@@ -1324,6 +1338,7 @@ $\boldsymbol{w}^T\boldsymbol{x}+b=0$ 這個方程式定義了一個超平面，�
 #### 複習題 3
 
 > 為什麼感知器（或 Adaline）的權重不建議初始化為全零？
+> :en[Why is initializing the weights of a perceptron (or Adaline) to all zeros discouraged?]
 
 **詳解**
 
@@ -1332,6 +1347,7 @@ $\boldsymbol{w}^T\boldsymbol{x}+b=0$ 這個方程式定義了一個超平面，�
 #### 複習題 4
 
 > PLA 與 Adaline 的關鍵差異是什麼？為什麼 Adaline 能用標準梯度下降訓練，PLA 不能？
+> :en[What is the key difference between the PLA and Adaline? Why can Adaline be trained with standard gradient descent while the PLA cannot?]
 
 **詳解**
 
@@ -1340,6 +1356,7 @@ PLA 的輸出是不連續的階梯函數，感知器損失（只計算被誤判�
 #### 複習題 5
 
 > 標準化所需的平均值 $\mu$ 與標準差 $\sigma$ 為什麼只能用訓練集計算，再套用到訓練集與測試集本身？
+> :en[Why must the mean $\mu$ and standard deviation $\sigma$ used for standardization be computed on the training set alone, then applied to both the training set and the test set?]
 
 **詳解**
 
@@ -1348,6 +1365,7 @@ PLA 的輸出是不連續的階梯函數，感知器損失（只計算被誤判�
 #### 複習題 6
 
 > One-versus-All（OvA）怎麼處理多元分類問題？對感知器而言，「信心最高」怎麼衡量？
+> :en[How does One-versus-All (OvA) handle a multi-class problem? For a perceptron, how is "most confident" measured?]
 
 **詳解**
 
@@ -1356,6 +1374,7 @@ OvA 幫每一個類別各訓練一個獨立的二元分類器：訓練第 $i$ �
 #### 複習題 7
 
 > list、tuple、dict、set 這四種容器該怎麼依「要不要改、要不要順序、要不要查得快」三個問題選擇？
+> :en[How should list, tuple, dict and set be chosen by the three questions of mutability, ordering, and fast lookup?]
 
 **詳解**
 
@@ -1366,6 +1385,7 @@ OvA 幫每一個類別各訓練一個獨立的二元分類器：訓練第 $i$ �
 #### 複習題 8
 
 > 感知器的權重 $\boldsymbol{w}=[0.5,-0.2]$，偏差 $b=0.1$，輸入樣本 $\boldsymbol{x}=[2,3]$，求淨輸入 $z$ 並判斷感知器的輸出。
+> :en[A perceptron has weights $\boldsymbol{w}=[0.5,-0.2]$ and bias $b=0.1$, and the input sample is $\boldsymbol{x}=[2,3]$. Find the net input $z$ and determine the perceptron's output.]
 
 **詳解**
 
@@ -1378,6 +1398,7 @@ $$
 #### 複習題 9
 
 > 學習率 $\eta=0.1$，某樣本真實標籤 $y=+1$，但目前被誤判成負類，特徵向量 $\boldsymbol{x}=[1.5,-1]$。用 PLA 更新規則（$y\in\{-1,+1\}$ 版本）求 $\Delta\boldsymbol{w}$ 與 $\Delta b$。
+> :en[The learning rate is $\eta=0.1$; a sample with true label $y=+1$ is currently misclassified as negative, and its feature vector is $\boldsymbol{x}=[1.5,-1]$. Use the PLA update rule (the $y\in\{-1,+1\}$ version) to find $\Delta\boldsymbol{w}$ and $\Delta b$.]
 
 **詳解**
 
@@ -1393,6 +1414,7 @@ $$
 #### 複習題 10
 
 > 用 Adaline 梯度更新式，已知某樣本特徵 $x=2$、真實標籤 $y=1$、目前預測 $\hat y=0.4$、學習率 $\eta=0.05$，求權重的更新量 $\Delta w$。
+> :en[Using the Adaline gradient update, a sample has feature $x=2$, true label $y=1$, current prediction $\hat y=0.4$ and learning rate $\eta=0.05$. Find the weight update $\Delta w$.]
 
 **詳解**
 
@@ -1405,6 +1427,7 @@ $$
 #### 複習題 11
 
 > 自適應學習率 $\eta_t=\frac{\eta_0}{1+\alpha t}$，已知 $\eta_0=0.1$、$\alpha=0.05$，求第 10 個 epoch（$t=10$）時的學習率 $\eta_{10}$。
+> :en[For the adaptive learning rate $\eta_t=\frac{\eta_0}{1+\alpha t}$ with $\eta_0=0.1$ and $\alpha=0.05$, find the learning rate $\eta_{10}$ at the 10th epoch ($t=10$).]
 
 **詳解**
 

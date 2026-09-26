@@ -3,7 +3,7 @@ title: "機器學習實作系列：第 7 週 - 資料前處理、特徵工程與
 description: ""
 tags: ["機器學習實作系列"]
 createdAt: "2026-10-19"
-updatedAt: "2026-09-25"
+updatedAt: "2026-09-26"
 ---
 
 import PdfRefChip from '@/components/islands/PdfRefChip.tsx'
@@ -908,12 +908,13 @@ excerpt: 不要包含任何訓練或模型選取程式碼；助教將透過執�
 #### 選擇題 1
 
 > 「模型選擇」在講義裡有寬窄兩義，下列哪一項正確？
+> :en["Model selection" carries a narrow and a broad sense in the handout. Which of the following is correct?]
 
 :::choices{answer="B"}
-- 狹義指比較不同演算法，廣義指調同一個演算法的參數
-- 狹義指對指定演算法調參，廣義指比較不同演算法
-- 兩者其實是同一件事，只是不同教材的說法差異
-- 狹義用巢狀交叉驗證，廣義用單層交叉驗證即可
+- 狹義指比較不同演算法，廣義指調同一個演算法的參數 :en[The narrow sense is comparing algorithms, the broad sense is tuning the parameters of one algorithm]
+- 狹義指對指定演算法調參，廣義指比較不同演算法 :en[The narrow sense is tuning the parameters of a given algorithm, the broad sense is comparing algorithms]
+- 兩者其實是同一件事，只是不同教材的說法差異 :en[They are really the same thing, worded differently by different textbooks]
+- 狹義用巢狀交叉驗證，廣義用單層交叉驗證即可 :en[The narrow sense needs nested cross-validation, the broad sense needs only a single loop]
 :::
 
 :::tip{collapsible title="詳解"}
@@ -927,12 +928,13 @@ excerpt: 不要包含任何訓練或模型選取程式碼；助教將透過執�
 #### 選擇題 2
 
 > 保留法交叉驗證（holdout）最主要的弱點是什麼？
+> :en[What is the main weakness of holdout cross-validation?]
 
 :::choices{answer="C"}
-- 它沒有把測試集獨立出來，會高估泛化效能
-- 它需要訓練 $k$ 個模型，計算成本相對太高
-- 結果對「訓練集與驗證集怎麼分」很敏感
-- 它無法用在分類問題上，只適合迴歸問題
+- 它沒有把測試集獨立出來，會高估泛化效能 :en[It sets no test set aside, so it overestimates generalization performance]
+- 它需要訓練 $k$ 個模型，計算成本相對太高 :en[It has to train $k$ models, which costs relatively too much]
+- 結果對「訓練集與驗證集怎麼分」很敏感 :en[The result is very sensitive to how the training and validation sets happen to be split]
+- 它無法用在分類問題上，只適合迴歸問題 :en[It cannot be used on classification problems, only on regression]
 :::
 
 :::tip{collapsible title="詳解"}
@@ -946,12 +948,13 @@ holdout 只切一次，換一種切法結論可能就變了——$k$ 折交叉�
 #### 選擇題 3
 
 > 資料量與 $k$ 折交叉驗證的 $k$ 值，兩者的關係是什麼？
+> :en[How is the amount of data related to the value of $k$ in $k$-fold cross-validation?]
 
 :::choices{answer="A"}
-- 資料量小用大的 $k$，資料量大用小的 $k$
-- 資料量小用小的 $k$，資料量大用大的 $k$
-- $k$ 一律固定為 10，與資料量沒有關係
-- $k$ 要等於類別數，才能維持每折的比例
+- 資料量小用大的 $k$，資料量大用小的 $k$ :en[Little data calls for a large $k$, plentiful data for a small $k$]
+- 資料量小用小的 $k$，資料量大用大的 $k$ :en[Little data calls for a small $k$, plentiful data for a large $k$]
+- $k$ 一律固定為 10，與資料量沒有關係 :en[$k$ is always fixed at 10, regardless of the amount of data]
+- $k$ 要等於類別數，才能維持每折的比例 :en[$k$ must equal the number of classes to keep the proportions in each fold]
 :::
 
 :::tip{collapsible title="詳解"}
@@ -965,12 +968,13 @@ holdout 只切一次，換一種切法結論可能就變了——$k$ 折交叉�
 #### 選擇題 4
 
 > 用 $k$ 折交叉驗證找到滿意的超參數之後，下一步該做什麼？
+> :en[After $k$-fold cross-validation has found satisfactory hyperparameters, what is the next step?]
 
 :::choices{answer="D"}
-- 直接從那 $k$ 個模型中挑分數最高的一個上線
-- 把 $k$ 個模型的預測結果平均，當作最終模型
-- 用測試集再調一次超參數，確保分數是最佳的
-- 用完整的訓練集以該組超參數重新訓練一次
+- 直接從那 $k$ 個模型中挑分數最高的一個上線 :en[Deploy whichever of those $k$ models scored highest]
+- 把 $k$ 個模型的預測結果平均，當作最終模型 :en[Average the predictions of the $k$ models and use that as the final model]
+- 用測試集再調一次超參數，確保分數是最佳的 :en[Tune the hyperparameters once more on the test set, to make sure the score is the best]
+- 用完整的訓練集以該組超參數重新訓練一次 :en[Retrain once on the full training set with that set of hyperparameters]
 :::
 
 :::tip{collapsible title="詳解"}
@@ -984,12 +988,13 @@ holdout 只切一次，換一種切法結論可能就變了——$k$ 折交叉�
 #### 選擇題 5
 
 > 學習曲線上訓練與驗證兩條線都低、而且已經貼合，下一步該做什麼？
+> :en[On a learning curve, both the training and validation lines are low and have already converged. What should be done next?]
 
 :::choices{answer="B"}
-- 蒐集更多訓練資料，把兩條線一起往上拉
-- 增加模型的複雜度，或者調弱正則化強度
-- 提高正則化強度，並且減少使用的特徵數
-- 什麼都不用做，這已經是理想的擬合狀態
+- 蒐集更多訓練資料，把兩條線一起往上拉 :en[Collect more training data, to pull both lines up together]
+- 增加模型的複雜度，或者調弱正則化強度 :en[Increase the model complexity, or weaken the regularization strength]
+- 提高正則化強度，並且減少使用的特徵數 :en[Raise the regularization strength and use fewer features]
+- 什麼都不用做，這已經是理想的擬合狀態 :en[Nothing at all; this is already an ideal fit]
 :::
 
 :::tip{collapsible title="詳解"}
@@ -1003,12 +1008,13 @@ holdout 只切一次，換一種切法結論可能就變了——$k$ 折交叉�
 #### 選擇題 6
 
 > 看驗證曲線挑超參數時，應該選哪一個值？
+> :en[When picking a hyperparameter from a validation curve, which value should be chosen?]
 
 :::choices{answer="C"}
-- 訓練分數最高的那個值
-- 訓練與驗證分數差距最大的那個值
-- 驗證分數見頂的那個值
-- 最右端、兩條線都還在上升的那個值
+- 訓練分數最高的那個值 :en[The value with the highest training score]
+- 訓練與驗證分數差距最大的那個值 :en[The value where training and validation scores differ the most]
+- 驗證分數見頂的那個值 :en[The value where the validation score peaks]
+- 最右端、兩條線都還在上升的那個值 :en[The rightmost value, where both lines are still rising]
 :::
 
 :::tip{collapsible title="詳解"}
@@ -1022,12 +1028,13 @@ holdout 只切一次，換一種切法結論可能就變了——$k$ 折交叉�
 #### 選擇題 7
 
 > 同樣的評估預算下，隨機搜尋通常比格狀搜尋划算，原因是什麼？
+> :en[For the same evaluation budget, why is random search usually a better deal than grid search?]
 
 :::choices{answer="D"}
-- 隨機搜尋保證能找到全域最佳的超參數組合
-- 隨機搜尋每一次評估的計算成本比較低廉
-- 隨機搜尋會自動淘汰表現較差的候選組合
-- 真正重要的超參數通常只有少數幾個
+- 隨機搜尋保證能找到全域最佳的超參數組合 :en[Random search guarantees the globally optimal hyperparameter combination]
+- 隨機搜尋每一次評估的計算成本比較低廉 :en[Each evaluation of random search costs less to compute]
+- 隨機搜尋會自動淘汰表現較差的候選組合 :en[Random search automatically discards the weaker candidate combinations]
+- 真正重要的超參數通常只有少數幾個 :en[Only a few hyperparameters usually matter at all]
 :::
 
 :::tip{collapsible title="詳解"}
@@ -1041,12 +1048,13 @@ holdout 只切一次，換一種切法結論可能就變了——$k$ 折交叉�
 #### 選擇題 8
 
 > 巢狀交叉驗證的兩層迴圈各自負責什麼？
+> :en[What is each of the two loops of nested cross-validation responsible for?]
 
 :::choices{answer="A"}
-- 外層負責評估效能，內層負責挑超參數
-- 外層負責挑超參數，內層負責評估效能
-- 兩層都挑超參數，最後取兩次結果的平均
-- 兩層都評估效能，藉此縮小估計值的變異
+- 外層負責評估效能，內層負責挑超參數 :en[The outer loop evaluates performance, the inner loop picks hyperparameters]
+- 外層負責挑超參數，內層負責評估效能 :en[The outer loop picks hyperparameters, the inner loop evaluates performance]
+- 兩層都挑超參數，最後取兩次結果的平均 :en[Both loops pick hyperparameters, and the two results are averaged at the end]
+- 兩層都評估效能，藉此縮小估計值的變異 :en[Both loops evaluate performance, which narrows the variance of the estimate]
 :::
 
 :::tip{collapsible title="詳解"}
@@ -1060,12 +1068,13 @@ holdout 只切一次，換一種切法結論可能就變了——$k$ 折交叉�
 #### 選擇題 9
 
 > F1 分數取精確率與召回率的調和平均而非算術平均，為什麼？
+> :en[Why does the F1 score take the harmonic rather than the arithmetic mean of precision and recall?]
 
 :::choices{answer="C"}
-- 因為調和平均的計算比較省時間
-- 因為調和平均的值域剛好落在 0 與 1 之間
-- 因為調和平均對兩者中較小的那個特別敏感
-- 因為精確率與召回率的單位不同，不能相加
+- 因為調和平均的計算比較省時間 :en[Because the harmonic mean is faster to compute]
+- 因為調和平均的值域剛好落在 0 與 1 之間 :en[Because the harmonic mean happens to fall between 0 and 1]
+- 因為調和平均對兩者中較小的那個特別敏感 :en[Because the harmonic mean is especially sensitive to whichever of the two is smaller]
+- 因為精確率與召回率的單位不同，不能相加 :en[Because precision and recall have different units and cannot be added]
 :::
 
 :::tip{collapsible title="詳解"}
@@ -1079,12 +1088,13 @@ holdout 只切一次，換一種切法結論可能就變了——$k$ 折交叉�
 #### 選擇題 10
 
 > 把決策門檻調鬆（更容易判為陽性），精確率與召回率會怎麼變化？
+> :en[If the decision threshold is loosened (making a positive call easier), how do precision and recall change?]
 
 :::choices{answer="B"}
-- 精確率上升、召回率下降
-- 召回率上升、精確率下降
-- 兩者同時上升，因為判為陽性的樣本變多了
-- 兩者都不會變，門檻只影響整體的正確率
+- 精確率上升、召回率下降 :en[Precision rises, recall falls]
+- 召回率上升、精確率下降 :en[Recall rises, precision falls]
+- 兩者同時上升，因為判為陽性的樣本變多了 :en[Both rise, because more samples are called positive]
+- 兩者都不會變，門檻只影響整體的正確率 :en[Neither changes; the threshold only affects overall accuracy]
 :::
 
 :::tip{collapsible title="詳解"}
@@ -1098,12 +1108,13 @@ holdout 只切一次，換一種切法結論可能就變了——$k$ 折交叉�
 #### 選擇題 11
 
 > 類別不平衡時，為什麼 MCC 比 F1 更不容易被誤導？
+> :en[Under class imbalance, why is MCC harder to mislead than F1?]
 
 :::choices{answer="D"}
-- 因為 MCC 的值域是 $-1$ 到 1，解析度比較高
-- 因為 MCC 不受決策門檻位置的影響
-- 因為 MCC 只看少數類別的表現，忽略多數類
-- 因為 MCC 同時用上混淆矩陣的四格數字
+- 因為 MCC 的值域是 $-1$ 到 1，解析度比較高 :en[Because MCC ranges from $-1$ to 1, giving it finer resolution]
+- 因為 MCC 不受決策門檻位置的影響 :en[Because MCC is unaffected by where the decision threshold sits]
+- 因為 MCC 只看少數類別的表現，忽略多數類 :en[Because MCC looks only at the minority class and ignores the majority]
+- 因為 MCC 同時用上混淆矩陣的四格數字 :en[Because MCC uses all four cells of the confusion matrix at once]
 :::
 
 :::tip{collapsible title="詳解"}
@@ -1117,12 +1128,13 @@ F1 由精確率與召回率合成，而這兩者都不看真陰性 $TN$；MCC �
 #### 選擇題 12
 
 > 在 Pipeline 裡指定某個估計器的超參數（例如邏輯斯迴歸的 `C`），語法是什麼？
+> :en[What is the syntax for setting a hyperparameter of an estimator inside a Pipeline (the `C` of a logistic regression, say)?]
 
 :::choices{answer="A"}
-- 用雙底線連接步驟名稱與參數名稱
-- 用單底線連接步驟名稱與參數名稱
-- 直接寫參數名稱，Pipeline 會自動對應
-- 先從 Pipeline 取出該步驟的物件再單獨設定
+- 用雙底線連接步驟名稱與參數名稱 :en[Join the step name and the parameter name with a double underscore]
+- 用單底線連接步驟名稱與參數名稱 :en[Join the step name and the parameter name with a single underscore]
+- 直接寫參數名稱，Pipeline 會自動對應 :en[Write the parameter name alone; the Pipeline matches it automatically]
+- 先從 Pipeline 取出該步驟的物件再單獨設定 :en[Pull the step's object out of the Pipeline and set it separately]
 :::
 
 :::tip{collapsible title="詳解"}
@@ -1138,6 +1150,7 @@ F1 由精確率與召回率合成，而這兩者都不看真陰性 $TN$；MCC �
 #### 複習題 1
 
 > 驗證集與測試集都用來「評估模型」，為什麼不能只留一份？
+> :en[Both the validation set and the test set are used to "evaluate the model", so why can only one of them not be kept?]
 
 **詳解**
 
@@ -1146,6 +1159,7 @@ F1 由精確率與召回率合成，而這兩者都不看真陰性 $TN$；MCC �
 #### 複習題 2
 
 > $k$ 折交叉驗證相對 holdout 的改善是什麼？為什麼資料量小時要用大的 $k$？
+> :en[What does $k$-fold cross-validation improve on compared with holdout? Why should $k$ be large when there is little data?]
 
 **詳解**
 
@@ -1154,6 +1168,7 @@ Holdout 的結果對「訓練集與驗證集怎麼分」非常敏感，換一種
 #### 複習題 3
 
 > 學習曲線呈現「兩條線都低且已貼合」與「兩條線之間有明顯的縫」，分別代表什麼？各該採取什麼行動？
+> :en[On a learning curve, what do "both lines low and already converged" and "a clear gap between the two lines" each mean? What action does each call for?]
 
 **詳解**
 
@@ -1162,6 +1177,7 @@ Holdout 的結果對「訓練集與驗證集怎麼分」非常敏感，換一種
 #### 複習題 4
 
 > 格狀搜尋保證找到網格內的最佳組合，為什麼實務上常改用隨機搜尋？
+> :en[Grid search guarantees the best combination within the grid, so why is random search often preferred in practice?]
 
 **詳解**
 
@@ -1170,6 +1186,7 @@ Holdout 的結果對「訓練集與驗證集怎麼分」非常敏感，換一種
 #### 複習題 5
 
 > 為什麼比較不同演算法時需要巢狀交叉驗證？單層交叉驗證會高估什麼？
+> :en[Why is nested cross-validation needed when comparing different algorithms? What does single-loop cross-validation overestimate?]
 
 **詳解**
 
@@ -1178,6 +1195,7 @@ Holdout 的結果對「訓練集與驗證集怎麼分」非常敏感，換一種
 #### 複習題 6
 
 > 一份健檢資料只有 1% 為陽性，模型永遠預測陰性可得 99% 正確率。請說明應該改看哪些指標，以及為什麼。
+> :en[In a health-screening dataset only 1% of cases are positive, so a model that always predicts negative scores 99% accuracy. Explain which metrics should be used instead, and why.]
 
 **詳解**
 
@@ -1186,6 +1204,7 @@ Holdout 的結果對「訓練集與驗證集怎麼分」非常敏感，換一種
 #### 複習題 7
 
 > 精確率與召回率為什麼會此消彼長？癌症篩檢與垃圾信過濾該各自偏向哪一個？
+> :en[Why do precision and recall trade off against each other? Which way should cancer screening lean, and which way spam filtering?]
 
 **詳解**
 
@@ -1194,6 +1213,7 @@ Holdout 的結果對「訓練集與驗證集怎麼分」非常敏感，換一種
 #### 複習題 8
 
 > 微平均與宏平均的差別是什麼？類別不平衡時該選哪一個？
+> :en[What is the difference between micro-averaging and macro-averaging? Which should be chosen under class imbalance?]
 
 **詳解**
 
@@ -1206,6 +1226,7 @@ Holdout 的結果對「訓練集與驗證集怎麼分」非常敏感，換一種
 #### 複習題 1
 
 > 某二元分類器在測試集上的混淆矩陣為 $TP = 40$、$FN = 10$、$FP = 20$、$TN = 130$。請計算 ACC、PRE、REC 與 F1。
+> :en[A binary classifier gives the confusion matrix $TP = 40$, $FN = 10$, $FP = 20$, $TN = 130$ on the test set. Compute ACC, PRE, REC and F1.]
 
 **詳解**
 
@@ -1221,6 +1242,7 @@ $$
 #### 複習題 2
 
 > 沿用上題的四格數字，請計算 TPR、FPR 與 MCC。
+> :en[Using the same four numbers as the previous question, compute TPR, FPR and MCC.]
 
 **詳解**
 
@@ -1237,6 +1259,7 @@ $$
 #### 複習題 3
 
 > 某健檢資料 1000 筆中有 10 筆陽性。模型永遠預測陰性，請寫出其混淆矩陣四格並計算 ACC 與 REC，說明這個例子的意義。
+> :en[A health-screening dataset of 1000 cases contains 10 positives, and the model always predicts negative. Write out the four cells of its confusion matrix, compute ACC and REC, and explain what this example shows.]
 
 **詳解**
 
@@ -1254,6 +1277,7 @@ $$
 #### 複習題 4
 
 > 使用 5 折交叉驗證搭配格狀搜尋，超參數 `C` 有 6 個候選值、`gamma` 有 4 個候選值。請計算總共要訓練幾次模型。若改用只抽 10 組的隨機搜尋，又是幾次？
+> :en[A grid search with 5-fold cross-validation has 6 candidate values for `C` and 4 for `gamma`. Compute how many models are trained in total. And how many if a random search drawing only 10 combinations is used instead?]
 
 **詳解**
 
@@ -1269,6 +1293,7 @@ $$
 #### 複習題 5
 
 > 使用外層 5 折、內層 2 折的巢狀交叉驗證，內層對 3 個超參數組合做格狀搜尋。請計算總共訓練幾次模型（不含最後在完整訓練集上的重訓）。
+> :en[A nested cross-validation uses 5 outer folds and 2 inner folds, with the inner loop grid-searching 3 hyperparameter combinations. Compute how many models are trained in total (excluding the final refit on the full training set).]
 
 **詳解**
 

@@ -3,7 +3,7 @@ title: "機器學習實作系列：第 1 週 - 機器學習簡介"
 description: "課程介紹、機器學習的定義與分類（監督式／非監督式／半監督／強化式）、典型任務、建立機器學習系統的工作流程，以及 Python 開發環境建置。"
 tags: ["機器學習實作系列"]
 createdAt: "2026-09-07"
-updatedAt: "2026-09-25"
+updatedAt: "2026-09-26"
 ---
 
 # 第 1 週：機器學習簡介
@@ -596,12 +596,13 @@ total = (1 + n) * n // 2
 #### 選擇題 1
 
 > 代理人透過與環境互動、依獎勵訊號試錯學習，屬於哪一類學習？
+> :en[An agent learns by trial and error from a reward signal while interacting with an environment. Which category of learning is this?]
 
 :::choices{answer="A"}
-- 強化式學習
-- 監督式學習
-- 非監督式學習
-- 半監督學習
+- 強化式學習 :en[Reinforcement learning]
+- 監督式學習 :en[Supervised learning]
+- 非監督式學習 :en[Unsupervised learning]
+- 半監督學習 :en[Semi-supervised learning]
 :::
 
 :::tip{collapsible title="詳解"}
@@ -615,12 +616,13 @@ total = (1 + n) * n // 2
 #### 選擇題 2
 
 > 分類與迴歸的差別是什麼？
+> :en[What is the difference between classification and regression?]
 
 :::choices{answer="C"}
-- 分類用監督式學習，迴歸用非監督式學習
-- 分類的特徵是離散的，迴歸的特徵是連續的
-- 分類的標籤是離散類別，迴歸的標籤是連續數值
-- 分類需要特徵縮放，迴歸不需要
+- 分類用監督式學習，迴歸用非監督式學習 :en[Classification is supervised learning, regression is unsupervised learning]
+- 分類的特徵是離散的，迴歸的特徵是連續的 :en[Classification has discrete features, regression has continuous features]
+- 分類的標籤是離散類別，迴歸的標籤是連續數值 :en[Classification has discrete class labels, regression has continuous numeric labels]
+- 分類需要特徵縮放，迴歸不需要 :en[Classification needs feature scaling, regression does not]
 :::
 
 :::tip{collapsible title="詳解"}
@@ -634,12 +636,13 @@ total = (1 + n) * n // 2
 #### 選擇題 3
 
 > 可訓練參數與超參數的差別是什麼？
+> :en[What is the difference between trainable parameters and hyperparameters?]
 
 :::choices{answer="B"}
-- 前者是整數，後者是浮點數
-- 前者訓練中自動學出，後者訓練前由人設定
-- 前者由人設定，後者訓練中自動學出
-- 兩者相同，只是不同框架的稱呼
+- 前者是整數，後者是浮點數 :en[The former are integers, the latter floating-point numbers]
+- 前者訓練中自動學出，後者訓練前由人設定 :en[The former are learned automatically during training, the latter set by a human beforehand]
+- 前者由人設定，後者訓練中自動學出 :en[The former are set by a human, the latter learned automatically during training]
+- 兩者相同，只是不同框架的稱呼 :en[They are the same thing, named differently by different frameworks]
 :::
 
 :::tip{collapsible title="詳解"}
@@ -653,12 +656,13 @@ total = (1 + n) * n // 2
 #### 選擇題 4
 
 > 特徵選取與特徵提取的差別是什麼？
+> :en[What is the difference between feature selection and feature extraction?]
 
 :::choices{answer="D"}
-- 前者在訓練前做，後者在訓練後做
-- 前者用於分類，後者用於迴歸
-- 兩者都會產生全新的特徵欄位
-- 前者從原始特徵挑子集，後者組合轉換成新特徵
+- 前者在訓練前做，後者在訓練後做 :en[The former is done before training, the latter after training]
+- 前者用於分類，後者用於迴歸 :en[The former is for classification, the latter for regression]
+- 兩者都會產生全新的特徵欄位 :en[Both produce entirely new feature columns]
+- 前者從原始特徵挑子集，後者組合轉換成新特徵 :en[The former picks a subset of the original features, the latter combines and transforms them into new ones]
 :::
 
 :::tip{collapsible title="詳解"}
@@ -672,12 +676,13 @@ total = (1 + n) * n // 2
 #### 選擇題 5
 
 > 一個 epoch 指的是什麼？
+> :en[What does one epoch mean?]
 
 :::choices{answer="A"}
-- 訓練資料完整跑過一輪
-- 權重更新一次
-- 處理完一個批次的資料
-- 完成一次完整的交叉驗證
+- 訓練資料完整跑過一輪 :en[One full pass over the training data]
+- 權重更新一次 :en[One update of the weights]
+- 處理完一個批次的資料 :en[Finishing one batch of data]
+- 完成一次完整的交叉驗證 :en[Completing one full round of cross-validation]
 :::
 
 :::tip{collapsible title="詳解"}
@@ -691,12 +696,13 @@ total = (1 + n) * n // 2
 #### 選擇題 6
 
 > 過擬合與欠擬合分別對應什麼？
+> :en[What do overfitting and underfitting each correspond to?]
 
 :::choices{answer="C"}
-- 過擬合對應高偏差，欠擬合對應高變異
-- 兩者都對應高變異，差別在訓練集表現
-- 過擬合對應高變異，欠擬合對應高偏差
-- 兩者都對應高偏差，差別在測試集表現
+- 過擬合對應高偏差，欠擬合對應高變異 :en[Overfitting means high bias, underfitting means high variance]
+- 兩者都對應高變異，差別在訓練集表現 :en[Both mean high variance; they differ in training set performance]
+- 過擬合對應高變異，欠擬合對應高偏差 :en[Overfitting means high variance, underfitting means high bias]
+- 兩者都對應高偏差，差別在測試集表現 :en[Both mean high bias; they differ in test set performance]
 :::
 
 :::tip{collapsible title="詳解"}
@@ -710,12 +716,13 @@ total = (1 + n) * n // 2
 #### 選擇題 7
 
 > No Free Lunch 定理告訴我們什麼？
+> :en[What does the No Free Lunch theorem tell us?]
 
 :::choices{answer="B"}
-- 越複雜的模型在所有任務上都越好
-- 不存在一個分類器能在所有場景都表現最好
-- 訓練資料越多，任何模型都會收斂到相同結果
-- 所有演算法的計算成本本質上相同
+- 越複雜的模型在所有任務上都越好 :en[The more complex a model is, the better it does on every task]
+- 不存在一個分類器能在所有場景都表現最好 :en[No single classifier performs best in every scenario]
+- 訓練資料越多，任何模型都會收斂到相同結果 :en[With enough training data, every model converges to the same result]
+- 所有演算法的計算成本本質上相同 :en[All algorithms cost essentially the same to compute]
 :::
 
 :::tip{collapsible title="詳解"}
@@ -729,12 +736,13 @@ total = (1 + n) * n // 2
 #### 選擇題 8
 
 > 梯度下降與隨機梯度下降的主要差別是什麼？
+> :en[What is the main difference between gradient descent and stochastic gradient descent?]
 
 :::choices{answer="D"}
-- 前者用於分類，後者用於迴歸
-- 前者會收斂，後者不會收斂
-- 前者需要標籤，後者不需要
-- 前者每次用全部樣本算梯度，後者每次只用一筆估計
+- 前者用於分類，後者用於迴歸 :en[The former is for classification, the latter for regression]
+- 前者會收斂，後者不會收斂 :en[The former converges, the latter does not]
+- 前者需要標籤，後者不需要 :en[The former needs labels, the latter does not]
+- 前者每次用全部樣本算梯度，後者每次只用一筆估計 :en[The former computes the gradient from all samples, the latter estimates it from one at a time]
 :::
 
 :::tip{collapsible title="詳解"}
@@ -748,12 +756,13 @@ total = (1 + n) * n // 2
 #### 選擇題 9
 
 > 反向傳播（backpropagation）做的是什麼事？
+> :en[What does backpropagation do?]
 
 :::choices{answer="A"}
-- 用連鎖律逐層計算損失對每個參數的梯度
-- 直接決定每個參數的最佳值
-- 把輸入資料逐層往前傳遞算出預測值
-- 調整學習率使訓練更快收斂
+- 用連鎖律逐層計算損失對每個參數的梯度 :en[It computes the gradient of the loss with respect to each parameter layer by layer, via the chain rule]
+- 直接決定每個參數的最佳值 :en[It determines the optimal value of each parameter directly]
+- 把輸入資料逐層往前傳遞算出預測值 :en[It passes the input data forward layer by layer to produce a prediction]
+- 調整學習率使訓練更快收斂 :en[It tunes the learning rate so that training converges faster]
 :::
 
 :::tip{collapsible title="詳解"}
@@ -767,12 +776,13 @@ total = (1 + n) * n // 2
 #### 選擇題 10
 
 > 神經網路裡激活函數的作用是什麼？
+> :en[What is the role of an activation function in a neural network?]
 
 :::choices{answer="C"}
-- 把輸出正規化到 $[0,1]$ 之間
-- 防止梯度在訓練中消失
-- 引入非線性，讓網路能表達非線性關係
-- 決定每一層要使用多少個神經元
+- 把輸出正規化到 $[0,1]$ 之間 :en[It normalizes the output into the range $[0,1]$]
+- 防止梯度在訓練中消失 :en[It stops gradients from vanishing during training]
+- 引入非線性，讓網路能表達非線性關係 :en[It introduces non-linearity, letting the network express non-linear relations]
+- 決定每一層要使用多少個神經元 :en[It decides how many neurons each layer uses]
 :::
 
 :::tip{collapsible title="詳解"}
@@ -786,12 +796,13 @@ total = (1 + n) * n // 2
 #### 選擇題 11
 
 > 資料含有明顯離群值時，正規化與標準化該怎麼選？
+> :en[When the data contains clear outliers, should normalization or standardization be chosen?]
 
 :::choices{answer="B"}
-- 選正規化，它對離群值較穩健
-- 選標準化，它對離群值較穩健
-- 兩者受離群值影響相同
-- 兩者都不適用，必須先刪除離群值
+- 選正規化，它對離群值較穩健 :en[Normalization, because it is more robust to outliers]
+- 選標準化，它對離群值較穩健 :en[Standardization, because it is more robust to outliers]
+- 兩者受離群值影響相同 :en[Outliers affect both of them equally]
+- 兩者都不適用，必須先刪除離群值 :en[Neither applies; the outliers must be removed first]
 :::
 
 :::tip{collapsible title="詳解"}
@@ -805,12 +816,13 @@ total = (1 + n) * n // 2
 #### 選擇題 12
 
 > 從函式的觀點看，機器學習的「模型」必須滿足什麼條件？
+> :en[Seen as a function, what condition must a machine learning "model" satisfy?]
 
 :::choices{answer="D"}
-- 必須是連續且可微分的
-- 必須能用一條數學公式明確寫出來
-- 輸出必須落在有限的範圍內
-- 同一個輸入只能對應一個輸出
+- 必須是連續且可微分的 :en[It must be continuous and differentiable]
+- 必須能用一條數學公式明確寫出來 :en[It must be expressible as an explicit mathematical formula]
+- 輸出必須落在有限的範圍內 :en[Its output must fall within a bounded range]
+- 同一個輸入只能對應一個輸出 :en[One input may map to one output only]
 :::
 
 :::tip{collapsible title="詳解"}
@@ -826,6 +838,7 @@ total = (1 + n) * n // 2
 #### 複習題 1
 
 > 監督式、非監督式、半監督式、強化式四種學習方式怎麼區分？請各舉一個本週提到的例子。
+> :en[How are supervised, unsupervised, semi-supervised and reinforcement learning distinguished? Give one example of each from this week.]
 
 **詳解**
 
@@ -834,6 +847,7 @@ total = (1 + n) * n // 2
 #### 複習題 2
 
 > 分類（Classification）與迴歸（Regression）的差異在哪裡？是不是模型複雜度決定了用哪一種？
+> :en[Where does classification differ from regression? Is it model complexity that decides which one to use?]
 
 **詳解**
 
@@ -842,6 +856,7 @@ total = (1 + n) * n // 2
 #### 複習題 3
 
 > Feature selection（特徵選取）與 Feature extraction（特徵提取）差異是什麼？CNN 屬於哪一種？
+> :en[What is the difference between feature selection and feature extraction? Which of the two does a CNN belong to?]
 
 **詳解**
 
@@ -850,6 +865,7 @@ total = (1 + n) * n // 2
 #### 複習題 4
 
 > Trainable parameters（可訓練參數）與 Hyperparameters（超參數）的差異是什麼？學習率屬於哪一種？
+> :en[What is the difference between trainable parameters and hyperparameters? Which of the two is the learning rate?]
 
 **詳解**
 
@@ -858,6 +874,7 @@ total = (1 + n) * n // 2
 #### 複習題 5
 
 > 為什麼 Epoch 數本身也是一種超參數？Epoch 數如果設太多會發生什麼？
+> :en[Why is the number of epochs itself a hyperparameter? What happens if it is set too high?]
 
 **詳解**
 
@@ -866,6 +883,7 @@ Epoch 數是訓練前由人決定「要看訓練資料幾輪」，符合超參�
 #### 複習題 6
 
 > Overfitting 與 Underfitting 分別要用什麼策略應對？
+> :en[What strategies should be used against overfitting and against underfitting?]
 
 **詳解**
 
@@ -874,6 +892,7 @@ Overfitting（high variance，模型記住訓練資料細節）要用約束手�
 #### 複習題 7
 
 > 為什麼「沒有一個分類器能在所有場景下都表現最好」（No Free Lunch 定理）？這對挑選演算法的實務做法有什麼影響？
+> :en[Why is it that "no single classifier performs best in every scenario" (the No Free Lunch theorem)? How does this shape the practice of picking an algorithm?]
 
 **詳解**
 
@@ -882,6 +901,7 @@ Overfitting（high variance，模型記住訓練資料細節）要用約束手�
 #### 複習題 8
 
 > 建立機器學習系統的五步驟工作流程是什麼？為什麼不是線性跑一次就結束？
+> :en[What are the five steps of the workflow for building a machine learning system? Why is it not a single linear pass?]
 
 **詳解**
 
@@ -890,6 +910,7 @@ Overfitting（high variance，模型記住訓練資料細節）要用約束手�
 #### 複習題 9
 
 > 機器學習（ML）、深度學習（DL）與人工智慧（AI）三者的集合關係是什麼？是不是所有分類問題都需要用深度神經網路解？
+> :en[How do machine learning (ML), deep learning (DL) and artificial intelligence (AI) nest as sets? Does every classification problem need a deep neural network?]
 
 **詳解**
 
@@ -898,6 +919,7 @@ AI 是最終極、最大範圍的目標；ML 是達成這個目標的其中一�
 #### 複習題 10
 
 > 為什麼類別型特徵（例如性別）不能直接編碼成 0、1 這種數字，而順序型類別（例如學歷）卻可以讓數值反映大小關係？
+> :en[Why can a categorical feature such as gender not simply be encoded as the numbers 0 and 1, while an ordinal category such as education level may have its values reflect order?]
 
 **詳解**
 
@@ -908,6 +930,7 @@ AI 是最終極、最大範圍的目標；ML 是達成這個目標的其中一�
 #### 複習題 11
 
 > 某特徵欄位的範圍是 $[\min,\max]=[0,50]$，某樣本的值為 $x=15$，求正規化（Normalization）後的值。
+> :en[A feature column has range $[\min,\max]=[0,50]$ and a sample takes the value $x=15$. Find its normalized value.]
 
 **詳解**
 
@@ -920,6 +943,7 @@ $$
 #### 複習題 12
 
 > 某特徵欄位的平均值 $\mu=70$、標準差 $\sigma=10$，某樣本的值為 $x=85$，求標準化（Standardization）後的 z-score。
+> :en[A feature column has mean $\mu=70$ and standard deviation $\sigma=10$, and a sample takes the value $x=85$. Find its standardized z-score.]
 
 **詳解**
 

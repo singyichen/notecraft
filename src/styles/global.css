@@ -686,6 +686,20 @@ img { max-width: 100%; display: block; }
   font-size: var(--text-sm);
 }
 
+/* English（雙語題幹／選項）─────────────────────────────────────
+   `:en[...]` 的輸出。設為 block，中文與英文因此各佔一行——題幹在 blockquote 段落內、
+   選項在 .nc-choice__text 內都適用，不必為兩處各寫一種寫法。
+   color / font-weight 明確宣告而非繼承：正解列的藍字與加粗（.nc-choice--correct）
+   才不會跟著套到英文那行，中英兩層的主從關係在任何情境下維持一致。 */
+.nc-prose .nc-en {
+  display: block;
+  margin-top: 2px;
+  color: var(--text-muted);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-regular);
+  line-height: 1.55;
+}
+
 /* Choices（選擇題選項）───────────────────────────────────────
    `:::choices{answer="B"}` 的輸出。正解沿用 tip tone（綠）：淡底 + 左色條 + 勾號 + 加粗，
    不只靠色相區分，黑白列印與色弱視覺下仍讀得出來。選項字級與內文一致（--text-md）。 */

@@ -5,7 +5,7 @@ tags:
   - 基本操作
 category: 系統說明
 createdAt: '2026-06-16'
-updatedAt: '2026-09-25'
+updatedAt: '2026-09-26'
 ---
 
 NoteCraft 在標準 Markdown / MDX 之外，提供六種類 Material for MkDocs 的內容增強語法——Admonitions、Content tabs、Tooltips、Badge、Choices、Steps——皆以 `remark-directive` 於 build 階段渲染、樣式遵循 trendlink-design，正式環境同樣可用。另有程式碼區塊增強（見本頁最後一節），由 `astro-expressive-code` 負責。
@@ -89,6 +89,23 @@ yarn add notecraft
 :::
 
 寫法出錯時只會在 build log 留 warn 並退化為不標記的一般清單，不會讓 build 失敗，也不會讓選項消失（`answer` 指到不存在的字母、或忘了寫 `answer` 都是如此）。
+
+## English（雙語對照行）
+
+用行內 `:en[英文內容]` 標出同一句話的英文說法，渲染成「中文在上、英文另一行轉淡縮小」。之所以是行內 directive 而不是獨立一行的區塊：英文必須與中文待在同一個段落／清單項目內，換行效果由 CSS 負責，`:::choices` 的選項列才不會被拆散。
+
+> 電場持續增強時，載子的漂移速度會怎麼變化？
+> :en[As the electric field keeps increasing, how does the drift velocity of carriers change?]
+
+:::choices{answer="D"}
+- 持續線性增加，沒有上限 :en[Increases linearly without limit]
+- 持續加速，因為電場不斷對它做功 :en[Keeps accelerating, because the field keeps doing work on it]
+- 先線性增加，之後反而下降到零 :en[Increases linearly at first, then falls back to zero]
+- 先線性增加，之後趨近一個飽和速度 :en[Increases linearly at first, then approaches a saturation velocity]
+:::
+
+英文那行的顏色與字重是明確宣告的，不從外層繼承——正解列的藍字與加粗因此只套在中文上，中英的主從關係在任何情境下一致。英文內可寫 KaTeX（`:en[... $N_D$ ...]`）。忘了帶 `[...]` 時只會在 build log 留 warn 並輸出字面 `:en`，不讓 build 失敗。
+
 
 ## Steps（步驟）
 

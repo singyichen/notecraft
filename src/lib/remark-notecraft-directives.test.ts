@@ -208,3 +208,109 @@ test("選項文字中的巢狀行內指令照常處理（:badge 不會被還原�
   assert.match(inner.text, /含標籤/);
   assert.ok(!inner.text.includes(":badge"), "badge 應已被處理，而非還原為字面文字");
 });
+
+// ── `:en[...]`（雙語題幹／選項）────────────────────────────────────────────
+
+/** `:en[英文內容]` 的 textDirective 節點。 */
+function en(label: string | null): TestNode {
+  return {
+    type: "textDirective",
+    name: "en",
+    attributes: {},
+    children: label === null ? [] : [{ type: "text", value: label }],
+  };
+}
+
+test(":en[...] 渲染為 span.nc-en 並保留原文字", () => {
+  const node: TestNode = {
+    type: "paragraph",
+    children: [{ type: "text", value: "中文題幹\n" }, en("English stem")],
+  };
+  const { warns } = run(node);
+
+  const span = (node.children || [])[1];
+  assert.equal(span.data?.hName, "span");
+  assert.deepEqual(className(span), ["nc-en"]);
+  assert.equal(span.data?.hProperties?.lang, "en");
+  assert.equal(textOf(span), "English stem");
+  assert.deepEqual(warns, []);
+});
+
+test(":en 沒帶 [英文內容] → 還原為字面文字並警示", () => {
+  const node: TestNode = {
+    type: "paragraph",
+    children: [{ type: "text", value: "中文題幹 " }, en(null)],
+  };
+  const { warns } = run(node);
+
+  assert.equal(textOf(node), "中文題幹 :en");
+  assert.equal(warns.length, 1);
+  assert.match(warns[0], /:en/);
+});
+
+test(":::choices 的選項可含 :en[...]，英文不被還原為字面文字", () => {
+  const node: TestNode = {
+    type: "containerDirective",
+    name: "choices",
+    attributes: { answer: "A" },
+    children: [
+      {
+        type: "list",
+        children: ["降為原來的十分之一", "提高為原來的十倍"].map((zh, i) => ({
+          type: "listItem",
+          children: [
+            {
+              type: "paragraph",
+              children: [
+                { type: "text", value: `${zh} ` },
+                en(i === 0 ? "Drops to one-tenth" : "Increases tenfold"),
+              ],
+            },
+          ],
+        })),
+      },
+    ],
+  };
+  const { warns } = run(node);
+
+  const options = readOptions(node);
+  assert.deepEqual(options.map((o) => o.text), [
+    "降為原來的十分之一 Drops to one-tenth",
+    "提高為原來的十倍 Increases tenfold",
+  ]);
+  assert.ok(!options.some((o) => o.text.includes(":en")), ":en 應已被處理");
+  assert.deepEqual(options.map((o) => o.correct), [true, false]);
+  assert.deepEqual(warns, []);
+});
+
+test("正解列的 :en 仍是獨立的 span.nc-en（樣式才能不繼承加粗與藍字）", () => {
+  const node: TestNode = {
+    type: "containerDirective",
+    name: "choices",
+    attributes: { answer: "A" },
+    children: [
+      {
+        type: "list",
+        children: [
+          {
+            type: "listItem",
+            children: [
+              {
+                type: "paragraph",
+                children: [{ type: "text", value: "正解 " }, en("Correct option")],
+              },
+            ],
+          },
+        ],
+      },
+    ],
+  };
+  run(node);
+
+  const body = (node.children || [])[0].children?.find((p) =>
+    className(p).includes("nc-choice__text"),
+  );
+  const inner = (body?.children || []).find((c) => className(c).includes("nc-en"));
+  assert.ok(inner, "選項文字內應有 span.nc-en");
+  assert.equal(textOf(inner), "Correct option");
+});
