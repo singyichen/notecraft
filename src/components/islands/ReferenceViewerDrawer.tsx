@@ -7,6 +7,8 @@ import { referenceKindOf, REFERENCE_KIND_LABEL, type ReferenceKind } from "@/lib
 import type { ReferenceViewerMeta, ReferenceViewerProps } from "./reference-viewers/types";
 import PdfRenderer from "./reference-viewers/PdfRenderer";
 import DocxRenderer from "./reference-viewers/DocxRenderer";
+import XlsxRenderer from "./reference-viewers/XlsxRenderer";
+import CsvRenderer from "./reference-viewers/CsvRenderer";
 import ViewerStatus from "./reference-viewers/ViewerStatus";
 
 const DEFAULT_WIDTH = 560;
@@ -26,14 +28,22 @@ const SCALE_STEP = 0.2;
 const REFERENCE_VIEWERS: Record<ReferenceKind, ComponentType<ReferenceViewerProps>> = {
   pdf: PdfRenderer,
   docx: DocxRenderer,
+  xlsx: XlsxRenderer,
+  csv: CsvRenderer,
 };
 
-type OpenDetail = { file: string; page?: number };
+/**
+ * `file` 是顯示用的路徑（也用來判斷格式）；`url` 可省略，省略時當作 notesDir 底下的檔案、
+ * 以 `/notes-assets/` 推算。dev-only 的外部資料檔（`/local-assets/*`）推算不出來，
+ * 由派發端直接帶 url。
+ */
+type OpenDetail = { file: string; page?: number; url?: string };
 
 export default function ReferenceViewerDrawer() {
   const reducedMotion = useReducedMotion();
   const [open, setOpen] = useState(false);
   const [file, setFile] = useState<string | null>(null);
+  const [fileUrl, setFileUrl] = useState<string | null>(null);
   const [page, setPage] = useState(1);
   const [scale, setScale] = useState(1);
   const [meta, setMeta] = useState<ReferenceViewerMeta>({});
@@ -55,6 +65,7 @@ export default function ReferenceViewerDrawer() {
       const detail = (e as CustomEvent<OpenDetail>).detail;
       if (!detail?.file) return;
       setFile(detail.file);
+      setFileUrl(detail.url ?? null);
       setPage(detail.page || 1);
       setScale(1);
       setMeta({});
@@ -91,7 +102,7 @@ export default function ReferenceViewerDrawer() {
   const fileName = file?.split("/").pop() ?? "";
   const kind = fileName ? referenceKindOf(fileName) : null;
   const Viewer = kind ? REFERENCE_VIEWERS[kind] : null;
-  const url = file ? referenceAssetUrl(file) : "";
+  const url = fileUrl ?? (file ? referenceAssetUrl(file) : "");
   const pageCount = meta.pageCount ?? 0;
 
   const goPrev = () => setPage((p) => Math.max(1, p - 1));

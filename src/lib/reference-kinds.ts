@@ -8,7 +8,7 @@
  * 刻意不收 `.doc`（舊版二進位格式）：瀏覽器端沒有可靠的解析方案，列出來只會讓讀者
  * 點到一個永遠顯示載入失敗的項目。
  */
-export const REFERENCE_KINDS = ["pdf", "docx"] as const;
+export const REFERENCE_KINDS = ["pdf", "docx", "xlsx", "csv"] as const;
 
 export type ReferenceKind = (typeof REFERENCE_KINDS)[number];
 
@@ -16,6 +16,8 @@ export type ReferenceKind = (typeof REFERENCE_KINDS)[number];
 export const REFERENCE_KIND_LABEL: Record<ReferenceKind, string> = {
   pdf: "PDF",
   docx: "Word",
+  xlsx: "Excel",
+  csv: "CSV",
 };
 
 // Word / Excel 開啟文件時會在同目錄放一個 `~$` 開頭的鎖定檔，副檔名與本尊相同但內容

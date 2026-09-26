@@ -92,6 +92,8 @@ export default defineConfig({
         "d3",
         "pdfjs-dist",
         "docx-preview",
+        "read-excel-file/browser",
+        "fflate",
       ],
     },
   },

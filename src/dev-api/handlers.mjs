@@ -212,10 +212,15 @@ const MIME_MAP = {
   ".ico": "image/x-icon",
   ".pdf": "application/pdf",
   ".docx": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  ".xlsx": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+  ".csv": "text/csv; charset=utf-8",
 };
 
-async function handleNotesAsset(notesRoot, urlPath, res) {
-  const raw = urlPath.replace(/^\/notes-assets\//, "").split("?")[0].split("#")[0];
+// `/notes-assets/*`（root = notesRoot）與 dev-only 的 `/local-assets/*`（root = 專案 cwd）
+// 共用同一個實作：差別只有 URL 前綴與 root，逃逸與 symlink 檢查都由 assertSafePath 依 root
+// 判定，不需要各寫一套。
+async function handleRootedAsset(root, prefix, urlPath, res) {
+  const raw = urlPath.slice(prefix.length).split("?")[0].split("#")[0];
   let relPath;
   try {
     relPath = decodeURIComponent(raw);
@@ -223,9 +228,9 @@ async function handleNotesAsset(notesRoot, urlPath, res) {
     res.statusCode = 400;
     return res.end("bad url");
   }
-  const abs = path.resolve(notesRoot, relPath);
+  const abs = path.resolve(root, relPath);
   try {
-    await assertSafePath(abs, notesRoot);
+    await assertSafePath(abs, root);
   } catch (e) {
     res.statusCode = 400;
     return res.end(e.message);
@@ -248,7 +253,7 @@ async function handleNotesAsset(notesRoot, urlPath, res) {
   }
 }
 
-// pdfjs-dist 的 cmaps/ 與 standard_fonts/ 靜態目錄——與 handleNotesAsset 不同，這裡的
+// pdfjs-dist 的 cmaps/ 與 standard_fonts/ 靜態目錄——與 handleRootedAsset 不同，這裡的
 // baseDir 是固定的 app 內部路徑（不是使用者提供的 notesRoot），所以不需要 assertSafePath
 // 的 symlink / notesRoot 範圍檢查，只需擋掉基本的路徑逃逸（`..`）。
 async function handlePdfjsStaticAsset(baseDir, prefix, urlPath, res) {
@@ -642,14 +647,22 @@ export async function tryHandleAssetsRequest(cwd, notesRoot, req, res) {
     return true;
   }
 
-  if (!url.startsWith("/notes-assets/")) return false;
+  // /notes-assets/* 是 notesDir 底下的檔（dev 與正式站都有）；
+  // /local-assets/* 是專案 cwd 底下、notesDir 以外的檔（例如 simulations/ 的實驗數據），
+  // **只有 dev 存在**——正式 build 不會複製這些檔案，也沒有這條路由。
+  const rooted = url.startsWith("/notes-assets/")
+    ? { root: notesRoot, prefix: "/notes-assets/" }
+    : url.startsWith("/local-assets/")
+      ? { root: cwd, prefix: "/local-assets/" }
+      : null;
+  if (!rooted) return false;
   if (!localhostOnly(req)) {
     res.statusCode = 403;
     res.end("localhost only");
     return true;
   }
   try {
-    await handleNotesAsset(notesRoot, url, res);
+    await handleRootedAsset(rooted.root, rooted.prefix, url, res);
   } catch (e) {
     res.statusCode = 500;
     res.end(e && e.message ? e.message : "internal error");

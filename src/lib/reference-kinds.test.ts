@@ -2,9 +2,11 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { referenceKindOf, REFERENCE_KIND_LABEL } from "./reference-kinds.ts";
 
-test("認得 PDF 與 Word 副檔名", () => {
+test("認得支援的四種副檔名", () => {
   assert.equal(referenceKindOf("Ch 1 - Introduction.pdf"), "pdf");
   assert.equal(referenceKindOf("Lab_結報範本.docx"), "docx");
+  assert.equal(referenceKindOf("Lab1-數據記錄.xlsx"), "xlsx");
+  assert.equal(referenceKindOf("lab1-exp1-forward.csv"), "csv");
 });
 
 test("副檔名不分大小寫", () => {
@@ -13,10 +15,10 @@ test("副檔名不分大小寫", () => {
 });
 
 test("不支援的格式回 null", () => {
-  assert.equal(referenceKindOf("wat_train.csv"), null);
   assert.equal(referenceKindOf("舊版講義.doc"), null);
   assert.equal(referenceKindOf("README"), null);
   assert.equal(referenceKindOf("投影片.pptx"), null);
+  assert.equal(referenceKindOf("舊版試算表.xls"), null);
 });
 
 test("略過 Word 開檔時產生的 ~$ 暫存檔", () => {
@@ -34,4 +36,6 @@ test("檔名中間出現副檔名字樣不算數", () => {
 test("每個 kind 都有顯示用標籤", () => {
   assert.equal(REFERENCE_KIND_LABEL.pdf, "PDF");
   assert.equal(REFERENCE_KIND_LABEL.docx, "Word");
+  assert.equal(REFERENCE_KIND_LABEL.xlsx, "Excel");
+  assert.equal(REFERENCE_KIND_LABEL.csv, "CSV");
 });

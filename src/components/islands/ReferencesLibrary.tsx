@@ -1,7 +1,7 @@
 import { useState } from "react";
 import type { ReferenceDoc, ReferenceFolder } from "@/lib/references";
 import { REFERENCE_KIND_LABEL, type ReferenceKind } from "@/lib/reference-kinds";
-import { ChevronRight, FileText, FileType2, FolderOpen } from "lucide-react";
+import { ChevronRight, FileSpreadsheet, FileText, FileType2, FolderOpen, Table2 } from "lucide-react";
 
 export interface ReferencesLibraryProps {
   tree: ReferenceFolder;
@@ -10,16 +10,22 @@ export interface ReferencesLibraryProps {
    * 這一區連同標題都不會出現在輸出的 HTML 裡（見 pages/references/index.astro）。
    */
   outputs?: ReferenceFolder | null;
+  /** dev-only：notesDir 以外的資料檔（`simulations/` 的實驗數據與電路圖），同上只在本機出現。 */
+  externals?: ReferenceFolder[];
 }
 
 const KIND_ICON: Record<ReferenceKind, typeof FileText> = {
   pdf: FileText,
   docx: FileType2,
+  xlsx: FileSpreadsheet,
+  csv: Table2,
 };
 
 const KIND_COLOR: Record<ReferenceKind, string> = {
   pdf: "var(--blue-600)",
   docx: "var(--orange-600)",
+  xlsx: "var(--success-500)",
+  csv: "var(--neutral-500)",
 };
 
 /** 沒有頁數可顯示的格式（docx）改顯示檔案大小，讓每一列都有一個次要資訊。 */
@@ -35,13 +41,16 @@ function metaLabel(doc: ReferenceDoc): string {
   return formatBytes(doc.bytes);
 }
 
-export default function ReferencesLibrary({ tree, outputs = null }: ReferencesLibraryProps) {
+export default function ReferencesLibrary({ tree, outputs = null, externals = [] }: ReferencesLibraryProps) {
   const open = (doc: ReferenceDoc) => {
-    window.dispatchEvent(new CustomEvent("nc-ref-open", { detail: { file: doc.relPath, page: 1 } }));
+    // 帶著 doc.url：外部資料檔走 /local-assets/*，抽屜從 relPath 推算不出來。
+    window.dispatchEvent(
+      new CustomEvent("nc-ref-open", { detail: { file: doc.relPath, page: 1, url: doc.url } }),
+    );
   };
 
   const empty = tree.folders.length === 0 && tree.docs.length === 0;
-  if (empty && !outputs) {
+  if (empty && !outputs && externals.length === 0) {
     return (
       <div style={{ textAlign: "center", padding: "80px 0", color: "var(--text-muted)" }}>
         <p style={{ margin: 0, fontSize: 15 }}>_references/ 底下還沒有任何講義</p>
@@ -55,28 +64,45 @@ export default function ReferencesLibrary({ tree, outputs = null }: ReferencesLi
       <style>{`.nc-ref-file-row:hover { background: var(--surface-sunken); }`}</style>
       {!empty && <FolderSection folder={tree} depth={0} onOpen={open} />}
       {outputs && (
-        <section style={{ marginBottom: 28 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 8, margin: "0 0 12px" }}>
-            <h2 style={{ margin: 0, fontSize: 15, fontWeight: 800, color: "var(--text-strong)" }}>我的產出</h2>
-            {/* 標示這一區為何在正式站看不到，免得之後自己疑惑「線上怎麼少一塊」 */}
-            <span
-              title="這些檔案不會被複製進 dist，只在本機 dev 看得到"
-              style={{
-                padding: "2px 8px",
-                borderRadius: "var(--radius-pill)",
-                background: "var(--orange-50)",
-                color: "var(--orange-700)",
-                fontSize: 11,
-                fontWeight: 700,
-              }}
-            >
-              僅本機
-            </span>
-          </div>
-          <FolderSection folder={outputs} depth={0} onOpen={open} />
-        </section>
+        <LocalSection title="我的產出" folder={outputs} onOpen={open} />
       )}
+      {externals.map((folder) => (
+        <LocalSection key={folder.name} title={`實驗數據 · ${folder.name}/`} folder={folder} onOpen={open} />
+      ))}
     </>
+  );
+}
+
+/** dev-only 分區的外框：標題 + 「僅本機」標記，讓人一眼知道正式站為何看不到這塊。 */
+function LocalSection({
+  title,
+  folder,
+  onOpen,
+}: {
+  title: string;
+  folder: ReferenceFolder;
+  onOpen: (doc: ReferenceDoc) => void;
+}) {
+  return (
+    <section style={{ marginBottom: 28 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 8, margin: "0 0 12px" }}>
+        <h2 style={{ margin: 0, fontSize: 15, fontWeight: 800, color: "var(--text-strong)" }}>{title}</h2>
+        <span
+          title="這些檔案不會被複製進 dist，只在本機 dev 看得到"
+          style={{
+            padding: "2px 8px",
+            borderRadius: "var(--radius-pill)",
+            background: "var(--orange-50)",
+            color: "var(--orange-700)",
+            fontSize: 11,
+            fontWeight: 700,
+          }}
+        >
+          僅本機
+        </span>
+      </div>
+      <FolderSection folder={folder} depth={0} onOpen={onOpen} />
+    </section>
   );
 }
 

@@ -9,7 +9,8 @@
 - **UI**：React（僅用於 AI 生成的互動元件）+ TailwindCSS
 - **動畫 / 互動**：`motion`（Framer Motion，npm 套件名即 `motion`，**勿與舊 motion.js 混淆**）
 - **圖表**：`recharts`（標準圖表）、`d3`（非標準）、手寫 SVG（流程 / 時序 / 架構圖優先）
-- **原始講義檢視**：側邊抽屜是「副檔名 → 檢視器」註冊表（`src/lib/reference-kinds.ts` 管 build 期掃描，`src/components/islands/reference-viewers/` 管 client 端渲染）。PDF 用 `pdfjs-dist`（另有 Node legacy build 供 subagent 抽取頁面文字）、Word（`.docx`）用 `docx-preview`；兩者的重型依賴都在各自的檢視器模組內動態 import。新增格式要同時動這兩處
+- **原始講義檢視**：側邊抽屜是「副檔名 → 檢視器」註冊表（`src/lib/reference-kinds.ts` 管 build 期掃描，`src/components/islands/reference-viewers/` 管 client 端渲染）。PDF 用 `pdfjs-dist`（另有 Node legacy build 供 subagent 抽取頁面文字）、Word 用 `docx-preview`、Excel 用 `read-excel-file`（值）＋ `fflate` 與 `src/lib/xlsx-styles.ts`（底色／合併／欄寬，自寫）、CSV 用 `src/lib/csv-parse.ts`（自寫，無依賴）。**不要改用 `exceljs`**：它遇到含圖表的活頁簿會在 `reconcile` 拋 `undefined.anchors`，實驗記錄簿就是這種檔。
+  新增一種格式要同時動三處：`reference-kinds.ts` 的副檔名表、`ReferenceViewerDrawer` 的 `REFERENCE_VIEWERS`、`astro.config.mjs` 的 `optimizeDeps.include`（漏第三處的症狀是 dev 首次開啟顯示「載入失敗」，實為 504 Outdated Optimize Dep；`viewer-optimize-deps.test.ts` 會把關）
 - **搜尋**：`pagefind`（build 階段索引）
 - **部署**：Netlify 靜態部署，**無 Function、無執行時 API**
 - **Node ^22.x、TypeScript**
@@ -215,6 +216,7 @@ trim 前後空白 → 過濾空字串 → 同篇內不分大小寫去重（保�
 - 筆記頁首的「⋯」選單整顆：以 VS Code 編輯（`vscode://file/{絕對路徑}`）、重新生成提示（複製對話範本到剪貼簿）、刪除筆記
 - Drawer 的「複製生成提示」與無 deck 時的「生成簡報」
 - 筆記檢視頁的標籤 chip 編輯 UI
+- 講義庫的「我的產出」（`<notesDir>/_outputs/`）與「實驗數據」（`simulations/`）兩個分區。前者走 `/notes-assets/*`、後者走 dev-only 的 `/local-assets/*`（root 是專案 cwd，同一個 `assertSafePath` 守衛）；build 兩者都不輸出，所以帶學號姓名的結報與實驗數據不會上公開站
 - `/tags` 頁面的重新命名 / 刪除控制
 - `/plugins` 的啟用／停用 Switch（正式環境只留 pill）
 

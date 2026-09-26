@@ -2,8 +2,8 @@ import fs from "node:fs";
 import path from "node:path";
 import { getDocument } from "pdfjs-dist/legacy/build/pdf.mjs";
 import { resolveNotesDir } from "./notes-dir";
-import { referenceAssetUrl } from "./references-url";
-import { referenceKindOf, type ReferenceKind } from "./reference-kinds";
+import { localAssetUrl, referenceAssetUrl } from "./references-url";
+import { REFERENCE_KINDS, referenceKindOf, type ReferenceKind } from "./reference-kinds";
 
 export interface ReferenceDoc {
   /** 檔名（不含路徑），列表顯示用 */
@@ -51,7 +51,15 @@ async function countPages(absPath: string): Promise<number> {
   }
 }
 
-async function walk(absDir: string, notesDir: string): Promise<ReferenceFolder> {
+// 掃描時整個略過的目錄：套件與虛擬環境（simulations/lab1/.venv 底下就躺著一個 python-docx
+// 的 default.docx）、建置暫存、版控內部檔。少了這道過濾，講義庫會冒出一堆不是講義的東西。
+const SKIP_DIRS = new Set(["node_modules", ".git", ".venv", "__pycache__", "build", "dist"]);
+
+async function walk(
+  absDir: string,
+  baseDir: string,
+  toUrl: (relPath: string) => string,
+): Promise<ReferenceFolder> {
   const entries = fs
     .readdirSync(absDir, { withFileTypes: true })
     .sort((a, b) => a.name.localeCompare(b.name, "zh-Hant"));
@@ -60,17 +68,21 @@ async function walk(absDir: string, notesDir: string): Promise<ReferenceFolder> 
   for (const entry of entries) {
     const abs = path.join(absDir, entry.name);
     if (entry.isDirectory()) {
-      folders.push(await walk(abs, notesDir));
+      if (SKIP_DIRS.has(entry.name) || entry.name.startsWith(".")) continue;
+      const sub = await walk(abs, baseDir, toUrl);
+      // 空資料夾不進樹：simulations/ 底下多的是 circuitjs/、tools/ 這種沒有可檢視檔案的目錄，
+      // 留著只會讓清單長出一排點不開的節點。
+      if (sub.folders.length > 0 || sub.docs.length > 0) folders.push(sub);
       continue;
     }
     if (!entry.isFile()) continue;
     const kind = referenceKindOf(entry.name);
     if (!kind) continue;
-    const relPath = path.relative(notesDir, abs).split(path.sep).join("/");
+    const relPath = path.relative(baseDir, abs).split(path.sep).join("/");
     docs.push({
       name: entry.name,
       relPath,
-      url: referenceAssetUrl(relPath),
+      url: toUrl(relPath),
       kind,
       ...(kind === "pdf" ? { numPages: await countPages(abs) } : {}),
       bytes: fs.statSync(abs).size,
@@ -86,7 +98,7 @@ export async function listReferenceTree(): Promise<ReferenceFolder> {
   if (!fs.existsSync(referencesDir)) {
     return { name: "_references", folders: [], docs: [] };
   }
-  return walk(referencesDir, notesDir);
+  return walk(referencesDir, notesDir, referenceAssetUrl);
 }
 
 /**
@@ -104,18 +116,42 @@ export async function listLocalOutputTree(): Promise<ReferenceFolder | null> {
   const notesDir = resolveNotesDir();
   const outputsDir = path.join(notesDir, "_outputs");
   if (!fs.existsSync(outputsDir)) return null;
-  const tree = await walk(outputsDir, notesDir);
+  const tree = await walk(outputsDir, notesDir, referenceAssetUrl);
   return tree.folders.length > 0 || tree.docs.length > 0 ? tree : null;
 }
 
 /** 依格式統計整棵樹的檔案數，供頁首 pill 顯示。 */
 export function countReferencesByKind(folder: ReferenceFolder): Record<ReferenceKind, number> {
-  const out = { pdf: 0, docx: 0 };
+  const out = Object.fromEntries(REFERENCE_KINDS.map((k) => [k, 0])) as Record<ReferenceKind, number>;
   for (const doc of folder.docs) out[doc.kind] += 1;
   for (const child of folder.folders) {
     const sub = countReferencesByKind(child);
-    out.pdf += sub.pdf;
-    out.docx += sub.docx;
+    for (const kind of REFERENCE_KINDS) out[kind] += sub[kind];
   }
   return out;
+}
+
+/**
+ * dev-only：專案根目錄底下、notesDir 以外的資料檔（實驗數據、電路圖）。
+ *
+ * 為什麼不是把檔案搬進 notesDir：`simulations/` 底下的 CSV 是 `build_lab1_report.py` 以相對
+ * 路徑讀取的輸入，`.xlsx` 是作者邊做實驗邊填的記錄表——它們屬於實驗工作區，不是筆記素材。
+ * 因此改成讓講義庫多看一個根，檔案留在原地。
+ *
+ * URL 走 dev-only 的 `/local-assets/*`（見 references-url.ts），正式 build 沒有那條路由、
+ * 也不會複製這些檔案，所以呼叫端必須自己用 `import.meta.env.DEV` 把關。
+ * 沒有東西時回 null，讓呼叫端直接判斷要不要顯示整個分區。
+ */
+const EXTERNAL_DATA_DIRS = ["simulations"];
+
+export async function listExternalDataTree(): Promise<ReferenceFolder[]> {
+  const root = process.cwd();
+  const trees: ReferenceFolder[] = [];
+  for (const dir of EXTERNAL_DATA_DIRS) {
+    const abs = path.join(root, dir);
+    if (!fs.existsSync(abs)) continue;
+    const tree = await walk(abs, root, localAssetUrl);
+    if (tree.folders.length > 0 || tree.docs.length > 0) trees.push(tree);
+  }
+  return trees;
 }
