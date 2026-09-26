@@ -15,7 +15,7 @@ export default function PdfRefChip({ file, page, status = "confirmed", excerpt }
   const suggested = status === "suggested";
 
   const open = () => {
-    window.dispatchEvent(new CustomEvent("nc-pdf-open", { detail: { file, page } }));
+    window.dispatchEvent(new CustomEvent("nc-ref-open", { detail: { file, page } }));
   };
 
   return (

@@ -41,6 +41,13 @@ description: Use when the author has a lab handout (App_LabN.pdf、實驗講義)
 | LTspice 網表、plot.py、README | `simulations/<lab>/` |
 | 電流分析圖的座標腳本 | `simulations/<lab>/annotate_current_path.py`（畫法原語在 `simulations/tools/current_overlay.py`） |
 | 圖 | `public/note-images/ec-week<N>-<tool>/`（電流分析圖是原名加 `-current`） |
+| 結報成品（.docx） | `src/content/notes/_outputs/<lab>/<學號>_<姓名>_<Lab>.docx` |
+
+結報成品放 notesDir 底下的 `_outputs/` 而不是 `simulations/<lab>/report/`，是為了能在
+`/references` 的講義庫直接預覽（dev 的 `/notes-assets/*` 服務 notesDir 底下任何檔案）。
+那個目錄**不會**被複製進 `dist/`（build 只複製 `_references/`），所以帶學號姓名的結報
+不會上公開站；同時它也在 `.gitignore` 裡，不進版控。產生腳本仍住在
+`simulations/<lab>/report/`。
 
 ## Common mistakes
 

@@ -211,6 +211,7 @@ const MIME_MAP = {
   ".avif": "image/avif",
   ".ico": "image/x-icon",
   ".pdf": "application/pdf",
+  ".docx": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
 };
 
 async function handleNotesAsset(notesRoot, urlPath, res) {

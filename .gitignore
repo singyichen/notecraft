@@ -40,6 +40,9 @@ __pycache__/
 simulations/**/erc.rpt
 ~*.lck
 
-# 結報：個人檔案（含學號）與建置暫存不進版控，範本與產生腳本才進
+# 結報：個人檔案（含學號）與建置暫存不進版控，範本與產生腳本才進。
+# 成品輸出到 notesDir 的 _outputs/（放在那裡才能在講義庫預覽，且不會被複製進 dist），
+# 舊路徑 simulations/*/report/*.docx 保留規則，避免既有檔案或 --out 指定時漏網。
+src/content/notes/_outputs/
 simulations/*/report/*.docx
 simulations/*/report/build/

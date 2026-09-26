@@ -25,7 +25,7 @@ const { active = "", pending = 0 } = Astro.props;
       <Icon name="sparkle" size={17} stroke={1.7} />
       {pending > 0 && <span class="wb-rail-dot" aria-hidden="true"></span>}
     </a>
-    <a class:list={["wb-rail-btn", { on: active === "references" }]} href={ROUTES.references} title="PDF 講義庫" aria-label="PDF 講義庫" data-rail="references" aria-current={active === "references" ? "page" : undefined}>
+    <a class:list={["wb-rail-btn", { on: active === "references" }]} href={ROUTES.references} title="原始講義庫" aria-label="原始講義庫" data-rail="references" aria-current={active === "references" ? "page" : undefined}>
       <Icon name="file" size={17} stroke={1.7} />
     </a>
     <a class:list={["wb-rail-btn", { on: active === "plugins" }]} href={ROUTES.plugins} title="Plugin 外掛" aria-label="Plugin 外掛" data-rail="plugins" aria-current={active === "plugins" ? "page" : undefined}>

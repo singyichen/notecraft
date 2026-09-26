@@ -9,7 +9,7 @@
 - **UI**：React（僅用於 AI 生成的互動元件）+ TailwindCSS
 - **動畫 / 互動**：`motion`（Framer Motion，npm 套件名即 `motion`，**勿與舊 motion.js 混淆**）
 - **圖表**：`recharts`（標準圖表）、`d3`（非標準）、手寫 SVG（流程 / 時序 / 架構圖優先）
-- **PDF 檢視**：`pdfjs-dist`（瀏覽器端側邊抽屜檢視器 + Node legacy build 供 subagent 抽取頁面文字）
+- **原始講義檢視**：側邊抽屜是「副檔名 → 檢視器」註冊表（`src/lib/reference-kinds.ts` 管 build 期掃描，`src/components/islands/reference-viewers/` 管 client 端渲染）。PDF 用 `pdfjs-dist`（另有 Node legacy build 供 subagent 抽取頁面文字）、Word（`.docx`）用 `docx-preview`；兩者的重型依賴都在各自的檢視器模組內動態 import。新增格式要同時動這兩處
 - **搜尋**：`pagefind`（build 階段索引）
 - **部署**：Netlify 靜態部署，**無 Function、無執行時 API**
 - **Node ^22.x、TypeScript**
@@ -19,7 +19,7 @@
 ```
 src/
 ├── content/notes/              MDX 筆記原始檔
-│   └── _references/             原始 PDF 講義（跟著 notesDir 走，dev/build 都以 /notes-assets/<相對路徑> 存取）
+│   └── _references/             原始講義（PDF / Word，跟著 notesDir 走，dev/build 都以 /notes-assets/<相對路徑> 存取）
 ├── components/generated/        AI 生成的視覺化元件（一個 id 對應一個 .tsx）
 ├── components/wb/               Workbench 工作台的殼與各頁 island（Rail／Sidebar／Header／NotesWorkbench／Drawer／Palette…）
 ├── components/islands/          其他 React island（TagEditor、Toc、PluginHost、SeriesNav…）
@@ -30,7 +30,7 @@ src/
 ├── pages/
 │   ├── api/                    dev-only API routes（POST /api/notes、tags 相關）
 │   ├── wb-index.json.ts        build 期輸出 /wb-index.json，給 Palette 與 Dashboard Drawer 延遲載入
-│   ├── references/             PDF 講義庫瀏覽頁
+│   ├── references/             原始講義庫瀏覽頁（PDF / Word）
 │   ├── notes/[...slug].astro   筆記檢視頁
 │   ├── plugins/                Plugin 資料檔與已安裝外掛
 │   └── settings.astro          設定與關於

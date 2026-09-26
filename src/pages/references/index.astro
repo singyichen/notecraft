@@ -1,25 +1,33 @@
 ---
 // src/pages/references/index.astro
-// PDF 講義庫。ReferencesLibrary 是本專案自有的 island，不輸出工作台的 #nc-scroll.wb-body，
-// 所以這裡用 layout 預設的 Body（不加 bare / bareBody），由 WorkbenchLayout 提供捲動容器。
+// 原始講義庫（PDF / Word）。ReferencesLibrary 是本專案自有的 island，不輸出工作台的
+// #nc-scroll.wb-body，所以這裡用 layout 預設的 Body（不加 bare / bareBody），
+// 由 WorkbenchLayout 提供捲動容器。
 import WorkbenchLayout from "@/layouts/WorkbenchLayout.astro";
 import ReferencesLibrary from "@/components/islands/ReferencesLibrary.tsx";
-import { listReferenceTree, type ReferenceFolder } from "@/lib/references";
+import { listReferenceTree, listLocalOutputTree, countReferencesByKind } from "@/lib/references";
+import { REFERENCE_KIND_LABEL, REFERENCE_KINDS } from "@/lib/reference-kinds";
 
 const tree = await listReferenceTree();
+const counts = countReferencesByKind(tree);
 
-function countPdfs(folder: ReferenceFolder): number {
-  return folder.pdfs.length + folder.folders.reduce((acc, f) => acc + countPdfs(f), 0);
-}
-const totalPdfs = countPdfs(tree);
+// 「我的產出」只在本機出現：檔案本身不會被複製進 dist，正式站連 URL 都不存在，
+// 所以連這一區的清單也不該出現在正式站的 HTML 裡。判定方式與其他 dev-only 功能一致。
+const outputs = import.meta.env.DEV ? await listLocalOutputTree() : null;
+
+// 一種格式一顆 pill，數量 0 的不顯示——只有 PDF 的專案不該看到一顆「0 份 Word」。
+const pills = REFERENCE_KINDS.filter((kind) => counts[kind] > 0).map((kind) => ({
+  label: `${counts[kind]} 份 ${REFERENCE_KIND_LABEL[kind]}`,
+  tone: "muted" as const,
+}));
 ---
 
 <WorkbenchLayout
   title="原始講義"
-  description="瀏覽課程原始 PDF 講義與手冊"
+  description="瀏覽課程原始 PDF 講義、Word 手冊與範本"
   rail="references"
   crumbs={[{ label: "NoteCraft", href: "/" }, { label: "原始講義" }]}
-  pills={[{ label: `${totalPdfs} 份 PDF`, tone: "muted" }]}
+  pills={pills}
 >
-  <ReferencesLibrary client:load tree={tree} />
+  <ReferencesLibrary client:load tree={tree} outputs={outputs} />
 </WorkbenchLayout>

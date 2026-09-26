@@ -7,7 +7,7 @@ import { resolveNotesDir } from "./notes-dir";
 
 // pdfjs-dist 套件內建的 cmaps/ 與 standard_fonts/ 是解析 PDF（尤其 CJK CMap，如 GBK-EUC-H
 // ／非嵌入標準字型）必要的靜態資料，跟 notesDir 無關、每次 build 都一樣，所以固定複製一次到
-// dist 底下的固定路徑，供 PdfViewerDrawer.tsx 以 `/pdfjs-cmaps/`、`/pdfjs-standard-fonts/`
+// dist 底下的固定路徑，供 reference-viewers/PdfRenderer.tsx 以 `/pdfjs-cmaps/`、`/pdfjs-standard-fonts/`
 // 存取。開發期由 src/dev-api/handlers.mjs 的對應路由服務同一份 node_modules 內容。
 //
 // 用 createRequire(import.meta.url).resolve() 找 pdfjs-dist 的實際安裝位置，而不是相對
@@ -21,7 +21,7 @@ const PDFJS_DIR = path.dirname(require.resolve("pdfjs-dist/package.json"));
 /**
  * 正式 build（output: "static"，無 Function）沒有 dev-only 的 `/notes-assets/*` handler
  *（見 src/dev-api/handlers.mjs 的 handleNotesAsset），所以把 notesDir 底下的
- * `_references/**`（PDF 原始檔）在建置完成後複製進 `dist/notes-assets/**`，讓同一個
+ * `_references/**`（PDF / Word 原始講義）在建置完成後複製進 `dist/notes-assets/**`，讓同一個
  * `/notes-assets/<relpath>` URL 在 dev 與正式站都指向同一份檔案，前端元件不需要判斷模式。
  * 同一個 hook 也把 pdfjs-dist 的 cmaps/ 與 standard_fonts/ 複製進 dist，兩者都是
  * static、per-build（不隨 notesDir 而變），所以不需要 `_references/`-style 的 relPath 處理。

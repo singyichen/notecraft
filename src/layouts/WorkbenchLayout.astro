@@ -21,7 +21,7 @@ import SidebarLive from "@/components/wb/SidebarLive.tsx";
 import Palette from "@/components/wb/Palette.tsx";
 import ToastHost from "@/components/islands/ToastHost.tsx";
 import NewNoteModal from "@/components/islands/NewNoteModal.tsx";
-import PdfViewerDrawer from "@/components/islands/PdfViewerDrawer.tsx";
+import ReferenceViewerDrawer from "@/components/islands/ReferenceViewerDrawer.tsx";
 import { getWorkbenchIndex } from "@/lib/workbench";
 
 export interface Props {
@@ -146,7 +146,7 @@ const index = await getWorkbenchIndex();
     <Palette client:idle />
     <ToastHost client:idle />
     {/* PDF 講義抽屜掛在殼層：筆記內文的 <PdfRefChip> 與 /references 都靠事件開它，任一頁都要在。 */}
-    <PdfViewerDrawer client:only="react" />
+    <ReferenceViewerDrawer client:only="react" />
     {isDev && <NewNoteModal client:idle />}
     <script is:inline>
       // 殼的兩顆事件型按鈕：Rail 的搜尋、頁首的「＋ 新增筆記」。只 dispatch 事件，由對應的 island 接。

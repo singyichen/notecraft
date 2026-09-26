@@ -3,7 +3,9 @@
 
 用法（在 simulations/lab1/）：
   .venv/bin/python report/build_lab1_report.py --id 515661xxx --name 陳欣怡
-  → report/<學號>_<姓名>_Lab1.docx（已存在時要加 --force，否則不覆寫你手改過的檔）
+  → src/content/notes/_outputs/lab1/<學號>_<姓名>_Lab1.docx（已存在時要加 --force，否則不覆寫你手改過的檔）
+  放在 notesDir 底下的 _outputs/ 是為了能在 NoteCraft 的講義庫直接預覽；該目錄不會被
+  複製進 dist，正式站看不到（見 src/lib/references.ts 的 listLocalOutputTree）。
 
 measured/lab1-exp1-forward.csv、lab1-exp2-reverse.csv、lab1-exp3-halfwave.csv 填了數字再重跑，
 實測表、疊圖與對照圖都會自動帶入。實驗三那份是純量記錄表（區段／量測項目／實測／預報／理想）。
@@ -15,6 +17,9 @@ sys.path.insert(0, os.path.join(LAB, '..', 'tools'))
 from lab_report import Report, REQ, OPT, GREY
 from ltraw import read_raw
 IMG = os.path.join(ROOT, 'public', 'note-images'); BUILD = os.path.join(HERE, 'build')
+# 結報成品放進 notesDir 的 _outputs/：dev 的 /notes-assets/* 服務 notesDir 底下任何檔案，
+# 但 build 只複製 _references/，所以帶著姓名學號的結報看得到、卻不會被發佈到公開站上。
+OUT_DIR = os.path.join(ROOT, 'src', 'content', 'notes', '_outputs', 'lab1')
 
 
 def rows_csv(name):
@@ -84,7 +89,8 @@ def main():
     ap.add_argument('-o', '--out'); ap.add_argument('--force', action='store_true')
     a = ap.parse_args()
     sid_file = a.id if '◯' not in a.id else '學號'
-    out = a.out or os.path.join(HERE, f'{sid_file}_{a.name}_Lab1.docx')
+    out = a.out or os.path.join(OUT_DIR, f'{sid_file}_{a.name}_Lab1.docx')
+    os.makedirs(os.path.dirname(os.path.abspath(out)), exist_ok=True)
 
     m1, m2 = rows_csv('lab1-exp1-forward.csv'), rows_csv('lab1-exp2-reverse.csv')
     t1, t2 = rows_csv('lab1-exp1-tinkercad.csv'), rows_csv('lab1-exp2-tinkercad.csv')
