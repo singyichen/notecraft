@@ -368,9 +368,14 @@ export default function EcWeek3Exp3CurrentPath() {
   // 輸入波形指示器：純函式近似正弦（在四分之一相位點與給定的貝茲控制點完全吻合），
   // 圓點由 wavePhase 這個永不暫停的時鐘驅動，即使負半週也持續往下半週移動。
   const waveDot = {
-    x: 296 + wavePhase * 138,
+    x: 258 + wavePhase * 184,
     y: 61 - 15 * Math.sin(2 * Math.PI * wavePhase),
   };
+
+  // 瞬時極性（+ / − 端子固定不變，交換的是這顆徽章標的「此刻誰電位高」）
+  const plusTerminalPolarity = phase === 'forward' ? '高' : '低';
+  const minusTerminalPolarity = phase === 'forward' ? '低' : '高';
+  const diodeReason = phase === 'forward' ? '陽極電位高 → 順偏' : '陰極電位高 → 逆偏';
 
   return (
     <div className="not-prose flex flex-col gap-4">
@@ -461,25 +466,46 @@ export default function EcWeek3Exp3CurrentPath() {
         <circle cx={482} cy={88} r={2.5} fill="var(--neutral-50)" stroke="var(--sky-500)" strokeWidth={1.5} />
         <circle cx={538} cy={88} r={2.5} fill="var(--neutral-50)" stroke="var(--sky-500)" strokeWidth={1.5} />
 
-        {/* 4. 輸入波形指示器：唯一線索，圓點由永不暫停的 wavePhase 驅動 */}
+        {/* 4. 輸入波形指示器：唯一線索，加寬到 258..442（左台示波器右緣 240、右台左緣 460，兩側各留 18px），
+            當前半週那半段加一塊淡底色，圓點由永不暫停的 wavePhase 驅動並略微加大 */}
         <g>
-          <text x={296} y={30} fontSize={9} fill="var(--neutral-400)">
+          <text x={258} y={30} fontSize={9} fill="var(--neutral-400)">
             Vin
           </text>
-          <line x1={296} y1={61} x2={434} y2={61} stroke="var(--neutral-400)" strokeWidth={1} />
+          <motion.rect
+            x={258}
+            y={38}
+            width={92}
+            height={46}
+            rx={4}
+            fill="var(--success-500)"
+            animate={{ opacity: phase === 'forward' ? 0.12 : 0 }}
+            transition={{ duration: 0.3, ease: 'easeOut' }}
+          />
+          <motion.rect
+            x={350}
+            y={38}
+            width={92}
+            height={46}
+            rx={4}
+            fill="var(--neutral-400)"
+            animate={{ opacity: phase === 'reverse' ? 0.15 : 0 }}
+            transition={{ duration: 0.3, ease: 'easeOut' }}
+          />
+          <line x1={258} y1={61} x2={442} y2={61} stroke="var(--neutral-400)" strokeWidth={1} />
           <path
-            d="M296,61 C313,61 313,46 330.5,46 C348,46 348,61 365,61"
+            d="M258,61 C281,61 281,46 304,46 C327,46 327,61 350,61"
             fill="none"
             strokeWidth={1.5}
             stroke={phase === 'forward' ? 'var(--success-500)' : 'var(--neutral-300)'}
           />
           <path
-            d="M365,61 C382,61 382,76 399.5,76 C417,76 417,61 434,61"
+            d="M350,61 C373,61 373,76 396,76 C419,76 419,61 442,61"
             fill="none"
             strokeWidth={1.5}
             stroke="var(--neutral-300)"
           />
-          <circle cx={waveDot.x} cy={waveDot.y} r={3} fill={phase === 'forward' ? 'var(--success-500)' : 'var(--neutral-400)'} />
+          <circle cx={waveDot.x} cy={waveDot.y} r={3.8} fill={phase === 'forward' ? 'var(--success-500)' : 'var(--neutral-400)'} />
         </g>
 
         {/* 5. 元件本體：畫在路徑之上，路徑才像插進元件 */}
@@ -507,6 +533,48 @@ export default function EcWeek3Exp3CurrentPath() {
             +
           </text>
 
+          {/* 瞬時極性徽章（sky 系，和上面固定的 + / − 端子標籤分開）：
+              + / − 端子標籤本身永遠不交換（實體端子不會換），交換的只有這顆徽章標的「此刻誰電位高」 */}
+          <text x={18} y={122} fontSize={8} fill="var(--sky-500)">
+            此刻極性
+          </text>
+          <circle cx={106} cy={180} r={8} fill="var(--sky-500)" />
+          <AnimatePresence mode="wait" initial={false}>
+            <motion.text
+              key={`plus-pol-${phase}`}
+              x={106}
+              y={183.5}
+              textAnchor="middle"
+              fontSize={9}
+              fontWeight={700}
+              fill="var(--neutral-0)"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.25, ease: 'easeOut' }}
+            >
+              {plusTerminalPolarity}
+            </motion.text>
+          </AnimatePresence>
+          <circle cx={106} cy={150} r={8} fill="var(--sky-500)" />
+          <AnimatePresence mode="wait" initial={false}>
+            <motion.text
+              key={`minus-pol-${phase}`}
+              x={106}
+              y={153.5}
+              textAnchor="middle"
+              fontSize={9}
+              fontWeight={700}
+              fill="var(--neutral-0)"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.25, ease: 'easeOut' }}
+            >
+              {minusTerminalPolarity}
+            </motion.text>
+          </AnimatePresence>
+
           {/* 跳線（橘色絕緣外皮，蓋住底下同一段綠線，兩端露出插入點） */}
           <line x1={286} y1={130} x2={286} y2={170} stroke="var(--orange-300)" strokeWidth={3} strokeLinecap="round" />
 
@@ -516,6 +584,23 @@ export default function EcWeek3Exp3CurrentPath() {
             <path d="M334,179 L374,209" stroke="var(--danger-500)" strokeWidth={2.5} strokeLinecap="round" />
             <path d="M374,179 L334,209" stroke="var(--danger-500)" strokeWidth={2.5} strokeLinecap="round" />
           </motion.g>
+          {/* 被擋住的直接原因：跟著相位切換，教學價值最高的一行 */}
+          <AnimatePresence mode="wait" initial={false}>
+            <motion.text
+              key={`diode-reason-${phase}`}
+              x={354}
+              y={214}
+              textAnchor="middle"
+              fontSize={9}
+              fill={phase === 'forward' ? 'var(--success-500)' : 'var(--danger-500)'}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.25, ease: 'easeOut' }}
+            >
+              {diodeReason}
+            </motion.text>
+          </AnimatePresence>
 
           <ResistorBody />
 
@@ -618,6 +703,10 @@ export default function EcWeek3Exp3CurrentPath() {
         <span className="inline-flex items-center gap-1.5">
           <span className="inline-block h-2.5 w-2.5 rounded-full border border-dashed" style={{ borderColor: 'var(--neutral-400)' }} />
           第 9 欄：i9 與 h9 同一個節點
+        </span>
+        <span className="inline-flex items-center gap-1.5">
+          <span className="inline-block h-2.5 w-2.5 rounded-full" style={{ background: 'var(--sky-500)' }} />
+          sky 圓底徽章「高／低」：此刻電位相對高低，+ / − 端子標籤本身不交換
         </span>
       </div>
 
