@@ -3,7 +3,7 @@ title: "電子學實作系列：第 2 週 - 二極體與 EDA 模擬"
 description: "二極體作為電路元件：理想／定電壓／指數三種模型、小訊號分析與 r_d、整流器／限幅器／穩壓器應用（CH3 逐頁詳解），以及 EDA 工具與模擬器在設計流程中的角色。Lab 1 講義詳解與 Tinkercad 入門已移至第 3 週。"
 tags: ["電子學實作系列"]
 createdAt: "2026-09-19"
-updatedAt: "2026-09-25"
+updatedAt: "2026-09-26"
 ---
 
 import PdfRefChip from '@/components/islands/PdfRefChip.tsx'
@@ -1098,12 +1098,13 @@ status: confirmed
 #### 選擇題 1
 
 > 把兩顆理想二極體頭尾接反後串聯，從一端到另一端的導通情形如何？
+> :en[Two ideal diodes are connected head-to-tail in series. What is the conduction behaviour from one end to the other?]
 
 :::choices{answer="A"}
-- 不論電壓正負都不導通
-- 不論電壓正負都導通，等於一根短路線
-- 只有電壓為正時導通
-- 只有電壓為負時導通
+- 不論電壓正負都不導通 :en[It never conducts, whatever the polarity of the voltage]
+- 不論電壓正負都導通，等於一根短路線 :en[It always conducts, whatever the polarity — it acts as a short]
+- 只有電壓為正時導通 :en[It conducts only when the voltage is positive]
+- 只有電壓為負時導通 :en[It conducts only when the voltage is negative]
 :::
 
 :::tip{collapsible title="詳解"}
@@ -1117,12 +1118,13 @@ status: confirmed
 #### 選擇題 2
 
 > 理想模型與定電壓模型畫出的輸入輸出特性曲線，差別在哪裡？
+> :en[Where do the input-output characteristic curves drawn with the ideal model and with the constant-voltage model differ?]
 
 :::choices{answer="C"}
-- 形狀完全不同，理想模型是曲線、定電壓模型是折線
-- 形狀與轉折點都相同，只有斜率不同
-- 形狀相同，但轉折點差了一個導通壓降
-- 兩者完全相同，差別只在計算過程
+- 形狀完全不同，理想模型是曲線、定電壓模型是折線 :en[The shapes differ entirely: the ideal model gives a curve, the constant-voltage model a broken line]
+- 形狀與轉折點都相同，只有斜率不同 :en[Both the shape and the breakpoint are identical; only the slope differs]
+- 形狀相同，但轉折點差了一個導通壓降 :en[The shape is the same, but the breakpoint is offset by one turn-on drop]
+- 兩者完全相同，差別只在計算過程 :en[They are identical; only the calculation procedure differs]
 :::
 
 :::tip{collapsible title="詳解"}
@@ -1136,12 +1138,13 @@ status: confirmed
 #### 選擇題 3
 
 > 什麼情況下非得動用指數模型不可？
+> :en[In what situation must the exponential model be used?]
 
 :::choices{answer="B"}
-- 電路中有多顆二極體時
-- 兩顆二極體的接面面積不同時
-- 需要判斷二極體導通或截止時
-- 電源電壓遠大於導通壓降時
+- 電路中有多顆二極體時 :en[When the circuit contains several diodes]
+- 兩顆二極體的接面面積不同時 :en[When two diodes have different junction areas]
+- 需要判斷二極體導通或截止時 :en[When it must be decided whether a diode conducts or is off]
+- 電源電壓遠大於導通壓降時 :en[When the supply voltage is far larger than the turn-on drop]
 :::
 
 :::tip{collapsible title="詳解"}
@@ -1155,12 +1158,13 @@ status: confirmed
 #### 選擇題 4
 
 > 用指數模型手算電路的主要代價是什麼？
+> :en[What is the main price of hand-analysing a circuit with the exponential model?]
 
 :::choices{answer="D"}
-- 公式本身太複雜，難以記憶
-- 需要知道二極體的精確溫度
-- 只能用在順偏，逆偏時失效
-- 得迭代求解，初始猜測不好會發散
+- 公式本身太複雜，難以記憶 :en[The formula itself is too complex to remember]
+- 需要知道二極體的精確溫度 :en[The exact temperature of the diode has to be known]
+- 只能用在順偏，逆偏時失效 :en[It applies only under forward bias and fails under reverse bias]
+- 得迭代求解，初始猜測不好會發散 :en[It has to be solved iteratively, and a poor initial guess diverges]
 :::
 
 :::tip{collapsible title="詳解"}
@@ -1174,12 +1178,13 @@ status: confirmed
 #### 選擇題 5
 
 > 二極體的小訊號電阻 $r_d$ 與偏壓電流 $I_D$ 的關係是什麼？
+> :en[What is the relation between a diode's small-signal resistance $r_d$ and its bias current $I_D$?]
 
 :::choices{answer="A"}
-- $I_D$ 越大，$r_d$ 越小
-- $I_D$ 越大，$r_d$ 越大
-- 兩者無關，$r_d$ 由元件面積決定
-- 兩者成正比，比例常數為 $V_T$
+- $I_D$ 越大，$r_d$ 越小 :en[The larger $I_D$ is, the smaller $r_d$ is]
+- $I_D$ 越大，$r_d$ 越大 :en[The larger $I_D$ is, the larger $r_d$ is]
+- 兩者無關，$r_d$ 由元件面積決定 :en[They are unrelated; $r_d$ is set by the device area]
+- 兩者成正比，比例常數為 $V_T$ :en[They are proportional, with $V_T$ as the constant of proportionality]
 :::
 
 :::tip{collapsible title="詳解"}
@@ -1193,12 +1198,13 @@ $r_d = V_T / I_D$，是 I/V 曲線在工作點的切線斜率倒數。指數曲�
 #### 選擇題 6
 
 > 小訊號分析能成立的前提是什麼？
+> :en[What is the premise that makes small-signal analysis valid?]
 
 :::choices{answer="C"}
-- 電路中不能含有任何非線性元件
-- 訊號頻率必須遠低於元件的截止頻率
-- 變動量夠小，工作點附近可視為一條直線
-- 二極體必須工作在逆偏區
+- 電路中不能含有任何非線性元件 :en[The circuit may contain no non-linear element at all]
+- 訊號頻率必須遠低於元件的截止頻率 :en[The signal frequency must be far below the cutoff frequency of the device]
+- 變動量夠小，工作點附近可視為一條直線 :en[The variation is small enough that the curve near the operating point counts as a straight line]
+- 二極體必須工作在逆偏區 :en[The diode must be operating in the reverse-bias region]
 :::
 
 :::tip{collapsible title="詳解"}
@@ -1212,12 +1218,13 @@ $r_d = V_T / I_D$，是 I/V 曲線在工作點的切線斜率倒數。指數曲�
 #### 選擇題 7
 
 > 這門課分析放大器的通用兩段式流程是什麼？
+> :en[What is this course's general two-stage procedure for analysing an amplifier?]
 
 :::choices{answer="B"}
-- 先用小訊號模型算增益，再回頭確認偏壓
-- 先做直流分析定出偏壓點，再用小訊號模型算變化量
-- 先跑模擬取得波形，再用手算驗證模擬結果
-- 先假設工作區，再用指數模型一次解出全部
+- 先用小訊號模型算增益，再回頭確認偏壓 :en[Find the gain with the small-signal model first, then check the bias afterwards]
+- 先做直流分析定出偏壓點，再用小訊號模型算變化量 :en[Do the DC analysis to fix the bias point first, then find the variations with the small-signal model]
+- 先跑模擬取得波形，再用手算驗證模擬結果 :en[Run the simulation for waveforms first, then verify the simulation by hand]
+- 先假設工作區，再用指數模型一次解出全部 :en[Assume the operating region first, then solve everything at once with the exponential model]
 :::
 
 :::tip{collapsible title="詳解"}
@@ -1231,12 +1238,13 @@ $r_d = V_T / I_D$，是 I/V 曲線在工作點的切線斜率倒數。指數曲�
 #### 選擇題 8
 
 > 內建電位 $V_0$ 與電路分析用的導通壓降 $V_{D,on}$ 是什麼關係？
+> :en[How is the built-in potential $V_0$ related to the turn-on voltage $V_{D,on}$ used in circuit analysis?]
 
 :::choices{answer="D"}
-- 兩者是同一個量，只是不同教材的稱呼
-- $V_0$ 是 $V_{D,on}$ 在室溫下的近似值
-- $V_{D,on}$ 是 $V_0$ 乘上一個製程相關的係數
-- 兩者是不同的量：一個是熱平衡下自行建立的障壁，一個是電路分析採用的近似壓降
+- 兩者是同一個量，只是不同教材的稱呼 :en[They are the same quantity, named differently by different textbooks]
+- $V_0$ 是 $V_{D,on}$ 在室溫下的近似值 :en[$V_0$ is the room-temperature approximation of $V_{D,on}$]
+- $V_{D,on}$ 是 $V_0$ 乘上一個製程相關的係數 :en[$V_{D,on}$ is $V_0$ multiplied by a process-dependent coefficient]
+- 兩者是不同的量：一個是熱平衡下自行建立的障壁，一個是電路分析採用的近似壓降 :en[They are different quantities: one is the barrier that forms by itself at equilibrium, the other an approximate drop adopted for circuit analysis]
 :::
 
 :::tip{collapsible title="詳解"}
@@ -1250,12 +1258,13 @@ $V_0 = V_T\ln(N_A N_D / n_i^2)$ 是 PN 接面在熱平衡時由濃度差自行�
 #### 選擇題 9
 
 > 要觀察整流器輸出的漣波，該用哪一種 EDA 分析？
+> :en[Which kind of EDA analysis should be used to observe the ripple at a rectifier output?]
 
 :::choices{answer="A"}
-- 暫態分析
-- 直流工作點分析
-- 交流／頻率響應分析
-- 蒙地卡羅分析
+- 暫態分析 :en[Transient analysis]
+- 直流工作點分析 :en[DC operating point analysis]
+- 交流／頻率響應分析 :en[AC / frequency response analysis]
+- 蒙地卡羅分析 :en[Monte Carlo analysis]
 :::
 
 :::tip{collapsible title="詳解"}
@@ -1269,12 +1278,13 @@ $V_0 = V_T\ln(N_A N_D / n_i^2)$ 是 PN 接面在熱平衡時由濃度差自行�
 #### 選擇題 10
 
 > 使用模擬器時，最容易出事的一點是什麼？
+> :en[When using a simulator, what is the easiest thing to get wrong?]
 
 :::choices{answer="C"}
-- 模擬器的數值精度不如手算
-- 模擬器無法處理非線性元件
-- 模擬器不會提醒你假設錯了，只會忠實算出結果
-- 模擬器只支援理想元件模型
+- 模擬器的數值精度不如手算 :en[A simulator is numerically less precise than hand calculation]
+- 模擬器無法處理非線性元件 :en[A simulator cannot handle non-linear devices]
+- 模擬器不會提醒你假設錯了，只會忠實算出結果 :en[A simulator will not warn that an assumption is wrong; it faithfully computes the result]
+- 模擬器只支援理想元件模型 :en[A simulator supports ideal device models only]
 :::
 
 :::tip{collapsible title="詳解"}
@@ -1288,12 +1298,13 @@ $V_0 = V_T\ln(N_A N_D / n_i^2)$ 是 PN 接面在熱平衡時由濃度差自行�
 #### 選擇題 11
 
 > 半波整流實驗改用實際矽二極體後，輸出波形與理想模型的預測差在哪裡？
+> :en[After the half-wave rectifier experiment switches to a real silicon diode, how does the output waveform differ from the ideal model's prediction?]
 
 :::choices{answer="B"}
-- 負半週的輸出不再是零，而是負的峰值
-- 正半週導通區的輸出比理想值低一個導通壓降
-- 輸出的週期變成輸入的兩倍
-- 波形形狀從半波變成全波
+- 負半週的輸出不再是零，而是負的峰值 :en[The negative half cycle no longer gives zero output, but the negative peak]
+- 正半週導通區的輸出比理想值低一個導通壓降 :en[Output in the conducting positive half cycle is one turn-on drop below the ideal value]
+- 輸出的週期變成輸入的兩倍 :en[The period of the output becomes twice that of the input]
+- 波形形狀從半波變成全波 :en[The waveform changes from half-wave to full-wave]
 :::
 
 :::tip{collapsible title="詳解"}
@@ -1307,12 +1318,13 @@ $V_0 = V_T\ln(N_A N_D / n_i^2)$ 是 PN 接面在熱平衡時由濃度差自行�
 #### 選擇題 12
 
 > 兩顆同製程但接面面積不同的二極體，施加相同的順偏電壓，電流的比例由什麼決定？
+> :en[Two diodes of the same process but different junction areas are given the same forward voltage. What sets the ratio of their currents?]
 
 :::choices{answer="D"}
-- 兩者電流相同，與面積無關
-- 由兩者的小訊號電阻比值決定
-- 由兩者導通壓降的差值決定
-- 由兩者飽和電流 $I_S$ 的比值決定，而 $I_S$ 正比於面積
+- 兩者電流相同，與面積無關 :en[Their currents are the same; area makes no difference]
+- 由兩者的小訊號電阻比值決定 :en[It is set by the ratio of their small-signal resistances]
+- 由兩者導通壓降的差值決定 :en[It is set by the difference between their turn-on drops]
+- 由兩者飽和電流 $I_S$ 的比值決定，而 $I_S$ 正比於面積 :en[It is set by the ratio of their saturation currents $I_S$, and $I_S$ is proportional to area]
 :::
 
 :::tip{collapsible title="詳解"}
@@ -1328,6 +1340,7 @@ $V_0 = V_T\ln(N_A N_D / n_i^2)$ 是 PN 接面在熱平衡時由濃度差自行�
 #### 複習題 1
 
 > PN 接面的內建電位 $V_0$ 與矽二極體常用的 $0.7\ \text{V}$ 導通壓降有什麼不同？為什麼兩者數值可能接近，卻不能視為同一個量？
+> :en[How does the built-in potential $V_0$ of a PN junction differ from the $0.7\ \text{V}$ turn-on drop commonly used for silicon diodes? Why can the two be numerically close yet not be treated as the same quantity?]
 
 **考的觀念**：內建電位與電路模型的層級差異。
 
@@ -1336,6 +1349,7 @@ $V_0 = V_T\ln(N_A N_D / n_i^2)$ 是 PN 接面在熱平衡時由濃度差自行�
 #### 複習題 2
 
 > PN 接面在熱平衡時，載子是否完全停止移動？若沒有，為什麼外部量到的總電流仍為零？
+> :en[At thermal equilibrium, do carriers in a PN junction stop moving altogether? If not, why is the total current measured externally still zero?]
 
 **考的觀念**：漂移與擴散的動態平衡。
 
@@ -1350,6 +1364,7 @@ $$
 #### 複習題 3
 
 > 面對下列三個任務，應分別選擇哪一種二極體模型？（a）快速判斷哪些支路導通；（b）估算含矽二極體的串聯電流；（c）比較兩顆接面面積不同的並聯二極體如何分流。
+> :en[Which diode model should be chosen for each of the following tasks? (a) quickly deciding which branches conduct; (b) estimating the series current through a silicon diode; (c) comparing how two parallel diodes of different junction areas share current.]
 
 **考的觀念**：模型精度與計算成本的取捨。
 
@@ -1364,6 +1379,7 @@ $$
 #### 複習題 4
 
 > 為什麼小訊號分析一定要先求偏壓點，不能直接把二極體替換成固定電阻？
+> :en[Why must small-signal analysis always find the bias point first, instead of simply replacing the diode with a fixed resistor?]
 
 **考的觀念**：局部線性化與一階泰勒展開。
 
@@ -1378,6 +1394,7 @@ $$
 #### 複習題 5
 
 > 為什麼跑出一條看似合理的模擬曲線，仍不能證明原先的手算假設正確？直流工作點分析、暫態分析與交流分析各自回答什麼問題？
+> :en[Why does obtaining a plausible-looking simulation curve still not prove the original hand-analysis assumptions correct? What question does each of DC operating point, transient, and AC analysis answer?]
 
 **考的觀念**：EDA 分析類型與模型驗證。
 
@@ -1388,6 +1405,7 @@ $$
 #### 複習題 6
 
 > 某矽 PN 接面在 $300\ \text{K}$ 時保持 $N_A$ 不變，將 $N_D$ 增加為原來的 100 倍。取 $V_T=25.9\ \text{mV}$，求內建電位的增加量。
+> :en[A silicon PN junction at $300\ \text{K}$ keeps $N_A$ fixed while $N_D$ is raised 100-fold. Taking $V_T=25.9\ \text{mV}$, find the increase in built-in potential.]
 
 **考的觀念**：內建電位對摻雜濃度呈對數關係。
 
@@ -1408,6 +1426,7 @@ $$
 #### 複習題 7
 
 > 室溫下某二極體原本工作在強順向偏壓。若端電壓增加 $120\ \text{mV}$，忽略串聯電阻與高注入效應，電流約變成原來的幾倍？
+> :en[A diode at room temperature is operating under strong forward bias. If its terminal voltage rises by $120\ \text{mV}$, by roughly what factor does the current change, neglecting series resistance and high-injection effects?]
 
 **考的觀念**：二極體的 60 mV 法則。
 
@@ -1427,6 +1446,7 @@ $$
 #### 複習題 8
 
 > 一個 $5.0\ \text{V}$ 電源串聯一顆矽二極體與 $2.2\ \text{k}\Omega$ 電阻。二極體為順向偏壓，採用 $V_{D,on}=0.7\ \text{V}$ 的定電壓模型。求支路電流與二極體吸收的功率。
+> :en[A $5.0\ \text{V}$ source is in series with a silicon diode and a $2.2\ \text{k}\Omega$ resistor. The diode is forward biased; use the constant-voltage model with $V_{D,on}=0.7\ \text{V}$. Find the branch current and the power absorbed by the diode.]
 
 **考的觀念**：定電壓模型、KVL 與功率。
 
@@ -1445,6 +1465,7 @@ $$
 #### 複習題 9
 
 > 一顆二極體偏壓在 $I_D=2.0\ \text{mA}$，取 $V_T=26\ \text{mV}$。（a）求小訊號電阻；（b）若端電壓增加 $2.0\ \text{mV}$，以小訊號模型估算電流增加量。
+> :en[A diode is biased at $I_D=2.0\ \text{mA}$, with $V_T=26\ \text{mV}$. (a) Find the small-signal resistance. (b) If the terminal voltage rises by $2.0\ \text{mV}$, estimate the current increase with the small-signal model.]
 
 **考的觀念**：工作點、小訊號電阻與局部線性化。
 
@@ -1466,6 +1487,7 @@ $$
 #### 複習題 10
 
 > 兩顆製程相同的二極體並聯，$D_2$ 的接面面積是 $D_1$ 的 3 倍。總電流為 $8.0\ \text{mA}$，忽略不匹配、串聯電阻與溫度差異，求兩顆二極體各自的電流。
+> :en[Two diodes of identical process are connected in parallel; the junction area of $D_2$ is 3 times that of $D_1$. The total current is $8.0\ \text{mA}$. Neglecting mismatch, series resistance and temperature differences, find the current in each diode.]
 
 **考的觀念**：指數模型、共同端電壓與接面面積造成的電流分配。
 

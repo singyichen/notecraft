@@ -3,7 +3,7 @@ title: "機器學習實作系列：第 6 週 - Scikit-learn 機器學習"
 description: ""
 tags: ["機器學習實作系列"]
 createdAt: "2026-10-12"
-updatedAt: "2026-09-25"
+updatedAt: "2026-09-26"
 ---
 
 import PdfRefChip from '@/components/islands/PdfRefChip.tsx'
@@ -919,12 +919,13 @@ excerpt: 本範例完成了一個完整的端到端機器學習專案原型：�
 #### 選擇題 1
 
 > Adaline 與感知器的關鍵差別在哪裡？
+> :en[Where does Adaline differ crucially from the perceptron?]
 
 :::choices{answer="C"}
-- 改用 sigmoid 函數把輸出壓到 0 與 1 之間
-- 改成每看一筆資料就更新一次權重
-- 更新權重時看連續的線性輸出，並以平方誤差當損失
-- 在損失函數外多加一項懲罰過大的權重
+- 改用 sigmoid 函數把輸出壓到 0 與 1 之間 :en[It uses a sigmoid to squash the output between 0 and 1]
+- 改成每看一筆資料就更新一次權重 :en[It updates the weights once per sample seen]
+- 更新權重時看連續的線性輸出，並以平方誤差當損失 :en[It updates the weights from a continuous linear output, with squared error as the loss]
+- 在損失函數外多加一項懲罰過大的權重 :en[It adds a term outside the loss to penalize over-large weights]
 :::
 
 :::tip{collapsible title="詳解"}
@@ -938,12 +939,13 @@ Adaline 只改一處：更新權重時不看跳階函數的對錯，而看連續
 #### 選擇題 2
 
 > 關於 k 近鄰與 RBF 核支援向量機的計算成本，下列哪一項正確？
+> :en[Which of the following is correct about the computational cost of k-nearest neighbours and of an RBF-kernel support vector machine?]
 
 :::choices{answer="B"}
-- 兩者都是訓練昂貴、預測便宜，差別只在準確率
-- k 近鄰訓練幾乎免費但預測昂貴，核支援向量機相反
-- k 近鄰訓練昂貴但預測便宜，核支援向量機相反
-- 兩者的訓練與預測都便宜，成本差異可以忽略
+- 兩者都是訓練昂貴、預測便宜，差別只在準確率 :en[Both are expensive to train and cheap to predict; only accuracy differs]
+- k 近鄰訓練幾乎免費但預測昂貴，核支援向量機相反 :en[k-NN is almost free to train but expensive to predict; the kernel SVM is the reverse]
+- k 近鄰訓練昂貴但預測便宜，核支援向量機相反 :en[k-NN is expensive to train but cheap to predict; the kernel SVM is the reverse]
+- 兩者的訓練與預測都便宜，成本差異可以忽略 :en[Both are cheap to train and to predict; the cost difference is negligible]
 :::
 
 :::tip{collapsible title="詳解"}
@@ -957,12 +959,13 @@ k 近鄰是懶惰學習者，訓練時只把資料記住，預測時才要跟每
 #### 選擇題 3
 
 > 下列哪一個流程符合講義的黃金法則「先切分，再處理」？
+> :en[Which of the following procedures follows the handout's golden rule, "split first, then process"?]
 
 :::choices{answer="D"}
-- 先對整份資料標準化，再切分訓練集與測試集
-- 先切分，再用整份資料的平均與標準差轉換兩邊
-- 先切分，對訓練集與測試集分別呼叫 `fit_transform`
-- 先切分，只用訓練集 `fit`，再用同一組轉換器 `transform` 測試集
+- 先對整份資料標準化，再切分訓練集與測試集 :en[Standardize the whole dataset, then split into training and test sets]
+- 先切分，再用整份資料的平均與標準差轉換兩邊 :en[Split first, then transform both sides with the mean and standard deviation of the whole dataset]
+- 先切分，對訓練集與測試集分別呼叫 `fit_transform` :en[Split first, then call `fit_transform` separately on the training set and the test set]
+- 先切分，只用訓練集 `fit`，再用同一組轉換器 `transform` 測試集 :en[Split first, `fit` on the training set only, then `transform` the test set with that same transformer]
 :::
 
 :::tip{collapsible title="詳解"}
@@ -976,12 +979,13 @@ k 近鄰是懶惰學習者，訓練時只把資料記住，預測時才要跟每
 #### 選擇題 4
 
 > 關於訓練集與測試集的切分比例，下列哪一項正確？
+> :en[Which of the following is correct about the split ratio between training set and test set?]
 
 :::choices{answer="A"}
-- 測試集越小，對泛化誤差的估計越不準確
-- 測試集越小，對泛化誤差的估計越準確
-- 測試集越大，學習演算法能利用的資訊越多
-- 固定用 80:20 最佳，與原始資料量沒有關係
+- 測試集越小，對泛化誤差的估計越不準確 :en[The smaller the test set, the less accurate the estimate of generalization error]
+- 測試集越小，對泛化誤差的估計越準確 :en[The smaller the test set, the more accurate the estimate of generalization error]
+- 測試集越大，學習演算法能利用的資訊越多 :en[The larger the test set, the more information the learning algorithm can use]
+- 固定用 80:20 最佳，與原始資料量沒有關係 :en[A fixed 80:20 is always best, regardless of how much data there is]
 :::
 
 :::tip{collapsible title="詳解"}
@@ -995,12 +999,13 @@ k 近鄰是懶惰學習者，訓練時只把資料記住，預測時才要跟每
 #### 選擇題 5
 
 > 用 `isnull()` 偵測缺值時，下列哪一項正確？
+> :en[When detecting missing values with `isnull()`, which of the following is correct?]
 
 :::choices{answer="C"}
-- 空白字串會被視為缺值，回傳 `True`
-- `NaN` 與空白字串都不會被視為缺值
-- 空白字串是有效資料，只有 `NaN`、`None`、`NaT` 回傳 `True`
-- `isnull()` 無法偵測 `None`，需要另外處理
+- 空白字串會被視為缺值，回傳 `True` :en[An empty string counts as missing and returns `True`]
+- `NaN` 與空白字串都不會被視為缺值 :en[Neither `NaN` nor an empty string counts as missing]
+- 空白字串是有效資料，只有 `NaN`、`None`、`NaT` 回傳 `True` :en[An empty string is valid data; only `NaN`, `None` and `NaT` return `True`]
+- `isnull()` 無法偵測 `None`，需要另外處理 :en[`isnull()` cannot detect `None`, which has to be handled separately]
 :::
 
 :::tip{collapsible title="詳解"}
@@ -1014,12 +1019,13 @@ k 近鄰是懶惰學習者，訓練時只把資料記住，預測時才要跟每
 #### 選擇題 6
 
 > 關於類別標籤（class label）的編碼，下列哪一項正確？
+> :en[Which of the following is correct about encoding class labels?]
 
 :::choices{answer="B"}
-- 必須依類別出現的頻率由高到低指派整數
-- 指派哪個整數給哪個字串標籤都無所謂
-- 類別標籤必須做獨熱編碼才能餵給分類器
-- 類別標籤屬於順序型，要依領域知識映射
+- 必須依類別出現的頻率由高到低指派整數 :en[Integers must be assigned by class frequency, from highest to lowest]
+- 指派哪個整數給哪個字串標籤都無所謂 :en[It makes no difference which integer is assigned to which string label]
+- 類別標籤必須做獨熱編碼才能餵給分類器 :en[Class labels must be one-hot encoded before they can be fed to a classifier]
+- 類別標籤屬於順序型，要依領域知識映射 :en[Class labels are ordinal and must be mapped using domain knowledge]
 :::
 
 :::tip{collapsible title="詳解"}
@@ -1033,12 +1039,13 @@ k 近鄰是懶惰學習者，訓練時只把資料記住，預測時才要跟每
 #### 選擇題 7
 
 > 獨熱編碼產生的 0／1 虛擬欄位，接下來要怎麼處理？
+> :en[What should be done next with the 0/1 dummy columns produced by one-hot encoding?]
 
 :::choices{answer="A"}
-- 不需要再做特徵縮放，它本身已經是 0 與 1
-- 必須再做標準化，否則與其他欄位尺度不同
-- 必須再做正規化，把它壓到 0 與 1 之間
-- 需不需要縮放取決於該欄相異值的個數
+- 不需要再做特徵縮放，它本身已經是 0 與 1 :en[No further feature scaling is needed; they are already 0 and 1]
+- 必須再做標準化，否則與其他欄位尺度不同 :en[They must be standardized, or their scale will differ from the other columns]
+- 必須再做正規化，把它壓到 0 與 1 之間 :en[They must be normalized, to squash them between 0 and 1]
+- 需不需要縮放取決於該欄相異值的個數 :en[Whether scaling is needed depends on how many distinct values the column had]
 :::
 
 :::tip{collapsible title="詳解"}
@@ -1052,12 +1059,13 @@ k 近鄰是懶惰學習者，訓練時只把資料記住，預測時才要跟每
 #### 選擇題 8
 
 > 資料含有極端離群值時，標準化與正規化的差別是什麼？
+> :en[When the data contains extreme outliers, what is the difference between standardization and normalization?]
 
 :::choices{answer="D"}
-- 正規化與標準化都會把離群值直接剔除
-- 標準化會把其餘資料擠進極小的子區間
-- 兩者受離群值影響的程度相同，選哪個都一樣
-- 正規化會把其餘資料擠進極小的子區間
+- 正規化與標準化都會把離群值直接剔除 :en[Normalization and standardization both discard outliers outright]
+- 標準化會把其餘資料擠進極小的子區間 :en[Standardization squeezes the remaining data into a tiny sub-interval]
+- 兩者受離群值影響的程度相同，選哪個都一樣 :en[Outliers affect both equally, so either choice is the same]
+- 正規化會把其餘資料擠進極小的子區間 :en[Normalization squeezes the remaining data into a tiny sub-interval]
 :::
 
 :::tip{collapsible title="詳解"}
@@ -1071,12 +1079,13 @@ k 近鄰是懶惰學習者，訓練時只把資料記住，預測時才要跟每
 #### 選擇題 9
 
 > 關於序列特徵選取（SFS 與 SBS）這類貪婪搜尋，下列哪一項正確？
+> :en[Which of the following is correct about greedy searches such as sequential feature selection (SFS and SBS)?]
 
 :::choices{answer="C"}
-- 它們會評估所有組合，因此保證找到最佳解
-- 它們的成本隨特徵數呈組合爆炸而不可行
-- 它們每階段做局部最優選擇，通常得到次佳解
-- 它們與窮舉搜尋的結果一致，只是速度較快
+- 它們會評估所有組合，因此保證找到最佳解 :en[They evaluate every combination, so the optimum is guaranteed]
+- 它們的成本隨特徵數呈組合爆炸而不可行 :en[Their cost explodes combinatorially with the feature count, making them infeasible]
+- 它們每階段做局部最優選擇，通常得到次佳解 :en[They choose the local optimum at each stage, so the result is usually suboptimal]
+- 它們與窮舉搜尋的結果一致，只是速度較快 :en[Their results match exhaustive search; they are merely faster]
 :::
 
 :::tip{collapsible title="詳解"}
@@ -1090,12 +1099,13 @@ k 近鄰是懶惰學習者，訓練時只把資料記住，預測時才要跟每
 #### 選擇題 10
 
 > 一個參數較多的模型，訓練損失比參數較少的模型還高。這最可能是什麼問題？
+> :en[A model with more parameters has a higher training loss than one with fewer. What is this most likely to be?]
 
 :::choices{answer="B"}
-- 過擬合，應該加強正則化或者降維
-- 最佳化出了問題，應該換初始化或調學習率
-- 正常現象，參數越多訓練損失本來就越高
-- 欠擬合，應該再繼續增加模型的參數量
+- 過擬合，應該加強正則化或者降維 :en[Overfitting — regularize more strongly or reduce dimensionality]
+- 最佳化出了問題，應該換初始化或調學習率 :en[An optimization problem — change the initialization or tune the learning rate]
+- 正常現象，參數越多訓練損失本來就越高 :en[Normal — training loss naturally rises with more parameters]
+- 欠擬合，應該再繼續增加模型的參數量 :en[Underfitting — keep adding parameters to the model]
 :::
 
 :::tip{collapsible title="詳解"}
@@ -1109,12 +1119,13 @@ k 近鄰是懶惰學習者，訓練時只把資料記住，預測時才要跟每
 #### 選擇題 11
 
 > 為什麼 $L_1$ 正則化常產生稀疏解，而 $L_2$ 不會？
+> :en[Why does $L_1$ regularization often produce sparse solutions while $L_2$ does not?]
 
 :::choices{answer="D"}
-- 因為 $L_1$ 的懲罰強度天生比 $L_2$ 更重
-- 因為 $L_1$ 的正則化項在原點不可微分
-- 因為 $L_1$ 會把小於門檻的權重直接設為零
-- 因為 $L_1$ 的約束區域是菱形，角落在座標軸上
+- 因為 $L_1$ 的懲罰強度天生比 $L_2$ 更重 :en[Because the $L_1$ penalty is inherently heavier than the $L_2$ one]
+- 因為 $L_1$ 的正則化項在原點不可微分 :en[Because the $L_1$ regularization term is not differentiable at the origin]
+- 因為 $L_1$ 會把小於門檻的權重直接設為零 :en[Because $L_1$ sets any weight below a threshold straight to zero]
+- 因為 $L_1$ 的約束區域是菱形，角落在座標軸上 :en[Because the $L_1$ constraint region is a diamond, whose corners sit on the axes]
 :::
 
 :::tip{collapsible title="詳解"}
@@ -1128,12 +1139,13 @@ k 近鄰是懶惰學習者，訓練時只把資料記住，預測時才要跟每
 #### 選擇題 12
 
 > 一個已經 fit 好的 Pipeline，呼叫 `predict()` 時內部會做什麼？
+> :en[When `predict()` is called on an already-fitted Pipeline, what happens inside?]
 
 :::choices{answer="A"}
-- 資料依序通過各轉換器的 `transform`，再交給估計器 `predict`
-- 各轉換器先重新 `fit` 一次，再交給估計器 `predict`
-- 各轉換器呼叫 `fit_transform`，再交給估計器 `predict`
-- 直接交給最後的估計器，略過前面所有的轉換器
+- 資料依序通過各轉換器的 `transform`，再交給估計器 `predict` :en[The data passes through each transformer's `transform` in turn, then goes to the estimator's `predict`]
+- 各轉換器先重新 `fit` 一次，再交給估計器 `predict` :en[Each transformer is re-`fit` once, then the data goes to the estimator's `predict`]
+- 各轉換器呼叫 `fit_transform`，再交給估計器 `predict` :en[Each transformer calls `fit_transform`, then the data goes to the estimator's `predict`]
+- 直接交給最後的估計器，略過前面所有的轉換器 :en[The data goes straight to the final estimator, skipping every transformer before it]
 :::
 
 :::tip{collapsible title="詳解"}
@@ -1149,6 +1161,7 @@ k 近鄰是懶惰學習者，訓練時只把資料記住，預測時才要跟每
 #### 複習題 1
 
 > 為什麼「先對整份資料標準化，再切訓練與測試集」是錯的？分數會往哪個方向偏？
+> :en[Why is "standardize the whole dataset first, then split into training and test sets" wrong? In which direction does the score end up biased?]
 
 **詳解**
 
@@ -1157,6 +1170,7 @@ k 近鄰是懶惰學習者，訓練時只把資料記住，預測時才要跟每
 #### 複習題 2
 
 > 順序型特徵與名義型特徵各該怎麼編碼？把顏色編成 0/1/2 會造成什麼具體後果？
+> :en[How should ordinal features and nominal features each be encoded? What concrete consequence follows from encoding colours as 0/1/2?]
 
 **詳解**
 
@@ -1165,6 +1179,7 @@ k 近鄰是懶惰學習者，訓練時只把資料記住，預測時才要跟每
 #### 複習題 3
 
 > 獨熱編碼會引入多重共線性，為什麼刪掉其中一欄不會損失資訊？
+> :en[One-hot encoding introduces multicollinearity. Why does dropping one of its columns lose no information?]
 
 **詳解**
 
@@ -1173,6 +1188,7 @@ k 近鄰是懶惰學習者，訓練時只把資料記住，預測時才要跟每
 #### 複習題 4
 
 > 標準化與正規化該怎麼選？離群值在這個選擇裡扮演什麼角色？
+> :en[How should standardization and normalization be chosen between? What part do outliers play in that choice?]
 
 **詳解**
 
@@ -1181,6 +1197,7 @@ k 近鄰是懶惰學習者，訓練時只把資料記住，預測時才要跟每
 #### 複習題 5
 
 > $L_1$ 與 $L_2$ 正則化都在懲罰權重，為什麼只有 $L_1$ 會把權重壓成恰好為零？
+> :en[Both $L_1$ and $L_2$ regularization penalize the weights, so why does only $L_1$ drive weights to exactly zero?]
 
 **詳解**
 
@@ -1189,6 +1206,7 @@ k 近鄰是懶惰學習者，訓練時只把資料記住，預測時才要跟每
 #### 複習題 6
 
 > 為什麼正則化之前必須先做特徵縮放？偏置項為什麼通常不做正則化？
+> :en[Why must feature scaling come before regularization? And why is the bias term usually left unregularized?]
 
 **詳解**
 
@@ -1197,6 +1215,7 @@ k 近鄰是懶惰學習者，訓練時只把資料記住，預測時才要跟每
 #### 複習題 7
 
 > 如何判斷一個 scikit-learn 類別屬於 Transformer API 還是 Estimator API？這個區分在組 Pipeline 時為什麼重要？
+> :en[How can it be told whether a scikit-learn class belongs to the Transformer API or the Estimator API? Why does this distinction matter when assembling a Pipeline?]
 
 **詳解**
 
@@ -1205,6 +1224,7 @@ k 近鄰是懶惰學習者，訓練時只把資料記住，預測時才要跟每
 #### 複習題 8
 
 > SFS 與 SBS 同屬貪婪搜尋，得到的一定是最佳特徵子集嗎？為什麼還要用它？
+> :en[SFS and SBS are both greedy searches. Is the feature subset they find necessarily optimal? Why use them anyway?]
 
 **詳解**
 
@@ -1217,6 +1237,7 @@ k 近鄰是懶惰學習者，訓練時只把資料記住，預測時才要跟每
 #### 複習題 1
 
 > 某特徵欄有五筆數值：$2, 4, 4, 4, 6$。請計算其平均與標準差（用母體定義），並求數值 $6$ 標準化後的結果。
+> :en[A feature column holds five values: $2, 4, 4, 4, 6$. Compute its mean and standard deviation (population definition), and find the standardized value of $6$.]
 
 **詳解**
 
@@ -1232,6 +1253,7 @@ $$
 #### 複習題 2
 
 > 同一欄資料 $2, 4, 4, 4, 6$，請計算數值 $4$ 正規化後的結果。若後續新增一筆離群值 $104$，同一個 $4$ 的正規化結果會變成多少？由此說明正規化的弱點。
+> :en[For the same column $2, 4, 4, 4, 6$, find the normalized value of $4$. If an outlier $104$ is then added, what does the normalized value of that same $4$ become? Use this to explain the weakness of normalization.]
 
 **詳解**
 
@@ -1252,6 +1274,7 @@ $$
 #### 複習題 3
 
 > 一份資料有三個名義型特徵，相異值個數分別為 4、3、7。若全部做獨熱編碼並各丟棄一欄以避免共線性，總共會產生多少個特徵欄？
+> :en[A dataset has three nominal features with 4, 3 and 7 distinct values. If all are one-hot encoded and one column is dropped from each to avoid collinearity, how many feature columns result in total?]
 
 **詳解**
 
@@ -1267,6 +1290,7 @@ $$
 #### 複習題 4
 
 > 某模型設定 `C = 0.01`，另一設定為 `C = 100`。哪一個的正則化較強？權重會分別呈現什麼樣貌？若改用 $L_1$，較強的那一組會發生什麼？
+> :en[One model is configured with `C = 0.01`, another with `C = 100`. Which is regularized more strongly? What do the weights look like in each case? And what happens to the more strongly regularized one if $L_1$ is used instead?]
 
 **詳解**
 
@@ -1280,6 +1304,7 @@ $$
 #### 複習題 5
 
 > 若從 $d = 10$ 個特徵中選出 $k = 4$ 個，窮舉搜尋需要評估幾種組合？SBS 從 10 維降到 4 維總共需要評估幾次判準函數？
+> :en[To choose $k = 4$ features out of $d = 10$, how many combinations must an exhaustive search evaluate? And how many criterion-function evaluations does SBS need in total to go from 10 dimensions down to 4?]
 
 **詳解**
 

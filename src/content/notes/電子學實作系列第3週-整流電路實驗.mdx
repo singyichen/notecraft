@@ -2651,12 +2651,13 @@ o 15 64 0 4219650 5 0.1 1 Vout
 #### 選擇題 1
 
 > 同樣的輸入峰值下，半波整流器與橋式整流器的輸出峰值差在哪裡？
+> :en[For the same input peak, how do the output peaks of a half-wave rectifier and a bridge rectifier differ?]
 
 :::choices{answer="A"}
-- 半波少一個導通壓降，橋式少兩個
-- 兩者都少一個導通壓降
-- 半波少兩個導通壓降，橋式少一個
-- 兩者的輸出峰值相同，差別只在頻率
+- 半波少一個導通壓降，橋式少兩個 :en[Half-wave loses one turn-on drop, the bridge loses two]
+- 兩者都少一個導通壓降 :en[Both lose one turn-on drop]
+- 半波少兩個導通壓降，橋式少一個 :en[Half-wave loses two turn-on drops, the bridge loses one]
+- 兩者的輸出峰值相同，差別只在頻率 :en[Their output peaks are equal; only the frequency differs]
 :::
 
 :::tip{collapsible title="詳解"}
@@ -2670,12 +2671,13 @@ o 15 64 0 4219650 5 0.1 1 Vout
 #### 選擇題 2
 
 > 橋式整流器的死區（dead zone）門檻大約是多少？
+> :en[Roughly what is the dead-zone threshold of a bridge rectifier?]
 
 :::choices{answer="C"}
-- $0$，只要輸入非零就有輸出
-- 約 $V_{D,on}$
-- 約 $2V_{D,on}$
-- 約 $V_p / \pi$
+- $0$，只要輸入非零就有輸出 :en[$0$ — any non-zero input already gives an output]
+- 約 $V_{D,on}$ :en[About $V_{D,on}$]
+- 約 $2V_{D,on}$ :en[About $2V_{D,on}$]
+- 約 $V_p / \pi$ :en[About $V_p / \pi$]
 :::
 
 :::tip{collapsible title="詳解"}
@@ -2689,12 +2691,13 @@ o 15 64 0 4219650 5 0.1 1 Vout
 #### 選擇題 3
 
 > 其他條件相同時，全波整流的漣波電壓大約是半波整流的多少？
+> :en[All else equal, the ripple voltage of full-wave rectification is roughly what fraction of that of half-wave rectification?]
 
 :::choices{answer="B"}
-- 相同
-- 一半
-- 兩倍
-- 四分之一
+- 相同 :en[The same]
+- 一半 :en[One half]
+- 兩倍 :en[Twice as large]
+- 四分之一 :en[One quarter]
 :::
 
 :::tip{collapsible title="詳解"}
@@ -2708,12 +2711,13 @@ o 15 64 0 4219650 5 0.1 1 Vout
 #### 選擇題 4
 
 > 理想半波與理想全波整流的效率上限分別是多少？
+> :en[What are the efficiency ceilings of ideal half-wave and ideal full-wave rectification?]
 
 :::choices{answer="D"}
-- $50\%$ 與 $100\%$
-- $40.6\%$ 與 $50\%$
-- $81.2\%$ 與 $40.6\%$
-- $40.6\%$ 與 $81.2\%$
+- $50\%$ 與 $100\%$ :en[$50\%$ and $100\%$]
+- $40.6\%$ 與 $50\%$ :en[$40.6\%$ and $50\%$]
+- $81.2\%$ 與 $40.6\%$ :en[$81.2\%$ and $40.6\%$]
+- $40.6\%$ 與 $81.2\%$ :en[$40.6\%$ and $81.2\%$]
 :::
 
 :::tip{collapsible title="詳解"}
@@ -2727,12 +2731,13 @@ $\eta = \dfrac{V_{avg}^2}{V_{rms}^2}$。半波代入 $V_{avg} = V_p/\pi$、$V_{r
 #### 選擇題 5
 
 > 把濾波電容換得更大，會有什麼副作用？
+> :en[What side effect comes with fitting a larger filter capacitor?]
 
 :::choices{answer="A"}
-- 導通視窗變窄，二極體的峰值電流變大
-- 導通視窗變寬，二極體的峰值電流變小
-- 輸出峰值下降，因為電容分掉了電壓
-- 漣波頻率下降為原來的一半
+- 導通視窗變窄，二極體的峰值電流變大 :en[The conduction window narrows, so the peak diode current rises]
+- 導通視窗變寬，二極體的峰值電流變小 :en[The conduction window widens, so the peak diode current falls]
+- 輸出峰值下降，因為電容分掉了電壓 :en[The output peak drops, because the capacitor takes a share of the voltage]
+- 漣波頻率下降為原來的一半 :en[The ripple frequency falls to half its former value]
 :::
 
 :::tip{collapsible title="詳解"}
@@ -2746,12 +2751,13 @@ $\eta = \dfrac{V_{avg}^2}{V_{rms}^2}$。半波代入 $V_{avg} = V_p/\pi$、$V_{r
 #### 選擇題 6
 
 > RC 時間常數 $\tau = RC$ 在整流濾波電路裡扮演什麼角色？
+> :en[What role does the RC time constant $\tau = RC$ play in a rectifier-filter circuit?]
 
 :::choices{answer="C"}
-- 決定輸出的峰值大小
-- 決定二極體的導通壓降
-- 與兩次補電的間隔相比，決定電容會掉多少電壓
-- 決定整流器的效率上限
+- 決定輸出的峰值大小 :en[It sets how large the output peak is]
+- 決定二極體的導通壓降 :en[It sets the turn-on drop of the diode]
+- 與兩次補電的間隔相比，決定電容會掉多少電壓 :en[Against the gap between two recharges, it sets how much voltage the capacitor loses]
+- 決定整流器的效率上限 :en[It sets the efficiency ceiling of the rectifier]
 :::
 
 :::tip{collapsible title="詳解"}
@@ -2765,12 +2771,13 @@ $\tau$ 是電容充放電的時間尺度。把它跟相鄰充電峰值的間隔�
 #### 選擇題 7
 
 > 齊納二極體用來穩壓時，為什麼必須串聯一顆限流電阻？
+> :en[When a Zener diode is used as a regulator, why must a current-limiting resistor be placed in series?]
 
 :::choices{answer="B"}
-- 為了把輸出電壓分壓到需要的值
-- 崩潰區的電壓幾乎不隨電流變，沒有電阻限流電流會失控
-- 為了讓齊納二極體工作在順偏區
-- 為了濾掉輸入端殘留的漣波
+- 為了把輸出電壓分壓到需要的值 :en[To divide the output voltage down to the value required]
+- 崩潰區的電壓幾乎不隨電流變，沒有電阻限流電流會失控 :en[Voltage in the breakdown region barely varies with current, so without a resistor the current runs away]
+- 為了讓齊納二極體工作在順偏區 :en[To make the Zener diode operate in the forward-bias region]
+- 為了濾掉輸入端殘留的漣波 :en[To filter out the ripple left over at the input]
 :::
 
 :::tip{collapsible title="詳解"}
@@ -2784,12 +2791,13 @@ $\tau$ 是電容充放電的時間尺度。把它跟相鄰充電峰值的間隔�
 #### 選擇題 8
 
 > 線調整率（line regulation）與負載調整率（load regulation）的差別是什麼？
+> :en[What is the difference between line regulation and load regulation?]
 
 :::choices{answer="D"}
-- 前者量溫度變化的影響，後者量時間老化的影響
-- 前者用在半波整流，後者用在全波整流
-- 兩者是同一個量，只是量測儀器不同
-- 前者固定負載改變輸入，後者固定輸入改變負載
+- 前者量溫度變化的影響，後者量時間老化的影響 :en[The former measures the effect of temperature change, the latter that of ageing over time]
+- 前者用在半波整流，後者用在全波整流 :en[The former applies to half-wave rectification, the latter to full-wave rectification]
+- 兩者是同一個量，只是量測儀器不同 :en[They are the same quantity, differing only in the measuring instrument]
+- 前者固定負載改變輸入，後者固定輸入改變負載 :en[The former holds the load fixed and varies the input, the latter holds the input fixed and varies the load]
 :::
 
 :::tip{collapsible title="詳解"}
@@ -2803,12 +2811,13 @@ $\tau$ 是電容充放電的時間尺度。把它跟相鄰充電峰值的間隔�
 #### 選擇題 9
 
 > 量測 1N4007 的逆向漏電流時，為什麼電壓表的輸入阻抗會成為問題？
+> :en[When measuring the reverse leakage current of a 1N4007, why does the input impedance of the voltmeter become a problem?]
 
 :::choices{answer="A"}
-- $10\ \text{M}\Omega$ 輸入阻抗造成的電流可能遠大於二極體本身的漏電流
-- 電壓表的輸入阻抗會讓二極體提前崩潰
-- 電壓表會改變二極體的導通壓降
-- 電壓表的輸入阻抗使逆偏電壓無法建立
+- $10\ \text{M}\Omega$ 輸入阻抗造成的電流可能遠大於二極體本身的漏電流 :en[The current drawn by the $10\ \text{M}\Omega$ input impedance can far exceed the leakage of the diode itself]
+- 電壓表的輸入阻抗會讓二極體提前崩潰 :en[The input impedance of the voltmeter makes the diode break down prematurely]
+- 電壓表會改變二極體的導通壓降 :en[The voltmeter alters the turn-on drop of the diode]
+- 電壓表的輸入阻抗使逆偏電壓無法建立 :en[The input impedance of the voltmeter prevents the reverse bias from building up]
 :::
 
 :::tip{collapsible title="詳解"}
@@ -2822,12 +2831,13 @@ $\tau$ 是電容充放電的時間尺度。把它跟相鄰充電峰值的間隔�
 #### 選擇題 10
 
 > 均方根值 $V_{rms}$ 與平均值 $V_{avg}$ 各自對應什麼物理意義？
+> :en[What physical meaning does each of the RMS value $V_{rms}$ and the average value $V_{avg}$ carry?]
 
 :::choices{answer="C"}
-- 前者是可當直流的成分，後者是實際發熱能力
-- 兩者都描述發熱能力，差別只在計算方式
-- 前者是實際發熱能力，後者是可當直流的成分
-- 前者用於交流電路，後者只能用於直流電路
+- 前者是可當直流的成分，後者是實際發熱能力 :en[The former is the component usable as DC, the latter the actual heating capability]
+- 兩者都描述發熱能力，差別只在計算方式 :en[Both describe heating capability, differing only in how they are computed]
+- 前者是實際發熱能力，後者是可當直流的成分 :en[The former is the actual heating capability, the latter the component usable as DC]
+- 前者用於交流電路，後者只能用於直流電路 :en[The former is for AC circuits, the latter only for DC circuits]
 :::
 
 :::tip{collapsible title="詳解"}
@@ -2841,12 +2851,13 @@ $\tau$ 是電容充放電的時間尺度。把它跟相鄰充電峰值的間隔�
 #### 選擇題 11
 
 > 二極體方程式中的理想因子 $n$，對「電流增為十倍所需的電壓增量」有什麼影響？
+> :en[How does the ideality factor $n$ in the diode equation affect the voltage increment needed for a tenfold rise in current?]
 
 :::choices{answer="B"}
-- 沒有影響，該增量固定為 $60\ \text{mV}$
-- 增量變成 $nV_T\ln 10$，$n$ 越大需要的電壓越多
-- 增量變成 $V_T\ln 10 / n$，$n$ 越大需要的電壓越少
-- 只影響逆向飽和電流，不影響此增量
+- 沒有影響，該增量固定為 $60\ \text{mV}$ :en[No effect; that increment is fixed at $60\ \text{mV}$]
+- 增量變成 $nV_T\ln 10$，$n$ 越大需要的電壓越多 :en[The increment becomes $nV_T\ln 10$ — the larger $n$ is, the more voltage is needed]
+- 增量變成 $V_T\ln 10 / n$，$n$ 越大需要的電壓越少 :en[The increment becomes $V_T\ln 10 / n$ — the larger $n$ is, the less voltage is needed]
+- 只影響逆向飽和電流，不影響此增量 :en[It affects only the reverse saturation current, not this increment]
 :::
 
 :::tip{collapsible title="詳解"}
@@ -2860,12 +2871,13 @@ $\tau$ 是電容充放電的時間尺度。把它跟相鄰充電峰值的間隔�
 #### 選擇題 12
 
 > 要讓全波整流的漣波比不超過 $\rho_{max}$，濾波電容至少要多大？
+> :en[To keep the ripple ratio of a full-wave rectifier within $\rho_{max}$, how large must the filter capacitor be?]
 
 :::choices{answer="D"}
-- $C \geq \dfrac{1}{f_{in}R_L\rho_{max}}$
-- $C \geq \dfrac{R_L}{2f_{in}\rho_{max}}$
-- $C \geq \dfrac{\rho_{max}}{2f_{in}R_L}$
-- $C \geq \dfrac{1}{2f_{in}R_L\rho_{max}}$
+- $C \geq \dfrac{1}{f_{in}R_L\rho_{max}}$ :en[$C \geq \dfrac{1}{f_{in}R_L\rho_{max}}$]
+- $C \geq \dfrac{R_L}{2f_{in}\rho_{max}}$ :en[$C \geq \dfrac{R_L}{2f_{in}\rho_{max}}$]
+- $C \geq \dfrac{\rho_{max}}{2f_{in}R_L}$ :en[$C \geq \dfrac{\rho_{max}}{2f_{in}R_L}$]
+- $C \geq \dfrac{1}{2f_{in}R_L\rho_{max}}$ :en[$C \geq \dfrac{1}{2f_{in}R_L\rho_{max}}$]
 :::
 
 :::tip{collapsible title="詳解"}
@@ -2881,6 +2893,7 @@ $\tau$ 是電容充放電的時間尺度。把它跟相鄰充電峰值的間隔�
 #### 複習題 1
 
 > 半波整流的輸出已經沒有負電壓，為什麼仍稱為脈動直流，卻不能直接當作「穩定直流電源」？
+> :en[The output of a half-wave rectifier already has no negative voltage. Why is it still called pulsating DC, and why can it not serve directly as a stable DC supply?]
 
 **考的觀念**：直流的極性定義、波動大小與電源品質。
 
@@ -2889,6 +2902,7 @@ $\tau$ 是電容充放電的時間尺度。把它跟相鄰充電峰值的間隔�
 #### 複習題 2
 
 > 半波整流與全波橋式整流各有什麼優缺點？請從導通二極體數、漣波頻率、輸出峰值與理想整流效率比較。
+> :en[What are the advantages and disadvantages of half-wave versus full-wave bridge rectification? Compare the number of conducting diodes, the ripple frequency, the output peak, and the ideal rectification efficiency.]
 
 **考的觀念**：拓樸、電壓損失與波形特性的取捨。
 
@@ -2906,6 +2920,7 @@ $\tau$ 是電容充放電的時間尺度。把它跟相鄰充電峰值的間隔�
 #### 複習題 3
 
 > 為什麼加大濾波電容可以減少漣波，卻可能增加二極體的峰值電流？
+> :en[Why does a larger filter capacitor reduce ripple yet potentially increase the peak diode current?]
 
 **考的觀念**：電荷守恆、放電速率與導通視窗。
 
@@ -2914,6 +2929,7 @@ $\tau$ 是電容充放電的時間尺度。把它跟相鄰充電峰值的間隔�
 #### 複習題 4
 
 > 用 $V_R\approx\frac{V_p}{R_LCf}$ 算出漣波比輸出峰值還大時，為什麼不能解讀成「輸出會降到負電壓」？
+> :en[When $V_R\approx\frac{V_p}{R_LCf}$ yields a ripple larger than the output peak itself, why can this not be read as "the output will swing negative"?]
 
 **考的觀念**：近似式的適用範圍。
 
@@ -2922,6 +2938,7 @@ $\tau$ 是電容充放電的時間尺度。把它跟相鄰充電峰值的間隔�
 #### 複習題 5
 
 > 講義第 27 頁以 $5\ \text{Vpp}$ 輸入駆動橋式整流，卻在輸出並聯齊納二極體而沒有串聯限流電阻。這個設定有哪兩個需要在實驗前先核對的問題？
+> :en[Page 27 of the handout drives a bridge rectifier from a $5\ \text{Vpp}$ input, yet places a Zener diode in parallel with the output without a series current-limiting resistor. Which two problems in this setup must be checked before the experiment?]
 
 **考的觀念**：穩壓工作條件與元件保護。
 
@@ -2930,6 +2947,7 @@ $\tau$ 是電容充放電的時間尺度。把它跟相鄰充電峰值的間隔�
 #### 複習題 6
 
 > 在實驗四同時用 CH1 量橋式整流的輸入 A–B、CH2 量輸出 P–N，若分別把兩個地夾接到 B 與 N，為什麼會改變電路？如何安全量測？
+> :en[In experiment 4, CH1 measures the bridge input A–B while CH2 measures the output P–N. If the two ground clips are attached to B and to N respectively, why does this change the circuit? How can the measurement be made safely?]
 
 **考的觀念**：實體示波器的共地特性。
 
@@ -2940,6 +2958,7 @@ $\tau$ 是電容充放電的時間尺度。把它跟相鄰充電峰值的間隔�
 #### 複習題 7
 
 > $10\ \text{Vpp}$、60 Hz 的零偏移正弦波經一顆二極體做半波整流，取 $V_D=0.60\ \text{V}$。以輸出峰值作為 $V_p$，估算 $V_{out,peak}$、$V_{rms}$、$V_{avg}$ 與整流效率。
+> :en[A $10\ \text{Vpp}$, 60 Hz sine wave with no offset is half-wave rectified by a single diode with $V_D=0.60\ \text{V}$. Taking the output peak as $V_p$, estimate $V_{out,peak}$, $V_{rms}$, $V_{avg}$ and the rectification efficiency.]
 
 **考的觀念**：峰對峰值轉換、半波整流公式。
 
@@ -2960,6 +2979,7 @@ $$
 #### 複習題 8
 
 > RC 複習電路中 $R=100\ \Omega$、$C=1\ \text{mF}$，輸入是 20 Hz、交流峰值 $1.0\ \text{V}$ 的正弦波，並叠加在 $3.0\ \text{V}$ 的直流偏移上。求 $\tau$、$\omega RC$、幅度比與輸出的交流峰值。
+> :en[In the RC review circuit, $R=100\ \Omega$ and $C=1\ \text{mF}$; the input is a 20 Hz sine wave of $1.0\ \text{V}$ AC peak superposed on a $3.0\ \text{V}$ DC offset. Find $\tau$, $\omega RC$, the amplitude ratio, and the AC peak of the output.]
 
 **考的觀念**：時間常數與 RC 低通的頻率響應。
 
@@ -2979,6 +2999,7 @@ $$
 #### 複習題 9
 
 > 半波整流器的輸出峰值約 $4.4\ \text{V}$，$R_L=10\ \text{k}\Omega$、$C=10\ \mu\text{F}$、$f_{in}=60\ \text{Hz}$。用小漣波近似估算漣波峰對峰值與漣波比，並判斷是否達到 $10\%$ 目標。
+> :en[A half-wave rectifier has an output peak of about $4.4\ \text{V}$, with $R_L=10\ \text{k}\Omega$, $C=10\ \mu\text{F}$ and $f_{in}=60\ \text{Hz}$. Use the small-ripple approximation to estimate the peak-to-peak ripple and the ripple ratio, and judge whether the $10\%$ target is met.]
 
 **考的觀念**：半波漣波公式與設計準則。
 
@@ -2998,6 +3019,7 @@ $16.7\%$ 高於 $10\%$ 目標，所以 $10\ \mu\text{F}$ 還不足。因為漣�
 #### 複習題 10
 
 > $12\ \text{Vpp}$、60 Hz 的零偏移正弦波輸入全波橋式整流器，每顆導通二極體的壓降取 $0.65\ \text{V}$。估算輸出峰值、理想全波輸出的 $V_{rms}$ 與 $V_{avg}$，並寫出漣波頻率。
+> :en[A $12\ \text{Vpp}$, 60 Hz sine wave with no offset drives a full-wave bridge rectifier, each conducting diode dropping $0.65\ \text{V}$. Estimate the output peak, the $V_{rms}$ and $V_{avg}$ of the ideal full-wave output, and state the ripple frequency.]
 
 **考的觀念**：橋式路徑的雙二極體壓降與頻率加倍。
 
@@ -3018,6 +3040,7 @@ $$
 #### 複習題 11
 
 > 全波橋式整流器的 $f_{in}=60\ \text{Hz}$、$R_L=10\ \text{k}\Omega$。若要使漣波比不超過 $5\%$，用小漣波近似求濾波電容的最小值，再給出合理的標準電容建議。
+> :en[A full-wave bridge rectifier has $f_{in}=60\ \text{Hz}$ and $R_L=10\ \text{k}\Omega$. To keep the ripple ratio within $5\%$, use the small-ripple approximation to find the minimum filter capacitance, then suggest a sensible standard capacitor value.]
 
 **考的觀念**：從漣波規格反推電容。
 
@@ -3036,6 +3059,7 @@ $$
 #### 複習題 12
 
 > 實驗二在 $V_D=20\ \text{V}$ 逆偏時，GDM-532 電壓表的輸入阻抗約為 $10\ \text{M}\Omega$，LTspice 的 1N4007 漏電流約為 $0.1\ \text{nA}$。求電壓表電流、它是模型漏電流的幾倍，以及若將這個電流全部誤當成二極體漏電流，會算出多大的等效電阻。
+> :en[In experiment 2 at $V_D=20\ \text{V}$ reverse bias, the GDM-532 voltmeter has an input impedance of about $10\ \text{M}\Omega$, while the LTspice 1N4007 leakage is about $0.1\ \text{nA}$. Find the voltmeter current, how many times the model leakage it is, and the equivalent resistance that would be computed if this whole current were mistaken for diode leakage.]
 
 **考的觀念**：儀器負載效應與數量級比較。
 

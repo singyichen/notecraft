@@ -509,6 +509,29 @@ function buildTooltip(node: MdNode, uid: number, file: VFileLike): void {
   node.children = [...visible, bubble];
 }
 
+/**
+ * English（雙語題幹／選項）：`:en[English text]` 轉成 `<span class="nc-en">`。
+ *
+ * 樣式把它設為 `display: block`，因此中文寫一行、`:en[...]` 接在同一段的下一行，
+ * 渲染出來就是「中文在上、英文另一行轉淡縮小」；`:::choices` 的選項列同理。
+ * 之所以不用 leafDirective（`::en[...]`）：選項是清單項目、題幹是 blockquote 段落，
+ * 兩處都必須待在同一個段落裡才不會被拆成兩個區塊。
+ */
+function buildEnglish(node: MdNode, file: VFileLike): boolean {
+  const kids = node.children || [];
+  if (!kids.length) {
+    // `:en` 沒帶 [label] → 交回呼叫端還原成字面 `:en`，作者才找得到漏寫的地方。
+    console.warn(
+      `[notecraft-directives] :en 缺少 [英文內容]，已還原為字面文字${file.path ? `（${file.path}）` : ""}`,
+    );
+    return false;
+  }
+  node.data = node.data || {};
+  node.data.hName = "span";
+  node.data.hProperties = { className: ["nc-en"], lang: "en" };
+  return true;
+}
+
 /** 選項字母：A、B、C…（依清單順序指派；作者只在 answer 屬性裡寫字母，選項本身不必自己編號）。 */
 function optionLetter(i: number): string {
   return String.fromCharCode(65 + i);
@@ -684,6 +707,12 @@ export default function remarkNotecraftDirectives() {
         if (child.type === "containerDirective" && child.name === "choices") {
           walk(child); // 選項文字內可含巢狀行內指令（:badge / :tip）
           buildChoices(child, file);
+          continue;
+        }
+        if (child.type === "textDirective" && child.name === "en") {
+          walk(child); // 英文內容裡可含其他行內指令
+          if (buildEnglish(child, file)) continue;
+          revertDirective(child);
           continue;
         }
         if (child.type === "textDirective" && child.name === "tip") {

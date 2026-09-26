@@ -3,7 +3,7 @@ title: "機器學習實作系列：第 3 週 - Adaline 與 NumPy、Pandas"
 description: "Adaline（自適應線性神經元）的模型架構、可微分的均方誤差損失、梯度下降與隨機梯度下降的推導、特徵縮放；NumPy 向量矩陣運算與廣播機制、Pandas 表格資料處理；並在 Iris 資料集上實作 AdalineGD 與 AdalineSGD，比較加上特徵縮放前後的收斂表現。"
 tags: ["機器學習實作系列"]
 createdAt: "2026-09-21"
-updatedAt: "2026-09-25"
+updatedAt: "2026-09-26"
 ---
 
 import PdfRefChip from '@/components/islands/PdfRefChip.tsx'
@@ -1243,12 +1243,13 @@ excerpt: Assignment #1 目的：使用 Adaline SGD 分類模型，透過測試�
 #### 選擇題 1
 
 > NumPy 判斷兩個陣列能否廣播，規則是什麼？
+> :en[What is the rule by which NumPy decides whether two arrays can be broadcast together?]
 
 :::choices{answer="A"}
-- 從最右邊維度起比較，每一對必須相等或其中一方為 1
-- 從最左邊維度起比較，每一對必須完全相等
-- 兩個陣列的維度數必須相同才能廣播
-- 只要元素總數相同就能廣播
+- 從最右邊維度起比較，每一對必須相等或其中一方為 1 :en[Compare from the rightmost dimension; each pair must be equal or one of them must be 1]
+- 從最左邊維度起比較，每一對必須完全相等 :en[Compare from the leftmost dimension; every pair must match exactly]
+- 兩個陣列的維度數必須相同才能廣播 :en[The two arrays must have the same number of dimensions to broadcast]
+- 只要元素總數相同就能廣播 :en[Any two arrays with the same total number of elements can broadcast]
 :::
 
 :::tip{collapsible title="詳解"}
@@ -1262,12 +1263,13 @@ excerpt: Assignment #1 目的：使用 Adaline SGD 分類模型，透過測試�
 #### 選擇題 2
 
 > 聚合運算中的 `axis` 參數，指的是什麼？
+> :en[What does the `axis` argument of an aggregation refer to?]
 
 :::choices{answer="C"}
-- 結果要保留的維度
-- 運算要沿著走訪的方向，與結果形狀無關
-- 被壓縮掉的那個維度
-- 陣列在記憶體中的排列順序
+- 結果要保留的維度 :en[The dimension the result keeps]
+- 運算要沿著走訪的方向，與結果形狀無關 :en[The direction the operation traverses, unrelated to the result shape]
+- 被壓縮掉的那個維度 :en[The dimension that gets collapsed]
+- 陣列在記憶體中的排列順序 :en[The order in which the array is laid out in memory]
 :::
 
 :::tip{collapsible title="詳解"}
@@ -1281,12 +1283,13 @@ excerpt: Assignment #1 目的：使用 Adaline SGD 分類模型，透過測試�
 #### 選擇題 3
 
 > `.loc` 與 `.iloc` 在切片行為上的差別是什麼？
+> :en[How does slicing behave differently between `.loc` and `.iloc`?]
 
 :::choices{answer="B"}
-- 兩者都包含尾端
-- `.loc` 包含尾端，`.iloc` 不包含
-- `.loc` 不包含尾端，`.iloc` 包含
-- 兩者都不包含尾端
+- 兩者都包含尾端 :en[Both include the endpoint]
+- `.loc` 包含尾端，`.iloc` 不包含 :en[`.loc` includes the endpoint, `.iloc` does not]
+- `.loc` 不包含尾端，`.iloc` 包含 :en[`.loc` excludes the endpoint, `.iloc` includes it]
+- 兩者都不包含尾端 :en[Neither includes the endpoint]
 :::
 
 :::tip{collapsible title="詳解"}
@@ -1300,12 +1303,13 @@ excerpt: Assignment #1 目的：使用 Adaline SGD 分類模型，透過測試�
 #### 選擇題 4
 
 > 對特徵做標準化之後，該特徵的分布會變成什麼？
+> :en[After a feature is standardized, what does its distribution become?]
 
 :::choices{answer="D"}
-- 常態分布
-- 均勻分布
-- $[0,1]$ 區間內的分布
-- 分布形狀不變，只是平均 0、標準差 1
+- 常態分布 :en[A normal distribution]
+- 均勻分布 :en[A uniform distribution]
+- $[0,1]$ 區間內的分布 :en[A distribution within the interval $[0,1]$]
+- 分布形狀不變，只是平均 0、標準差 1 :en[The shape of the distribution is unchanged; only the mean becomes 0 and the standard deviation 1]
 :::
 
 :::tip{collapsible title="詳解"}
@@ -1319,12 +1323,13 @@ excerpt: Assignment #1 目的：使用 Adaline SGD 分類模型，透過測試�
 #### 選擇題 5
 
 > Mini-batch 梯度下降在全批次梯度下降與隨機梯度下降之間，扮演什麼角色？
+> :en[What role does mini-batch gradient descent play between full-batch and stochastic gradient descent?]
 
 :::choices{answer="A"}
-- 折衷：兼顧向量化效率與訓練穩定性
-- 完全取代兩者，沒有任何缺點
-- 只適用於資料量極小的情況
-- 與全批次梯度下降等價，只是實作不同
+- 折衷：兼顧向量化效率與訓練穩定性 :en[A compromise, keeping vectorized efficiency alongside stable training]
+- 完全取代兩者，沒有任何缺點 :en[A full replacement for both, with no drawback at all]
+- 只適用於資料量極小的情況 :en[Useful only when the dataset is extremely small]
+- 與全批次梯度下降等價，只是實作不同 :en[Equivalent to full-batch gradient descent, differing only in implementation]
 :::
 
 :::tip{collapsible title="詳解"}
@@ -1338,12 +1343,13 @@ excerpt: Assignment #1 目的：使用 Adaline SGD 分類模型，透過測試�
 #### 選擇題 6
 
 > `AdalineSGD.partial_fit()` 這類線上學習的做法，關鍵是什麼？
+> :en[What is the key to online learning of the kind `AdalineSGD.partial_fit()` performs?]
 
 :::choices{answer="C"}
-- 每次呼叫都重新初始化權重再訓練
-- 把新資料與舊資料合併後完整重訓
-- 不重新初始化權重，直接用新資料繼續更新
-- 只更新偏差項，權重維持不變
+- 每次呼叫都重新初始化權重再訓練 :en[Reinitializing the weights and retraining on every call]
+- 把新資料與舊資料合併後完整重訓 :en[Merging the new data with the old and retraining completely]
+- 不重新初始化權重，直接用新資料繼續更新 :en[Not reinitializing the weights, but continuing to update from the new data]
+- 只更新偏差項，權重維持不變 :en[Updating only the bias term, leaving the weights unchanged]
 :::
 
 :::tip{collapsible title="詳解"}
@@ -1357,12 +1363,13 @@ excerpt: Assignment #1 目的：使用 Adaline SGD 分類模型，透過測試�
 #### 選擇題 7
 
 > 向量化為什麼比 Python 迴圈快？
+> :en[Why is vectorization faster than a Python loop?]
 
 :::choices{answer="B"}
-- 因為它自動使用多張 GPU
-- 因為運算交給預先編譯的底層常式一次處理
-- 因為它會自動略過重複的計算
-- 因為 NumPy 陣列佔用的記憶體比 list 小
+- 因為它自動使用多張 GPU :en[Because it uses several GPUs automatically]
+- 因為運算交給預先編譯的底層常式一次處理 :en[Because the work is handed to precompiled low-level routines in one go]
+- 因為它會自動略過重複的計算 :en[Because it automatically skips repeated computations]
+- 因為 NumPy 陣列佔用的記憶體比 list 小 :en[Because a NumPy array occupies less memory than a list]
 :::
 
 :::tip{collapsible title="詳解"}
@@ -1376,12 +1383,13 @@ excerpt: Assignment #1 目的：使用 Adaline SGD 分類模型，透過測試�
 #### 選擇題 8
 
 > `concat` 與 `merge` 的差別是什麼？
+> :en[What is the difference between `concat` and `merge`?]
 
 :::choices{answer="D"}
-- `concat` 只能用於 `Series`，`merge` 只能用於 `DataFrame`
-- `concat` 會去除重複列，`merge` 不會
-- 兩者相同，只是參數寫法不同
-- `concat` 沿指定軸把資料疊起來，`merge` 依共同鍵值配對
+- `concat` 只能用於 `Series`，`merge` 只能用於 `DataFrame` :en[`concat` works only on a `Series`, `merge` only on a `DataFrame`]
+- `concat` 會去除重複列，`merge` 不會 :en[`concat` drops duplicate rows, `merge` does not]
+- 兩者相同，只是參數寫法不同 :en[They are the same; only the argument syntax differs]
+- `concat` 沿指定軸把資料疊起來，`merge` 依共同鍵值配對 :en[`concat` stacks data along a chosen axis, `merge` matches rows by a shared key]
 :::
 
 :::tip{collapsible title="詳解"}
@@ -1395,12 +1403,13 @@ excerpt: Assignment #1 目的：使用 Adaline SGD 分類模型，透過測試�
 #### 選擇題 9
 
 > 布林遮罩與花式索引的差別是什麼？
+> :en[What is the difference between a boolean mask and fancy indexing?]
 
 :::choices{answer="A"}
-- 前者用布林陣列篩選，後者用索引陣列指定位置
-- 前者只能用於一維陣列，後者可用於多維
-- 前者回傳檢視，後者回傳複本
-- 兩者相同，只是寫法不同
+- 前者用布林陣列篩選，後者用索引陣列指定位置 :en[The former filters with a boolean array, the latter names positions with an index array]
+- 前者只能用於一維陣列，後者可用於多維 :en[The former works on 1-D arrays only, the latter on multi-dimensional ones]
+- 前者回傳檢視，後者回傳複本 :en[The former returns a view, the latter a copy]
+- 兩者相同，只是寫法不同 :en[They are the same, written differently]
 :::
 
 :::tip{collapsible title="詳解"}
@@ -1414,12 +1423,13 @@ excerpt: Assignment #1 目的：使用 Adaline SGD 分類模型，透過測試�
 #### 選擇題 10
 
 > `np.newaxis` 的用途是什麼？
+> :en[What is `np.newaxis` used for?]
 
 :::choices{answer="C"}
-- 建立一個新的陣列
-- 把多維陣列攤平成一維
-- 插入一個長度為 1 的新軸，常用來觸發廣播
-- 交換兩個維度的順序
+- 建立一個新的陣列 :en[Creating a brand new array]
+- 把多維陣列攤平成一維 :en[Flattening a multi-dimensional array into one dimension]
+- 插入一個長度為 1 的新軸，常用來觸發廣播 :en[Inserting a new axis of length 1, typically to trigger broadcasting]
+- 交換兩個維度的順序 :en[Swapping the order of two dimensions]
 :::
 
 :::tip{collapsible title="詳解"}
@@ -1433,12 +1443,13 @@ excerpt: Assignment #1 目的：使用 Adaline SGD 分類模型，透過測試�
 #### 選擇題 11
 
 > Adaline 訓練時用的線性激活 $\sigma(z) = z$，與最後分類用的閾值函數，關係是什麼？
+> :en[How is the linear activation $\sigma(z) = z$ used while training Adaline related to the threshold function used for the final classification?]
 
 :::choices{answer="B"}
-- 兩者是同一個函數，只是不同階段的稱呼
-- 前者保留連續誤差供訓練，後者只在預測時把輸出離散化
-- 前者用於預測，後者用於訓練
-- 閾值函數會取代線性激活參與梯度計算
+- 兩者是同一個函數，只是不同階段的稱呼 :en[They are one function, named differently at different stages]
+- 前者保留連續誤差供訓練，後者只在預測時把輸出離散化 :en[The former keeps a continuous error for training, the latter discretizes the output only at prediction time]
+- 前者用於預測，後者用於訓練 :en[The former is for prediction, the latter for training]
+- 閾值函數會取代線性激活參與梯度計算 :en[The threshold function replaces the linear activation in the gradient computation]
 :::
 
 :::tip{collapsible title="詳解"}
@@ -1452,12 +1463,13 @@ excerpt: Assignment #1 目的：使用 Adaline SGD 分類模型，透過測試�
 #### 選擇題 12
 
 > 隨機梯度下降的損失曲線比全批次梯度下降毛躁，這件事的意義是什麼？
+> :en[The loss curve of stochastic gradient descent is noisier than that of full-batch gradient descent. What does this signify?]
 
 :::choices{answer="D"}
-- 代表實作有錯，正常應該平滑
-- 代表學習率設得太大，必須調小
-- 代表模型正在過擬合
-- 是單筆估計梯度的必然結果，抖動反而有機會跳出淺的局部低點
+- 代表實作有錯，正常應該平滑 :en[It means the implementation is buggy; it should be smooth]
+- 代表學習率設得太大，必須調小 :en[It means the learning rate is too large and must be reduced]
+- 代表模型正在過擬合 :en[It means the model is overfitting]
+- 是單筆估計梯度的必然結果，抖動反而有機會跳出淺的局部低點 :en[It follows inevitably from estimating the gradient one sample at a time, and the jitter can even escape shallow local minima]
 :::
 
 :::tip{collapsible title="詳解"}
@@ -1473,6 +1485,7 @@ excerpt: Assignment #1 目的：使用 Adaline SGD 分類模型，透過測試�
 #### 複習題 1
 
 > PLA 與 Adaline 都使用 $z=\boldsymbol{w}^T\boldsymbol{x}+b$，兩者真正的差異是什麼？為什麼 Adaline 能用標準梯度下降訓練？
+> :en[Both the PLA and Adaline use $z=\boldsymbol{w}^T\boldsymbol{x}+b$. What is the real difference between them? Why can Adaline be trained with standard gradient descent?]
 
 **詳解**
 
@@ -1481,6 +1494,7 @@ excerpt: Assignment #1 目的：使用 Adaline SGD 分類模型，透過測試�
 #### 複習題 2
 
 > Full-batch GD、SGD、Mini-batch GD 的核心差異是什麼？為什麼不能只用「哪一個每個 epoch 比較快」判斷優劣？
+> :en[What is the core difference between full-batch GD, SGD and mini-batch GD? Why can they not be ranked by "which one finishes an epoch faster" alone?]
 
 **詳解**
 
@@ -1489,6 +1503,7 @@ excerpt: Assignment #1 目的：使用 Adaline SGD 分類模型，透過測試�
 #### 複習題 3
 
 > 為什麼 SGD 每個 epoch 前通常要重新打散資料？`partial_fit()` 又如何讓它支援線上學習？
+> :en[Why is the data usually reshuffled before each epoch of SGD? And how does `partial_fit()` let it support online learning?]
 
 **詳解**
 
@@ -1497,6 +1512,7 @@ SGD 的每一步只看一筆資料，若資料按類別或其他規律排序，�
 #### 複習題 4
 
 > 學習率太大與太小會分別呈現什麼損失曲線？特徵標準化為什麼能擴大可用的學習率範圍？
+> :en[What loss curve does a learning rate that is too large produce, and what does one that is too small produce? Why does standardizing features widen the range of usable learning rates?]
 
 **詳解**
 
@@ -1505,6 +1521,7 @@ SGD 的每一步只看一筆資料，若資料按類別或其他規律排序，�
 #### 複習題 5
 
 > 為什麼 `shape=(3,)`、`shape=(3,1)`、`shape=(1,3)` 不能視為同一種向量？對一維陣列使用 `.T` 會發生什麼事？
+> :en[Why can `shape=(3,)`, `shape=(3,1)` and `shape=(1,3)` not be treated as the same vector? What happens when `.T` is applied to a one-dimensional array?]
 
 **詳解**
 
@@ -1513,6 +1530,7 @@ SGD 的每一步只看一筆資料，若資料按類別或其他規律排序，�
 #### 複習題 6
 
 > NumPy 的 `A * B` 與 `A @ B` 有什麼差異？`np.dot()` 與 `np.matmul()` 在什麼情況下不能混為一談？
+> :en[How do NumPy's `A * B` and `A @ B` differ? In what situation must `np.dot()` and `np.matmul()` not be conflated?]
 
 **詳解**
 
@@ -1521,6 +1539,7 @@ SGD 的每一步只看一筆資料，若資料按類別或其他規律排序，�
 #### 複習題 7
 
 > NumPy 廣播如何判斷兩個 shape 是否相容？為什麼 `(4,3)` 可以和 `(3,)` 運算，卻不能和 `(4,)` 運算？
+> :en[How does NumPy broadcasting decide whether two shapes are compatible? Why can `(4,3)` operate with `(3,)` but not with `(4,)`?]
 
 **詳解**
 
@@ -1529,6 +1548,7 @@ SGD 的每一步只看一筆資料，若資料按類別或其他規律排序，�
 #### 複習題 8
 
 > 什麼情況應使用 NumPy，什麼情況應使用 Pandas？兩者在一條機器學習資料管線中如何合作？
+> :en[When should NumPy be used and when Pandas? How do the two cooperate within one machine learning data pipeline?]
 
 **詳解**
 
@@ -1537,6 +1557,7 @@ SGD 的每一步只看一筆資料，若資料按類別或其他規律排序，�
 #### 複習題 9
 
 > `.loc` 與 `.iloc` 的差異是什麼？如果索引標籤本身就是整數，為什麼更應該明確使用它們？
+> :en[What is the difference between `.loc` and `.iloc`? When the index labels are themselves integers, why does using them explicitly matter even more?]
 
 **詳解**
 
@@ -1545,6 +1566,7 @@ SGD 的每一步只看一筆資料，若資料按類別或其他規律排序，�
 #### 複習題 10
 
 > `pd.concat` 與 `merge`／`join` 分別解決什麼問題？若要替訂單表補上會員資料、又不能遺失任何訂單，該怎麼選？
+> :en[What problem does `pd.concat` solve, and what problem do `merge`/`join` solve? To attach member data to an order table without losing a single order, which should be chosen?]
 
 **詳解**
 
@@ -1555,6 +1577,7 @@ SGD 的每一步只看一筆資料，若資料按類別或其他規律排序，�
 #### 複習題 11
 
 > Adaline 的權重 $\boldsymbol{w}=[0.2,-0.1]$、偏差 $b=0.05$，輸入 $\boldsymbol{x}=[3,2]$。求淨輸入與線性激活輸出，並依門檻 0.5 判斷最終類別。
+> :en[Adaline has weights $\boldsymbol{w}=[0.2,-0.1]$ and bias $b=0.05$, with input $\boldsymbol{x}=[3,2]$. Find the net input and the linear activation output, and determine the final class against a threshold of 0.5.]
 
 **詳解**
 
@@ -1572,6 +1595,7 @@ $$
 #### 複習題 12
 
 > 三筆樣本的真實標籤為 $\boldsymbol{y}=[1,0,1]$，Adaline 線性激活輸出為 $\boldsymbol{\hat y}=[0.8,0.3,0.6]$。求 MSE。
+> :en[Three samples have true labels $\boldsymbol{y}=[1,0,1]$ and Adaline linear activation outputs $\boldsymbol{\hat y}=[0.8,0.3,0.6]$. Find the MSE.]
 
 **詳解**
 
@@ -1589,6 +1613,7 @@ MSE 先把每筆誤差平方，再對全部樣本取平均；不能先把正負�
 #### 複習題 13
 
 > 使用本週 `AdalineSGD` 程式碼的單筆更新規則。已知 $\eta=0.1$、$\boldsymbol{x}=[2,-1]$、$y=1$、目前線性輸出 $\sigma(z)=0.4$，求 $\Delta\boldsymbol{w}$ 與 $\Delta b$。
+> :en[Use the single-sample update rule from this week's `AdalineSGD` code. Given $\eta=0.1$, $\boldsymbol{x}=[2,-1]$, $y=1$ and a current linear output $\sigma(z)=0.4$, find $\Delta\boldsymbol{w}$ and $\Delta b$.]
 
 **詳解**
 
@@ -1607,6 +1632,7 @@ $$
 #### 複習題 14
 
 > 某特徵的平均值為 $\mu=50$、標準差為 $\sigma=10$。將兩筆樣本 $x_1=65$ 與 $x_2=40$ 標準化，並解釋結果代表的意義。
+> :en[A feature has mean $\mu=50$ and standard deviation $\sigma=10$. Standardize the two samples $x_1=65$ and $x_2=40$, and explain what the results mean.]
 
 **詳解**
 
@@ -1622,6 +1648,7 @@ $x_1'=1.5$ 代表原始值 65 比平均值高 1.5 個標準差；$x_2'=-1$ 代�
 #### 複習題 15
 
 > 給定 $A=\begin{bmatrix}1&2\\3&4\end{bmatrix}$、$B=\begin{bmatrix}5&6\\7&8\end{bmatrix}$，分別求 NumPy 的 `A * B` 與 `A @ B`。
+> :en[Given $A=\begin{bmatrix}1&2\\3&4\end{bmatrix}$ and $B=\begin{bmatrix}5&6\\7&8\end{bmatrix}$, find NumPy's `A * B` and `A @ B` separately.]
 
 **詳解**
 
@@ -1663,6 +1690,7 @@ $$
 #### 複習題 16
 
 > 點集 $A=\begin{bmatrix}0&0\\1&1\end{bmatrix}$ 的 shape 是 $(2,2)$，點集 $B=\begin{bmatrix}0&1\\2&1\\1&3\end{bmatrix}$ 的 shape 是 $(3,2)$。使用 `A[:, np.newaxis, :] - B` 後，差值陣列與距離矩陣的 shape 各是多少？並求完整距離矩陣。
+> :en[The point set $A=\begin{bmatrix}0&0\\1&1\end{bmatrix}$ has shape $(2,2)$ and the point set $B=\begin{bmatrix}0&1\\2&1\\1&3\end{bmatrix}$ has shape $(3,2)$. After `A[:, np.newaxis, :] - B`, what are the shapes of the difference array and of the distance matrix? Also find the full distance matrix.]
 
 **詳解**
 
