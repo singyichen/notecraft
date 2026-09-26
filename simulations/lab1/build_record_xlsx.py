@@ -323,16 +323,23 @@ e3_items = [
     ('輸出 無 C（第 18 頁）', 'V_rms (V)', round(E3OUT['rms'], 3), round(E3_VP / 2, 3), 'CH2 的 DC RMS；理想半波 V_p / 2（V_p 取理想輸出峰值 4.3 V）', '0.000'),
     ('輸出 無 C（第 18 頁）', 'V_avg (V)', round(E3OUT['avg'], 3), round(E3_VP / 3.141592653589793, 3), 'CH2 的 Average；理想半波 V_p / π', '0.000'),
     ('輸出 加 1 µF（第 20 頁）', 'V_peak (V)', round(E3RC[0]['peak'], 3), None, '峰值幾乎不變，變的是谷底', '0.000'),
+    ('輸出 加 1 µF（第 20 頁）', 'V_rms (V)', round(E3RC[0]['rms'], 3), None, 'CH2 的 DC RMS。加了電容就不再是理想半波，V_p/2 不適用，所以理想欄留空', '0.000'),
+    ('輸出 加 1 µF（第 20 頁）', 'V_avg (V)', round(E3RC[0]['avg'], 3), None, 'CH2 的 Average。漣波越小這一格越靠近 V_peak', '0.000'),
     ('輸出 加 1 µF（第 20 頁）', '漣波 V_R (V)', round(E3RC[0]['ripple'], 3), 7.2, '峰谷差。線性近似 V_p/(R·C·f) 在 1 µF 已失效，理想欄僅供對照', '0.000'),
 ]
 
 
 def e3_extras(idx):
     a, m = idx['輸出 無 C（第 18 頁）|V_avg (V)'], idx['輸出 無 C（第 18 頁）|V_rms (V)']
-    return [('整流效率 η = V_avg² / V_rms²',
+    ac, mc = idx['輸出 加 1 µF（第 20 頁）|V_avg (V)'], idx['輸出 加 1 µF（第 20 頁）|V_rms (V)']
+    return [('整流效率 η = V_avg² / V_rms²（無 C）',
              f'=IF(OR(C{a}="",C{m}="",C{m}=0),"",C{a}^2/C{m}^2)',
              round(E3OUT['avg'] ** 2 / E3OUT['rms'] ** 2, 4), round(4 / PI2, 4),
-             f'填好第 {a} 列的 V_avg 與第 {m} 列的 V_rms 就會自己算；理想半波上限 4/π² = 40.5%')]
+             f'填好第 {a} 列的 V_avg 與第 {m} 列的 V_rms 就會自己算；理想半波上限 4/π² = 40.5%'),
+            ('整流效率 η（加 1 µF）',
+             f'=IF(OR(C{ac}="",C{mc}="",C{mc}=0),"",C{ac}^2/C{mc}^2)',
+             round(E3RC[0]['avg'] ** 2 / E3RC[0]['rms'] ** 2, 4), None,
+             f'同一條定義套在第 {ac}、{mc} 列。濾波把 V_avg 推向 V_rms，效率因此大幅拉高；4/π² 是「沒有濾波」的上限，不能拿來比這一列')]
 
 
 ws3, idx3 = scalar_sheet(
@@ -405,7 +412,8 @@ def dump_csv(path, items, extras_rows):
 
 
 dump_csv(os.path.join(HERE, 'measured', 'lab1-exp3-halfwave.csv'), e3_items,
-         [('推算值', '整流效率 η', round(E3OUT['avg'] ** 2 / E3OUT['rms'] ** 2, 4), round(4 / PI2, 4))])
+         [('推算值', '整流效率 η（無 C）', round(E3OUT['avg'] ** 2 / E3OUT['rms'] ** 2, 4), round(4 / PI2, 4)),
+          ('推算值', '整流效率 η（加 1 µF）', round(E3RC[0]['avg'] ** 2 / E3RC[0]['rms'] ** 2, 4), None)])
 dump_csv(os.path.join(HERE, 'measured', 'lab1-exp4-bridge.csv'), e4_items,
          [('推算值', '整流效率 η', round(E4OUT['avg'] ** 2 / E4OUT['rms'] ** 2, 4), round(8 / PI2, 4)),
           ('推算值', '漣波比 V_R / V_p', round(E4RC[0]['ripple'] / E4RC[0]['peak'], 4),
