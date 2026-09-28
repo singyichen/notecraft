@@ -151,6 +151,33 @@ excerpt: 如圖 3-2 所示的偏壓電路
 - 不在現有元件白名單內，**已徵得作者同意**加入白名單（前端 `PdfViewerDrawer` + subagent 端的文字抽取都用它，一套依賴兩處共用）
 - 需要處理 worker 檔案的打包路徑（pdfjs 需要指定 `pdfjs-dist/build/pdf.worker.min.mjs` 的 URL），實作計畫階段處理，需驗證 `astro build` 能正確把 worker 檔案打包進輸出
 
+### 7.4 筆記正文的資料檔連結（2026-09-28 追加）
+
+抽屜當初只有兩個入口：`PdfRefChip` 與 `/references` 頁。但筆記正文本來就會寫到資料檔
+（實驗數據記錄簿、作業的訓練集 CSV、元件 datasheet），那些連結點下去是瀏覽器下載，
+讀者得離開頁面、切到別的程式才看得到內容——同一份檔案在 `/references` 明明已經畫得出來。
+
+- **`src/lib/data-file-links.ts`（純函式）**：把一條連結的 href 解析成抽屜開得起來的目標。
+  「哪些副檔名算資料檔」直接沿用 `reference-kinds.ts` 的 `REFERENCE_KINDS`——講義抽屜畫得出
+  的格式，筆記內文就該點得開，兩邊不另外維護一份清單。四種結果：`resolved`（可開）、
+  `dev-only`（檔案在但只有本機服務得到）、`not-found`（副檔名對得上但找不到檔，多半是路徑
+  打錯）、`skip`（不歸它管）。`exists` 由呼叫端注入，測試不必碰檔案系統。
+- **路徑基準有兩個**：先試 MDX 檔所在目錄（與 `remark-notecraft-notes-assets` 的圖片／筆記間
+  連結同一套直覺），找不到再退回專案根。`simulations/` 這種實驗工作區不在 notesDir 底下，
+  但作者在筆記裡就是照專案根的相對路徑寫它，這一步是為它而設。落在專案根以外的一律 `skip`，
+  本機絕對路徑不會進到輸出的 HTML。
+- **`src/lib/remark-notecraft-data-links.ts`**：接 `node:fs`、判 dev／正式，把結果寫回 mdast。
+  輸出是一個仍然有真 href 的 `<a>`，額外帶 `class="nc-datafile-link"` 與
+  `data-nc-datafile="<顯示用相對路徑>"`。沒有 JS 也點得到，中鍵與 Cmd/Ctrl 點擊維持原生行為。
+- **開抽屜的是殼層既有的委派 click handler**（`WorkbenchLayout.astro`）：攔純左鍵單擊、
+  `preventDefault()`、dispatch `nc-ref-open`。`detail.file` 給顯示用相對路徑（抽屜靠它取檔名與
+  判斷格式），`detail.url` 給 href。抽屜本身一行都不用改——`OpenDetail` 早就接受 `url` 覆寫。
+- **dev / 正式的分界**：remark 階段以 `process.env.NODE_ENV === "development"` 判定（實測 `astro dev`
+  為 `development`、`astro build` 為 `production`）。刻意只認 `"development"`：沒設時當正式環境，
+  寧可少一個抽屜入口，也不要在靜態產物裡留一條指向不存在路由的 `/local-assets/` 連結。
+  notesDir 底下的檔案兩邊都開得起來；`simulations/` 底下的只有 dev 開得起來，正式 build 自動改指
+  GitHub 上的同一個檔（`blob/HEAD`，讓 GitHub 自己解析預設分支），偵測不到 origin 才維持原樣並 warn。
+
 ## 8. Build 驗證
 
 - Pre-push hook 現有的 `astro build` 這關必須涵蓋：

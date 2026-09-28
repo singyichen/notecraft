@@ -1,7 +1,7 @@
 ---
 Project Name: NoteCraft
 文件類型: Project Requirement Document (PRD)
-文件版本: v1.15.0
+文件版本: v1.16.0
 開發模式: Waterfall
 技術選型: 確定
 技術架構: 確定
@@ -10,7 +10,7 @@ Project Name: NoteCraft
 文件作者: 建宇
 審核人: 建宇
 建立日期: 2026-06-12
-更新日期: 2026-09-26
+更新日期: 2026-09-28
 ---
 
 # NoteCraft — AI 互動筆記 Web App
@@ -86,6 +86,7 @@ Project Name: NoteCraft
 24. \* 為每個 [Generated 元件](#generated-元件) 提供 [放大檢視](#ai-生成內容外框卡片--放大檢視viz-zoom)：從 [AI 生成內容外框卡片](#ai-生成內容外框卡片) 標題列點「放大檢視」，把元件搬進全螢幕可拖曳平移、可縮放的畫布閱讀（沿用簡報端既有的 `CanvasViewport`），互動完整保留、可匯出 100% 原尺寸 PNG；解決寬元件在內文欄寬下被擠壓、橫向溢出的問題，dev 與正式環境皆可用
 25. \* 提供 [Markdown 擴充語法 — Choices](#markdown-擴充語法choices)：把一份 Markdown 清單渲染為帶 A／B／C 字母的選擇題選項，並以容器屬性 `answer` 把正解整列以語意色標出（支援複選），重用 `remark-directive` 底座，純 CSS、零 JS，正式環境同樣可用；服務於 `exam-review` Skill 的選擇題模式
 26. \* 提供 [Markdown 擴充語法 — English](#markdown-擴充語法english)：以行內 `:en[...]` 標出同一句話的英文對照，渲染為「中文在上、英文另一行轉淡縮小」，重用 `remark-directive` 底座，純 CSS、零 JS，正式環境同樣可用；服務於 `exam-review` Skill 的雙語題幹與雙語選項
+27. \* 讓筆記正文裡**指向資料檔的連結**（`.xlsx` / `.csv` / `.pdf` / `.docx`）在既有的講義檢視抽屜就地開啟，而不是交給瀏覽器下載：副檔名判定沿用講義庫的「副檔名 → 檢視器」註冊表，路徑先以 MDX 所在目錄為基準、找不到再退回專案根，因此筆記裡的實驗數據記錄簿、作業資料集與元件 datasheet 都點得開。notesDir 底下的檔案 dev 與正式環境皆可用；專案根底下的實驗工作區（`simulations/`）僅 dev 可開，正式 build 自動改指 GitHub 上的同一個檔。設計見 `docs/superpowers/specs/2026-09-12-pdf-reference-viewer-design.md` §7.4
 
 ### 4.2 非目標（Out of Scope）
 
@@ -2920,6 +2921,9 @@ gantt
 ---
 
 ## 11. Change Log（變更紀錄）
+
+### [1.16.0] - 2026-09-28
+- **Added**: 筆記正文的資料檔連結改為在講義抽屜就地開啟
 
 ### [1.15.0] - 2026-09-26
 - **Added**: 新增 Markdown 擴充語法 English（:en 雙語對照行），服務 exam-review 的雙語題幹與選項

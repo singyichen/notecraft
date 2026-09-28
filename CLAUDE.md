@@ -10,6 +10,7 @@
 - **動畫 / 互動**：`motion`（Framer Motion，npm 套件名即 `motion`，**勿與舊 motion.js 混淆**）
 - **圖表**：`recharts`（標準圖表）、`d3`（非標準）、手寫 SVG（流程 / 時序 / 架構圖優先）
 - **原始講義檢視**：側邊抽屜是「副檔名 → 檢視器」註冊表（`src/lib/reference-kinds.ts` 管 build 期掃描，`src/components/islands/reference-viewers/` 管 client 端渲染）。PDF 用 `pdfjs-dist`（另有 Node legacy build 供 subagent 抽取頁面文字）、Word 用 `docx-preview`、Excel 用 `read-excel-file`（值）＋ `fflate` 與 `src/lib/xlsx-styles.ts`（底色／合併／欄寬，自寫）、CSV 用 `src/lib/csv-parse.ts`（自寫，無依賴）。**不要改用 `exceljs`**：它遇到含圖表的活頁簿會在 `reconcile` 拋 `undefined.anchors`，實驗記錄簿就是這種檔。
+  **筆記正文裡指向資料檔的連結也走同一個抽屜**：`src/lib/remark-notecraft-data-links.ts` 會把副檔名落在 `REFERENCE_KINDS` 的連結標上 `data-nc-datafile`，由 `WorkbenchLayout` 的委派 click handler dispatch `nc-ref-open`。路徑先以 MDX 所在目錄為基準、找不到再退回專案根（`simulations/` 這種實驗工作區就是這樣命中的），解析規則與各種結果見 `src/lib/data-file-links.ts`。notesDir 底下的檔案 dev / 正式站都開得起來；`simulations/` 底下的只有 dev 開得起來，正式 build 自動改指 GitHub 的同一個檔（`blob/HEAD`），不會在 dist 裡留下 `/local-assets/` 連結。
   新增一種格式要同時動三處：`reference-kinds.ts` 的副檔名表、`ReferenceViewerDrawer` 的 `REFERENCE_VIEWERS`、`astro.config.mjs` 的 `optimizeDeps.include`（漏第三處的症狀是 dev 首次開啟顯示「載入失敗」，實為 504 Outdated Optimize Dep；`viewer-optimize-deps.test.ts` 會把關）
 - **搜尋**：`pagefind`（build 階段索引）
 - **部署**：Netlify 靜態部署，**無 Function、無執行時 API**

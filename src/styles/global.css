@@ -229,6 +229,20 @@ img { max-width: 100%; display: block; }
 }
 
 .nc-prose a { color: var(--action-link); text-decoration: underline; text-underline-offset: 3px; }
+/* 資料檔連結（remark-notecraft-data-links 標記）：點了是開側邊抽屜，不是下載。
+   給一個表格圖示當提示——用 mask + currentColor，圖示自動跟著連結顏色走，不必另外配色。 */
+.nc-prose a.nc-datafile-link::after {
+  content: "";
+  display: inline-block;
+  width: 0.9em;
+  height: 0.9em;
+  margin-left: 4px;
+  vertical-align: -0.1em;
+  background-color: currentColor;
+  /* lucide 的 panel-right（抽屜），24×24 viewBox */
+  -webkit-mask: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect width='18' height='18' x='3' y='3' rx='2'/%3E%3Cpath d='M15 3v18'/%3E%3C/svg%3E") center / contain no-repeat;
+  mask: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect width='18' height='18' x='3' y='3' rx='2'/%3E%3Cpath d='M15 3v18'/%3E%3C/svg%3E") center / contain no-repeat;
+}
 .nc-prose hr { margin: 32px 0; border: 0; border-top: 1px solid var(--neutral-200); }
 .nc-prose table {
   width: 100%;

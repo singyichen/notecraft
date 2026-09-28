@@ -9,6 +9,7 @@ import rehypeKatex from "rehype-katex";
 import remarkNotecraftDirectives from "./src/lib/remark-notecraft-directives.ts";
 import remarkNotecraftCodeblock from "./src/lib/remark-notecraft-codeblock.ts";
 import remarkNotecraftNotesAssets from "./src/lib/remark-notecraft-notes-assets.ts";
+import remarkNotecraftDataLinks from "./src/lib/remark-notecraft-data-links.ts";
 import { GENERATED_COMPONENT_PACKAGE_WHITELIST } from "./src/lib/generated-component-whitelist.ts";
 import devApi from "./src/dev-api/integration.ts";
 import notesAssetsBuildCopy from "./src/lib/notes-assets-build-copy.ts";
@@ -104,9 +105,11 @@ export default defineConfig({
     // 順序固定：remark-directive 先解析指令；directives 處理 admonition/tabs/tooltip/annotate；
     // codeblock 最後改寫 code 節點（buildAnnotate 需在 code 仍為原始節點時讀值）。
     // notes-assets 只在 viewer 模式（有 NOTECRAFT_NOTES_DIR）下作用，重寫相對圖片路徑為 /notes-assets/*。
+    // data-links 放最後：它要看的是「作者寫的 href」與 notes-assets 重寫完的結果兩者皆可，
+    // 排在 notes-assets 之後就不必自己再處理一次 viewer 模式的相對路徑。
     // remarkMath 放最前面：先把 $...$ / $$...$$ 解析成 math/inlineMath 節點，
     // 不影響 codeblock 只處理 code 節點的邏輯；rehypeKatex 在 rehype 階段把這些節點轉成 KaTeX HTML。
-    remarkPlugins: [remarkMath, remarkDirective, remarkNotecraftDirectives, remarkNotecraftCodeblock, remarkNotecraftNotesAssets],
+    remarkPlugins: [remarkMath, remarkDirective, remarkNotecraftDirectives, remarkNotecraftCodeblock, remarkNotecraftNotesAssets, remarkNotecraftDataLinks],
     rehypePlugins: [rehypeKatex],
   },
 });

@@ -156,6 +156,20 @@ const index = await getWorkbenchIndex();
         if (!t) return;
         if (t.closest("[data-wb-open-palette]")) window.dispatchEvent(new CustomEvent("nc-open-palette"));
         else if (t.closest("[data-wb-new-note]")) window.dispatchEvent(new CustomEvent("nc-open-new-note"));
+        // 筆記正文的資料檔連結（remark-notecraft-data-links 標上 data-nc-datafile）改開抽屜，
+        // 不要讓瀏覽器把 .xlsx / .csv 直接下載掉。href 本身仍是真的檔案 URL，所以
+        // 中鍵、Cmd/Ctrl 點擊、另存新檔都維持原生行為——只攔純粹的左鍵單擊。
+        else {
+          var d = t.closest("a[data-nc-datafile]");
+          if (d && e.button === 0 && !e.metaKey && !e.ctrlKey && !e.shiftKey && !e.altKey) {
+            e.preventDefault();
+            window.dispatchEvent(
+              new CustomEvent("nc-ref-open", {
+                detail: { file: d.getAttribute("data-nc-datafile"), url: d.getAttribute("href"), page: 1 },
+              }),
+            );
+          }
+        }
       });
     </script>
   </body>
