@@ -4,19 +4,61 @@
     {
       "id": "er-diagram-renderer",
       "title": "ER Diagram",
-      "description": "把資料庫 schema JSON 渲染成可聚焦、可搜尋的實體關聯圖",
-      "version": "1.1.0",
+      "description": "把資料庫 schema JSON 渲染成可導覽的 Wiki 與可聚焦、可搜尋的實體關聯圖",
+      "version": "1.2.0",
       "dir": "plugins/er-diagram-renderer",
       "files": [
         "notecraft-plugin.json",
         "renderer.tsx",
+        "derive.ts",
+        "diagram.tsx",
+        "styles.ts",
+        "types.ts",
+        "nav.tsx",
+        "markdown.tsx",
+        "markdown-text.ts",
+        "wiki.tsx",
+        "local-diagram.tsx",
         "schema.json",
         "README.md",
-        "example/schema.json"
+        "example/schema.json",
+        "example/schema.v1.1.json"
       ],
       "tags": [
         "database",
         "diagram"
+      ]
+    },
+    {
+      "id": "openapi-renderer",
+      "title": "API 文件",
+      "description": "把 OpenAPI 3.0／3.1 文件（JSON）渲染成可導覽、可篩選的 API 文件：tag → operation 導覽、參數與欄位樹、範例與 cURL",
+      "version": "1.0.0",
+      "dir": "plugins/openapi-renderer",
+      "files": [
+        "notecraft-plugin.json",
+        "renderer.tsx",
+        "README.md",
+        "atoms.tsx",
+        "derive.ts",
+        "embed.tsx",
+        "example/health.openapi.json",
+        "example/orders.openapi.json",
+        "example/petstore.openapi.json",
+        "examples.ts",
+        "markdown-text.ts",
+        "markdown.tsx",
+        "nav.tsx",
+        "pages.tsx",
+        "schema-tree.tsx",
+        "schema.json",
+        "styles.ts",
+        "types.ts"
+      ],
+      "tags": [
+        "api",
+        "openapi",
+        "documentation"
       ]
     }
   ]

@@ -1,7 +1,7 @@
 ---
 Project Name: NoteCraft
 文件類型: Project Requirement Document (PRD)
-文件版本: v1.16.0
+文件版本: v1.19.0
 開發模式: Waterfall
 技術選型: 確定
 技術架構: 確定
@@ -10,7 +10,7 @@ Project Name: NoteCraft
 文件作者: 建宇
 審核人: 建宇
 建立日期: 2026-06-12
-更新日期: 2026-09-28
+更新日期: 2026-10-01
 ---
 
 # NoteCraft — AI 互動筆記 Web App
@@ -100,7 +100,7 @@ Project Name: NoteCraft
 ## 5. Site Map（網站地圖）
 
 ```
-NoteCraft（v1.13.0 起為三欄工作台殼：Rail + 檔案樹 Sidebar + 主區，見 Phase 4.16）
+NoteCraft（v1.13.0 起為三欄工作台殼：Rail + 檔案樹 Sidebar + 主區，見 Phase 4.16；v1.14.0 儀表板總覽改版，見 Phase 4.18；v1.15.0 首頁「更新月曆」頁籤，見 Phase 4.19；v1.16.0 空狀態插圖，見 Phase 4.20；v1.18.0 筆記頁籤，見 Phase 4.22）
 ├── /                       Dashboard（widget grid + 總覽／本週／AI 佇列三個 Tab）
 ├── /notes                  筆記列表（List／Board／Table／Timeline 四種 view + Drawer；篩選在 query string）
 ├── /notes/[slug]           筆記檢視頁面（頁首接手標題與動作；dev 動作收進「⋯」選單）
@@ -2762,6 +2762,64 @@ model: haiku
 - **移除**：多標籤篩選、排序切換、`/notes` 的資料檔混排、Dashboard 的簡報統計；設計稿的字數、版型庫、Board「未發佈」欄、「不相容」「渲染錯誤」狀態皆不做
 - 對應實作 Task 59–75；完整設計見 [notecraft-workbench.md](./notecraft-workbench.md)（30 題定案紀錄在其 §16，實作後回填在 §17）
 
+#### Phase 4.17 — ER Diagram Renderer v1.2（v1.14.0 補記）
+
+**目標：官方 ER plugin 從單一畫布升級為「導覽 + Wiki + Diagram」三段式**
+
+- schema v1.2（groups／schemas／Markdown description）、v1.1 資料零修改可渲染；app 端 `meta.description` 允許 Markdown（顯示第一段、索引全文）
+- `npm run check-plugins` 串接 `scripts/checks/*.mjs` 純函式斷言（Node 22.6+ strip-types）
+- 對應實作 Task 76–86；完整設計見 [notecraft-er-docs.md](./notecraft-er-docs.md)（plugin v1.2.0／notecraftapp v1.3.0）
+
+#### Phase 4.18 — Dashboard 總覽改版（v1.14.0 追加）
+
+**目標：儀表板「總覽」在一個視窗高度內看完，卡片內各自捲動**
+
+- Row 1：筆記總數與本週更新（各附依閱讀狀態三段的環形圖）、AI 待生成（連到 `/notes?pending=1`）、寫作頻率堆疊長條（8／12／16 週）
+- Row 2：最近更新時間軸（7 篇）、系列（最多 3 個、一鍵開始／繼續閱讀）＋ 標籤分布馬賽克（treemap，前 11 名 + 其他）、更新日誌（週導覽、按日篩選）
+- 兩個瀏覽器端資料來源（今天、localStorage 閱讀進度）由 island 各持有一份往下傳，SSR 一律佔位；時間基準維持「今天」（Phase 4.16 的 Q10），不採設計稿的「最新更新日」
+- 時間軸節點與日誌卡片沿用工作台的列語意（容器內並排按鈕與常駐「開啟」連結、單擊 Drawer、雙擊開啟）；「本週」「AI 佇列」Tab 不動
+- 響應式三段 1180／980／680；treemap 與週窗由 `npm run check:wb` 的斷言鎖住
+- **移除**：總覽的「AI 視覺化生成率」百分比卡、「待生成標記」widget、「近 30 日」數字；設計稿的資料夾色、四態閱讀狀態、深色模式不做
+- 對應實作 Task 87–91；完整設計見 [notecraft-workbench-dashboard.md](./notecraft-workbench-dashboard.md)（6 題定案紀錄在其 §16，實作後回填在 §17）
+
+#### Phase 4.19 — 首頁「更新月曆」頁籤（v1.15.0 追加）
+
+**目標：儀表板的第二個 Tab 從「近 7 日列表」改為月曆，一眼看出哪天更新了什麼、讀到哪**
+
+- 「本週」Tab 改名「更新月曆」（`?tab=calendar`，舊 `?tab=week` 視同）；每篇筆記依 `updatedAt` 落在日期格，顏色即閱讀狀態（與總覽寫作頻率同一組三段配色）
+- **月檢視**：每篇一顆 14px 色塊，所有日期格等高、整月一屏不捲動；前後月補位格、今天膠囊、當週淡藍底。**週檢視**：每篇一張卡片（狀態、標題、系列、標籤最多 2 個＋N、AI 已生成/總數），筆記多時只有該格內捲
+- 工具列：‹ ›（月／週）、「本週」回今天、標題與「共更新 N 篇」、三段圖例計數、週／月切換；點色塊或卡片開既有 Drawer、雙擊開筆記
+- **月曆用日曆週（週日→週六）**；總覽 KPI「本週更新」與更新日誌維持滾動 7 天，兩者數字可以不同（刻意）。`view`／`anchor` 是元件 state，不進網址
+- 今天與閱讀狀態都在瀏覽器：anchor 由 island 的 `now` 推、SSR 不輸出任何日期格；閱讀狀態變動即時重繪色塊與圖例
+- 月色塊是純按鈕（與標籤 treemap 方塊同一例外，無常駐開啟連結）；週卡片沿用工作台列語意（容器內並排按鈕與常駐「開啟」連結）
+- 新底色收成 `--wb-cal-*` token；格子上的小字改用 `--wb-muted-ink`（設計稿的灰在淡藍底只有 3.8:1）；月格與日曆週由 `npm run check:wb` 的斷言鎖住
+- **移除**：近 7 日 `NoteRow` 列表（資訊仍在總覽的更新日誌）；設計稿的「未發佈」狀態、深色模式不做
+- 對應實作 Task 92–95；完整設計見 [notecraft-workbench-calendar.md](./notecraft-workbench-calendar.md)（5 題定案紀錄在其 §16，實作後回填在 §17）
+
+#### Phase 4.20 — 空狀態插圖（v1.16.0 追加）
+
+**目標：沒有資料時看起來是「正常地沒有東西」，不是壞掉**
+
+- 總覽「更新日誌」卡片與「AI 佇列」分頁的單行灰字換成插圖式空狀態（132×104 插圖＋標題＋說明＋選用按鈕），兩處共用 `EmptyState` 元件
+- 更新日誌三種文案：本週 0 篇「本週還沒有動靜，寫下第一篇吧。」、過去週 0 篇「切換到其他週看看，或回到本週。」、選了沒更新的日期且整週有更新「這一天沒有更新的筆記」；空狀態不捲、在卡片剩餘高度內置中，矮視窗時插圖縮小
+- AI 佇列清空：「AI 佇列已清空」＋「前往筆記」連結（`/notes`）
+- 插圖顏色全走既有 `--wb-*` token、不新增 token；資料與 state 不變
+- **不做**：其他頁面的空狀態（篩選無結果等）、深色模式
+- 對應實作 Task 96–97；完整設計見 [notecraft-workbench-empty-states.md](./notecraft-workbench-empty-states.md)（4 題定案紀錄在其 §14，實作後回填在 §15）
+
+#### Phase 4.22 — 筆記頁籤（v1.18.0 追加）
+
+**目標：同時開著好幾篇筆記，不用回列表或側欄切來切去**
+
+- 主區最上方、Header 之上一條 34px 頁籤列（VS Code 式）：筆記頁與 `/view` 資料檔頁開啟後留下頁籤；系列、標籤、Dashboard、列表、Plugin、設定不開頁籤，但頁籤列一律顯示
+- 頁籤可固定（排最前、不可關）、拖曳排序（只在滑鼠裝置）、中鍵關閉；右鍵選單：關閉／關閉其他／關閉右側／全部關閉／固定／複製連結／在新視窗開啟；「全部頁籤」下拉可篩選、重開剛關閉的
+- 切回頁籤還原上次捲動位置；網址帶 hash（標題錨點、OpenAPI `#op/…`）時以 hash 為準
+- 快捷鍵 `⌥.`／`⌥,` 切換、`⌥W` 關閉、`⌥⇧T` 重開（避開瀏覽器保留的 ⌘W／⌘T）；⌘K 指令面板最上方「已開啟的頁籤」
+- 未固定頁籤上限 20，超過自動關閉最久未用的；手機改為 Header 右上計數鈕＋底部抽屜
+- MPA 下頁籤是 localStorage 的已開啟清單（`nc-tabs-v1:<workspaceLabel>`，依工作區分開、含標題快照），SSR 只輸出空列、hydrate 前後零位移
+- **不做**：預覽頁籤（斜體暫時頁籤，單擊列已是 Drawer 預覽）、頁籤上的狀態小點、深色模式
+- 對應實作 Task 105–108；完整設計見 [notecraft-workbench-note-tabs.md](./notecraft-workbench-note-tabs.md)（5 題定案紀錄在其 §16，實作後回填在 §17）
+
 #### Phase 5 — 部署與收尾
 
 **目標：上線**
@@ -2922,14 +2980,32 @@ gantt
 
 ## 11. Change Log（變更紀錄）
 
-### [1.16.0] - 2026-09-28
+### [1.19.0] - 2026-10-01
+- **Changed**: 合併上游 SteveLin100132/notecraft（notecraftapp v1.7.0：Dashboard 總覽改版、更新月曆、空狀態插圖、OpenAPI Renderer、筆記頁籤、NOTECRAFT_BASE 子路徑部署、Windows 跨磁碟支援、官網）。本分支的 8 篇公司筆記維持原路徑進版控，不隨上游移入 `private/`；下列 `-fork` 版號是本分支在上游 1.14–1.18 之前各自遞增的紀錄，保留原號不重編
+
+### [1.16.0-fork] - 2026-09-28
 - **Added**: 筆記正文的資料檔連結改為在講義抽屜就地開啟
 
-### [1.15.0] - 2026-09-26
+### [1.15.0-fork] - 2026-09-26
 - **Added**: 新增 Markdown 擴充語法 English（:en 雙語對照行），服務 exam-review 的雙語題幹與選項
 
-### [1.14.0] - 2026-09-25
+### [1.14.0-fork] - 2026-09-25
 - **Added**: 新增 Markdown 擴充語法 Choices（選擇題選項），服務 exam-review 的選擇題模式
+
+### [1.18.0] - 2026-10-01
+- **Added**: 新增 Phase 4.22 筆記頁籤規格（notecraftapp v1.7.0）
+
+### [1.17.0] - 2026-10-01
+- **Added**: 新增官方 OpenAPI Renderer plugin、manifest meta pointer 與 PluginView options／anchor
+
+### [1.16.0] - 2026-09-30
+- **Added**: 新增 Phase 4.20 空狀態插圖規格（notecraftapp v1.5.1）
+
+### [1.15.0] - 2026-09-30
+- **Added**: 新增 Phase 4.19 首頁「更新月曆」頁籤規格（notecraftapp v1.5.0）
+
+### [1.14.0] - 2026-09-29
+- **Added**: 新增 Phase 4.18 Dashboard 總覽改版規格（notecraftapp v1.4.0）
 
 ### [1.13.0] - 2026-09-22
 - **Added**: 新增 Workbench 工作台改版規格與 Phase 4.16；補上 Phase 4.15 Plugin System 條目；Site Map 更新為三欄工作台的路由（含 /plugins、/settings 與舊網址轉址）

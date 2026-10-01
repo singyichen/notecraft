@@ -329,6 +329,252 @@
 > [Task 71](task-71-plugin-enable-disable.md) 則是唯一會改動 `plugins.json` 格式與 build 期解析的 Task，
 > 改完務必跑 `npm run check-plugins`。
 
+## v1.14.0 追加功能（§8.1 Phase 4.17 待補）— ER Diagram Renderer v1.2：導覽 + Wiki + Diagram（plugin v1.2.0／notecraftapp v1.3.0）
+
+> **已完成（2026-09-27）**：Task 76–86 全部實作並逐 Task commit 於 `feat/er-diagram-redesign`。四個待驗證項的結論回填於規格 §17；各 Task 檔末有「實作記錄」。
+> 偏離原計畫的幾處：`ResolvedDataFile.description` 直接改為純文字（不另開欄位）；embed 畫布改為填滿剩餘高度；page 導覽高度量捲動祖先而非寫死 offset；`<style>` 的 CSS 不可含 SSR 會跳脫的字元（新增 `er-styles.mjs`）。另順手修了 dev 下 Ajv「schema already exists」的既有問題。
+
+> 規格：[notecraft-er-docs.md](../notecraft-er-docs.md) **v0.2.0**（10 項決策已於 2026-09-27 定案，紀錄見該文件 §16）
+> 設計交付：[design_handoff_er_docs](../prototype/design_handoff_er_docs/)（`README.md` 是像素級規格與相容性要求、`prototype/er/er.css` 是視覺定稿、
+> `prototype/ER Diagram Docs.html` 可離線開啟、`schema.json` 與 `example/schema.json` 是 v1.2 資料規格與範例）
+
+把官方 plugin `er-diagram-renderer` 從「單一關聯圖」擴充成 DBdocs 式的資料庫文件介面：Schema → 分群 → Table 導覽樹、
+Wiki（總覽／Schema／Table）、Diagram（v1.1 無限畫布功能不減，加 schema 範圍與 Wiki 雙向跳轉）。page 與 embed 共用同一棵元件樹。
+
+> **規格與設計稿不一致時，一律以規格為準。** 主要偏離：沒有 `schemas` 時導覽不顯示「全部」節點（prototype 仍顯示）；
+> 內嵌 580px 去外框；page 模式外殼不佔滿、bar 與導覽 sticky；斷點改 container query；
+> 導覽篩選也比對欄位名；`meta.description` 顯示第一段、索引全文；反引號支援 `table:`／`schema:` 前綴。
+
+| Task | 功能 | 規格 | 主要改動 |
+| --- | --- | --- | --- |
+| [Task 76](task-76-er-schema-v12-examples.md) | 資料格式 v1.2 + 兩份範例護欄 | §5.1、§12.1 | `schema.json`、`example/schema.json`（v1.2）、`example/schema.v1.1.json`、`scripts/check-plugins.mjs` 多範例 |
+| [Task 77](task-77-er-split-files.md) | 拆檔（純搬移、零行為變更） | §4.1 | `renderer.tsx` → `types.ts`／`styles.ts`／`diagram.tsx` |
+| [Task 78](task-78-er-derive-compat-checks.md) | 資料推導與 v1.1 相容規則 | §5.2–5.4 | `derive.ts`、`matchTable`、dev warn、`scripts/checks/er-derive.mjs`、`npm run check:er` |
+| [Task 79](task-79-er-mini-markdown.md) | 迷你 Markdown | §8.5 | `markdown.tsx`、`markdown-text.ts`、連結白名單、自動連結前綴 |
+| [Task 80](task-80-er-shell-nav-routing.md) | 外殼、導覽、路由、持久化 | §6、§8.1–8.2 | `renderer.tsx`、`nav.tsx`；全寬按鈕搬到 bar |
+| [Task 81](task-81-er-wiki-pages.md) | Wiki 三頁 | §5.3、§8.3 | `wiki.tsx` |
+| [Task 82](task-82-er-local-diagram.md) | 局部關聯圖 | §8.4 | `local-diagram.tsx` |
+| [Task 83](task-83-er-diagram-scope.md) | Diagram 範圍與雙向跳轉 | §8.6 | `diagram.tsx`、範圍 pill、「開啟 Wiki」 |
+| [Task 84](task-84-er-responsive-a11y.md) | 響應式 + 無障礙 + Esc | §9、§10 | container query、焦點管理 |
+| [Task 85](task-85-app-meta-description-markdown.md) | **App 端** `meta.description` 去 Markdown | §11 | `src/lib/strip-markdown.ts`、`plugins.ts`、`view/[...path].astro`、`workbench.ts`、`series.ts`；v1.3.0 |
+| [Task 86](task-86-er-docs-release.md) | 文件、版號、全面驗收、回填 | §12.2、§17 | manifest／registry 1.2.0、README、CHANGELOG、CLAUDE.md |
+
+**順序**：76 → 77 → 78 是地基，依序做；**76 先把 v1.1 與 v1.2 兩份範例都接進 `check-plugins`**，之後每一步都有相容性回歸保護。
+79 與 80 都只依賴 78，可並行；81 需要 79＋80；82 接 81；83 只依賴 80，可與 81、82 並行；84 收 81–83；
+85 是唯一動 app 的 Task，只依賴 79（斷言要與 plugin 的 `stripMarkdown` 對照），可隨時插入；86 最後。
+
+```
+76 ─ 77 ─ 78 ─┬─ 79 ─┬──────────── 85
+              │      └─┐
+              └─ 80 ───┴─ 81 ─ 82 ─┐
+                  └──────── 83 ────┴─ 84 ─ 86
+```
+
+> **交付節奏**：全程在 `feat/er-diagram-redesign` 單一分支上，依 Task 逐步 commit，**Task 86 完成後才併回 main** ——
+> repo 根的 `plugins/` 就是官方 store，**推上預設分支等於發佈**。每個 commit 都要能通過
+> `npx tsc --noEmit && npx astro build && npm run check-plugins`（Task 78 起加 `npm run check:er`）。
+>
+> **四個規格標為「待驗證」的項目**，結論由 Task 86 彙整回填規格 §17：
+> ① pagefind 是否索引 `hidden` 屬性的元素（Task 85）；
+> ② `VizZoom` 在 capture 階段攔 Esc 是否破壞逐層退（Task 84）；
+> ③ page 模式 `--erd-page-offset` 的實測值（Task 80）；
+> ④ embed 畫布在 580 外殼內的實際高度（Task 83）。
+>
+> **幾條貫穿整批的規則**：
+> - **v1.1 資料零修改可渲染**。`example/schema.v1.1.json` 與 `src/content/notes/schema-demo.er.json` 一個欄位都不准改
+> - **每新增一個 plugin 檔就登記到 `registry.json` 的 `files`**。store 安裝只下載清單內的檔；`check-plugins` 會比對集合
+> - **被 `scripts/checks` 載入的 `.ts` 只能有 `import type`、不能有 JSX**（Node strip-types 不解析無副檔名的相對 import、不轉 JSX）
+> - **靠 localStorage 的東西 SSR 一律當作沒有**：路由在 `useEffect` 掛載後才還原
+> - **不用 `dangerouslySetInnerHTML`、不引入白名單外套件**；Markdown 連結只接受 `http(s)`／`mailto`／站內 `/`／`#`
+> - **class 一律 `erd-` 前綴、規則以 `.erd-root` 起頭**（prototype 是 `erx-`）；樣式不出現 hex 或裸 `rgba()`，唯一例外集中成 `--erd-warn-ink`
+> - 驗畫面前確認 Browser pane **可見**，否則 `client:visible` 的內嵌不會 hydrate
+
+> **本批最大風險**：[Task 77](task-77-er-split-files.md) 與 [Task 83](task-83-er-diagram-scope.md) —— Diagram 的縮放、fit、量測是 v1.1 調最久的部分，
+> 搬移與加 scope 都可能讓它微妙地壞掉，而 build 全綠。兩個 Task 都附並排比對的驗收。
+> 其次是 [Task 85](task-85-app-meta-description-markdown.md)：它改的是**所有 plugin** 的 description 出口與 pagefind 標記，
+> 標記搬錯位置資料檔頁會**整頁掉出全文索引**（與 Task 72 同一類風險），只有實際搜尋才看得出來。
+
+## v1.15.0 追加功能（§8.1 Phase 4.18 待補）— Dashboard 總覽改版（notecraftapp v1.4.0）
+
+> **已完成（2026-09-29）**：Task 87–91 全部實作並逐 Task commit 於 `feat/dashboard-redesign`。實測結論回填於規格 §17；各 Task 檔末有「實作記錄」。
+
+> 規格：[notecraft-workbench-dashboard.md](../notecraft-workbench-dashboard.md) **v0.2.0**（6 項決策已於 2026-09-29 定案，紀錄見該文件 §16；實作後回填見 §17）。
+> 設計交付：[design_handoff_workbench_dashboard](../prototype/design_handoff_workbench_dashboard/)（README、可離線開啟的 prototype、`source/pt-dash2.*`）。
+> 範圍只有 Dashboard 的「總覽」Body：Row 1 三張 KPI ＋ 寫作頻率堆疊長條、Row 2 最近更新／系列＋標籤馬賽克／更新日誌，整頁填滿一個視窗、卡片內捲動。
+> 「本週」「AI 佇列」Tab、Drawer、殼都不動。
+
+| Task | 功能 | 規格 | 主要改動 |
+| --- | --- | --- | --- |
+| [Task 87](task-87-dashboard-foundation.md) | 地基：token、`dv-` 樣式、時間工具、純函式與斷言、island props | §3、§4、§7、§9 | `workbench.css`（`--wb-dv-*`、刪舊 widget 規則、移植 `pt-dash2.css`）、`wb-time.ts`（`weekOf`／`weekWindow`／`mdShort`）、`lib/wb-dashboard.ts`、`scripts/checks/wb-dashboard.mjs`、`index.astro`、`dashboard/Overview.tsx` 骨架 |
+| [Task 88](task-88-dashboard-kpi-freq.md) | Row 1：三張 KPI 與寫作頻率 | §5、§6.1 | `dashboard/Ring.tsx`、`KpiCard.tsx`、`FreqChart.tsx` |
+| [Task 89](task-89-dashboard-timeline-log.md) | 最近更新（時間軸）與更新日誌 | §6.2、§6.5、§8 | `dashboard/Timeline.tsx`、`UpdateLog.tsx`；列的容器 DOM 與 `rowHandlers` |
+| [Task 90](task-90-dashboard-series-treemap.md) | 系列卡與標籤分布馬賽克 | §6.3、§6.4 | `dashboard/SeriesCard.tsx`、`TagTreemap.tsx`（ResizeObserver、tooltip） |
+| [Task 91](task-91-dashboard-responsive-cleanup-release.md) | 響應式、無障礙、viewer 空狀態、清理、文件回填、發版 | §9–§14、§17 | 刪 `DashboardWorkbench` 舊 JSX、CLAUDE.md／PRD／CHANGELOG、v1.4.0 |
+
+**順序**：87 是地基，先做；88、89、90 只依賴 87，可並行；91 收尾。
+
+```
+87 ─┬─ 88 ─┐
+    ├─ 89 ─┼─ 91
+    └─ 90 ─┘
+```
+
+> **交付節奏**：全程在 `feat/dashboard-redesign` 單一分支上，依 Task 逐步 commit，**Task 91 完成後才併回 main**。
+> 每個 commit 都要能通過 `npx tsc --noEmit && npx astro build`（Task 87 起加 `npm run check:wb`；`check-plugins` 會自動串到它）。
+>
+> **幾條貫穿整批的規則**：
+> - **兩個瀏覽器端資料來源**（今天、localStorage 閱讀進度）**SSR 一律以佔位輸出**（「—」、只畫底環、不畫長條、不輸出日誌清單），真值只在 `useEffect` 後進 render；`now` 與 `live` 只由 `DashboardWorkbench` 持有一份往下傳
+> - **時間基準是今天**（workbench Q10、本批 Q2），不是 handoff 的「最新更新日」
+> - **閱讀狀態三態**、**資料夾不分色**、**系列 accent 三種**——handoff 的四態、`FOLDER_COLOR`、`green` 都不移植
+> - **列的 DOM**：時間軸節點與日誌卡片是容器內並排的 `<button class="wb-row-main">` 與常駐 `<a class="wb-row-open">`，不巢狀（workbench §8.2.1）
+> - **class 一律沿用 prototype 的 `dv-` 名稱**；`workbench.css` 規則零色碼，新色值全部收成 `--wb-dv-*` token；SVG 內的顏色用 `style`，不用 `fill="var(…)"` 屬性
+> - **被 `scripts/checks` 載入的 `wb-dashboard.ts` 只能 `import type`、不能有 JSX**
+> - `id="nc-scroll"` 留在總覽 Body 上；驗畫面前確認 Browser pane **可見**（隱藏時 ResizeObserver 量到 0）
+
+> **本批最大風險**：Row 2 的「整頁不捲、卡片內捲」靠一整條 `flex:1 1 0; min-height:0` 鏈（`.dv-row2>.dv-card`、`.dv-midcol`、`.dv-tags`、`.dv-tm`），漏一層就退化成整頁捲動而 build 全綠——Task 88／89 驗收各附「視窗 900 高、清單超出」的截圖。
+> 其次是 hydration：任何人把 `new Date()` 或 `readingStatus()` 放進 render 初值就會 mismatch，dev console 零警告才算過。
+
+## v1.15.0 追加功能（§8.1 Phase 4.19）— 首頁「更新月曆」頁籤 ✅ 已完成（2026-09-30 / notecraftapp v1.5.0）
+
+> 規格：[notecraft-workbench-calendar.md](../notecraft-workbench-calendar.md) **v0.2.0**（5 項決策已於 2026-09-30 定案，紀錄見該文件 §16；實作後回填見 §17）。
+> 設計交付：[design_handoff_update_calendar](../prototype/design_handoff_update_calendar/)（README、可離線開啟的 prototype、`source/pt-cal.*`）。
+> 範圍只有 Dashboard 的第二個 Tab：「本週」（近 7 日 `NoteRow` 列表）換成「更新月曆」——月檢視每篇一顆閱讀狀態色塊、週檢視每篇一張卡片，點了開既有 Drawer。
+> 「總覽」「AI 佇列」Tab、Drawer、殼都不動。
+
+| Task | 功能 | 規格 | 主要改動 |
+| --- | --- | --- | --- |
+| [Task 92](task-92-calendar-foundation.md) | 地基：token、`cal-` 樣式、純函式與斷言、Tab 改名、空殼 | §2–§5、§7、§9 | `workbench.css`（`--wb-cal-*`、`--wb-a-blue-12`、移植 `pt-cal.css`）、`lib/wb-calendar.ts`、`scripts/checks/wb-calendar.mjs`、`DashboardWorkbench.tsx`（`calendar` Tab、`?tab=week` 相容、刪舊列表）、`dashboard/Calendar.tsx` 空殼 |
+| [Task 93](task-93-calendar-month-view.md) | 月檢視：state、日期格、色塊、導覽、圖例、週月切換 | §4.4、§5、§6.1–§6.4、§8 | `dashboard/Calendar.tsx`、`CalCell.tsx`、`CalDot.tsx` |
+| [Task 94](task-94-calendar-week-view.md) | 週檢視：卡片（容器 DOM）、格內捲動、週標題 | §6.5、§7.3、§10 | `dashboard/CalNote.tsx`；`Calendar.tsx`／`CalCell.tsx` 的週分支 |
+| [Task 95](task-95-calendar-responsive-cleanup-release.md) | 響應式、無障礙、viewer 實測、清理、文件回填、發版 | §9–§14、§17 | CLAUDE.md／workbench.md／Dashboard 文件／PRD／CHANGELOG、v1.5.0 |
+
+**順序**：92 是地基，先做；93、94 只依賴 92，可並行；95 收尾。
+
+```
+92 ─┬─ 93 ─┐
+    └─ 94 ─┴─ 95
+```
+
+> **交付節奏**：全程在 `feat/dashboard-update-calendar` 單一分支上，依 Task 逐步 commit，**Task 95 完成後才併回 main**。
+> 每個 commit 都要能通過 `npx tsc --noEmit && npx astro build && npm run check:wb`。
+>
+> **幾條貫穿整批的規則**：
+> - **今天與閱讀狀態都在瀏覽器**：`now`／`live`／`readingVersion` 只由 `DashboardWorkbench` 持有一份往下傳；`anchor` 初值 `null`、SSR **不輸出任何日期格**（只有工具列「—」與星期列）；真值只在 `useEffect` 後進 render
+> - **月曆用日曆週（週日→週六）**，總覽 KPI 與更新日誌維持滾動 7 天（Q1）；日期一律 `YYYY-MM-DD` 當地日字串進出，`wb-calendar.ts` 不 import `wb-time.ts`
+> - **閱讀狀態三態**，直接沿用總覽的 `DV_RS` 與 `.dv-rs-*` class；handoff 的「未發佈」不移植；色塊底色走 class、不寫 inline `style`
+> - **列的 DOM**：週卡片是容器內並排 `<button class="wb-row-main">` 與常駐 `<a class="wb-row-open">`；月色塊是純 `<button>` 走 `rowHandlers`、無開啟連結（Q2，treemap 方塊同一例外）
+> - **class 一律沿用 prototype 的 `cal-` 名稱**；`workbench.css` 規則零色碼，新底色收成 `--wb-cal-*`；`cal-` 規則要放在 Task 74 的 860px 媒體規則**之前**，否則手機底部留白被蓋掉
+> - **格子底色上的小字用 `--wb-muted-ink`**（Q5；handoff 的 `--wb-ink-3` 在淡藍底只有 3.8:1）
+> - **被 `scripts/checks` 載入的 `wb-calendar.ts` 只能 `import type`、不能有 JSX**
+> - `id="nc-scroll"` 留在月曆 Body 上；驗畫面前確認 Browser pane **可見**（隱藏時 island 不 hydrate）
+
+> **本批最大風險**：hydration——任何人把 `iso(new Date())` 寫進 `anchor` 初值就 mismatch，dev console 零警告才算過。
+> 其次是「整月一屏」：6 列月份在矮視窗會撐開格區，捲動必須發生在 `#nc-scroll`、不是整頁（Task 93 附 2026-08 在 768 高的截圖）。
+
+## v1.16.0 追加功能（§8.1 Phase 4.20）— 空狀態插圖 ✅ 已完成（2026-09-30 / notecraftapp v1.5.1）
+
+> 規格：[notecraft-workbench-empty-states.md](../notecraft-workbench-empty-states.md) **v0.2.0**（4 項決策已於 2026-09-30 定案，紀錄見該文件 §14；實作後回填見 §15）。
+> 設計交付：[design_handoff_empty_states](../prototype/design_handoff_empty_states/)（README、prototype、`source/pt-dash*.jsx`）。
+> 範圍只有兩處：總覽「更新日誌」卡片與「AI 佇列」分頁的空狀態，換成共用的插圖元件 `EmptyState`。資料、state、其他頁面的空狀態都不動。
+
+| Task | 功能 | 規格 | 主要改動 |
+| --- | --- | --- | --- |
+| [Task 96](task-96-empty-state-component.md) | `EmptyState` 元件、樣式、兩處接入、最矮卡片量測 | §2–§8 | `wb/EmptyState.tsx`、`workbench.css`（`.pt-empty*`、`.dv-log-list.is-empty`）、`dashboard/UpdateLog.tsx`、`DashboardWorkbench.tsx` |
+| [Task 97](task-97-empty-state-cleanup-release.md) | 響應式與 viewer 實測、文件回填、發版 | §7、§10、§15 | 規格／Dashboard 文件／CLAUDE.md／PRD／CHANGELOG、v1.5.1 |
+
+> **交付節奏**：全程在 `feat/dashboard-empty-states` 單一分支，Task 97 完成後開 PR 併回 main。每個 commit 都要能通過 `npx tsc --noEmit && npx astro build`。
+>
+> **貫穿規則**：SVG 顏色用 `style` 寫 CSS 變數（不用 `stroke="var(…)"`）；TSX 與 CSS 零色碼、不新增 token；class 沿用 prototype 的 `pt-empty*`；「前往筆記」是 `<a href="/notes">`。
+
+## v1.17.0 追加功能（§8.1 Phase 4.21）— OpenAPI Renderer（plugin `openapi-renderer` v1.0.0／notecraftapp v1.6.0）✅ 已完成（2026-10-01）
+
+> **已完成（2026-10-01）**：Task 98–104 全部實作於 `feat/openapi-renderer`。實測結論回填於規格 §17；各 Task 檔末有「實作記錄」。
+> 偏離原計畫的幾處：Esc 改為晚一拍（`setTimeout`）判斷 `defaultPrevented`；導覽 path 截斷長度 19／21（handoff 24／26）；
+> 順手修了 `GeneratedFrame` 資料檔膠囊在窄寬度斷行；極大 spec 產生器放 `scripts/fixtures/`（不放 `scripts/checks/`）。
+
+> 規格：[notecraft-openapi-renderer.md](../notecraft-openapi-renderer.md) **v1.0.0**（9 項決策已於 2026-10-01 定案，紀錄見該文件 §16；實作後回填見 §17）。
+> 設計交付：[design_handoff_openapi_renderer](../prototype/design_handoff_openapi_renderer/)（`README.md` 是像素級規格、`prototype/oa/oa.css` 是視覺定稿、
+> `prototype/OpenAPI Renderer Prototype.html` 需經本機 http server 開啟、`example/` 是三份範例 spec）
+
+新增第二個官方 plugin：把筆記資料夾內的 OpenAPI 文件（JSON，OAS 3.0／3.1）渲染成 NoteCraft 風格的 API 文件——
+導覽（tag → operation、schemas）+ 總覽／Tag／Operation／Schema 四種頁面；embed 為單一 operation 卡或總覽縮影。ER Diagram 的同一家族。
+
+> **規格與設計稿不一致時，一律以規格為準。** 主要偏離：路由保留 `.openapi`（`/view/api/orders.openapi`，Q2）；
+> embed 外框由 `GeneratedFrame` 提供、plugin 不畫 figcaption；`<PluginView>` 的 prop 是 `src`；CSS 變數 `--oar-*`（不是 `--wb-oa-*`）；
+> 斷點改 container query；與 ER 不共用模組（各自一份，Q6）；store 不放極大案例 spec（Q9）。
+
+| Task | 功能 | 規格 | 主要改動 |
+| --- | --- | --- | --- |
+| [Task 98](task-98-app-manifest-meta-pluginview-options.md) | App 端：manifest `meta` pointer、`<PluginView>` 的 `options`／`anchor`、app 升 1.6.0 | §11 | `lib/plugins.ts`、`lib/plugin-types.ts`、`plugins/notecraft-plugin.schema.json`、`PluginView.astro`、`GeneratedFrame.astro`、`scripts/checks/app-plugin-meta.mjs` |
+| [Task 99](task-99-oar-scaffold-derive-examples.md) | Plugin 骨架：manifest、dataSchema、推導、範例產生、Markdown、斷言 | §4、§5、§12.1 | `plugins/openapi-renderer/{notecraft-plugin.json,schema.json,types.ts,derive.ts,examples.ts,markdown-text.ts}`、`registry.json`、`scripts/checks/oar-{derive,examples,markdown}.mjs` |
+| [Task 100](task-100-oar-atoms-schema-tree-styles.md) | 原子元件、欄位樹、樣式 | §7、§8.4 | `atoms.tsx`、`markdown.tsx`、`schema-tree.tsx`、`styles.ts`、`scripts/checks/oar-styles.mjs` |
+| [Task 101](task-101-oar-shell-nav-routing.md) | 外殼、bar、導覽、hash 路由、鍵盤、捲動同步 | §6、§8.1–§8.2、§10 | `renderer.tsx`、`nav.tsx` |
+| [Task 102](task-102-oar-pages.md) | 總覽、Tag、Operation、Schema 四種頁面 | §8.3 | `pages.tsx` |
+| [Task 103](task-103-oar-embed.md) | embed：單卡、縮影、錯誤；與 app 外框整合 | §8.5 | `embed.tsx`、測試筆記 |
+| [Task 104](task-104-oar-responsive-docs-release.md) | 響應式、無障礙收尾、手動驗證、文件回填、發版 | §9、§10、§12.2 | CLAUDE.md／規格 §17／PRD／CHANGELOG、v1.6.0 |
+
+**順序**：98 → 99 → 100 是地基，依序做；101 與 103 只依賴 100（103 另依賴 98），可並行；102 接在 101 之後；104 收尾。
+
+```
+98 ─ 99 ─ 100 ─┬─ 101 ─ 102 ─┐
+               └─ 103 ───────┴─ 104
+```
+
+> **交付節奏**：全程在 `feat/openapi-renderer` 單一分支上，依 Task 逐步 commit，**Task 104 完成後開 PR 併回 main**。
+> 每個 commit 都要能通過 `npx tsc --noEmit && npx astro build`；動到 plugin 的再跑 `npm run check-plugins`（純函式只跑 `npm run check:oar`）。
+>
+> **幾條貫穿整批的規則**：
+> - **plugin 不 import app、也不 import ER**：兩個 plugin 各自安裝；需要的 Markdown parser 複製一份，以 `oar-markdown.mjs` 對照行為
+> - **被 `scripts/checks` 載入的 `derive.ts`／`examples.ts`／`markdown-text.ts` 只能 `import type`、不能有 JSX**
+> - **CSS 字串不可含 `< > & " '`**、所有規則以 `.oar-root` 起頭、DS 沒有的值集中為 `.oar-root` 上的 `--oar-*`（`oar-styles.mjs` 把關）
+> - **SSR 一律總覽、一律 cURL**：hash 與 `localStorage`（`oar:v1:lang`）都在 `useEffect` 後才讀；範例產生器的日期與 uuid 寫死，不取今天
+> - **embed 不讀寫 hash、不掛 keydown、不畫外框**；page 的 Esc 先看 `defaultPrevented`，實際有東西可退才 `preventDefault`
+> - 每新增一個 plugin 檔就同步 `plugins/registry.json` 的 `files`（`check-plugins` 擋漂移）
+> - 驗畫面前確認 Browser pane **可見**（隱藏時 island 不 hydrate）
+
+> **本批最大風險**：hydration 與捲動容器——hash／localStorage 若進了初值就 mismatch；sticky 與捲動同步要以 `#nc-scroll`（最近的捲動祖先）為準而不是 window。
+> 其次是真實世界的 spec 不規矩（斷掉的 `$ref`、重複 operationId）：一律容錯 + dev warn，不白屏、不 build fail。
+
 ## v1.5.0 補充
 
 > **Task 09 為 10～13 的基礎**；先做。三個待釐清項已於 2026-06-16 收斂：① **registry `slugs` 為章節順序唯一權威**（舊 `series`/`order` 停用）；② **不做「可追蹤 / 未發佈」判定**（全部筆記皆可追蹤、`tracked` = `total`、僅三態）；③ **升級版 `SeriesNav` 取代既有 prev/next**（prev/next 內嵌不消失）。
+
+## v1.18.0 追加功能（§8.1 Phase 4.22）— 筆記頁籤（notecraftapp v1.7.0）✅ 已完成（2026-10-01）
+
+> **已完成（2026-10-01）**：Task 105–108 全部實作於 `feat/note-tabs`。實測結論回填於規格 §17；各 Task 檔末有「實作記錄」。
+> 偏離原計畫的幾處：浮層改 `position:fixed`、overlay 層；下拉與手機抽屜的列同樣是「連結＋並排關閉鈕」；
+> 「關閉其他／右側」關到目前頁面時導覽到被點的頁籤。bfcache、axe、README 截圖未做（見規格 §17「仍未做的」）。
+
+> 規格：[notecraft-workbench-note-tabs.md](../notecraft-workbench-note-tabs.md) **v1.0.0**（5 項決策已於 2026-10-01 定案，紀錄見該文件 §16；實作後回填見 §17）。
+> 設計交付：[design_handoff_note_tabs](../prototype/design_handoff_note_tabs/)（`README.md` 是像素級規格、`prototype/wb/pt-tabs.css` 是視覺定稿、
+> `prototype/NoteCraft-Workbench-Tabs.html` 需經本機 http server 開啟、`Note-Tabs-Spec.html` 是各狀態畫面）
+
+在工作台主區最上方、Header 之上加一條 34px 頁籤列（VS Code 式）：筆記與資料檔頁開啟後留下頁籤，可固定、拖曳、右鍵管理、⌥ 快捷鍵切換，切回時還原捲動位置；手機改為 Header 右上的計數鈕＋底部抽屜。
+MPA 下頁籤是存在 localStorage 的「已開啟清單」，每次換頁由 `client:load` island 重畫。
+
+> **規格與設計稿不一致時，一律以規格為準。** 主要偏離：localStorage 存標題快照、idle 時以 `/wb-index.json` 校正（Q1）；
+> 頁籤是 `<a role="tab">` 並排 ✕ 按鈕，不是 `div role=tab` 包按鈕（Q2）；key 為 `nc-tabs-v1:<workspaceLabel>`（Q5）；
+> 網址有 hash 時不還原捲動；狀態小點與 `?tabsDemo=` 不移植。
+
+| Task | 功能 | 規格 | 主要改動 |
+| --- | --- | --- | --- |
+| [Task 105](task-105-tabs-store-pure-functions.md) | 地基：純函式、store、斷言、Toast 佇列 | §4、§6.6、§11 | `lib/wb-tabs.ts`、`lib/wb-tabs-store.ts`、`lib/toast.ts`、`scripts/checks/wb-tabs.mjs`、`ToastHost.tsx`、`check:wb` |
+| [Task 106](task-106-tabs-desktop-strip.md) | 桌面頁籤列：layout 佔位、頁籤 DOM、溢出、拖曳、樣式 | §3、§5、§6.1–§6.4、§10、§12.1 | `WorkbenchLayout.astro`（`tab` prop）、`notes/[...slug].astro`、`view/[...path].astro`、`wb/tabs/TabBar.tsx`／`TabStrip.tsx`、`workbench.css`（`.nt-*`、`--wb-a-blue-04`） |
+| [Task 107](task-107-tabs-menu-shortcuts-scroll.md) | 右鍵選單、全部頁籤、快捷鍵、捲動還原、Palette、刪除筆記 | §6.3、§6.5、§7、§8、§12.2 | `TabMenu.tsx`、`TabAll.tsx`、`TabBar.tsx`、`Palette.tsx`、`MoreMenu.tsx`、`DeleteNoteButton.tsx` |
+| [Task 108](task-108-tabs-responsive-docs-release.md) | 平板、手機計數鈕與抽屜、viewer 實測、文件回填、發版 | §9、§11、§12、§17 | `TabSheet.tsx`、`workbench.css` RWD、CLAUDE.md／workbench.md／PRD／CHANGELOG、v1.7.0 |
+
+**順序**：一條直線，每一步都依賴前一步。
+
+```
+105 ─ 106 ─ 107 ─ 108
+```
+
+> **交付節奏**：全程在 `feat/note-tabs` 單一分支上，依 Task 逐步 commit，**Task 108 完成後開 PR 併回 main**。
+> 每個 commit 都要能通過 `npx tsc --noEmit && npx astro build`；動到 `wb-tabs.ts` 的再跑 `npm run check:wb`。
+>
+> **幾條貫穿整批的規則**：
+> - **`wb-tabs.ts` 只能 `import type`、不能有 JSX、不碰 `window`／`localStorage`／`Date.now()`**（`scripts/checks` 直接載入）
+> - **SSR 只輸出 34px 空列**（與手機的 32×32 空計數框），頁籤內容一律 hydrate 後才畫；hydrate 前後 `#nc-scroll` 位置不得改變
+> - **每次寫 store 都先重讀 localStorage**，不拿 React state 當來源（多個瀏覽器分頁同時開）
+> - 浮層（選單、下拉、手機抽屜）走 `wb-escape` 堆疊；`workbench.css` 規則零色碼；`.nt-*` 規則放在第一個 860px 殼響應式區塊之前
+> - 快捷鍵只用 `⌥`、比對 `event.code`，焦點在輸入元件內不攔截

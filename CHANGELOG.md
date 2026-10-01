@@ -4,6 +4,139 @@
 
 格式依循 [Keep a Changelog 1.1.0](https://keepachangelog.com/zh-TW/1.1.0/)，版號依循 [Semantic Versioning](https://semver.org/lang/zh-TW/)。
 
+## [1.7.0] - 2026-10-01
+
+### 新增
+
+- 工作台的**筆記頁籤**（設計文件 `docs/notecraft-workbench-note-tabs.md`）：主區最上方一條頁籤列，開過的筆記與資料檔頁會留下頁籤，不用回列表或側欄重找。可固定、拖曳排序（滑鼠裝置）、中鍵關閉；右鍵選單有關閉其他／關閉右側／全部關閉、固定、複製連結、在新視窗開啟；右側「全部頁籤」可篩選並重開剛關閉的
+- 切回頁籤時回到上次的捲動位置（網址帶 `#標題` 時以標題為準）
+- 鍵盤：`⌥.`／`⌥,` 切換頁籤、`⌥W` 關閉、`⌥⇧T` 重開剛關閉的；頁籤列本身可用方向鍵、`Home`／`End`、`Delete` 操作
+- 未固定頁籤上限 20 個，超過時自動關閉最久沒看的那個並提示
+- ⌘K 指令面板最上方新增「已開啟的頁籤」
+- 手機改為 Header 右上角的頁籤計數鈕，點開是底部抽屜
+
+### 變更
+
+- 平板寬度的側欄開關按鈕下移到 Header 區，讓位給頁籤列
+- dev 環境刪除筆記時一併關閉它的頁籤
+
+### 內部
+
+- 新增 `src/lib/wb-tabs.ts`（頁籤清單純函式）、`src/lib/wb-tabs-store.ts`（localStorage，key 依工作區分開）、`src/lib/toast.ts`（ToastHost 掛載前的提示佇列）；`check:wb` 串上 `scripts/checks/wb-tabs.mjs`
+- `WorkbenchLayout` 新 prop `tab`：筆記頁與資料檔頁以它宣告自己是頁籤
+
+## [1.6.0] - 2026-10-01
+
+### 新增
+
+- 新的官方 plugin **`openapi-renderer`**（1.0.0，設計文件 `docs/notecraft-openapi-renderer.md`）：把筆記資料夾內的 OpenAPI 3.0／3.1 文件（JSON）渲染成 API 文件 —— tag → operation 導覽（文字與 method 篩選）、總覽／Tag／Operation／Schema 四種頁面、參數表與欄位樹（`$ref`、循環參照、`oneOf`／`anyOf`／`allOf`、超過三層「深入」）、範例 JSON 與 cURL／fetch、可分享的深連結（`#op/…`、`#schema/…`）。3.2 以 3.1 規則盡力渲染並警示，Swagger 2.0 顯示轉檔指引。安裝：`npx notecraftapp install-plugin openapi-renderer`
+- plugin manifest 新增選填的 `meta`：以 JSON Pointer 指定資料檔的標題／描述／「回到來源筆記」從哪裡取（例：OpenAPI 的 `/info/title`），省略時沿用資料檔的 `meta.*`
+- `<PluginView>` 新增 `options`（只影響這一處內嵌，例：指定要顯示哪一支 operation）與 `anchor`（「開啟完整檢視頁」連結附帶的 hash）
+
+### 修正
+
+- 筆記內嵌資料檔時，外框的「資料檔 · <plugin 名稱>」膠囊在窄寬度下不再斷成多行
+
+### 內部
+
+- 新增 `src/lib/plugin-meta.ts`（JSON Pointer 取值）與 `scripts/checks/app-plugin-meta.mjs`；`npm run check:oar` 跑 OpenAPI plugin 的推導、範例、Markdown 對照與樣式斷言
+- 規模測試用的 OpenAPI 產生器 `scripts/fixtures/oar-large-spec.mjs`（20 個 tag、280 支 operation）
+
+## [1.5.1] - 2026-09-30
+
+### 變更
+
+- 儀表板「更新日誌」卡片與「AI 佇列」分頁沒有資料時，改為插圖式空狀態（插圖＋標題＋說明；設計文件 `docs/notecraft-workbench-empty-states.md`），取代原本的單行灰字
+- 更新日誌依情境顯示三種文案：本週沒有更新、過去某週沒有更新、選了沒有更新的日期（整週有更新時）；空狀態不出現捲軸，視窗較矮時插圖自動縮小
+- AI 佇列清空時顯示「AI 佇列已清空」與「前往筆記」連結
+
+### 內部
+
+- 新增 `src/components/wb/EmptyState.tsx`；插圖顏色全走既有 `--wb-*` token，不新增 token
+
+## [1.5.0] - 2026-09-30
+
+### 變更
+
+- 儀表板的「本週」Tab 改為「更新月曆」（設計文件 `docs/notecraft-workbench-calendar.md`）：每篇筆記依更新日落在日期格，顏色即閱讀狀態（與總覽寫作頻率同一組配色）。**月檢視**每篇一顆色塊、整月一屏不捲動；**週檢視**每篇一張卡片（狀態、標題、系列、標籤、AI 已生成／總數），筆記多時只有該格內捲。‹ › 翻月／翻週、「本週」回今天、三段圖例計數、週／月切換
+- 點色塊或卡片開既有的筆記 Drawer、雙擊開啟；週卡片有常駐「開啟」連結，鍵盤語意與筆記列表相同
+- 月曆用**日曆週（週日→週六）**；總覽「本週更新」與更新日誌仍是滾動 7 天，兩者數字可以不同
+- 網址 `?tab=calendar`；舊的 `?tab=week` 仍可用、視同月曆
+
+### 移除
+
+- 儀表板「本週」Tab 的近 7 日筆記列表（資訊仍在總覽的「更新日誌」）
+
+### 內部
+
+- 新增 `src/lib/wb-calendar.ts`（月格／日曆週／翻頁／標題的純函式）與 `scripts/checks/wb-calendar.mjs`；`npm run check:wb` 一併跑
+- `workbench.css` 新增 `--wb-cal-*` 四個底色與 `--wb-a-blue-12`；月曆規則放在 860px 媒體規則之前
+
+## [1.4.1] - 2026-09-29
+
+### 修正
+
+- 儀表板「更新日誌」卡片裡的系列圖示比系列標題低、不在同一水平：改為與同列其他欄一樣垂直置中，長標題的省略號行為不變
+
+## [1.4.0] - 2026-09-29
+
+### 變更
+
+- 儀表板「總覽」整頁改版（設計文件 `docs/notecraft-workbench-dashboard.md`）：上列三張 KPI 卡（筆記總數與本週更新各附依閱讀狀態分段的環形圖、AI 待生成）加寫作頻率堆疊長條（8／12／16 週切換），下列三欄等高的「最近更新」時間軸、「系列」（最多 3 個、一鍵開始／繼續閱讀）＋「標籤分布」馬賽克（treemap，點方塊即篩選）、「更新日誌」（週導覽、按日篩選）。整頁填滿一個視窗高度、清單在卡片內捲動；≤980px 改為整頁捲動、≤680px 單欄
+- 時間軸節點與日誌卡片單擊開 Drawer、雙擊開啟，列尾有常駐「開啟」連結，鍵盤語意與筆記列表相同
+- 「本週」「AI 佇列」兩個 Tab 不變
+
+### 移除
+
+- 總覽的「AI 視覺化生成率」百分比卡與「待生成 @ai-visualize 標記」widget（資訊改由「AI 待生成」卡與「AI 佇列」Tab 提供）
+- 總覽的「近 30 日更新」數字
+
+### 內部
+
+- 新增 `npm run check:wb`：treemap 面積守恆／不重疊／成比例、週窗與分格一致的斷言（`scripts/checks/wb-dashboard.mjs`，`check-plugins` 會一併跑）
+- `weekBuckets()` 的 label 改為該週結束日；新增 `weekOf()`、`weekWindow()`、`mdShort()`
+
+## [1.3.0] - 2026-09-27
+
+### 新增
+
+- 資料檔的 `meta.description` 允許 Markdown。app 用到它的地方 —— `/view` 頁的 `<meta name="description">` 與 Toolbar 說明、`/wb-index.json`、系列章節 —— 一律去除標記、只取第一段純文字；`/view` 頁另以隱藏元素把全文純文字交給 pagefind 索引（顯示第一段、索引全文）。原本就是純文字的描述，輸出與先前逐字相同。原文仍在 `data.meta.description` 給 plugin 使用
+- `npm run check-plugins` 會驗證並 build plugin `example/` 底下的所有 `.json`（不再只有 `manifest.example`），並串接 `scripts/checks/*.mjs` 的純函式斷言（以 Node 22.6+ 原生 strip-types 直接載入 `.ts`，不引入 test runner）；新增 `npm run check:er`
+
+### 變更
+
+- 資料檔渲染頁（`/view/*`）改為滿版：渲染區不再留 padding，由 plugin 自行決定內距
+
+### 修正
+
+- `astro dev` 下改動資料檔或 `plugins.json` 後，重新編譯 plugin 的 dataSchema 丟出「schema with key or id … already exists」導致整站 500：清快取時一併清掉 Ajv 已註冊的 schema
+
+## [1.2.3] - 2026-09-26
+
+### 修正
+
+- Windows 上筆記專案與 viewer app（`~/.notecraft/app-<version>/`）位於不同磁碟時，plugin 渲染器與簡報無法載入：`/plugins`、`/settings`、`/view/*`、MDX 內的 `<PluginView>` 與 `/present/<slug>` 失敗並丟 `Could not import ../../../D:/...`，筆記工具列也因此一律顯示「生成簡報」。成因是 `import.meta.glob("@notes/...")` 解析到 Vite root 以外時，以 importer 的相對路徑產生 specifier，跨磁碟時得到 `../../X:/...` 這種不存在的路徑；`src/lib/vite-cross-drive-content.ts` 新增 `resolveId` 把它還原成磁碟機絕對路徑。同磁碟與 macOS／Linux 不會產生這種 id，行為不變
+
+## [1.2.2] - 2026-09-25
+
+### 修正
+
+- viewer 模式下 AI 生成元件、plugin 渲染器與筆記 MDX 內的 Tailwind class 失效：`tailwind.config.mjs` 的 `content` 只掃 app 的 `src/`，使用者專案的 `.notecraft/components/`、`.notecraft/plugins/` 與筆記資料夾都不在範圍，只有剛好在 `src/` 也用過的 class 才會進 CSS（`grid-cols-7`、`bg-[#1F4E8C]` 這類則沒有）。現在依 `NOTECRAFT_USER_CWD`／`NOTECRAFT_NOTES_DIR` 一併掃描，位置判斷與 `@notes` alias 一致；`view` 下改元件新增的 class 也會即時生效。主專案（未設這兩個環境變數）行為不變
+
+## [1.2.1] - 2026-09-25
+
+**Windows 支援修正**。
+
+### 修正
+
+- 筆記與 viewer app（`~/.notecraft/app-<version>/`）位於不同磁碟時（如筆記在 `D:`），`build`／`serve`／`view` 失敗並丟 `[commonjs--resolver] The URL must be of scheme file`。成因是 Astro 以 `path.relative` 記錄 content entry 路徑、跨磁碟時得到 `d:/...` 被當成 URL scheme；新增 `src/lib/vite-cross-drive-content.ts` 在 Astro 解析前改寫為 `file:///` URL
+- Windows 首次執行時 `npm install` 必定失敗（`spawnSync("npm")` 找不到 `npm.cmd`）；改為在 Windows 經 shell 執行。安裝失敗時一併移除半成品目錄，避免下次執行跳過安裝、帶著缺相依的 app 啟動
+- Windows 上 `serve` 自動開啟瀏覽器時崩潰（`spawn("start")` ENOENT，`start` 是 cmd 內建指令）；改走 `cmd /c start`，且開啟失敗只印提示、不再讓 server 結束
+- `serve --no-open` 與 `serve --no-watch` 無效（所有平台）：citty 把 `--no-xxx` 解析成 `xxx: false`，程式卻讀 `args["no-xxx"]`。旗標改宣告為預設 true 的 `open`／`watch`，指令用法不變
+- `install-plugin` 把 Windows 絕對路徑（`D:\my-plugin`、`D:/my-plugin`、`\\server\share\...`）當成 GitHub 來源：前者被視為官方 id、後者被拆成 owner `D:`，一路退到 git clone 整個 repo 才失敗；磁碟機與 UNC 路徑現在一律視為本地路徑
+- `install-plugin` 的 git clone 退路在失敗時（clone 失敗、repo 內沒有指定子目錄）不清暫存目錄，整份 clone 留在系統 tmp（所有平台）；子目錄不存在時也改為明確錯誤訊息
+- `npm run check-plugins` 在 Windows 崩潰（`spawnSync("npx")` 找不到 `npx.cmd`，錯誤處理又讀了 undefined 的 stderr）；改以 node 直接執行 `astro.js`
+
 ## [1.2.0] - 2026-09-22
 
 ### 新增

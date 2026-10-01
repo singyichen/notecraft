@@ -10,10 +10,12 @@ import remarkNotecraftDirectives from "./src/lib/remark-notecraft-directives.ts"
 import remarkNotecraftCodeblock from "./src/lib/remark-notecraft-codeblock.ts";
 import remarkNotecraftNotesAssets from "./src/lib/remark-notecraft-notes-assets.ts";
 import remarkNotecraftDataLinks from "./src/lib/remark-notecraft-data-links.ts";
+import remarkNotecraftBase from "./src/lib/remark-notecraft-base.ts";
 import { GENERATED_COMPONENT_PACKAGE_WHITELIST } from "./src/lib/generated-component-whitelist.ts";
 import devApi from "./src/dev-api/integration.ts";
 import notesAssetsBuildCopy from "./src/lib/notes-assets-build-copy.ts";
 import { detectGithubRepoHint } from "./src/lib/detect-github-repo.mjs";
+import crossDriveContent from "./src/lib/vite-cross-drive-content.ts";
 
 // v2 Q3 + Bug fix: `.notecraft/` 資料夾**放在 userCwd**（使用者專案根、與 .claude/ 同層），
 // 不放在 notesDir——因為 subagent 從 project root 跑並寫到 cwd 下的 .notecraft/，
@@ -33,14 +35,20 @@ const notecraftDir = userCwd
     ? path.join(notesDir, ".notecraft")
     : path.join(process.cwd(), ".notecraft"); // 主專案 fallback：讓 @notes alias 恆有定義（deck 兩模式 glob 需要）；指向可能不存在的本地 .notecraft，glob 命中 0 筆、不報錯
 
+// 部署在子路徑時（例：GitHub Pages 的 /notecraft/demo）以 NOTECRAFT_BASE 指定；站內連結經 src/lib/base.ts 的 withBase() 組出。
+const base = process.env.NOTECRAFT_BASE || undefined;
+const basePrefix = base ? base.replace(/\/+$/, "") : "";
+
 export default defineConfig({
   output: "static",
+  base,
   // 舊網址轉址（Workbench Q20）：build 時替每個舊網址產生只含 meta refresh 的極小 HTML。
   // 不綁平台（Netlify、viewer 的 serve、任何靜態主機都有效），所以不另外在 netlify.toml 寫 301。
   // /view/<路徑> 資料檔渲染頁維持原網址，只有 /view 列表頁本身轉址。
   redirects: {
-    "/about": "/settings?tab=about",
-    "/view": "/plugins",
+    // 來源路徑 Astro 會自動加上 base，目的地不會，要自己補
+    "/about": `${basePrefix}/settings?tab=about`,
+    "/view": `${basePrefix}/plugins`,
   },
   integrations: [
     mdx(),
@@ -57,6 +65,8 @@ export default defineConfig({
     // 避免跟同時在跑的 `astro dev` 共用 node_modules/.vite，兩邊互相 invalidate
     // 導致瀏覽器載到不一致的 React 模組副本（症狀：island 全部 "Cannot read properties of null (reading useState)"）。
     ...(process.env.NOTECRAFT_VERIFY_BUILD && { cacheDir: "node_modules/.vite-verify" }),
+    // Windows：viewer app 與筆記在不同磁碟時修正 content entry 與 @notes glob 的路徑（見檔頭說明）
+    plugins: [crossDriveContent()],
     server: {
       host: "127.0.0.1",
       // 新建筆記時 chokidar（macOS fsevents）會對同一檔連發 add + change，Astro 的 glob loader 因此對同一檔
@@ -105,11 +115,12 @@ export default defineConfig({
     // 順序固定：remark-directive 先解析指令；directives 處理 admonition/tabs/tooltip/annotate；
     // codeblock 最後改寫 code 節點（buildAnnotate 需在 code 仍為原始節點時讀值）。
     // notes-assets 只在 viewer 模式（有 NOTECRAFT_NOTES_DIR）下作用，重寫相對圖片路徑為 /notes-assets/*。
-    // data-links 放最後：它要看的是「作者寫的 href」與 notes-assets 重寫完的結果兩者皆可，
-    // 排在 notes-assets 之後就不必自己再處理一次 viewer 模式的相對路徑。
+    // data-links 排在 notes-assets 之後：它要看的是「作者寫的 href」與 notes-assets 重寫完的結果兩者皆可，
+    // 就不必自己再處理一次 viewer 模式的相對路徑。
+    // base 最後跑：有 NOTECRAFT_BASE 時替站內絕對連結補前綴（含 notes-assets 產生的）。
     // remarkMath 放最前面：先把 $...$ / $$...$$ 解析成 math/inlineMath 節點，
     // 不影響 codeblock 只處理 code 節點的邏輯；rehypeKatex 在 rehype 階段把這些節點轉成 KaTeX HTML。
-    remarkPlugins: [remarkMath, remarkDirective, remarkNotecraftDirectives, remarkNotecraftCodeblock, remarkNotecraftNotesAssets, remarkNotecraftDataLinks],
+    remarkPlugins: [remarkMath, remarkDirective, remarkNotecraftDirectives, remarkNotecraftCodeblock, remarkNotecraftNotesAssets, remarkNotecraftDataLinks, remarkNotecraftBase],
     rehypePlugins: [rehypeKatex],
   },
 });

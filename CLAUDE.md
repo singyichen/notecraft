@@ -24,9 +24,15 @@ src/
 │   └── _references/             原始講義（PDF / Word，跟著 notesDir 走，dev/build 都以 /notes-assets/<相對路徑> 存取）
 ├── components/generated/        AI 生成的視覺化元件（一個 id 對應一個 .tsx）
 ├── components/wb/               Workbench 工作台的殼與各頁 island（Rail／Sidebar／Header／NotesWorkbench／Drawer／Palette…）
+├── components/wb/dashboard/     Dashboard「總覽」的七張卡＋「更新月曆」的 Calendar／CalCell／CalDot／CalNote（不是獨立 island，由 DashboardWorkbench 渲染）
+├── components/wb/tabs/          筆記頁籤：TabBar（island 入口，layout 每頁掛）＋TabStrip／TabMenu／TabAll／TabSheet／TabPop
 ├── components/islands/          其他 React island（TagEditor、Toc、PluginHost、SeriesNav…）
 ├── layouts/WorkbenchLayout.astro  三欄工作台的殼，所有頁面共用（簡報頁例外）
 ├── lib/workbench.ts             工作台索引（build 期、模組層快取）；client-safe 型別在 lib/wb-types.ts
+├── lib/wb-dashboard.ts          總覽的純函式（treemap／方塊等級／其他 N 個）；只能 import type、無 JSX，scripts/checks/wb-dashboard.mjs 直接載入斷言
+├── lib/wb-calendar.ts           更新月曆的純函式（月格／日曆週／翻頁／標題）；同樣只能 import type、不 import wb-time.ts，scripts/checks/wb-calendar.mjs 斷言
+├── lib/wb-tabs.ts               頁籤清單的純函式（ensure／close／固定／移動／LRU／鄰居／重開）；只能 import type、不碰 window，scripts/checks/wb-tabs.mjs 斷言
+├── lib/wb-tabs-store.ts         頁籤的 localStorage 讀寫（每次寫入先重讀、storage 事件同步）；lib/toast.ts 是 ToastHost 掛載前的提示佇列
 ├── styles/workbench.css         工作台樣式（--wb-* token；規則裡不出現色碼字面值）
 ├── dev-api/                     dev-only API（handlers.mjs 供 astro dev 與 CLI 共用）
 ├── pages/
@@ -135,6 +141,7 @@ excerpt: 如圖 3-2 所示的偏壓電路
   （`/notes`、Dashboard、`/plugins`、`/settings`）由**同一個 island** 渲染，layout 以 `bare` 掛它；只有 Toolbar 與 Body 由 island 輸出的用 `bareBody`
 - **`id="nc-scroll"` 不可拿掉**：`Toc`、筆記頁 inline script 靠它找捲動容器。island 自己輸出 Body 時也要帶這個 id
 - **列的 DOM 規則**：單擊開 Drawer 的列是容器，內含並排的 `<button class="wb-row-main">` 與常駐的 `<a class="wb-row-open">`，**連結不可包在按鈕裡**；
+  格狀的小目標（標籤分布 treemap 方塊、月曆的 14px 色塊）例外：純 `<button>` 走 `rowHandlers`、無常駐開啟連結（Dashboard §6.4、Calendar Q2）；
   單擊即導覽的列（系列、標籤、資料檔）整列是 `<a>`
 - **資料夾與顯示用路徑一律來自真實檔案路徑**（`WbNoteRow.path`），不是會被 slug 化的 `entry.id`；`?folder=` 的值也是真實路徑。slug 只用於 `/notes/<slug>` 與 localStorage key
 - **本機絕對路徑不得出現在任何輸出的 HTML／JSON**（`/wb-index.json` 序列化後若含 cwd 會直接 throw）。唯一例外是 dev-only 的 `vscode://` 連結
@@ -142,6 +149,13 @@ excerpt: 如圖 3-2 所示的偏壓電路
 - 篩選全在 query string（`?folder=`、`?series=`、`?tag=`、`?pending=1`、`?fav=1`、`?view=`），island 內切換用 `history.replaceState`；分組與搜尋字串不進網址
 - `Escape` 走 `lib/wb-escape.ts` 的共用堆疊（Palette → Modal → Drawer → Sidebar 抽屜），浮層不要各自掛 keydown
 - 樣式規則只引用 `--wb-*` token；DS 沒有的七個值集中在 `workbench.css` 開頭
+- **Dashboard 總覽**（v1.4.0，[docs/notecraft-workbench-dashboard.md](docs/notecraft-workbench-dashboard.md)）：兩個瀏覽器端資料來源（今天、localStorage 閱讀進度）只由 `DashboardWorkbench` 各持有一份往下傳（`now`／`live`／`readingVersion`），SSR 一律佔位（「—」、只畫底環、不畫長條、不輸出日誌清單）；class 沿用 prototype 的 `dv-` 名稱、新色值全在 `--wb-dv-*`；treemap 與週窗由 `npm run check:wb` 鎖住
+- **更新月曆**（v1.5.0，[docs/notecraft-workbench-calendar.md](docs/notecraft-workbench-calendar.md)）：`?tab=calendar`（舊 `?tab=week` 視同）。月曆用**日曆週（週日→週六）**，總覽 KPI「本週更新」與更新日誌仍是滾動 7 天，兩者數字可以不同；`anchor` 由 `now` 推、SSR 不輸出任何日期格；`view`／`anchor` 不進網址；新底色在 `--wb-cal-*`、格子上的小字用 `--wb-muted-ink`；`cal-` 規則必須放在 860px 媒體規則之前；月格與日曆週由 `check:wb` 鎖住
+- **筆記頁籤**（v1.7.0，[docs/notecraft-workbench-note-tabs.md](docs/notecraft-workbench-note-tabs.md)）：Header 之上 34px 頁籤列，由 layout 每頁掛 `TabBar client:load`；頁面以 layout 的 **`tab` prop** 宣告自己是頁籤（目前只有筆記頁與 `/view` 資料檔頁）。
+  清單存 `nc-tabs-v1:<workspaceLabel>`（依工作區分開），**含標題快照**、idle 時以 `/wb-index.json` 覆寫並清掉已不存在的；SSR 只輸出空列（手機是空的計數框）。
+  頁籤是 `<a role="tab">` 並排 ✕（中鍵關閉）；捲動還原遇網址 hash 讓位、還原期間不記錄；快捷鍵只用 ⌥ 且比對 `event.code`、輸入元件內不攔；
+  頁面剛載入時要發的提示走 `lib/toast.ts`（`nc-toast` 事件在 ToastHost 掛載前會遺失）；刪除筆記要先關掉對應頁籤
+- **空狀態插圖**（v1.5.1，[docs/notecraft-workbench-empty-states.md](docs/notecraft-workbench-empty-states.md)）：只有更新日誌與 AI 佇列用 `wb/EmptyState.tsx`（class 沿用 prototype 的 `pt-empty*`），其他空狀態仍是 `wb-empty`／`dv-empty` 單行字；插圖 SVG 的顏色用 `style` 寫 `--wb-*` 變數（presentation attribute 在部分瀏覽器不解析）、不新增 token；更新日誌空時清單加 `is-empty`（不捲），矮視窗（≤820 高）規則縮插圖
 
 ## Plugin System（v0.6.0）
 
@@ -165,6 +179,8 @@ excerpt: 如圖 3-2 所示的偏壓電路
 
 - **`plugins.json` 頂層 `disabled: string[]`**（v1.0.0）：停用的 plugin 其所有規則在比對前就略過、等同不存在，也不參與安裝檢查（壞掉的 plugin 先停用，站仍 build 得出來）。停用不是解除安裝，renderer 仍在 client chunk
 - **`meta.backTo` 是 app 層約定的第三個 meta 欄位**（與 `meta.title`、`meta.description` 並列）：「回到來源筆記」的站內路徑，只接受單一 `/` 開頭，不符者忽略並 warn
+- **manifest 的 `meta`（v1.6.0）以 JSON Pointer 改指上述三個欄位的來源**（例：OpenAPI 的 `/info/title`、`/x-notecraft-back-to`），給資料格式不是自己定的 plugin 用；省略的鍵退回 `meta.<鍵>`。取值在 `src/lib/plugin-meta.ts`，之後的清理（去 Markdown、backTo 驗證）與 `meta.*` 相同
+- **`<PluginView src options anchor>`（v1.6.0）**：`options` 淺合併在規則的 options 之上、只影響這一處內嵌；`anchor` 是「開啟完整檢視頁」連結的 hash，app 不解讀。prop 叫 `src`（不是 `file`）
 - **入口固定 `renderer.tsx`**，manifest 不放 `entry`；吃哪些檔完全由 `plugins.json` 的 `files` 決定，manifest 也不放 `accepts`
 - **`files` 的基準是 notesDir** —— 資料檔必須放在筆記資料夾內；不允許比對 `.md` / `.mdx`
 - **一檔被多條規則命中 → 第一條勝**，build 印 warn
@@ -190,7 +206,26 @@ Astro 的 hydration 指令要在編譯期就知道元件來自哪個模組。渲
 
 repo 根目錄的 `plugins/`，隨 GitHub 發佈 —— **推上預設分支就等於發佈**。
 因此 `npm run check-plugins` 是必要的護欄：驗 manifest、registry 無漂移、
-example 通過自己的 schema，並實際配 example 資料 build 一次。`prepublishOnly` 會跑它。
+`example/` 底下**所有** `.json` 通過自己的 schema，並實際配這些資料 build 一次（官方 plugin 以此保留舊版資料格式的範例當相容測試）。
+它也串接 `scripts/checks/*.mjs` —— 以 Node 22.6+ 原生 strip-types 直接載入 plugin／app 的純函式 `.ts` 做斷言（不引入 test runner）；
+**被它載入的 `.ts` 只能有 `import type`（或帶副檔名的相對 import，如 `./derive.ts`）、不能有 JSX**。`prepublishOnly` 會跑它。
+規模測試用的產生器放 `scripts/fixtures/`，**不要放 `scripts/checks/`**（那裡每支 `.mjs` 都會被當成檢查執行）。
+
+- **plugin 以 `<style>{CSS}</style>` 注入樣式時，CSS 字串不可含 `< > & " '`**：React SSR 會把它們跳脫成實體，`<style>` 裡不會解回來，選擇器壞掉且 hydration 失敗（ER plugin 由 `scripts/checks/er-styles.mjs`、OpenAPI plugin 由 `oar-styles.mjs` 把關）
+- **資料檔 `meta.description` 允許 Markdown**：app 端的 `ResolvedDataFile.description` 已是第一段純文字、`descriptionIndex` 是全文純文字（`src/lib/strip-markdown.ts`）；不要在 app 端直接輸出 `data.meta.description`
+
+### OpenAPI Renderer（官方 plugin，v1.0.0／app v1.6.0）
+
+[docs/notecraft-openapi-renderer.md](docs/notecraft-openapi-renderer.md)；像素級規格在 `docs/prototype/design_handoff_openapi_renderer/`。
+
+- 只保證 OAS 3.0／3.1；其他 3.x 以 3.1 規則盡力渲染並警示；**Swagger 2.0 不 build fail**，dataSchema 放行、頁面顯示轉檔指引、SSR 時在 build log warn 一次
+- dataSchema 只驗外形；`$ref` 斷掉、operationId 重複等瑕疵由 `derive.ts` 容錯並在 dev console warn，不 throw
+- 路由照 app 規則只去 `.json`：`api/orders.openapi.json` → `/view/api/orders.openapi`
+- page 模式位置與 hash 雙向同步（`#tag/x`、`#op/<operationId 或 method/path>[/responses/409]`、`#schema/X`），`replaceState`；**SSR 一律總覽、一律 cURL**，hash 與 `localStorage`（`oar:v1:lang`）都在 effect 後才讀
+- **embed 不讀寫 hash、不掛 keydown、不畫外框**（外框是 `GeneratedFrame`）；連結走 `LinkCtx`（page 攔下走元件內路由、embed 是指向 `/view/…#…` 的真連結）
+- Esc 晚一拍處理（`setTimeout` 後看 `defaultPrevented`）：工作台 `wb-escape` 也掛在 window，這樣不管誰先註冊都不會搶走 Palette／Drawer 的 Esc
+- CSS 變數是 `--oar-*`（不是 handoff 的 `--wb-oa-*`，`--wb-*` 是 app 的命名空間）；斷點一律 container query
+- 與 ER **不共用模組**（各自安裝）：`markdown-text.ts` 各持一份，由 `oar-markdown.mjs` 對照兩邊輸出；骨架樣式以相同數值對齊
 
 ## dev-only API（僅 `astro dev` 期間存在，build 時不輸出）
 
@@ -239,6 +274,7 @@ trim 前後空白 → 過濾空字串 → 同篇內不分大小寫去重（保�
 - 生成或改寫「機器學習實作系列」任一篇筆記的正文內容時，一律參考 `.claude/skills/hung-yi-lee/SKILL.md` 及其 `wiki/`（機器學習概念的直覺講法、常見誤解、跨主題關聯的知識背景）來補充概念說明的深度與正確性；**只借知識背景，不套用其講課口語語感**，寫出來的文字仍維持筆記既有的精確、表格／公式導向風格。`wiki/` 內容是逐字稿自動抽取／推論而成（EXTRACTED／INFERRED 邊不保證準確），僅作靈感與交叉檢查，技術正確性以課本／原始講義為準，不直接當權威引用；作業本身的資料與實驗結果不在其知識範圍內。此規則不影響 `@ai-visualize`／`@ai-reference` 標記與元件生成流程的技術規則
 - 整理「電子學實作系列」的實驗講義（`App_LabN.pdf`）、要在 CircuitJS／Tinkercad／LTspice 模擬課程電路、或作者提到預報／結報／實驗數據記錄時，一律走 `lab-workflow` Skill（`.claude/skills/lab-workflow/SKILL.md`）：講義逐頁詳解放講義週筆記、實驗手冊放實驗週筆記，每個實驗固定「CircuitJS 看懂 → Tinkercad 預演 → LTspice 預報 → 實測結報」，網表與電路文字檔放 `simulations/<lab>/`，共用工具在 `simulations/tools/`；Tinkercad 的每張接線圖都要再產一張**電流分析圖**（原圖不覆蓋、輸出加 `-current` 後綴），畫法見該 skill 的 `references/current-path-overlay.md`
 - 解釋、新增或改寫「電子學實作系列」任一篇筆記的概念說明（物理定義、原理、公式來源、地基段落、關鍵定義表），或在對話中回答作者的電子學／半導體物理問題時，一律先讀 `.claude/skills/electronics-foundation/SKILL.md` 及其 `references/`（八個物理原始概念、電子學↔數學對照、從 Boltzmann 因子到二極體方程式的推導鏈、數學背景讀者的常見誤解與常數表）。作者是數學系畢業、未修過普通物理與電路學，解釋要依該 skill 的輸出契約：前提盤點 → 數學對應 → 實際推導（display math）→ 因次檢查 → 一題自測；只借物理知識背景，文字仍維持筆記既有的精確、表格／公式導向風格。技術正確性以教材原文為準。此規則不影響 `@ai-visualize`／`@ai-reference` 標記與元件生成流程的技術規則
+- 上游新增的純函式斷言：`npm run check:er`／`npm run check:oar`／`npm run check:wb`（秒級，`scripts/checks/*.mjs` 以 Node 22.6+ 原生 strip-types 載入 `.ts`）；`npm run check-plugins` 會一併串接。上游本機 `tsc --noEmit` 有數十個既有錯誤（多在 `src/lib/workbench.ts`），看的是「有沒有新增」
 
 ## 待釐清項已收斂的決策
 

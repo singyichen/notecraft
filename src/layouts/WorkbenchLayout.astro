@@ -1,4 +1,5 @@
 ---
+import { BASE, withBase } from "@/lib/base";
 // 三欄工作台的殼（取代 BaseLayout）。規格：docs/notecraft-workbench.md §4。
 //
 //   .wb-app
@@ -22,7 +23,9 @@ import Palette from "@/components/wb/Palette.tsx";
 import ToastHost from "@/components/islands/ToastHost.tsx";
 import NewNoteModal from "@/components/islands/NewNoteModal.tsx";
 import ReferenceViewerDrawer from "@/components/islands/ReferenceViewerDrawer.tsx";
+import TabBar from "@/components/wb/tabs/TabBar.tsx";
 import { getWorkbenchIndex } from "@/lib/workbench";
+import type { TabSelf } from "@/lib/wb-tabs";
 
 export interface Props {
   title: string;
@@ -43,6 +46,8 @@ export interface Props {
   clampTwo?: boolean;
   pagefindTitle?: boolean;
   indexHeader?: boolean;
+  /** 這一頁是頁籤（筆記頁、資料檔頁）：頁籤列會加入／聚焦它。規格 docs/notecraft-workbench-note-tabs.md §3 */
+  tab?: TabSelf;
 }
 const {
   title,
@@ -59,6 +64,7 @@ const {
   clampTwo = false,
   pagefindTitle = false,
   indexHeader = false,
+  tab,
 } = Astro.props;
 
 const isDev = import.meta.env.DEV;
@@ -71,7 +77,7 @@ const index = await getWorkbenchIndex();
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>{title} — NoteCraft</title>
     {description && <meta name="description" content={description} />}
-    <script is:inline>
+    <script is:inline define:vars={{ base: BASE }}>
       // 首屏閃動：/notes 的靜態 HTML 畫的是「全部筆記 · List · 依資料夾」，hydrate 後才套 query 與偏好。
       // 有 query 或偏好與預設不同時，先把主區藏起來；island 掛載完會移除這個屬性。沒有 query 時什麼都不做。
       (function () {
@@ -80,7 +86,7 @@ const index = await getWorkbenchIndex();
           localStorage.removeItem("nc:sidebar");
         } catch (e) {}
         try {
-          if (location.pathname.replace(/\/+$/, "") !== "/notes") return;
+          if (location.pathname.replace(/\/+$/, "") !== base + "/notes") return;
           var hide = location.search.length > 1;
           if (!hide) {
             var p = JSON.parse(localStorage.getItem("nc-workbench-prefs-v1") || "{}") || {};
@@ -94,7 +100,7 @@ const index = await getWorkbenchIndex();
         } catch (e) {}
       })();
     </script>
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" type="image/svg+xml" href={withBase("/favicon.svg")} />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -108,9 +114,13 @@ const index = await getWorkbenchIndex();
       <Rail active={rail} pending={index.pending.markers} />
       <Sidebar index={index} folderPath={folderPath} />
       <main class="wb-main" id="nc-main">
+        {/* 頁籤列：bare 與否都在。SSR 只輸出 34px 空列，hydrate 後才畫頁籤（零位移） */}
+        <TabBar client:load self={tab ?? null} workspace={index.workspaceLabel} />
         <button type="button" class="wb-mburger" id="wb-mburger" aria-label="開啟側欄" aria-expanded="false" aria-controls="wb-sb">
           <Icon name="layers" size={16} stroke={1.7} />
         </button>
+        {/* 手機（≤860）的頁籤計數鈕位置：SSR 是空框，TabBar 以 portal 填入按鈕 */}
+        <div class="nt-count-slot" id="nt-count-slot" data-pagefind-ignore></div>
         {bare ? (
           <slot />
         ) : (
@@ -143,7 +153,7 @@ const index = await getWorkbenchIndex();
       </main>
     </div>
     <SidebarLive client:idle />
-    <Palette client:idle />
+    <Palette client:idle workspace={index.workspaceLabel} />
     <ToastHost client:idle />
     {/* PDF 講義抽屜掛在殼層：筆記內文的 <PdfRefChip> 與 /references 都靠事件開它，任一頁都要在。 */}
     <ReferenceViewerDrawer client:only="react" />

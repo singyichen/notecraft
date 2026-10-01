@@ -5,8 +5,11 @@ import { FileText, Search, Tag } from "lucide-react";
 import type { WbDataFile, WbNoteRow, WbSeries, WbTagStat } from "@/lib/wb-types";
 import { seriesProgress } from "@/lib/reading-progress";
 import { pushEscape } from "@/lib/wb-escape";
+import { getTabStore } from "@/lib/wb-tabs-store";
+import { hrefOf } from "@/lib/wb-tabs";
 import { AiPill, Ic, Pill } from "./ui";
 import { useWbIndex } from "./useWbIndex";
+import { stripBase, withBase } from "@/lib/base";
 
 export const PALETTE_EVENT = "nc-open-palette";
 
@@ -19,7 +22,7 @@ function loadPagefind(): Promise<PagefindApi | null> {
   if (import.meta.env.DEV) return Promise.resolve(null);
   if (!pagefindPromise) {
     // 字串相加是為了避開 Vite 的靜態分析，否則 dev server 會嘗試解析這個不存在的模組。
-    const url = "/pagefind/" + "pagefind.js";
+    const url = withBase("/pagefind/") + "pagefind.js";
     pagefindPromise = import(/* @vite-ignore */ url).then(
       (mod) => mod as PagefindApi,
       () => null,
@@ -47,7 +50,8 @@ function excerptNodes(excerpt: string): ReactNode[] {
   });
 }
 function slugFromUrl(url: string): string | null {
-  const m = /^\/notes\/(.+?)\/?$/.exec(url.split(/[?#]/)[0]);
+  // pagefind 依自身載入位置推出 baseUrl，部署在子路徑時 url 會帶前綴
+  const m = /^\/notes\/(.+?)\/?$/.exec(stripBase(url.split(/[?#]/)[0]));
   if (!m) return null;
   try {
     return decodeURIComponent(m[1]);
@@ -61,7 +65,11 @@ type Group = { label: string; items: Item[] };
 
 const has = (hay: string, q: string) => hay.toLowerCase().includes(q);
 
-export default function Palette() {
+/** 「已開啟的頁籤」分區：無查詢列前 N 筆、有查詢比對標題＋路徑（規格 docs/notecraft-workbench-note-tabs.md §8.1） */
+const TAB_GROUP_MAX = 6;
+const TAB_GROUP_MAX_Q = 4;
+
+export default function Palette({ workspace = "" }: { workspace?: string }) {
   const [open, setOpen] = useState(false);
   const [q, setQ] = useState("");
   const [sel, setSel] = useState(0);
@@ -163,7 +171,7 @@ export default function Palette() {
         label: "筆記",
         items: notes.map((r) => ({
           key: "n:" + r.slug,
-          href: `/notes/${r.slug}`,
+          href: withBase(`/notes/${r.slug}`),
           node: (
             <>
               <Ic icon={FileText} size={13} color="var(--wb-ink-3)" />
@@ -178,7 +186,7 @@ export default function Palette() {
         label: "系列",
         items: series.map((s) => ({
           key: "s:" + s.id,
-          href: `/series/${s.id}`,
+          href: withBase(`/series/${s.id}`),
           node: (
             <>
               <span className={`wb-sb-swatch wb-acc-${s.accent}`} />
@@ -193,7 +201,7 @@ export default function Palette() {
         label: "標籤",
         items: tags.map((t) => ({
           key: "t:" + t.name,
-          href: `/notes?tag=${encodeURIComponent(t.name)}`,
+          href: withBase(`/notes?tag=${encodeURIComponent(t.name)}`),
           node: (
             <>
               <Ic icon={Tag} size={13} color="var(--wb-ink-3)" />
@@ -208,7 +216,7 @@ export default function Palette() {
         label: "資料檔",
         items: files.map((f) => ({
           key: "d:" + f.routePath,
-          href: `/view/${f.routePath}`,
+          href: withBase(`/view/${f.routePath}`),
           node: (
             <>
               <Ic icon={FileText} size={13} color="var(--wb-gold)" />
@@ -225,7 +233,7 @@ export default function Palette() {
         label: "內文",
         items: body.map((h) => ({
           key: "p:" + h.url,
-          href: h.url,
+          href: withBase(h.url),
           node: (
             <>
               <Ic icon={FileText} size={13} color="var(--wb-ink-3)" />
@@ -239,7 +247,37 @@ export default function Palette() {
     return out.filter((g) => g.items.length > 0);
   }, [index, term, hits]);
 
-  const flat = useMemo(() => groups.flatMap((g) => g.items), [groups]);
+  // 讀頁籤快照（不等 wb-index）；開啟時才讀，頁籤 island 已在 client:load 時寫好
+  const tabGroup = useMemo<Group | null>(() => {
+    if (!open) return null;
+    const store = getTabStore(workspace);
+    const current = store.getActive();
+    const ql = term.toLowerCase();
+    const tabs = store
+      .get()
+      .tabs.filter((t) => !ql || has(t.title + t.path, ql))
+      .slice(0, ql ? TAB_GROUP_MAX_Q : TAB_GROUP_MAX);
+    if (tabs.length === 0) return null;
+    return {
+      label: "已開啟的頁籤",
+      // key 前綴 o:（opened）—— t: 已被標籤分區用掉。與「筆記」分區刻意不去重：一個是切回去、一個是找
+      items: tabs.map((t) => ({
+        key: "o:" + t.key,
+        href: hrefOf(t),
+        node: (
+          <>
+            <Ic icon={FileText} size={13} color={t.kind === "view" ? "var(--wb-gold)" : "var(--wb-ink-3)"} />
+            <span className="wb-row-t">{t.title}</span>
+            <span className="wb-row-p">{t.path}</span>
+            {t.key === current ? <Pill>目前</Pill> : t.pinned ? <Pill tone="muted">已固定</Pill> : null}
+          </>
+        ),
+      })),
+    };
+  }, [open, term, workspace]);
+
+  const allGroups = useMemo(() => (tabGroup ? [tabGroup, ...groups] : groups), [tabGroup, groups]);
+  const flat = useMemo(() => allGroups.flatMap((g) => g.items), [allGroups]);
   const active = Math.min(sel, Math.max(flat.length - 1, 0));
 
   useEffect(() => setSel(0), [term]);
@@ -298,7 +336,7 @@ export default function Palette() {
           ) : null}
           {!index && !loading ? <div className="wb-pal-empty">索引載入失敗，請重新整理後再試。</div> : null}
           {index && flat.length === 0 ? <div className="wb-pal-empty">找不到相符的項目</div> : null}
-          {groups.map((g) => (
+          {allGroups.map((g) => (
             <div key={g.label} role="group" aria-label={g.label}>
               <div className="wb-pal-sec">{g.label}</div>
               {g.items.map((it) => {

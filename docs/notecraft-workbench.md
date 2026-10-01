@@ -165,6 +165,7 @@ Prototype 是一棵 React tree，但正式版**不照搬成 SPA**。理由：
   <Rail />                      靜態 .astro
   <Sidebar />                   靜態 .astro + 一個小 island
   <div class="wb-main">
+    <TabBar client:load />      頁籤列 34px（v1.7.0 起，見 notecraft-workbench-note-tabs.md）
     <Header />                  靜態 .astro（互動型 Tab 例外，見 §4.3）
     <slot name="toolbar" />
     <div id="nc-scroll" class="wb-body"> <slot /> </div>
@@ -187,6 +188,7 @@ Prototype 是一棵 React tree，但正式版**不照搬成 SPA**。理由：
 | Header（麵包屑／標題／pill／連結型 Tab） | `.astro` | |
 | `/notes`、Dashboard、`/plugins` 的 Header Tab + Toolbar + Body + Drawer | **同一個 island** | Tab 切換、篩選、選取是同一份 state；拆開就要跨 island 同步 |
 | Palette | island，`client:idle` | 每頁都要有；資料延遲載入（§5.3） |
+| 頁籤列（v1.7.0） | island，`client:load` | 清單在 localStorage；SSR 只輸出 34px 空列。見 [notecraft-workbench-note-tabs.md](notecraft-workbench-note-tabs.md) |
 
 因此 `/notes` 這類頁面的 Header 會由 island 自己渲染（island 內含一份 React 版 `WbHeader`），`.astro` 版與 React 版共用同一份 CSS class，視覺一致由 `workbench.css` 保證。
 
@@ -201,6 +203,7 @@ Prototype 是一棵 React tree，但正式版**不照搬成 SPA**。理由：
 | 目前 view Tab | URL query `?view=`（Q3 已定案） | 切換時 `history.replaceState`，不堆疊上一頁紀錄 |
 | Drawer 選取 | island state，不進 URL | 換頁即關 |
 | 閱讀進度、收藏 | 既有 key 不動 | `nc-reading-progress-v1`、`nc:favorites` |
+| 已開啟的頁籤（v1.7.0） | `localStorage["nc-tabs-v1:<workspaceLabel>"]` | 依工作區分開；含標題快照與每個頁籤的捲動位置（note-tabs §4） |
 
 ### 4.5 z-index 階梯
 
@@ -213,8 +216,9 @@ Prototype 是一棵 React tree，但正式版**不照搬成 SPA**。理由：
 | 手機底部 Tab bar | 650 |
 | `VizZoom` 放大檢視（既有） | 900 |
 | Palette、`NewNoteModal`、`ConfirmDialog`、Toast（既有 1000 級） | 1000 |
+| 頁籤右鍵選單、全部頁籤下拉、手機頁籤抽屜（v1.7.0） | 1000 |
 
-`Escape` 的關閉順序由上而下：Palette → Modal → Drawer → Sidebar 抽屜。
+`Escape` 的關閉順序由上而下：Palette → Modal → Drawer → Sidebar 抽屜。頁籤的選單、下拉與手機抽屜（v1.7.0）也走同一個堆疊，後開的先關。
 
 ---
 
@@ -332,6 +336,7 @@ export async function getWorkbenchIndex(): Promise<WbIndex>   // 模組層快取
 - 日期一律以**瀏覽器當地時區**的日界線比較（`new Date(y, m-1, d)`），不用 UTC，否則台灣時間早上八點前「今天」會算成昨天
 - **長條圖的週窗**：以今天為最後一天，每 7 天一格、往回 8 格（第 8 格 = 今天往回 6 天到今天）。不採用 prototype「以最新一篇筆記的日期為基準」的做法 —— 那會讓很久沒寫的時候看起來仍像最近很活躍
 - **一律以 `updatedAt` 為準**，文案寫「更新」而非「新增」。現況 Dashboard 的「本週新增／本月新增」（以 `createdAt` 計）隨之取消
+- **兩種「週」並存**（2026-09-30，calendar Q1）：本節與總覽的「本週」是**滾動 7 天**（今天與前 6 天）；「更新月曆」Tab 的週檢視、當週高亮、「本週」按鈕是**日曆週**（週日→週六）。同一頁兩個「本週」數字可以不同，這是刻意的
 - 已知副作用：批次改名或刪除標籤會改寫所有受影響筆記的 `updatedAt`（dev API 的既有規定），當週的長條會因此衝高。接受，不另做排除
 - `src/lib/dates.ts` 的 `daysAgo()` 本來就在未帶基準日時取當下時間，但它用 `toISOString()` 取日期，那是 **UTC**；改成取當地日期。`index.astro` 傳入寫死 `TODAY` 的呼叫點一併清掉
 
@@ -432,6 +437,9 @@ Prototype 的色碼絕大多數**本來就是 DS 的值**，只是寫成了 hex�
 每節只寫 README 沒講、或與 codebase 現況有出入的部分。
 
 ### 8.1 Dashboard `/`
+
+> **2026-09-29 更新**：總覽 Body 已於 notecraftapp v1.4.0 改版為兩列固定版面（KPI 環形圖、寫作頻率堆疊長條、時間軸、系列、標籤馬賽克、更新日誌），規格見 [notecraft-workbench-dashboard.md](notecraft-workbench-dashboard.md)。本節的 widget grid 描述僅存歷史；三個 Tab、Drawer 與時間基準（§5.4）仍有效。
+> **2026-09-30 更新**：「本週」Tab 已於 notecraftapp v1.5.0 改為「更新月曆」（`?tab=calendar`，舊 `?tab=week` 視同），規格見 [notecraft-workbench-calendar.md](notecraft-workbench-calendar.md)。近 7 日的 `NoteRow` 列表不再存在。
 
 - 三個 Tab 是同一份資料的三種投影，做成同一個 island，Tab 寫進 `?tab=`
 - 「最近更新」與「待生成標記」的列可單擊開 Drawer（prototype 的 `onSel`），Drawer 資料走 §5.3 的延遲載入
@@ -865,7 +873,7 @@ Prototype 在這塊著墨很少，正式版的底線：
 | **P4** | `/notes`：List + Toolbar + 篩選 query + Drawer | P3、Q3 Q11 Q14 Q27 | |
 | **P5** | `/notes`：Board、Table、Timeline | P4、Q7 Q26 | |
 | **P6** | Palette ⌘K | P2、Q13 | |
-| **P7** | Dashboard widget grid + 三 Tab | P3、Q10 Q15 | |
+| **P7** | Dashboard widget grid + 三 Tab（總覽於 v1.4.0 改版，見 notecraft-workbench-dashboard.md） | P3、Q10 Q15 | |
 | **P8** | 系列、系列詳情、標籤改版 | P3 | |
 | **P9** | 筆記內文頁首與動作整併 | P3、Q12 Q16 Q17 Q18 | |
 | **P10** | `/plugins`、`/plugins/folder/*`、Plugin Drawer、`/view` 頁首、Switch 與 dev API | P3、Q19 Q21–Q24 | |

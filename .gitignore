@@ -1,5 +1,7 @@
 node_modules
 dist
+dist-demo
+_pages
 .astro
 .netlify
 .DS_Store
@@ -46,3 +48,5 @@ simulations/**/erc.rpt
 src/content/notes/_outputs/
 simulations/*/report/*.docx
 simulations/*/report/build/
+# impeccable 審查用的整頁截圖（每次重截會覆寫，不進版控）
+.impeccable/review/

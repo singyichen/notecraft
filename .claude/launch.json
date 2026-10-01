@@ -30,6 +30,13 @@
       "autoPort": false
     },
     {
+      "name": "preview-win",
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["node_modules/astro/astro.js", "preview", "--port", "4343"],
+      "port": 4343,
+      "autoPort": true
+    },
+    {
       "name": "viewer-poc",
       "runtimeExecutable": "/Users/trendlink/.nvm/versions/node/v22.16.0/bin/node",
       "runtimeArgs": ["node_modules/astro/astro.js", "dev", "--port", "4330"],
@@ -42,6 +49,20 @@
       "runtimeExecutable": "/Users/trendlink/.nvm/versions/node/v22.16.0/bin/node",
       "runtimeArgs": ["bin/notecraftapp.mjs", "view", "tmp/notecraft-test", "--port", "4332"],
       "port": 4332,
+      "autoPort": false
+    },
+    {
+      "name": "site-dev",
+      "runtimeExecutable": "/Users/trendlink/.nvm/versions/node/v22.16.0/bin/node",
+      "runtimeArgs": ["site/node_modules/astro/astro.js", "dev", "--root", "site", "--port", "4350"],
+      "port": 4350,
+      "autoPort": false
+    },
+    {
+      "name": "pages-static",
+      "runtimeExecutable": "python3",
+      "runtimeArgs": ["-m", "http.server", "4351", "--directory", "tmp/pages-root"],
+      "port": 4351,
       "autoPort": false
     },
     {

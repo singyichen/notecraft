@@ -218,6 +218,13 @@ manifest 刻意**瘦身**（Q2a），只留「`plugins.json` 給不了的資訊�
 - **沒有 `accepts` / 副檔名宣告** — 吃哪些檔完全由 `plugins.json` 的 `files` 決定。首版只支援 JSON（Q21），「我讀不讀得懂這個副檔名」這件事沒有第二種答案
 - `id` 必須與資料夾名一致，否則安裝時報錯
 - `engines` 在安裝時檢查，不合就擋下並提示升級 `notecraftapp`（Q12 決定一律從 GitHub 抓最新，這道檢查是必要的配套）
+- **`meta`（選填，notecraftapp ≥ 1.6.0，[Task 98](tasks/task-98-app-manifest-meta-pluginview-options.md)）**— 資料檔的標題／描述／backTo 從哪裡取，以 JSON Pointer 宣告；省略的鍵退回資料檔的 `meta.<鍵>`。給「資料格式不是自己定的」plugin 用：OpenAPI 的標題在 `info.title`、頂層只允許 `x-` 擴充，不能叫作者加 `meta`
+
+  ```jsonc
+  "meta": { "title": "/info/title", "description": "/info/description", "backTo": "/x-notecraft-back-to" }
+  ```
+
+  取值在 `src/lib/plugin-meta.ts`（`scripts/checks/app-plugin-meta.mjs` 斷言）；之後的清理（description 去 Markdown、backTo 只收站內路徑）與 `meta.*` 完全相同
 
 ### 6.2 renderer 契約
 
@@ -307,6 +314,15 @@ manifest 用 `import.meta.glob("@notes/plugins/*/notecraft-plugin.json", { eager
 ```
 
 由 app 提供的 `.astro` 元件解析 `src` → 找 plugin → **包進 `GeneratedFrame`**，與現有 AI 生成元件行為一致。`data-nc-viz-body` 那層必須保留，放大檢視靠它搬移。
+
+兩個選填 prop（notecraftapp ≥ 1.6.0，[Task 98](tasks/task-98-app-manifest-meta-pluginview-options.md)）：
+
+```mdx
+<PluginView src="api/orders.openapi.json" options={{ operation: "createOrder" }} anchor="op/createOrder" />
+```
+
+- `options`：淺合併在 `plugins.json` 規則的 `options` 之上，只影響這一處內嵌（同一份資料檔在不同筆記可各自指定要看哪一塊）
+- `anchor`：附加在外框「開啟完整檢視頁」連結後的 hash（不含 `#`）。app 不解讀內容，格式由各 plugin 的 README 說明
 
 ### 7.4 資料怎麼進到瀏覽器
 
@@ -489,6 +505,8 @@ Q6 原本定案「不進 series」，理由是閱讀進度的語意只該算筆�
 `meta.title` / `meta.description` / `meta.backTo` 是 **app 層約定的三個欄位**（Q5；`backTo` 於 2026-09-21 Workbench Q21 升格）：
 前兩者用於 `<title>`、側邊欄、pagefind，缺了就用檔名；`backTo` 是「回到來源筆記」按鈕的站內路徑，**只接受單一 `/` 開頭**（排除 `//host`、`http(s):`、`javascript:`），
 不符者忽略、不顯示按鈕並在 build 期 warn。檢查在 `src/lib/plugins.ts` 解析時做，`ResolvedDataFile.backTo` 是已驗證的值。其餘欄位由 plugin 自行解讀，app 不碰。
+
+`meta.description` **允許 Markdown**（2026-09-27，notecraftapp 1.3.0；ER plugin v1.2 的 Wiki 總覽頁用它）。app 的出口一律只要文字：`ResolvedDataFile.description` 是去除標記後的**第一段**單行純文字（頁面描述、Toolbar、`/wb-index.json`、系列章節），`descriptionIndex` 是全文純文字，`/view` 頁以隱藏的 `data-pagefind-body` 元素交給 pagefind —— 顯示第一段、索引全文。實作在 `src/lib/strip-markdown.ts`。原文仍在 `data.meta.description`，由 plugin 自行渲染。
 
 ### 8.3 欄位鍵名：短鍵 → 長鍵
 
