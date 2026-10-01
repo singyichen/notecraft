@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import type { PptxViewer } from "@aiden0z/pptx-renderer";
 import type { ReferenceViewerProps } from "./types";
 import ViewerStatus from "./ViewerStatus";
+import { fixPptxAutofit } from "@/lib/pptx-autofit-fix";
 
 // 與 pdfjs／docx-preview 同樣的理由：抽屜出現在每一頁，@aiden0z/pptx-renderer 連同它的
 // jszip 與 echarts 子模組只在讀者真的開了 .pptx 時才載入。失敗不快取，讓下一次開啟能重試。
@@ -38,6 +39,21 @@ function loadPdfjsUrls() {
 // 照實回報會讓抽屜一開就吃掉整個視窗。這裡報一個適合閱讀的上限，實際排版交給 fitMode:
 // "contain" 把投影片縮進抽屜寬度，之後的縮放再乘在這個基準上。
 const MAX_NATURAL_WIDTH = 960;
+
+// 渲染器會在三個時間點重算 normAutofit 的縮放：同步一次、兩層 requestAnimationFrame 後一次、
+// 字型載完再一次，每次都先還原再重算——修正若搶在它前面就會被蓋掉。所以等這三個時間點都過了
+// 再修，並在稍後再補一次保險（修正是冪等的，重跑結果相同）。
+function scheduleAutofitFix(slide: HTMLElement, isCancelled: () => boolean) {
+  const run = () => {
+    if (isCancelled() || !slide.isConnected) return;
+    fixPptxAutofit(slide);
+  };
+  const afterFrames = (n: number, cb: () => void) =>
+    n <= 0 ? cb() : requestAnimationFrame(() => afterFrames(n - 1, cb));
+  const fontsReady = typeof document !== "undefined" && document.fonts ? document.fonts.ready : Promise.resolve();
+  fontsReady.then(() => afterFrames(3, run)).catch(() => afterFrames(3, run));
+  window.setTimeout(run, 600);
+}
 
 /**
  * PowerPoint（.pptx）檢視器。
@@ -78,6 +94,7 @@ export default function PptxRenderer({ url, page, scale, onMeta }: ReferenceView
           pdfjs,
           // 單一節點畫不出來（例如不支援的 3D 效果）只警告、不讓整張失敗
           onNodeError: (nodeId, err) => console.warn("[reference-viewer] pptx 節點略過", nodeId, err),
+          onSlideRendered: (_index, element) => scheduleAutofitFix(element, () => cancelled),
         });
         viewerRef.current = viewer;
         await viewer.open(buffer, { renderMode: "slide" });
