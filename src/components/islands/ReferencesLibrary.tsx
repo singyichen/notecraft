@@ -1,7 +1,7 @@
 import { useState } from "react";
 import type { ReferenceDoc, ReferenceFolder } from "@/lib/references";
 import { REFERENCE_KIND_LABEL, type ReferenceKind } from "@/lib/reference-kinds";
-import { ChevronRight, FileSpreadsheet, FileText, FileType2, FolderOpen, Table2 } from "lucide-react";
+import { ChevronRight, FileSpreadsheet, FileText, FileType2, FolderOpen, Presentation, Table2 } from "lucide-react";
 
 export interface ReferencesLibraryProps {
   tree: ReferenceFolder;
@@ -19,6 +19,7 @@ const KIND_ICON: Record<ReferenceKind, typeof FileText> = {
   docx: FileType2,
   xlsx: FileSpreadsheet,
   csv: Table2,
+  pptx: Presentation,
 };
 
 const KIND_COLOR: Record<ReferenceKind, string> = {
@@ -26,9 +27,10 @@ const KIND_COLOR: Record<ReferenceKind, string> = {
   docx: "var(--orange-600)",
   xlsx: "var(--success-500)",
   csv: "var(--neutral-500)",
+  pptx: "var(--danger-500)",
 };
 
-/** 沒有頁數可顯示的格式（docx）改顯示檔案大小，讓每一列都有一個次要資訊。 */
+/** 沒有頁數可顯示的格式（docx／xlsx／csv）改顯示檔案大小，讓每一列都有一個次要資訊。 */
 function formatBytes(bytes: number): string {
   if (bytes < 1024) return `${bytes} B`;
   const kb = bytes / 1024;
@@ -38,6 +40,7 @@ function formatBytes(bytes: number): string {
 
 function metaLabel(doc: ReferenceDoc): string {
   if (doc.kind === "pdf") return doc.numPages && doc.numPages > 0 ? `${doc.numPages} 頁` : "— 頁";
+  if (doc.kind === "pptx") return doc.numPages && doc.numPages > 0 ? `${doc.numPages} 張` : "— 張";
   return formatBytes(doc.bytes);
 }
 

@@ -2,11 +2,12 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { referenceKindOf, REFERENCE_KIND_LABEL } from "./reference-kinds.ts";
 
-test("認得支援的四種副檔名", () => {
+test("認得支援的五種副檔名", () => {
   assert.equal(referenceKindOf("Ch 1 - Introduction.pdf"), "pdf");
   assert.equal(referenceKindOf("Lab_結報範本.docx"), "docx");
   assert.equal(referenceKindOf("Lab1-數據記錄.xlsx"), "xlsx");
   assert.equal(referenceKindOf("lab1-exp1-forward.csv"), "csv");
+  assert.equal(referenceKindOf("第一週投影片.pptx"), "pptx");
 });
 
 test("副檔名不分大小寫", () => {
@@ -17,7 +18,7 @@ test("副檔名不分大小寫", () => {
 test("不支援的格式回 null", () => {
   assert.equal(referenceKindOf("舊版講義.doc"), null);
   assert.equal(referenceKindOf("README"), null);
-  assert.equal(referenceKindOf("投影片.pptx"), null);
+  assert.equal(referenceKindOf("舊版投影片.ppt"), null);
   assert.equal(referenceKindOf("舊版試算表.xls"), null);
 });
 
@@ -26,6 +27,7 @@ test("略過 Word 開檔時產生的 ~$ 暫存檔", () => {
   // 它是鎖定檔不是文件，列進講義庫只會讓讀者點到一個開不起來的項目。
   assert.equal(referenceKindOf("~$b_結報範本.docx"), null);
   assert.equal(referenceKindOf("~$講義.pdf"), null);
+  assert.equal(referenceKindOf("~$第一週投影片.pptx"), null);
 });
 
 test("檔名中間出現副檔名字樣不算數", () => {
@@ -38,4 +40,5 @@ test("每個 kind 都有顯示用標籤", () => {
   assert.equal(REFERENCE_KIND_LABEL.docx, "Word");
   assert.equal(REFERENCE_KIND_LABEL.xlsx, "Excel");
   assert.equal(REFERENCE_KIND_LABEL.csv, "CSV");
+  assert.equal(REFERENCE_KIND_LABEL.pptx, "PowerPoint");
 });

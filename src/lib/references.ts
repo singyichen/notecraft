@@ -4,6 +4,7 @@ import { getDocument } from "pdfjs-dist/legacy/build/pdf.mjs";
 import { resolveNotesDir } from "./notes-dir";
 import { localAssetUrl, referenceAssetUrl } from "./references-url";
 import { REFERENCE_KINDS, referenceKindOf, type ReferenceKind } from "./reference-kinds";
+import { countPptxSlides } from "./pptx-slide-count";
 
 export interface ReferenceDoc {
   /** 檔名（不含路徑），列表顯示用 */
@@ -14,8 +15,9 @@ export interface ReferenceDoc {
   url: string;
   kind: ReferenceKind;
   /**
-   * 只有 PDF 有。docx 沒有可靠的頁數——docProps/app.xml 裡的 Pages 是產生它的那個文書
-   * 軟體當下寫入的值，之後被誰改過都不會更新，而真正的分頁要排版引擎跑過才算得出來。
+   * PDF 的頁數、pptx 的投影片張數。docx 沒有可靠的頁數——docProps/app.xml 裡的 Pages 是產生
+   * 它的那個文書軟體當下寫入的值，之後被誰改過都不會更新，而真正的分頁要排版引擎跑過才算得出來；
+   * 投影片張數則是檔案裡列出來的事實（見 pptx-slide-count.ts）。
    */
   numPages?: number;
   /** 檔案大小（bytes）。沒有頁數可顯示的格式，列表用它當次要資訊。 */
@@ -47,6 +49,15 @@ async function countPages(absPath: string): Promise<number> {
     return n;
   } catch (err) {
     console.warn(`[references] 無法讀取 PDF 頁數，略過並以 0 頁計：${absPath}`, err);
+    return 0;
+  }
+}
+
+function countSlides(absPath: string): number {
+  try {
+    return countPptxSlides(fs.readFileSync(absPath));
+  } catch (err) {
+    console.warn(`[references] 無法讀取 pptx 張數，略過並以 0 張計：${absPath}`, err);
     return 0;
   }
 }
@@ -85,6 +96,7 @@ async function walk(
       url: toUrl(relPath),
       kind,
       ...(kind === "pdf" ? { numPages: await countPages(abs) } : {}),
+      ...(kind === "pptx" ? { numPages: countSlides(abs) } : {}),
       bytes: fs.statSync(abs).size,
     });
   }

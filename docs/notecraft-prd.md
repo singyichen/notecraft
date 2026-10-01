@@ -1,7 +1,7 @@
 ---
 Project Name: NoteCraft
 文件類型: Project Requirement Document (PRD)
-文件版本: v1.19.0
+文件版本: v1.20.0
 開發模式: Waterfall
 技術選型: 確定
 技術架構: 確定
@@ -86,7 +86,8 @@ Project Name: NoteCraft
 24. \* 為每個 [Generated 元件](#generated-元件) 提供 [放大檢視](#ai-生成內容外框卡片--放大檢視viz-zoom)：從 [AI 生成內容外框卡片](#ai-生成內容外框卡片) 標題列點「放大檢視」，把元件搬進全螢幕可拖曳平移、可縮放的畫布閱讀（沿用簡報端既有的 `CanvasViewport`），互動完整保留、可匯出 100% 原尺寸 PNG；解決寬元件在內文欄寬下被擠壓、橫向溢出的問題，dev 與正式環境皆可用
 25. \* 提供 [Markdown 擴充語法 — Choices](#markdown-擴充語法choices)：把一份 Markdown 清單渲染為帶 A／B／C 字母的選擇題選項，並以容器屬性 `answer` 把正解整列以語意色標出（支援複選），重用 `remark-directive` 底座，純 CSS、零 JS，正式環境同樣可用；服務於 `exam-review` Skill 的選擇題模式
 26. \* 提供 [Markdown 擴充語法 — English](#markdown-擴充語法english)：以行內 `:en[...]` 標出同一句話的英文對照，渲染為「中文在上、英文另一行轉淡縮小」，重用 `remark-directive` 底座，純 CSS、零 JS，正式環境同樣可用；服務於 `exam-review` Skill 的雙語題幹與雙語選項
-27. \* 讓筆記正文裡**指向資料檔的連結**（`.xlsx` / `.csv` / `.pdf` / `.docx`）在既有的講義檢視抽屜就地開啟，而不是交給瀏覽器下載：副檔名判定沿用講義庫的「副檔名 → 檢視器」註冊表，路徑先以 MDX 所在目錄為基準、找不到再退回專案根，因此筆記裡的實驗數據記錄簿、作業資料集與元件 datasheet 都點得開。notesDir 底下的檔案 dev 與正式環境皆可用；專案根底下的實驗工作區（`simulations/`）僅 dev 可開，正式 build 自動改指 GitHub 上的同一個檔。設計見 `docs/superpowers/specs/2026-09-12-pdf-reference-viewer-design.md` §7.4
+27. \* 讓筆記正文裡**指向資料檔的連結**（`.xlsx` / `.csv` / `.pdf` / `.docx` / `.pptx`）在既有的講義檢視抽屜就地開啟，而不是交給瀏覽器下載：副檔名判定沿用講義庫的「副檔名 → 檢視器」註冊表，路徑先以 MDX 所在目錄為基準、找不到再退回專案根，因此筆記裡的實驗數據記錄簿、作業資料集與元件 datasheet 都點得開。notesDir 底下的檔案 dev 與正式環境皆可用；專案根底下的實驗工作區（`simulations/`）僅 dev 可開，正式 build 自動改指 GitHub 上的同一個檔。設計見 `docs/superpowers/specs/2026-09-12-pdf-reference-viewer-design.md` §7.4
+28. \* 講義檢視抽屜與講義庫支援 **PowerPoint（`.pptx`）**：以 `@aiden0z/pptx-renderer`（Apache-2.0）在瀏覽器端把投影片畫成 HTML／SVG，與 PDF 同樣有翻頁與縮放、一次只畫一張並依抽屜寬度縮放；講義庫列出張數（build 期只解壓 `presentation.xml` 計算）、筆記正文的 `.pptx` 連結同樣就地開啟。只收 `.pptx`，舊版二進位 `.ppt` 比照 `.doc` 不收；不支援動畫、轉場、3D 圖表與任意 EMF／WMF 向量圖。選型與 PoC 紀錄見 GitHub issue #2——LibreOffice 轉 PDF 的備案在實測中會把微軟正黑體替代成不含 CJK 字形的字型、中文靜默消失，故不採用
 
 ### 4.2 非目標（Out of Scope）
 
@@ -2979,6 +2980,9 @@ gantt
 ---
 
 ## 11. Change Log（變更紀錄）
+
+### [1.20.0] - 2026-10-01
+- **Added**: 講義檢視抽屜與講義庫支援 PowerPoint（.pptx），筆記正文的 .pptx 連結就地開啟
 
 ### [1.19.0] - 2026-10-01
 - **Changed**: 合併上游 SteveLin100132/notecraft（notecraftapp v1.7.0：Dashboard 總覽改版、更新月曆、空狀態插圖、OpenAPI Renderer、筆記頁籤、NOTECRAFT_BASE 子路徑部署、Windows 跨磁碟支援、官網）。本分支的 8 篇公司筆記維持原路徑進版控，不隨上游移入 `private/`；下列 `-fork` 版號是本分支在上游 1.14–1.18 之前各自遞增的紀錄，保留原號不重編

@@ -105,6 +105,7 @@ export default defineConfig({
         "docx-preview",
         "read-excel-file/browser",
         "fflate",
+        "@aiden0z/pptx-renderer",
       ],
     },
   },

@@ -5,10 +5,10 @@
  * 掃描時要收哪些檔，client 端的對應物是 ReferenceViewerDrawer 的 renderer 分派。
  * 新增一種格式要同時動這兩處 —— 只加這裡會列得出檔案卻開不起來。
  *
- * 刻意不收 `.doc`（舊版二進位格式）：瀏覽器端沒有可靠的解析方案，列出來只會讓讀者
+ * 刻意不收 `.doc`／`.ppt`（舊版二進位格式）：瀏覽器端沒有可靠的解析方案，列出來只會讓讀者
  * 點到一個永遠顯示載入失敗的項目。
  */
-export const REFERENCE_KINDS = ["pdf", "docx", "xlsx", "csv"] as const;
+export const REFERENCE_KINDS = ["pdf", "docx", "xlsx", "csv", "pptx"] as const;
 
 export type ReferenceKind = (typeof REFERENCE_KINDS)[number];
 
@@ -18,9 +18,10 @@ export const REFERENCE_KIND_LABEL: Record<ReferenceKind, string> = {
   docx: "Word",
   xlsx: "Excel",
   csv: "CSV",
+  pptx: "PowerPoint",
 };
 
-// Word / Excel 開啟文件時會在同目錄放一個 `~$` 開頭的鎖定檔，副檔名與本尊相同但內容
+// Word / Excel / PowerPoint 開啟文件時會在同目錄放一個 `~$` 開頭的鎖定檔，副檔名與本尊相同但內容
 // 不是完整文件。它是暫存檔不是講義，掃描時要當作不存在。
 const LOCK_FILE_PREFIX = "~$";
 

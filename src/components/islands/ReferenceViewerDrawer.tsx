@@ -9,6 +9,7 @@ import PdfRenderer from "./reference-viewers/PdfRenderer";
 import DocxRenderer from "./reference-viewers/DocxRenderer";
 import XlsxRenderer from "./reference-viewers/XlsxRenderer";
 import CsvRenderer from "./reference-viewers/CsvRenderer";
+import PptxRenderer from "./reference-viewers/PptxRenderer";
 import ViewerStatus from "./reference-viewers/ViewerStatus";
 
 const DEFAULT_WIDTH = 560;
@@ -23,13 +24,14 @@ const SCALE_STEP = 0.2;
 
 // 「副檔名 → 檢視器」註冊表的 client 端。新增一種格式：寫一個檢視器、在 reference-kinds.ts
 // 的 REFERENCE_KINDS 加副檔名、在這裡加一列——殼與工具列都不用動。
-// 這裡是靜態 import 沒關係：兩個檢視器模組本身很小，各自的重型依賴（pdfjs、docx-preview）
+// 這裡是靜態 import 沒關係：檢視器模組本身很小，各自的重型依賴（pdfjs、docx-preview、pptx-renderer）
 // 都在模組內部用動態 import 惰性載入。
 const REFERENCE_VIEWERS: Record<ReferenceKind, ComponentType<ReferenceViewerProps>> = {
   pdf: PdfRenderer,
   docx: DocxRenderer,
   xlsx: XlsxRenderer,
   csv: CsvRenderer,
+  pptx: PptxRenderer,
 };
 
 /**

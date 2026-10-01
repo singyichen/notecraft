@@ -1,5 +1,5 @@
 /**
- * 把筆記正文裡指向資料檔（.xlsx / .csv / .pdf / .docx）的連結，改寫成講義抽屜的入口。
+ * 把筆記正文裡指向資料檔（.xlsx / .csv / .pdf / .docx / .pptx，以 REFERENCE_KINDS 為準）的連結，改寫成講義抽屜的入口。
  *
  * 「哪些副檔名算資料檔」沿用 `reference-kinds.ts` 的註冊表；路徑解析規則與各種結果的
  * 意義見 `data-file-links.ts`。這一層只負責三件事：接 node:fs、決定 dev/正式、把結果
