@@ -1,7 +1,9 @@
 import { useState } from "react";
 import type { ReferenceDoc, ReferenceFolder } from "@/lib/references";
-import { REFERENCE_KIND_LABEL, type ReferenceKind } from "@/lib/reference-kinds";
-import { ChevronRight, FileSpreadsheet, FileText, FileType2, FolderOpen, Presentation, Table2 } from "lucide-react";
+import { REFERENCE_KIND_LABEL } from "@/lib/reference-kinds";
+import { hrefOf } from "@/lib/wb-tabs";
+import { ChevronRight, FolderOpen } from "lucide-react";
+import { KIND_COLOR, KIND_ICON } from "./reference-kind-icons";
 
 export interface ReferencesLibraryProps {
   tree: ReferenceFolder;
@@ -13,22 +15,6 @@ export interface ReferencesLibraryProps {
   /** dev-only：notesDir 以外的資料檔（`simulations/` 的實驗數據與電路圖），同上只在本機出現。 */
   externals?: ReferenceFolder[];
 }
-
-const KIND_ICON: Record<ReferenceKind, typeof FileText> = {
-  pdf: FileText,
-  docx: FileType2,
-  xlsx: FileSpreadsheet,
-  csv: Table2,
-  pptx: Presentation,
-};
-
-const KIND_COLOR: Record<ReferenceKind, string> = {
-  pdf: "var(--blue-600)",
-  docx: "var(--orange-600)",
-  xlsx: "var(--success-500)",
-  csv: "var(--neutral-500)",
-  pptx: "var(--danger-500)",
-};
 
 /** 沒有頁數可顯示的格式（docx／xlsx／csv）改顯示檔案大小，讓每一列都有一個次要資訊。 */
 function formatBytes(bytes: number): string {
@@ -45,12 +31,9 @@ function metaLabel(doc: ReferenceDoc): string {
 }
 
 export default function ReferencesLibrary({ tree, outputs = null, externals = [] }: ReferencesLibraryProps) {
-  const open = (doc: ReferenceDoc) => {
-    // 帶著 doc.url：外部資料檔走 /local-assets/*，抽屜從 relPath 推算不出來。
-    window.dispatchEvent(
-      new CustomEvent("nc-ref-open", { detail: { file: doc.relPath, page: 1, url: doc.url } }),
-    );
-  };
+  // 點檔案列 = 導覽到講義頁籤 /references/doc/<relPath>（issue #3）。列本身是 <a>，
+  // 不再派發 nc-ref-open：那個事件只留給筆記內的引用開右側抽屜。
+  const open = (doc: ReferenceDoc) => hrefOf({ kind: "ref", id: doc.relPath });
 
   const empty = tree.folders.length === 0 && tree.docs.length === 0;
   if (empty && !outputs && externals.length === 0) {
@@ -84,7 +67,7 @@ function LocalSection({
 }: {
   title: string;
   folder: ReferenceFolder;
-  onOpen: (doc: ReferenceDoc) => void;
+  onOpen: (doc: ReferenceDoc) => string;
 }) {
   return (
     <section style={{ marginBottom: 28 }}>
@@ -116,7 +99,8 @@ function FolderSection({
 }: {
   folder: ReferenceFolder;
   depth: number;
-  onOpen: (doc: ReferenceDoc) => void;
+  /** 回傳該講義頁籤的網址 */
+  onOpen: (doc: ReferenceDoc) => string;
 }) {
   const [expanded, setExpanded] = useState(true);
   const hasHeader = depth > 0;
@@ -165,10 +149,9 @@ function FolderSection({
               {folder.docs.map((doc) => {
                 const Icon = KIND_ICON[doc.kind];
                 return (
-                  <button
+                  <a
                     key={doc.relPath}
-                    type="button"
-                    onClick={() => onOpen(doc)}
+                    href={onOpen(doc)}
                     className="nc-ref-file-row"
                     title={`${doc.name}（${REFERENCE_KIND_LABEL[doc.kind]}）`}
                     style={{
@@ -180,8 +163,8 @@ function FolderSection({
                       border: "none",
                       borderRadius: "var(--radius-sm)",
                       background: "none",
-                      cursor: "pointer",
                       textAlign: "left",
+                      textDecoration: "none",
                     }}
                   >
                     <Icon size={15} style={{ color: KIND_COLOR[doc.kind], flex: "none" }} />
@@ -199,7 +182,7 @@ function FolderSection({
                     <span style={{ marginLeft: "auto", flex: "none", fontSize: 12, color: "var(--text-muted)" }}>
                       {metaLabel(doc)}
                     </span>
-                  </button>
+                  </a>
                 );
               })}
             </div>

@@ -7,6 +7,7 @@ import { seriesProgress } from "@/lib/reading-progress";
 import { pushEscape } from "@/lib/wb-escape";
 import { getTabStore } from "@/lib/wb-tabs-store";
 import { hrefOf } from "@/lib/wb-tabs";
+import { tabIconOf } from "./tabs/TabStrip";
 import { AiPill, Ic, Pill } from "./ui";
 import { useWbIndex } from "./useWbIndex";
 import { stripBase, withBase } from "@/lib/base";
@@ -266,7 +267,7 @@ export default function Palette({ workspace = "" }: { workspace?: string }) {
         href: hrefOf(t),
         node: (
           <>
-            <Ic icon={FileText} size={13} color={t.kind === "view" ? "var(--wb-gold)" : "var(--wb-ink-3)"} />
+            <Ic icon={tabIconOf(t).Icon} size={13} color={tabIconOf(t).color} />
             <span className="wb-row-t">{t.title}</span>
             <span className="wb-row-p">{t.path}</span>
             {t.key === current ? <Pill>目前</Pill> : t.pinned ? <Pill tone="muted">已固定</Pill> : null}

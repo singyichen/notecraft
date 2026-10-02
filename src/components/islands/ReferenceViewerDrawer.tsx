@@ -1,15 +1,13 @@
-import { useCallback, useEffect, useRef, useState, type ComponentType } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence, useReducedMotion } from "motion/react";
-import { ChevronLeft, ChevronRight, Minus, Plus, X } from "lucide-react";
+import { X } from "lucide-react";
+import { withBase } from "@/lib/base";
 import { referenceAssetUrl } from "@/lib/references-url";
-import { referenceKindOf, REFERENCE_KIND_LABEL, type ReferenceKind } from "@/lib/reference-kinds";
-import type { ReferenceViewerMeta, ReferenceViewerProps } from "./reference-viewers/types";
-import PdfRenderer from "./reference-viewers/PdfRenderer";
-import DocxRenderer from "./reference-viewers/DocxRenderer";
-import XlsxRenderer from "./reference-viewers/XlsxRenderer";
-import CsvRenderer from "./reference-viewers/CsvRenderer";
-import PptxRenderer from "./reference-viewers/PptxRenderer";
+import { referenceKindOf, REFERENCE_KIND_LABEL } from "@/lib/reference-kinds";
+import type { ReferenceViewerMeta } from "./reference-viewers/types";
+import { REFERENCE_VIEWERS } from "./reference-viewers/registry";
+import ReferenceToolbar from "./reference-viewers/ReferenceToolbar";
 import ViewerStatus from "./reference-viewers/ViewerStatus";
 
 const DEFAULT_WIDTH = 560;
@@ -18,21 +16,11 @@ const MIN_WIDTH = 420;
 const CONTENT_PADDING = 16;
 // 抽屜最寬不能吃光視窗——留一截讓筆記正文還看得到、還能捲動
 const VIEWPORT_MARGIN = 80;
-const MIN_SCALE = 0.6;
-const MAX_SCALE = 2.4;
-const SCALE_STEP = 0.2;
 
-// 「副檔名 → 檢視器」註冊表的 client 端。新增一種格式：寫一個檢視器、在 reference-kinds.ts
-// 的 REFERENCE_KINDS 加副檔名、在這裡加一列——殼與工具列都不用動。
-// 這裡是靜態 import 沒關係：檢視器模組本身很小，各自的重型依賴（pdfjs、docx-preview、pptx-renderer）
-// 都在模組內部用動態 import 惰性載入。
-const REFERENCE_VIEWERS: Record<ReferenceKind, ComponentType<ReferenceViewerProps>> = {
-  pdf: PdfRenderer,
-  docx: DocxRenderer,
-  xlsx: XlsxRenderer,
-  csv: CsvRenderer,
-  pptx: PptxRenderer,
-};
+// 筆記內的講義引用（<PdfRefChip>、資料檔連結）一律開這個抽屜，**不**開頁籤（issue #3）：
+// 讀筆記時對照講義，關掉抽屜就回到原本的閱讀位置。狀態每次開啟都重設、只活在這個元件裡，
+// 所以不會寫進同一份講義的頁籤閱讀狀態（那邊在 ReferenceDocView，存在頁籤清單裡）。
+// 格式註冊表與工具列和講義頁籤共用（reference-viewers/registry.ts、ReferenceToolbar.tsx）。
 
 /**
  * `file` 是顯示用的路徑（也用來判斷格式）；`url` 可省略，省略時當作 notesDir 底下的檔案、
@@ -104,13 +92,8 @@ export default function ReferenceViewerDrawer() {
   const fileName = file?.split("/").pop() ?? "";
   const kind = fileName ? referenceKindOf(fileName) : null;
   const Viewer = kind ? REFERENCE_VIEWERS[kind] : null;
-  const url = fileUrl ?? (file ? referenceAssetUrl(file) : "");
-  const pageCount = meta.pageCount ?? 0;
-
-  const goPrev = () => setPage((p) => Math.max(1, p - 1));
-  const goNext = () => setPage((p) => Math.min(pageCount || p, p + 1));
-  const zoomOut = () => setScale((s) => Math.max(MIN_SCALE, +(s - SCALE_STEP).toFixed(2)));
-  const zoomIn = () => setScale((s) => Math.min(MAX_SCALE, +(s + SCALE_STEP).toFixed(2)));
+  // withBase：站台部署在子路徑時，/notes-assets/* 也在那個前綴底下（冪等，已帶前綴的不會再加）
+  const url = withBase(fileUrl ?? (file ? referenceAssetUrl(file) : ""));
 
   return createPortal(
     <AnimatePresence>
@@ -233,88 +216,11 @@ export default function ReferenceViewerDrawer() {
               padding: "0 16px",
             }}
           >
-            {/* 翻頁控制只對「有分頁概念」的格式出現：docx 的分頁是排版結果不是檔案資料，
-                給它一個頁碼輸入框只會讓人以為跳得過去。 */}
-            {meta.pageCount !== undefined && (
-              <>
-                <IconButton onClick={goPrev} disabled={page <= 1} label="上一頁">
-                  <ChevronLeft size={16} />
-                </IconButton>
-                <input
-                  type="number"
-                  value={page}
-                  min={1}
-                  max={pageCount || 1}
-                  onChange={(e) => {
-                    const v = Number(e.target.value);
-                    if (Number.isFinite(v)) setPage(Math.min(Math.max(1, v), pageCount || v));
-                  }}
-                  style={{
-                    width: 48,
-                    height: 30,
-                    textAlign: "center",
-                    border: "1px solid var(--border-default)",
-                    borderRadius: "var(--radius-sm)",
-                    fontSize: 13,
-                    fontFamily: "var(--font-mono)",
-                  }}
-                />
-                <span style={{ fontSize: 12.5, color: "var(--text-muted)" }}>/ {pageCount || "…"}</span>
-                <IconButton onClick={goNext} disabled={pageCount > 0 && page >= pageCount} label="下一頁">
-                  <ChevronRight size={16} />
-                </IconButton>
-                <span style={{ width: 1, height: 20, background: "var(--border-subtle)", margin: "0 4px" }} />
-              </>
-            )}
-            <IconButton onClick={zoomOut} disabled={scale <= MIN_SCALE} label="縮小">
-              <Minus size={16} />
-            </IconButton>
-            <span style={{ fontSize: 12.5, color: "var(--text-muted)", width: 40, textAlign: "center" }}>
-              {Math.round(scale * 100)}%
-            </span>
-            <IconButton onClick={zoomIn} disabled={scale >= MAX_SCALE} label="放大">
-              <Plus size={16} />
-            </IconButton>
+            <ReferenceToolbar page={page} pageCount={meta.pageCount} scale={scale} onPage={setPage} onScale={setScale} />
           </div>
         </motion.div>
       )}
     </AnimatePresence>,
     document.body,
-  );
-}
-
-function IconButton({
-  onClick,
-  disabled,
-  label,
-  children,
-}: {
-  onClick: () => void;
-  disabled?: boolean;
-  label: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      disabled={disabled}
-      aria-label={label}
-      title={label}
-      style={{
-        display: "inline-flex",
-        alignItems: "center",
-        justifyContent: "center",
-        width: 30,
-        height: 30,
-        border: "1px solid var(--border-subtle)",
-        borderRadius: "var(--radius-sm)",
-        background: disabled ? "var(--neutral-100)" : "var(--neutral-0)",
-        color: disabled ? "var(--neutral-400)" : "var(--text-body)",
-        cursor: disabled ? "default" : "pointer",
-      }}
-    >
-      {children}
-    </button>
   );
 }

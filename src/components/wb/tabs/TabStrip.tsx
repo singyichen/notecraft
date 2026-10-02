@@ -5,6 +5,8 @@
 import { Fragment, useEffect, useMemo, useRef, useState, type DragEvent, type KeyboardEvent, type MouseEvent } from "react";
 import { ChevronDown, FileText, Pin, X } from "lucide-react";
 import { hrefOf, tabTooltip, type TabEntry } from "@/lib/wb-tabs";
+import { referenceKindOf } from "@/lib/reference-kinds";
+import { KIND_COLOR, KIND_ICON } from "@/components/islands/reference-kind-icons";
 
 export interface TabStripProps {
   /** null = SSR／hydrate 第一輪，只畫空列 */
@@ -19,11 +21,18 @@ export interface TabStripProps {
 
 const modified = (e: MouseEvent) => e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0;
 
-export function TabIcon({ t, active, size = 13 }: { t: Pick<TabEntry, "kind">; active: boolean; size?: number }) {
-  const color = t.kind === "view" ? "var(--wb-gold)" : active ? "var(--wb-blue-l)" : "var(--wb-ink-3)";
+/** 講義頁籤（kind "ref"）依副檔名換圖示與顏色，與講義庫列表一致 */
+export function tabIconOf(t: Pick<TabEntry, "kind" | "id">, active = false): { Icon: typeof FileText; color: string } {
+  const rk = t.kind === "ref" ? referenceKindOf(t.id) : null;
+  if (rk) return { Icon: KIND_ICON[rk], color: KIND_COLOR[rk] };
+  return { Icon: FileText, color: t.kind === "view" ? "var(--wb-gold)" : active ? "var(--wb-blue-l)" : "var(--wb-ink-3)" };
+}
+
+export function TabIcon({ t, active, size = 13 }: { t: Pick<TabEntry, "kind" | "id">; active: boolean; size?: number }) {
+  const { Icon, color } = tabIconOf(t, active);
   return (
     <span className="nt-ic" aria-hidden="true">
-      <FileText size={size} strokeWidth={1.7} style={{ color }} />
+      <Icon size={size} strokeWidth={1.7} style={{ color }} />
     </span>
   );
 }

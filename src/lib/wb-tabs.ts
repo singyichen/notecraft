@@ -3,16 +3,26 @@
 //
 // scripts/checks/wb-tabs.mjs 以 Node 原生 strip-types 直接載入本檔做斷言，所以：
 // **只能 import type、不能有 JSX、不碰 window／localStorage／Date.now()**（時間由呼叫端傳入）。
-// 唯一例外是帶副檔名的 ./base.ts（純函式；Node 下沒有 import.meta.env，前綴是空字串）。
+// 例外是帶副檔名的 ./base.ts（純函式；Node 下沒有 import.meta.env，前綴是空字串）
+// 與 ./references-url.ts（講義頁籤的網址，同為無依賴的純函式）。
 // 所有函式回傳新物件，不改傳入值。
 
 import { withBase } from "./base.ts";
+import { referenceDocPath } from "./references-url.ts";
 
-export type TabKind = "note" | "view";
+/** ref：原始講義（/references/doc/<relPath>），v1.8.0 起 */
+export type TabKind = "note" | "view" | "ref";
+
+/** 講義頁籤的閱讀狀態（頁碼、縮放）。捲動位置沿用 TabEntry.scroll */
+export interface TabDocState {
+  /** 1-based；沒有分頁概念的格式恆為 1 */
+  page: number;
+  scale: number;
+}
 
 export interface TabEntry {
   kind: TabKind;
-  /** note：slug（entry.id）；view：routePath（不含 view: 前綴） */
+  /** note：slug（entry.id）；view：routePath（不含 view: 前綴）；ref：講義相對路徑（_references/…、dev 的 simulations/…） */
   id: string;
   /** `${kind}:${id}` —— view 的 key 剛好等於系列章節識別碼 */
   key: string;
@@ -24,8 +34,10 @@ export interface TabEntry {
   /** 顯示用快照（規格 §4.3，Q1）。可能過期；解析到新值就覆寫 */
   title: string;
   path: string;
-  /** 待生成 AI 標記數；資料檔恆為 0 */
+  /** 待生成 AI 標記數；資料檔、講義恆為 0 */
   pending: number;
+  /** 講義頁籤才有；沒有就是「從第 1 頁、100% 開始」 */
+  doc?: TabDocState;
 }
 
 export interface TabStore {
@@ -59,11 +71,31 @@ export function emptyStore(): TabStore {
   return { v: 1, tabs: [], closed: [] };
 }
 
+const KINDS: readonly string[] = ["note", "view", "ref"];
+
+/** 閱讀狀態的合理範圍；超出（手改 localStorage、舊版寫壞）就當作沒有，不讓整個頁籤失效 */
+export const DOC_MIN_SCALE = 0.6;
+export const DOC_MAX_SCALE = 2.4;
+
+function validDoc(x: unknown): x is TabDocState {
+  if (!x || typeof x !== "object") return false;
+  const d = x as Record<string, unknown>;
+  return (
+    typeof d.page === "number" &&
+    Number.isInteger(d.page) &&
+    d.page >= 1 &&
+    typeof d.scale === "number" &&
+    d.scale >= DOC_MIN_SCALE &&
+    d.scale <= DOC_MAX_SCALE
+  );
+}
+
 function validEntry(x: unknown): x is TabEntry {
   if (!x || typeof x !== "object") return false;
   const e = x as Record<string, unknown>;
   return (
-    (e.kind === "note" || e.kind === "view") &&
+    typeof e.kind === "string" &&
+    KINDS.includes(e.kind) &&
     typeof e.id === "string" &&
     e.id !== "" &&
     e.key === `${e.kind}:${e.id}` &&
@@ -74,6 +106,14 @@ function validEntry(x: unknown): x is TabEntry {
     typeof e.path === "string" &&
     typeof e.pending === "number"
   );
+}
+
+/** doc 只留在講義頁籤、且格式正確時；其他情況拿掉這個欄位（頁籤本身保留） */
+function cleanDoc(e: TabEntry): TabEntry {
+  if (e.doc === undefined) return e;
+  if (e.kind === "ref" && validDoc(e.doc)) return { ...e, doc: { page: e.doc.page, scale: e.doc.scale } };
+  const { doc: _drop, ...rest } = e;
+  return rest;
 }
 
 function dedupe(list: TabEntry[]): TabEntry[] {
@@ -93,8 +133,8 @@ export function parseStore(raw: string | null): TabStore {
   if (!data || typeof data !== "object") return emptyStore();
   const d = data as Record<string, unknown>;
   if (d.v !== 1 || !Array.isArray(d.tabs)) return emptyStore();
-  const tabs = dedupe(d.tabs.filter(validEntry));
-  const closed = Array.isArray(d.closed) ? dedupe(d.closed.filter(validEntry)).slice(0, TAB_CLOSED_MAX) : [];
+  const tabs = dedupe(d.tabs.filter(validEntry).map(cleanDoc));
+  const closed = Array.isArray(d.closed) ? dedupe(d.closed.filter(validEntry).map(cleanDoc)).slice(0, TAB_CLOSED_MAX) : [];
   return normalize({ v: 1, tabs, closed });
 }
 
@@ -240,6 +280,16 @@ export function cycle(store: TabStore, activeKey: string | null, dir: 1 | -1): T
   return store.tabs[(i + dir + n) % n];
 }
 
+/** 寫入講義頁籤的閱讀狀態（只合併給的欄位）；頁籤不存在或不是講義就不動 */
+export function setDocState(store: TabStore, key: string, patch: Partial<TabDocState>): TabStore {
+  const t = store.tabs.find((x) => x.key === key);
+  if (!t || t.kind !== "ref") return store;
+  const next: TabDocState = { page: 1, scale: 1, ...t.doc, ...patch };
+  if (!validDoc(next)) return store;
+  if (t.doc && t.doc.page === next.page && t.doc.scale === next.scale) return store;
+  return { ...store, tabs: store.tabs.map((x) => (x === t ? { ...x, doc: next } : x)) };
+}
+
 export function setScroll(store: TabStore, key: string, y: number): TabStore {
   if (!store.tabs.some((t) => t.key === key)) return store;
   const v = Math.max(0, Math.round(y));
@@ -256,7 +306,13 @@ export function refreshSnapshot(store: TabStore, resolve: (t: TabEntry) => TabSn
 }
 
 export function hrefOf(t: Pick<TabEntry, "kind" | "id">): string {
+  if (t.kind === "ref") return withBase(referenceDocPath(t.id));
   return withBase(t.kind === "note" ? `/notes/${t.id}` : `/view/${t.id}`);
+}
+
+/** 關掉最後一個頁籤（或目前頁籤）後無處可去時的落點：講義回講義庫，其他回筆記列表 */
+export function fallbackHref(activeKey: string | null): string {
+  return withBase(activeKey?.startsWith("ref:") ? "/references" : "/notes");
 }
 
 /** title 屬性：標題／路徑／待生成數 */

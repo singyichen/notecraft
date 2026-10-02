@@ -13,6 +13,7 @@ import {
   closeRight,
   cycle,
   ensure,
+  fallbackHref,
   hrefOf,
   move,
   neighborAfterClose,
@@ -26,7 +27,6 @@ import {
   type TabSelf,
   type TabStore,
 } from "@/lib/wb-tabs";
-import { withBase } from "@/lib/base";
 import type { TabStoreHandle } from "@/lib/wb-tabs-store";
 import { loadWbIndex } from "@/components/wb/useWbIndex";
 import { markerCounts } from "@/lib/wb-types";
@@ -45,7 +45,8 @@ export interface TabBarProps {
 }
 
 /**
- * 以 op 關閉一批頁籤；若目前頁面在其中，導覽到 prefer（若仍開著）、否則鄰居、都沒有就回 /notes。
+ * 以 op 關閉一批頁籤；若目前頁面在其中，導覽到 prefer（若仍開著）、否則鄰居、
+ * 都沒有就回 /notes（目前是講義頁籤則回 /references，issue #3）。
  * 規格 §6.5。固定頁籤永遠不會被關（由 wb-tabs 的 close 保證）。
  */
 export function closeAndNavigate(
@@ -65,7 +66,7 @@ export function closeAndNavigate(
     dest = (prefer && after.tabs.find((t) => t.key === prefer)) || neighborAfterClose(before, activeKey, new Set(gone));
   }
   handle.update(op);
-  if (leaving) location.assign(dest ? hrefOf(dest) : withBase("/notes"));
+  if (leaving) location.assign(dest ? hrefOf(dest) : fallbackHref(activeKey));
 }
 
 /** 關閉單一頁籤（固定的無作用） */
@@ -130,29 +131,38 @@ export default function TabBar({ self = null, workspace = "" }: TabBarProps) {
         .then((index) => {
           const notes = new Map(index.notes.map((n) => [n.slug, n]));
           const files = new Map(index.dataFiles.map((f) => [f.routePath, f]));
+          // 舊版索引（快取住的舊 wb-index.json）沒有 refDocs：當作「無法判斷」，講義頁籤一律保留
+          const refs = index.refDocs ? new Map(index.refDocs.map((d) => [d.id, d])) : null;
           const exists = (key: string) => {
             const i = key.indexOf(":");
             const kind = key.slice(0, i);
             const id = key.slice(i + 1);
-            return kind === "note" ? notes.has(id) : kind === "view" ? files.has(id) : false;
+            if (kind === "note") return notes.has(id);
+            if (kind === "view") return files.has(id);
+            if (kind === "ref") return refs ? refs.has(id) : true;
+            return false;
           };
-          let removed = 0;
+          let removed: TabEntry[] = [];
           handle.update((s) => {
             const fresh = refreshSnapshot(s, (t) => {
               if (t.kind === "note") {
                 const n = notes.get(t.id);
                 return n ? { title: n.title, path: n.path, pending: markerCounts(n.markers).pending } : null;
               }
+              if (t.kind === "ref") {
+                const d = refs?.get(t.id);
+                return d ? { title: d.name, path: d.id, pending: 0 } : null;
+              }
               const f = files.get(t.id);
               return f ? { title: f.title, path: f.relPath, pending: 0 } : null;
             });
             const r = prune(fresh, exists);
-            removed = r.removed.length;
+            removed = r.removed;
             // 內容沒變就回傳原物件，避免無謂的寫入與重畫
             return JSON.stringify(r.store) === JSON.stringify(s) ? s : r.store;
           });
-          if (removed === 1) toast("筆記已不存在，對應頁籤已關閉", "x");
-          else if (removed > 1) toast(`${removed} 篇筆記已不存在，對應頁籤已關閉`, "x");
+          if (removed.length === 1) toast(`「${removed[0].title}」已不存在，對應頁籤已關閉`, "x");
+          else if (removed.length > 1) toast(`${removed.length} 個頁籤的內容已不存在，已關閉`, "x");
         })
         .catch(() => {
           /* 離線或 404：保留快照 */
@@ -160,9 +170,9 @@ export default function TabBar({ self = null, workspace = "" }: TabBarProps) {
     });
   }, [handle]);
 
-  // 3) 捲動記錄與還原（規格 §7）
+  // 3) 捲動記錄與還原（規格 §7）。講義頁籤由 ReferenceDocView 自己管（內容在 load 之後才非同步畫出來）
   useEffect(() => {
-    if (!activeKey) return;
+    if (!activeKey || activeKey.startsWith("ref:")) return;
     const el = document.getElementById("nc-scroll");
     if (!el) return;
     const key = activeKey;

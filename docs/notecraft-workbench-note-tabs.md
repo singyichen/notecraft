@@ -493,3 +493,56 @@ Q1、Q2 影響 Task 105–106 的資料結構與 DOM，要先定；Q3–Q5 在 T
 - **README 截圖**：未補多頁籤截圖
 - 寬度只量了 1280／900／375；1400、1100、861 未逐一量
 - 建置時發現既有問題（與本功能無關）：`PluginView.astro` 在正式 build 把 renderer 的本機絕對路徑 inline 進內嵌資料檔的筆記頁（`/view` 頁有 `isDev` 判斷、內嵌沒有）。已另開工作處理，不在本分支修
+
+---
+
+## 18. 講義頁籤（v1.8.0，GitHub issue #3，2026-10-02）
+
+講義庫（`/references`）點一份講義，改成在主區開一個**工作台頁籤**閱讀，不再開右側抽屜。筆記內的引用（`@ai-reference` 的 `p.N`、正文的資料檔連結）**維持開抽屜**，不建立、也不切換頁籤。
+
+### 18.1 路由與識別碼
+
+| 項目 | 值 |
+| :-- | :-- |
+| kind | `ref`（`TabKind = "note" \| "view" \| "ref"`） |
+| id | 講義的完整相對路徑：`_references/…`、dev-only 的 `_outputs/…`、`simulations/…`。不同資料夾的同名檔是兩個頁籤 |
+| 路由 | `/references/doc/<id>`，`hrefOf` 以 `referenceDocPath` 逐段 `encodeURIComponent`（中文、空格、`#?%` 都安全），再套 `withBase` |
+| 頁面 | `src/pages/references/doc/[...path].astro`，`getStaticPaths` 來自 `listReferenceDocs({ includeLocal: import.meta.env.DEV })`；layout 以 `bareBody` 掛 `ReferenceDocView client:load`、`tab={{ kind: "ref", … }}` |
+| 標題快照 | 檔名（含副檔名，格式一眼可見）；tooltip 是檔名＋完整路徑；圖示與顏色依格式（`reference-kind-icons.ts`，與講義庫列表同一份） |
+| 關掉最後一個 | `fallbackHref`：目前頁籤是 `ref:` 回 `/references`，其他回 `/notes` |
+
+### 18.2 閱讀狀態
+
+- `TabEntry.doc?: { page, scale }`，只有 `ref` 頁籤會有；`parseStore` 遇到格式錯誤（頁碼 < 1、縮放超出 0.6–2.4）只拿掉 `doc`、頁籤保留；舊資料沒有這個欄位照常解析
+- `setDocState` 無變化時回傳原物件（不寫 localStorage）；頁籤不存在時是 no-op，不會憑空長出頁籤
+- 捲動共用 `scroll` 欄位，但**由 `ReferenceDocView` 自己還原**：講義在 `load` 之後才非同步畫出來（pdfjs、docx-preview、pptx-renderer），TabBar 的通用還原在那時 `scrollTop` 會被夾在 0。這裡用 `ResizeObserver` 盯內容高度，撐到目標就停；滾輪、觸控、捲動鍵、使用者翻頁或 10 秒後放棄。TabBar 的捲動 effect 對 `ref:` 頁籤直接略過
+- 讀回保存的頁碼前不掛檢視器，避免先畫第 1 頁再跳；檔案變短時頁碼夾回最後一頁
+- `ensure`（從講義庫再點一次）保留 `doc` 與 `scroll`；`popClosed` 重開也保留
+
+### 18.3 抽屜與頁籤的分工
+
+| | 右側抽屜（`ReferenceViewerDrawer`） | 講義頁籤（`ReferenceDocView`） |
+| :-- | :-- | :-- |
+| 入口 | `nc-ref-open` 事件：`PdfRefChip`、正文資料檔連結 | 講義庫的列（`<a href>`，整列是連結） |
+| 狀態 | 元件 state，關了就沒 | localStorage 的頁籤清單 |
+| 共用 | `reference-viewers/registry.ts`（副檔名 → 檢視器、縮放範圍）與 `ReferenceToolbar`（有頁數才顯示翻頁） | 同左 |
+
+兩邊狀態互不影響：在筆記裡開抽屜看第 2 頁，不會改到講義頁籤記住的第 5 頁。
+
+### 18.4 索引與 dev-only
+
+- `/wb-index.json` 新增 `refDocs: { id, name }[]`，給 idle prune 與標題覆寫用。**索引沒有 `refDocs`（舊版快取）時一律當作存在**，不會誤清頁籤；索引載入失敗本來就不 prune
+- 「我的產出」「實驗數據」在 dev 也走頁籤（檔案網址沿用 `/notes-assets/*`、`/local-assets/*`）；正式 build 的 `getStaticPaths` 與 `refDocs` 都不含這兩區，dist 裡沒有它們的頁面
+
+### 18.5 實測（2026-10-02，`astro dev` ＋ 正式 build）
+
+| 項目 | 結果 |
+| :-- | :-- |
+| 列表 → 頁籤 | 點「Ch 1 - Introduction to Microelectronics.pdf」→ 導覽到 `/references/doc/…`、頁籤列出現該檔、工具列有翻頁／縮放與完整路徑 |
+| 狀態保存 | 翻到第 5 頁、放大到 120%、捲動 → 切到筆記頁 → 回來：第 5 頁、120%、`scrollTop` 160（與保存值相同） |
+| 抽屜獨立 | 在筆記頁點 `p.2` chip：抽屜開 Ch 3 第 2 頁、網址不變、頁籤數不變、講義頁籤的 `doc` 仍是 `{5, 1.2}` |
+| 各格式 | Word、PowerPoint（10 張，有翻頁）、CSV、dev-only `simulations/` 的 Excel 都正常畫出；無頁數格式只顯示縮放 |
+| 關最後一個 | 只剩一個講義頁籤時按 ✕ → `/references` |
+| 窄螢幕 390 | 工具列不橫捲、完整路徑隱藏只留格式 pill；投影片縮到欄寬 |
+| build | `astro build` 117 頁、28 份講義頁全在 `_references/`；dist 無 `_outputs/`、`/local-assets/`；`refDocs` 28 筆皆為 `_references/` |
+| 斷言 | `check:wb` 新增 7 項（parse／舊資料相容／`setDocState`／重開保留狀態／共用上限／網址編碼與 fallback／prune） |

@@ -14,6 +14,7 @@ import { getAllNotes, parseMarkers, tagStats, type Note } from "@/lib/notes";
 import { loadSeries, getSeriesChapters } from "@/lib/series";
 import { getDataFiles, getInactiveMatches, getPlugins, getPluginsConfig } from "@/lib/plugins";
 import { hasDeck } from "@/lib/decks";
+import { listReferenceDocs } from "@/lib/references";
 import type {
   WbChapter,
   WbDataFile,
@@ -298,6 +299,8 @@ async function build(): Promise<WbIndex> {
     series,
     tags: tagStats(notes),
     dataFiles,
+    // dev-only 的講義（_outputs/、simulations/）只在 dev 列入：正式站的 HTML 與 JSON 都不能出現它們的路徑
+    refDocs: (await listReferenceDocs({ includeLocal: import.meta.env.DEV })).map((d) => ({ id: d.relPath, name: d.name })),
     plugins: buildPlugins(),
     pluginSystem: getPluginsConfig() !== null,
     appVersion: appVersion(),

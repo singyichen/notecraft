@@ -2,11 +2,13 @@ import { useEffect, useRef, useState } from "react";
 import type { PDFDocumentLoadingTask, PDFDocumentProxy, RenderTask } from "pdfjs-dist";
 import type { ReferenceViewerProps } from "./types";
 import ViewerStatus from "./ViewerStatus";
+import { withBase } from "@/lib/base";
 
 // cmaps / standard_fonts 由 build（notes-assets-build-copy.ts）與 dev（dev-api/handlers.mjs）
 // 各自複製 / 服務到這兩個固定路徑，供 pdf.js 解析 CJK CMap（如 GBK-EUC-H）與非嵌入標準字型。
-const CMAP_URL = "/pdfjs-cmaps/";
-const STANDARD_FONT_DATA_URL = "/pdfjs-standard-fonts/";
+// 站台部署在子路徑時兩者也在那個前綴底下。
+const CMAP_URL = withBase("/pdfjs-cmaps/");
+const STANDARD_FONT_DATA_URL = withBase("/pdfjs-standard-fonts/");
 
 // pdfjs-dist 打包後約 441 KB。檢視器抽屜以 client:only 掛在 WorkbenchLayout，會出現在
 // 每一頁，若在檔案頂層靜態 import 會讓完全沒開過講義的頁面也在首次載入時抓下這包 JS。

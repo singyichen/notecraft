@@ -151,10 +151,13 @@ excerpt: 如圖 3-2 所示的偏壓電路
 - 樣式規則只引用 `--wb-*` token；DS 沒有的七個值集中在 `workbench.css` 開頭
 - **Dashboard 總覽**（v1.4.0，[docs/notecraft-workbench-dashboard.md](docs/notecraft-workbench-dashboard.md)）：兩個瀏覽器端資料來源（今天、localStorage 閱讀進度）只由 `DashboardWorkbench` 各持有一份往下傳（`now`／`live`／`readingVersion`），SSR 一律佔位（「—」、只畫底環、不畫長條、不輸出日誌清單）；class 沿用 prototype 的 `dv-` 名稱、新色值全在 `--wb-dv-*`；treemap 與週窗由 `npm run check:wb` 鎖住
 - **更新月曆**（v1.5.0，[docs/notecraft-workbench-calendar.md](docs/notecraft-workbench-calendar.md)）：`?tab=calendar`（舊 `?tab=week` 視同）。月曆用**日曆週（週日→週六）**，總覽 KPI「本週更新」與更新日誌仍是滾動 7 天，兩者數字可以不同；`anchor` 由 `now` 推、SSR 不輸出任何日期格；`view`／`anchor` 不進網址；新底色在 `--wb-cal-*`、格子上的小字用 `--wb-muted-ink`；`cal-` 規則必須放在 860px 媒體規則之前；月格與日曆週由 `check:wb` 鎖住
-- **筆記頁籤**（v1.7.0，[docs/notecraft-workbench-note-tabs.md](docs/notecraft-workbench-note-tabs.md)）：Header 之上 34px 頁籤列，由 layout 每頁掛 `TabBar client:load`；頁面以 layout 的 **`tab` prop** 宣告自己是頁籤（目前只有筆記頁與 `/view` 資料檔頁）。
+- **筆記頁籤**（v1.7.0，[docs/notecraft-workbench-note-tabs.md](docs/notecraft-workbench-note-tabs.md)）：Header 之上 34px 頁籤列，由 layout 每頁掛 `TabBar client:load`；頁面以 layout 的 **`tab` prop** 宣告自己是頁籤（筆記頁、`/view` 資料檔頁、`/references/doc/<relPath>` 講義頁；kind 分別是 `note`／`view`／`ref`）。
   清單存 `nc-tabs-v1:<workspaceLabel>`（依工作區分開），**含標題快照**、idle 時以 `/wb-index.json` 覆寫並清掉已不存在的；SSR 只輸出空列（手機是空的計數框）。
   頁籤是 `<a role="tab">` 並排 ✕（中鍵關閉）；捲動還原遇網址 hash 讓位、還原期間不記錄；快捷鍵只用 ⌥ 且比對 `event.code`、輸入元件內不攔；
   頁面剛載入時要發的提示走 `lib/toast.ts`（`nc-toast` 事件在 ToastHost 掛載前會遺失）；刪除筆記要先關掉對應頁籤
+- **講義頁籤**（v1.8.0，issue #3）：講義庫的列是 `<a>` 指向 `/references/doc/<relPath>`（`hrefOf({kind:"ref"})` 逐段 encode），識別碼是完整相對路徑；頁碼／縮放存在頁籤的 `doc` 欄位（`setDocState`），捲動由 `ReferenceDocView` 自己還原（內容在 `load` 之後才畫出來，TabBar 的通用還原會撲空），TabBar 對 `ref:` 頁籤略過捲動 effect。
+  **筆記內的引用（`nc-ref-open`、`PdfRefChip`、資料檔連結）一律仍開右側抽屜**，不要改成開頁籤；抽屜與頁籤共用 `reference-viewers/registry.ts` 與 `ReferenceToolbar`，狀態各自獨立。
+  `/wb-index.json` 的 `refDocs` 供 idle prune 與標題快照，dev-only 的 `_outputs/`、`simulations/` 只在 `import.meta.env.DEV` 時列入（`getStaticPaths` 同理）；索引沒有 `refDocs`（舊快取）時一律視為存在，不清頁籤
 - **空狀態插圖**（v1.5.1，[docs/notecraft-workbench-empty-states.md](docs/notecraft-workbench-empty-states.md)）：只有更新日誌與 AI 佇列用 `wb/EmptyState.tsx`（class 沿用 prototype 的 `pt-empty*`），其他空狀態仍是 `wb-empty`／`dv-empty` 單行字；插圖 SVG 的顏色用 `style` 寫 `--wb-*` 變數（presentation attribute 在部分瀏覽器不解析）、不新增 token；更新日誌空時清單加 `is-empty`（不捲），矮視窗（≤820 高）規則縮插圖
 
 ## Plugin System（v0.6.0）
