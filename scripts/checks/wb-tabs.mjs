@@ -12,6 +12,7 @@ import {
   cycle,
   emptyStore,
   ensure,
+  fallbackHref,
   hrefOf,
   move,
   neighborAfterClose,
@@ -20,6 +21,7 @@ import {
   popClosed,
   prune,
   refreshSnapshot,
+  setDocState,
   setScroll,
   tabKey,
   tabStorageKey,
@@ -246,6 +248,104 @@ check("hrefOf、tabKey、tabStorageKey、tooltip", () => {
   assert.equal(tabStorageKey("我的筆記"), "nc-tabs-v1:我的筆記");
   assert.equal(tabTooltip({ title: "T", path: "a/t.mdx", pending: 0 }), "T\na/t.mdx");
   assert.equal(tabTooltip({ title: "T", path: "a/t.mdx", pending: 2 }), "T\na/t.mdx\n待生成 AI 標記 2");
+});
+
+// ── 講義頁籤（kind "ref"，issue #3）──
+const ref = (id, extra = {}) => ({
+  kind: "ref",
+  id,
+  key: `ref:${id}`,
+  pinned: false,
+  scroll: 0,
+  at: 0,
+  title: id.split("/").pop(),
+  path: id,
+  pending: 0,
+  ...extra,
+});
+
+check("ref：parseStore 接受、同名不同資料夾是兩個頁籤", () => {
+  const a = "_references/甲/Ch 1.pdf";
+  const b = "_references/乙/Ch 1.pdf";
+  const s = parseStore(JSON.stringify({ v: 1, tabs: [mk("n"), ref(a), ref(b)], closed: [] }));
+  assert.deepEqual(s.tabs.map((t) => t.key), ["note:n", `ref:${a}`, `ref:${b}`]);
+  // 未知 kind 照舊丟掉
+  assert.equal(parseStore(JSON.stringify({ v: 1, tabs: [{ ...mk("x"), kind: "zzz", key: "zzz:x" }] })).tabs.length, 0);
+});
+
+check("舊資料（無 doc 欄位）相容；doc 壞掉只拿掉欄位、頁籤保留", () => {
+  const old = parseStore(JSON.stringify({ v: 1, tabs: [mk("a"), mk("b", 1, { kind: "view", key: "view:b" })] }));
+  assert.equal(ids(old), "a b");
+  assert.ok(old.tabs.every((t) => !("doc" in t)));
+  const raw = JSON.stringify({
+    v: 1,
+    tabs: [
+      ref("r/ok.pdf", { doc: { page: 3, scale: 1.4, junk: 1 } }),
+      ref("r/bad.pdf", { doc: { page: 0, scale: 1 } }),
+      ref("r/huge.pdf", { doc: { page: 2, scale: 9 } }),
+      mk("n", 0, { doc: { page: 2, scale: 1 } }),
+    ],
+    closed: [ref("r/c.pdf", { doc: { page: 5, scale: 1 } })],
+  });
+  const s = parseStore(raw);
+  assert.equal(s.tabs.length, 4);
+  assert.deepEqual(s.tabs[0].doc, { page: 3, scale: 1.4 });
+  assert.ok(!("doc" in s.tabs[1]) && !("doc" in s.tabs[2]) && !("doc" in s.tabs[3]));
+  assert.deepEqual(s.closed[0].doc, { page: 5, scale: 1 });
+});
+
+check("setDocState：只動講義頁籤、無變化回傳原物件、不合法不寫", () => {
+  const s = st([mk("n"), ref("r/a.pdf")]);
+  const s1 = setDocState(s, "ref:r/a.pdf", { page: 4 });
+  assert.deepEqual(s1.tabs[1].doc, { page: 4, scale: 1 });
+  const s2 = setDocState(s1, "ref:r/a.pdf", { scale: 1.2 });
+  assert.deepEqual(s2.tabs[1].doc, { page: 4, scale: 1.2 });
+  assert.equal(setDocState(s2, "ref:r/a.pdf", { page: 4, scale: 1.2 }), s2);
+  assert.equal(setDocState(s2, "ref:r/a.pdf", { page: 0 }), s2);
+  assert.equal(setDocState(s2, "ref:r/a.pdf", { scale: 3 }), s2);
+  assert.equal(setDocState(s2, "note:n", { page: 2 }), s2);
+  assert.equal(setDocState(s2, "ref:不存在.pdf", { page: 2 }), s2);
+  assert.ok(!("doc" in s.tabs[1]), "不改傳入值");
+});
+
+check("ref：重開同一份講義聚焦既有頁籤、保留閱讀狀態；關閉再重開也保留", () => {
+  const s = st([ref("r/a.pdf", { at: 1, scroll: 300, doc: { page: 6, scale: 1.2 } }), mk("n", 2)]);
+  const { store } = ensure(s, { kind: "ref", id: "r/a.pdf", title: "a.pdf", path: "r/a.pdf", pending: 0 }, 9);
+  assert.equal(store.tabs.length, 2);
+  assert.deepEqual(store.tabs[0].doc, { page: 6, scale: 1.2 });
+  assert.equal(store.tabs[0].scroll, 300);
+  assert.equal(store.tabs[0].at, 9);
+  const closed = close(store, ["ref:r/a.pdf"]);
+  const { entry } = popClosed(closed, () => true, 10);
+  assert.deepEqual(entry.doc, { page: 6, scale: 1.2 });
+  assert.equal(entry.scroll, 300);
+});
+
+check("ref：與筆記、資料檔共用 20 個上限（LRU）", () => {
+  const tabs = Array.from({ length: TAB_MAX }, (_, i) => ref(`r/${i}.pdf`, { at: i + 1 }));
+  const { store, evicted } = ensure(st(tabs), self("n"), 100);
+  assert.equal(store.tabs.length, TAB_MAX);
+  assert.equal(evicted.key, "ref:r/0.pdf");
+});
+
+check("ref：hrefOf 逐段編碼（中文、空格、#?%）、fallbackHref", () => {
+  assert.equal(
+    hrefOf({ kind: "ref", id: "_references/電子學/第一週/Ch 1 - Intro.pdf" }),
+    "/references/doc/_references/%E9%9B%BB%E5%AD%90%E5%AD%B8/%E7%AC%AC%E4%B8%80%E9%80%B1/Ch%201%20-%20Intro.pdf",
+  );
+  assert.equal(hrefOf({ kind: "ref", id: "_outputs/a#b?c%.docx" }), "/references/doc/_outputs/a%23b%3Fc%25.docx");
+  assert.equal(fallbackHref("ref:_references/a.pdf"), "/references");
+  assert.equal(fallbackHref("note:a"), "/notes");
+  assert.equal(fallbackHref(null), "/notes");
+});
+
+check("ref：prune 只移除索引裡沒有的講義", () => {
+  const s = st([mk("n"), ref("r/a.pdf"), ref("r/gone.pdf")], [ref("r/old.pdf")]);
+  const docs = new Set(["r/a.pdf"]);
+  const { store, removed } = prune(s, (k) => (k.startsWith("ref:") ? docs.has(k.slice(4)) : true));
+  assert.equal(ids(store), "n r/a.pdf");
+  assert.deepEqual(removed.map((t) => t.id), ["r/gone.pdf"]);
+  assert.equal(store.closed.length, 0);
 });
 
 if (failed) {

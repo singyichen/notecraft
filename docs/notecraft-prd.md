@@ -1,7 +1,7 @@
 ---
 Project Name: NoteCraft
 文件類型: Project Requirement Document (PRD)
-文件版本: v1.20.0
+文件版本: v1.21.0
 開發模式: Waterfall
 技術選型: 確定
 技術架構: 確定
@@ -10,7 +10,7 @@ Project Name: NoteCraft
 文件作者: 建宇
 審核人: 建宇
 建立日期: 2026-06-12
-更新日期: 2026-10-01
+更新日期: 2026-10-02
 ---
 
 # NoteCraft — AI 互動筆記 Web App
@@ -88,6 +88,7 @@ Project Name: NoteCraft
 26. \* 提供 [Markdown 擴充語法 — English](#markdown-擴充語法english)：以行內 `:en[...]` 標出同一句話的英文對照，渲染為「中文在上、英文另一行轉淡縮小」，重用 `remark-directive` 底座，純 CSS、零 JS，正式環境同樣可用；服務於 `exam-review` Skill 的雙語題幹與雙語選項
 27. \* 讓筆記正文裡**指向資料檔的連結**（`.xlsx` / `.csv` / `.pdf` / `.docx` / `.pptx`）在既有的講義檢視抽屜就地開啟，而不是交給瀏覽器下載：副檔名判定沿用講義庫的「副檔名 → 檢視器」註冊表，路徑先以 MDX 所在目錄為基準、找不到再退回專案根，因此筆記裡的實驗數據記錄簿、作業資料集與元件 datasheet 都點得開。notesDir 底下的檔案 dev 與正式環境皆可用；專案根底下的實驗工作區（`simulations/`）僅 dev 可開，正式 build 自動改指 GitHub 上的同一個檔。設計見 `docs/superpowers/specs/2026-09-12-pdf-reference-viewer-design.md` §7.4
 28. \* 講義檢視抽屜與講義庫支援 **PowerPoint（`.pptx`）**：以 `@aiden0z/pptx-renderer`（Apache-2.0）在瀏覽器端把投影片畫成 HTML／SVG，與 PDF 同樣有翻頁與縮放、一次只畫一張並依抽屜寬度縮放；講義庫列出張數（build 期只解壓 `presentation.xml` 計算）、筆記正文的 `.pptx` 連結同樣就地開啟。只收 `.pptx`，舊版二進位 `.ppt` 比照 `.doc` 不收；不支援動畫、轉場、3D 圖表與任意 EMF／WMF 向量圖。選型與 PoC 紀錄見 GitHub issue #2——LibreOffice 轉 PDF 的備案在實測中會把微軟正黑體替代成不含 CJK 字形的字型、中文靜默消失，故不採用
+29. \* 從講義庫開啟的講義改成**工作台頁籤**（`/references/doc/<完整相對路徑>`）在主區閱讀，不再開右側抽屜：可同時開多份、與筆記／資料檔頁籤並存，沿用頁籤的關閉／固定／移動／全部頁籤／重開最近關閉／快捷鍵與 20 個上限；頁籤識別碼是完整相對路徑（不同資料夾的同名檔是兩個頁籤），標題顯示檔名、圖示依格式區分、滑過顯示完整路徑；每個頁籤各自保存頁碼、縮放與捲動位置，切換或重新整理後還原；關掉最後一個講義頁籤回講義庫。筆記內的引用（`@ai-reference` 的 `p.N`、資料檔連結）仍開右側抽屜、不建立也不切換頁籤，兩邊狀態互不影響。「我的產出」「實驗數據」兩個 dev-only 分區同樣走頁籤，但正式 build 不產生這兩區的頁面。需求見 GitHub issue #3
 
 ### 4.2 非目標（Out of Scope）
 
@@ -2980,6 +2981,9 @@ gantt
 ---
 
 ## 11. Change Log（變更紀錄）
+
+### [1.21.0] - 2026-10-02
+- **Changed**: 講義庫開啟講義改為工作台頁籤（`/references/doc/*`），每頁籤保存頁碼／縮放／捲動；筆記內引用仍開右側抽屜
 
 ### [1.20.0] - 2026-10-01
 - **Added**: 講義檢視抽屜與講義庫支援 PowerPoint（.pptx），筆記正文的 .pptx 連結就地開啟

@@ -66,10 +66,15 @@ function countSlides(absPath: string): number {
 // 的 default.docx）、建置暫存、版控內部檔。少了這道過濾，講義庫會冒出一堆不是講義的東西。
 const SKIP_DIRS = new Set(["node_modules", ".git", ".venv", "__pycache__", "build", "dist"]);
 
+/**
+ * `count`：要不要開檔算頁數（PDF 要整份交給 pdfjs 解析）。講義庫列表要顯示；
+ * 檢視頁路由與工作台索引只需要「有哪些檔」，每頁都會用到，不該付這個成本。
+ */
 async function walk(
   absDir: string,
   baseDir: string,
   toUrl: (relPath: string) => string,
+  count = true,
 ): Promise<ReferenceFolder> {
   const entries = fs
     .readdirSync(absDir, { withFileTypes: true })
@@ -80,7 +85,7 @@ async function walk(
     const abs = path.join(absDir, entry.name);
     if (entry.isDirectory()) {
       if (SKIP_DIRS.has(entry.name) || entry.name.startsWith(".")) continue;
-      const sub = await walk(abs, baseDir, toUrl);
+      const sub = await walk(abs, baseDir, toUrl, count);
       // 空資料夾不進樹：simulations/ 底下多的是 circuitjs/、tools/ 這種沒有可檢視檔案的目錄，
       // 留著只會讓清單長出一排點不開的節點。
       if (sub.folders.length > 0 || sub.docs.length > 0) folders.push(sub);
@@ -95,8 +100,8 @@ async function walk(
       relPath,
       url: toUrl(relPath),
       kind,
-      ...(kind === "pdf" ? { numPages: await countPages(abs) } : {}),
-      ...(kind === "pptx" ? { numPages: countSlides(abs) } : {}),
+      ...(count && kind === "pdf" ? { numPages: await countPages(abs) } : {}),
+      ...(count && kind === "pptx" ? { numPages: countSlides(abs) } : {}),
       bytes: fs.statSync(abs).size,
     });
   }
@@ -166,4 +171,34 @@ export async function listExternalDataTree(): Promise<ReferenceFolder[]> {
     if (tree.folders.length > 0 || tree.docs.length > 0) trees.push(tree);
   }
   return trees;
+}
+
+function flatten(folder: ReferenceFolder, out: ReferenceDoc[] = []): ReferenceDoc[] {
+  out.push(...folder.docs);
+  for (const child of folder.folders) flatten(child, out);
+  return out;
+}
+
+/**
+ * 所有可在工作台主區開成頁籤的講義（扁平清單、不算頁數）：`/references/doc/[...path]` 的
+ * getStaticPaths 與 /wb-index.json 的 `refDocs` 共用，兩邊才不會一邊開得起來、另一邊判定不存在。
+ *
+ * `includeLocal`：連同 dev-only 的「我的產出」與「實驗數據」。**呼叫端必須以 import.meta.env.DEV 把關**——
+ * 正式 build 既不複製那些檔案，也不能讓它們的路徑出現在任何輸出裡。
+ */
+export async function listReferenceDocs({ includeLocal }: { includeLocal: boolean }): Promise<ReferenceDoc[]> {
+  const notesDir = resolveNotesDir();
+  const roots: ReferenceFolder[] = [];
+  const referencesDir = path.join(notesDir, "_references");
+  if (fs.existsSync(referencesDir)) roots.push(await walk(referencesDir, notesDir, referenceAssetUrl, false));
+  if (includeLocal) {
+    const outputsDir = path.join(notesDir, "_outputs");
+    if (fs.existsSync(outputsDir)) roots.push(await walk(outputsDir, notesDir, referenceAssetUrl, false));
+    const root = process.cwd();
+    for (const dir of EXTERNAL_DATA_DIRS) {
+      const abs = path.join(root, dir);
+      if (fs.existsSync(abs)) roots.push(await walk(abs, root, localAssetUrl, false));
+    }
+  }
+  return roots.flatMap((r) => flatten(r));
 }

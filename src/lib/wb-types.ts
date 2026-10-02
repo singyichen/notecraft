@@ -124,6 +124,14 @@ export interface WbTagStat {
   lastUsed: string;
 }
 
+/** 可開成頁籤的原始講義（v1.8.0）。只列身分，不含頁數；dev 才含「我的產出」與「實驗數據」 */
+export interface WbRefDoc {
+  /** 完整相對路徑：講義頁籤的 id，也是 /references/doc/<id> 的路徑 */
+  id: string;
+  /** 檔名（含副檔名），頁籤標題 */
+  name: string;
+}
+
 export interface WbIndex {
   notes: WbNoteRow[];
   folders: WbFolderNode[];
@@ -132,6 +140,7 @@ export interface WbIndex {
   series: WbSeries[];
   tags: WbTagStat[];
   dataFiles: WbDataFile[];
+  refDocs: WbRefDoc[];
   plugins: WbPlugin[];
   /** 沒有 plugins.json 時 false：/plugins 顯示空狀態 */
   pluginSystem: boolean;

@@ -18,3 +18,14 @@ export function localAssetUrl(relPath: string): string {
   const segments = relPath.split(/[\\/]/).map(encodeURIComponent);
   return `/local-assets/${segments.join("/")}`;
 }
+
+/**
+ * 講義在工作台主區的檢視頁（不含站台前綴，呼叫端自己 withBase）。`id` 是講義的完整相對路徑：
+ * notesDir 底下的是 `_references/…`／`_outputs/…`，dev-only 的外部資料檔是 `simulations/…`
+ *（相對專案根）——兩種前綴不會撞，所以不同資料夾的同名檔一定是不同頁、不同頁籤。
+ * 每段各自 encode：檔名裡的 `#`、`?`、`%`、空白不能被瀏覽器當成網址語法。
+ * 本檔被 wb-tabs.ts 以帶副檔名的相對 import 載入（scripts/checks 直接跑），不可有任何 import。
+ */
+export function referenceDocPath(id: string): string {
+  return `/references/doc/${id.split("/").map(encodeURIComponent).join("/")}`;
+}
