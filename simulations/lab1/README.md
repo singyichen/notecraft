@@ -15,7 +15,7 @@
 | `lab1-exp4-zener.cir` | 橋式加齊納穩壓（概念電路：±10 V、Rlimit 1 kΩ、Vz 6.8 V） | `.tran` |
 | `plot_measured.py` | 把 `measured/*.csv` 疊到 LTspice 曲線上。預設實驗一（欄位 `Vs,VD,I_mA`），用「1 mA 門檻」與「切線交點」兩個準則印出導通電壓表；`--exp 2` 是實驗二（欄位 `Vs,VD,I_uA`），對數軸畫漏電流並加 DMM 10 MΩ 輸入阻抗線與 datasheet 5 µA 上限線；`--exp 3`／`--exp 4` 讀純量記錄表，畫實測 vs LTspice 預報 vs 理想公式的長條對照圖並印出誤差表。圖存到 `public/note-images/ec-week3-measured/` | 讀 `.raw` |
 | `measured/lab1-exp1-forward.csv`、`measured/lab1-exp1-tinkercad.csv` | 實驗一實測與 Tinkercad 掃描的記錄範本（0.1–2.0 V 共 21 列，`I_mA` 留空會用 $(V_s - V_D)/1\,\text{k}\Omega$ 補） | — |
-| `measured/Lab1-數據記錄.xlsx` | **實驗課當天用的資料記錄簿**：四個實驗各一張工作表，黃底格子是要填的，其餘是公式或預報值；填一列圖就跟著更新。實驗一、二是 I-V 散佈圖（實測點疊在 LTspice 曲線上），實驗三、四是實測 vs 預報的長條圖 |
+| `measured/Lab1-數據記錄.xlsx` | **實驗課當天用的資料記錄簿**：四個實驗各一張工作表，黃底格子是要填的，其餘是公式或預報值；填一列圖就跟著更新。實驗一、二是 I-V 散佈圖（實測點疊在 LTspice 曲線上），實驗三、四是實測 vs 預報的長條圖。每張工作表的資料區下方另有一張「當天拍照檢查表」（示波器畫面、麵包板照片、上傳登記），離開實驗室前逐項打勾 |
 | `build_record_xlsx.py` | 產生上面那個 xlsx 與實驗三、四的 CSV 範本。預報欄直接讀 `*.raw`，所以和筆記的數字同源；改了網表重跑即可 |
 | `measured/lab1-exp3-halfwave.csv`、`measured/lab1-exp4-bridge.csv` | 實驗三、四的純量記錄範本（區段／量測項目／實測／預報_LTspice／理想公式），填完可餵給 `plot_measured.py --exp 3`／`--exp 4` |
 | `measured/lab1-exp2-reverse.csv`、`measured/lab1-exp2-tinkercad.csv` | 實驗二實測與 Tinkercad 掃描的記錄範本（1–20 V 共 20 列，電流單位 µA；三欄都要有值才會畫） | — |
@@ -56,9 +56,13 @@ rm <repo>/simulations/lab1/measured/Lab1-數據記錄.xlsx
 zip -Xrq <repo>/simulations/lab1/measured/Lab1-數據記錄.xlsx .
 ```
 
-驗過的結果：162 條公式、0 錯誤；六張圖與所有儲存格內容不變；40 條公式帶有快取值
-（其餘 122 條在沒填數據時本來就是空字串）。重打包後再跑一次 `recalc.py` 仍是 success，
-確認檔案沒有因為重壓縮而損壞。
+**改完字型之後不要再跑一次 `recalc.py`**：它會用 LibreOffice 重新存檔，`Linux Libertine G`
+會再被塞回去（2026-10-02 實測）。要確認重打包沒弄壞檔案，改用唯讀的方式檢查——
+用 Python 的 `zipfile` 讀 `xl/styles.xml` 看字型只剩 `Arial`／`Calibri`、每張 `sheet*.xml`
+的 `<f>` 後面都接著 `<v>`，或直接用 openpyxl `load_workbook` 開得起來即可。
+
+驗過的結果（2026-10-02，含四張拍照檢查表）：166 條公式、0 錯誤，全部帶有快取值；
+六張圖的錨點與儲存格內容不變。
 
 `../tools/ltraw.py` 是最小的 `.raw` 讀取器（UTF-16 標頭 + 二進位資料，支援 `.step` 分段），不依賴 PyLTSpice；`run-lt.sh` 也在 `../tools/`。
 

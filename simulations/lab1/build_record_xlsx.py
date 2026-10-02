@@ -67,6 +67,26 @@ def title_block(ws, title, subtitle, span):
     ws.merge_cells(start_row=2, start_column=1, end_row=2, end_column=span)
 
 
+def checklist(ws, row, items, col=1):
+    """當天拍照檢查表：每個實驗一張，放在該工作表的資料區下方。回傳下一個空列。"""
+    c = ws.cell(row=row, column=col, value='當天拍照檢查表（離開實驗室前逐項打勾）')
+    c.font = BOLD
+    row += 1
+    for i, t in enumerate(['要留的證據', '打勾', '備註'], start=col):
+        h = ws.cell(row=row, column=i, value=t)
+        h.font = BOLD
+        h.fill = FILL_HD
+        h.border = BOX
+        h.alignment = Alignment(horizontal='center', vertical='center')
+    row += 1
+    for label, memo in items:
+        put(ws, row, col, label)
+        put(ws, row, col + 1, None, fill=FILL_IN)
+        put(ws, row, col + 2, memo, font=NOTE)
+        row += 1
+    return row
+
+
 # ── 讀 LTspice 預報值 ────────────────────────────────────────────────────────
 def lt_dc(fname, vnode, iscale, targets, inverted=False):
     _, st = read_raw(os.path.join(HERE, fname))
@@ -113,7 +133,8 @@ rows = [
     ('2', '填一列，右邊的計算欄與下面的圖就會跟著更新；不必等全部填完才看得到對照。'),
     ('3', '藍色字是寫死的輸入：講義規格或 LTspice 模擬結果。黑色字是公式。'),
     ('4', '每張工作表下方都有圖，橫軸縱軸已經設好，實測與預報畫在同一張上直接對照。'),
-    ('5', '當天上傳 E3 之前先存一份 xlsx；回家要跑 plot_measured.py 的話，把實驗一、二的'),
+    ('5', '每張工作表的資料區下方有「當天拍照檢查表」：示波器畫面、麵包板照片、上傳登記，離開實驗室前逐項打勾。'),
+    ('6', '當天上傳 E3 之前先存一份 xlsx；回家要跑 plot_measured.py 的話，把實驗一、二的'),
     ('', '　　前三欄另存成 measured/lab1-exp1-forward.csv、lab1-exp2-reverse.csv（逗號分隔）。'),
     ('', ''),
     ('填寫範例（實驗一）', ''),
@@ -169,6 +190,13 @@ rN = r0 + len(VS1) - 1
 ws.cell(row=rN + 2, column=1,
         value='G、H 欄：LTspice 1N4007（lab1-exp1-forward.raw）在同一組 Vs 的模擬值，當預報用。'
               'F 欄兩者差太多通常是電表接成並聯。').font = NOTE
+checklist(ws, rN + 4, [
+    ('麵包板全景照 1 張', '看得出 D1 色環方向、1 kΩ 與跳線各插在第幾欄'),
+    ('電表接線特寫 1 張', '電壓表跨 D1 兩端、電流表串在 R1 之後，紅黑棒插孔要入鏡'),
+    ('電源供應器面板 1 張', '任一列的 Vs 與面板電流讀值，和記錄表對得上'),
+    ('記錄表 20 列填滿', 'B、C 欄都要有值；F 欄差異過大先檢查電表是否接成並聯'),
+    ('上傳 E3 並找助教登記', '下課前完成，結報數字必須和上傳的一致'),
+])
 
 ch = ScatterChart()
 ch.title = '實驗一 I-V 特性曲線：實測 vs LTspice 預報'
@@ -232,6 +260,13 @@ rN = r0 + len(VS2) - 1
 ws.cell(row=rN + 2, column=1,
         value='D 欄接近 0 代表電源加多少、二極體就吃多少，電阻上沒有壓降——逆偏接對了。'
               '實測電流若落在 0.1–2 µA，多半是電表 10 MΩ 輸入阻抗分走的，不是二極體漏電流。').font = NOTE
+checklist(ws, rN + 4, [
+    ('麵包板全景照 1 張', 'D1 反接（色環朝電源正極那側），看得出每顆元件插在第幾欄'),
+    ('電流表 µA 檔特寫 1 張', '檔位旋鈕與讀值同框；mA 檔只會顯示 0'),
+    ('拿掉電壓表再量 1 次', '至少 10 V 與 20 V 兩列，兩個電流讀值的差就是電壓表分走的'),
+    ('記錄表 20 列填滿', 'D 欄應接近 0；跑到零點幾伏就是二極體插反了'),
+    ('上傳 E3 並找助教登記', '下課前完成'),
+])
 
 ch = ScatterChart()
 ch.title = '實驗二 V_D 對 Vs：逆偏時 V_D 幾乎等於 Vs'
@@ -269,7 +304,7 @@ ws.add_chart(ch2, 'J25')
 # ── 實驗三、四共用的純量表 ──────────────────────────────────────────────────
 # 每一列是 (區段, 量測項目, LTspice 預報, 理想公式值, 說明, 數字格式)。
 # 區段獨立成一欄，資料列才會連續——長條圖的資料範圍與類別範圍必須等長。
-def scalar_sheet(name, title, sub, items, extras, note, chart_title):
+def scalar_sheet(name, title, sub, items, extras, note, chart_title, checks):
     ws = wb.create_sheet(name)
     title_block(ws, title, sub, 7)
     head(ws, 4, ['區段', '量測項目', '實測', '預報（LTspice）', '理想公式', '誤差 (%)', '說明'],
@@ -300,6 +335,7 @@ def scalar_sheet(name, title, sub, items, extras, note, chart_title):
         put(ws, r, 7, memo, font=NOTE)
         r += 1
     ws.cell(row=r + 1, column=1, value=note).font = NOTE
+    r = checklist(ws, r + 3, checks)
 
     ch = BarChart()
     ch.type = 'col'
@@ -309,7 +345,7 @@ def scalar_sheet(name, title, sub, items, extras, note, chart_title):
     ch.height, ch.width = 10, 22
     ch.add_data(Reference(ws, min_col=3, max_col=4, min_row=4, max_row=rN), titles_from_data=True)
     ch.set_categories(Reference(ws, min_col=2, min_row=r0, max_row=rN))
-    ws.add_chart(ch, 'A' + str(r + 3))
+    ws.add_chart(ch, 'A' + str(r + 2))
     return ws, idx
 
 
@@ -348,7 +384,12 @@ ws3, idx3 = scalar_sheet(
     e3_items, e3_extras,
     '預報欄來自 lab1-exp3-halfwave.raw 與 lab1-exp3-halfwave-rc.raw（1 µF 那一步）。'
     '理想欄一律以理想輸出峰值 4.3 V 代入公式，所以和預報欄有系統性的差。',
-    '實驗三：實測 vs LTspice 預報')
+    '實驗三：實測 vs LTspice 預報',
+    [('示波器畫面（無 C）1 張', 'V_in 與 V_out 同畫面，[Meas] 的 Max／RMS／Average 讀值入鏡；用 [Save/Recall] 存 USB，不要手機翻拍'),
+     ('示波器畫面（加 1 µF）1 張', '同上，另外要能看出漣波的谷值'),
+     ('麵包板全景照 2 張', '有／無電容各一張，看得出每顆元件插在第幾欄'),
+     ('記錄表三個區段填滿', 'V_avg 欄不要留空，效率靠它算'),
+     ('上傳 E3 並找助教登記', '下課前完成')])
 
 e4_items = [
     ('輸入 V_in（A–B）', 'V_peak (V)', round(E4IN['peak'], 3), 2.5, '5 Vpp 正弦的峰值。接地陷阱見筆記，不能兩支探棒同時跨輸入與輸出', '0.000'),
@@ -384,7 +425,12 @@ ws4, idx4 = scalar_sheet(
     e4_items, e4_extras,
     '預報欄來自 lab1-exp4-bridge.raw 與 lab1-exp4-bridge-rc.raw。齊納那一版的 LTspice 檔用的是'
     '講義第 24 頁的概念電路（±10 V、V_Z = 6.8 V），和第 27 頁的 5 Vpp 條件不同，所以不拿它當預報值。',
-    '實驗四：實測 vs LTspice 預報')
+    '實驗四：實測 vs LTspice 預報',
+    [('示波器畫面 3 張', '無 C、加 1 µF、加齊納各一張；[Meas] 讀值入鏡，存 USB'),
+     ('示波器地夾位置 1 張', '地夾只夾 N 或只夾 B，不可同時跨輸入與輸出（接地陷阱）'),
+     ('麵包板全景照 3 張', '三個版本各一張，四顆二極體的色環方向要看得清楚'),
+     ('記錄表四個區段填滿', 'V_avg 欄不要留空；齊納沒導通就照實記 V_drop'),
+     ('上傳 E3 並找助教登記', '下課前完成')])
 
 for s in wb.worksheets:
     if s.title.startswith('實驗一') or s.title.startswith('實驗二'):
