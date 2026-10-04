@@ -30,6 +30,7 @@ description: Use when the author has a lab handout (App_LabN.pdf、實驗講義)
 4. **電流分析圖**：Tinkercad 的接線圖（麵包板與線路圖檢視）截圖之後，**每張都要再產一張電流分析圖**——用 `simulations/tools/current_overlay.py` 的原語在原圖上疊出電流路徑、方向箭頭、步驟編號、電表接法與被省略的迴路，輸出加 `-current` 後綴、原圖不覆蓋，並在筆記配上逐步說明表與預期讀數估算式。接線圖只說明「接在哪」，分析圖才說明「為什麼會動」。量座標的方法、畫法規範與檢查清單見 `references/current-path-overlay.md`。
 5. **LTspice**：`simulations/<lab>/*.cir` 用內建庫的真實 `.model`，`../tools/run-lt.sh` 批次跑，`plot.py` 出圖到 `public/note-images/<slug>/`，並算出峰值、rms、平均、漣波，見 `references/ltspice-batch.md`。
 6. **記錄表**：預報表（理論公式、LTspice、CircuitJS 三欄預期值）與結報表（實測、預報值、誤差、原因）都留空欄給作者填；記錄表欄位對齊講義的量測項目，多加一欄可互相驗證的量（例如同時抄 $V_R / R$ 與電流表）。
+   **結報交件版（`--final`）的所有正文段落**（實驗目的、實驗原理、模擬與器材說明、數據解讀、結果分析、講義問題答案、心得）照 `references/report-voice.md` 的契約寫：先給答案或當天狀況、拿自己的讀值講、理論點後面接一句它對這次實驗代表什麼、最多幾處「一開始以為／後來發現」、收在自己的判斷上，各段長短要有差；數據與結論不動，只動口吻。寫完用 `pdftotext` 撈出全文逐段過一次該檔的自檢。
 7. **寫進筆記**：用 `templates/lab-section.md` 的段落順序，每個實驗掛 `@ai-reference` 到講義步驟頁；LTspice 結果另立「進階」小節放理論 vs 模擬對照表；附錄收 CircuitJS 文字檔。寫完跑粗體自檢 grep、「中文為主」自檢 grep（兩條指令見 CLAUDE.md 工作慣例）、remark 清單檢查、`astro build`、preview 截圖。
 
 ## 產出位置
@@ -61,3 +62,4 @@ description: Use when the author has a lab handout (App_LabN.pdf、實驗講義)
 - 只給 Tinkercad 接線圖、沒有電流分析圖 → 作者沒有電路學背景，看得懂接法不等於看得懂電流；兩張要成對出現。
 - 電流分析圖覆蓋掉原始接線圖 → 原圖是接線證據、分析圖是教材，兩張都要留。
 - 講義的英文目標／步驟整句粗體照抄再接中文 → 作者要的是中文為主、英文術語括號附註；knee voltage 一律寫「導通電壓」，不寫「膝點」。
+- 結報交件版任何一段寫成教科書條目（「本實驗以……藉此觀察並驗證」、三條平行條列、每題「定義 → 機制 → 所以……」收尾、原理段落可以原封搬去別人的報告）→ 一看就是 AI 寫的，助教會退。那是作者署名交出去的東西，整份照 `references/report-voice.md` 用當天的操作與自己的讀值講，長短不一、留幾處轉折；不是只改實驗目的和講義問題。
