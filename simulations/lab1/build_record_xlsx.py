@@ -4,7 +4,7 @@
 預報欄直接讀 LTspice 的 .raw，所以和筆記裡的數字同源；改了網表重跑本腳本即可。
 黃底 = 當天要填的格子，其他欄位都是公式或預報值，填完數據圖就會自己更新。
 
-用法：cd simulations/lab1 && .venv/bin/python build_record_xlsx.py
+用法：cd simulations/lab1 && .venv/bin/python build_record_xlsx.py        # 檔案已存在時不覆蓋，加 --force 才重產
 """
 import os
 import sys
@@ -32,6 +32,19 @@ TITLE = Font(name=FONT, bold=True, size=14)
 NOTE = Font(name=FONT, size=9, color='808080')
 THIN = Side(style='thin', color='BFBFBF')
 BOX = Border(left=THIN, right=THIN, top=THIN, bottom=THIN)
+
+
+MARK = '1F4E79'   # 實測點的顏色；點要明確給填色與邊線，否則 LibreOffice 重算存檔會把它寫成 noFill 而隱形
+
+
+def dot_series(ys, xs, title):
+    """只畫點、不畫線的實測序列。"""
+    s = Series(ys, xs, title=title)
+    s.marker = Marker(symbol='circle', size=7)
+    s.marker.graphicalProperties.solidFill = MARK
+    s.marker.graphicalProperties.line.solidFill = MARK
+    s.graphicalProperties.line.noFill = True
+    return s
 
 
 def head(ws, row, labels, widths=None):
@@ -204,10 +217,8 @@ ch.style = 2
 ch.x_axis.title = 'V_D (V)'
 ch.y_axis.title = 'I (mA)'
 ch.height, ch.width = 9, 17
-s = Series(Reference(ws, min_col=3, min_row=r0, max_row=rN), Reference(ws, min_col=2, min_row=r0, max_row=rN),
-           title='實測（電表）')
-s.marker = Marker(symbol='circle', size=6)
-s.graphicalProperties.line.noFill = True
+s = dot_series(Reference(ws, min_col=3, min_row=r0, max_row=rN), Reference(ws, min_col=2, min_row=r0, max_row=rN),
+               '實測（電表）')
 ch.series.append(s)
 s2 = Series(Reference(ws, min_col=8, min_row=r0, max_row=rN), Reference(ws, min_col=7, min_row=r0, max_row=rN),
             title='LTspice 1N4007（預報）')
@@ -221,10 +232,8 @@ ch2.style = 2
 ch2.x_axis.title = 'Vs (V)'
 ch2.y_axis.title = 'V_D (V)'
 ch2.height, ch2.width = 9, 17
-sa = Series(Reference(ws, min_col=2, min_row=r0, max_row=rN), Reference(ws, min_col=1, min_row=r0, max_row=rN),
-            title='實測')
-sa.marker = Marker(symbol='circle', size=6)
-sa.graphicalProperties.line.noFill = True
+sa = dot_series(Reference(ws, min_col=2, min_row=r0, max_row=rN), Reference(ws, min_col=1, min_row=r0, max_row=rN),
+                '實測')
 ch2.series.append(sa)
 sb = Series(Reference(ws, min_col=7, min_row=r0, max_row=rN), Reference(ws, min_col=1, min_row=r0, max_row=rN),
             title='LTspice')
@@ -274,10 +283,8 @@ ch.style = 2
 ch.x_axis.title = 'Vs (V)'
 ch.y_axis.title = 'V_D (V)'
 ch.height, ch.width = 9, 17
-s = Series(Reference(ws, min_col=2, min_row=r0, max_row=rN), Reference(ws, min_col=1, min_row=r0, max_row=rN),
-           title='實測')
-s.marker = Marker(symbol='circle', size=6)
-s.graphicalProperties.line.noFill = True
+s = dot_series(Reference(ws, min_col=2, min_row=r0, max_row=rN), Reference(ws, min_col=1, min_row=r0, max_row=rN),
+               '實測')
 ch.series.append(s)
 s2 = Series(Reference(ws, min_col=5, min_row=r0, max_row=rN), Reference(ws, min_col=1, min_row=r0, max_row=rN),
             title='LTspice')
@@ -292,11 +299,13 @@ ch2.x_axis.title = 'Vs (V)'
 ch2.y_axis.title = 'I (µA)'
 ch2.height, ch2.width = 9, 17
 for col, name, mk in [(3, '實測', True), (7, 'LTspice 1N4007', False), (8, 'datasheet 上限 5 µA', False)]:
-    sx = Series(Reference(ws, min_col=col, min_row=r0, max_row=rN),
-                Reference(ws, min_col=1, min_row=r0, max_row=rN), title=name)
-    sx.marker = Marker(symbol='circle' if mk else 'none', size=6)
     if mk:
-        sx.graphicalProperties.line.noFill = True
+        sx = dot_series(Reference(ws, min_col=col, min_row=r0, max_row=rN),
+                        Reference(ws, min_col=1, min_row=r0, max_row=rN), name)
+    else:
+        sx = Series(Reference(ws, min_col=col, min_row=r0, max_row=rN),
+                    Reference(ws, min_col=1, min_row=r0, max_row=rN), title=name)
+        sx.marker = Marker(symbol='none')
     ch2.series.append(sx)
 ws.add_chart(ch2, 'J25')
 
@@ -304,7 +313,7 @@ ws.add_chart(ch2, 'J25')
 # ── 實驗三、四共用的純量表 ──────────────────────────────────────────────────
 # 每一列是 (區段, 量測項目, LTspice 預報, 理想公式值, 說明, 數字格式)。
 # 區段獨立成一欄，資料列才會連續——長條圖的資料範圍與類別範圍必須等長。
-def scalar_sheet(name, title, sub, items, extras, note, chart_title, checks):
+def scalar_sheet(name, title, sub, items, extras, note, chart_title, checks, steps):
     ws = wb.create_sheet(name)
     title_block(ws, title, sub, 7)
     head(ws, 4, ['區段', '量測項目', '實測', '預報（LTspice）', '理想公式', '誤差 (%)', '說明'],
@@ -335,7 +344,14 @@ def scalar_sheet(name, title, sub, items, extras, note, chart_title, checks):
         put(ws, r, 7, memo, font=NOTE)
         r += 1
     ws.cell(row=r + 1, column=1, value=note).font = NOTE
-    r = checklist(ws, r + 3, checks)
+    r += 3
+    ws.cell(row=r, column=1, value='量測順序（照著做，每一步抄到哪一列都寫在後面）').font = BOLD
+    r += 1
+    for k, text in enumerate(steps, start=1):
+        ws.cell(row=r, column=1, value=f'第 {k} 步').font = BOLD
+        ws.cell(row=r, column=2, value=text).font = BLACK
+        r += 1
+    r = checklist(ws, r + 1, checks)
 
     ch = BarChart()
     ch.type = 'col'
@@ -353,21 +369,21 @@ PI2 = 3.141592653589793 ** 2
 E3_VP, E4_VP = 4.3, 1.1          # 理想輸出峰值：5 − 0.7、2.5 − 2×0.7
 
 e3_items = [
-    ('輸入 V_in', 'V_peak (V)', round(E3IN['peak'], 3), 5.0, '示波器 CH1 的 Maximum；10 Vpp 正弦的峰值', '0.000'),
-    ('輸入 V_in', 'V_rms (V)', round(E3IN['rms'], 3), round(5 / 2 ** .5, 3), 'CH1 的 AC RMS；V_p / √2', '0.000'),
-    ('輸出 無 C（第 18 頁）', 'V_peak (V)', round(E3OUT['peak'], 3), E3_VP, 'CH2 的 Maximum；理想 = 5 − V_D,on，用 0.7 V 估', '0.000'),
-    ('輸出 無 C（第 18 頁）', 'V_rms (V)', round(E3OUT['rms'], 3), round(E3_VP / 2, 3), 'CH2 的 DC RMS；理想半波 V_p / 2（V_p 取理想輸出峰值 4.3 V）', '0.000'),
-    ('輸出 無 C（第 18 頁）', 'V_avg (V)', round(E3OUT['avg'], 3), round(E3_VP / 3.141592653589793, 3), 'CH2 的 Average；理想半波 V_p / π', '0.000'),
-    ('輸出 加 1 µF（第 20 頁）', 'V_peak (V)', round(E3RC[0]['peak'], 3), None, '峰值幾乎不變，變的是谷底', '0.000'),
-    ('輸出 加 1 µF（第 20 頁）', 'V_rms (V)', round(E3RC[0]['rms'], 3), None, 'CH2 的 DC RMS。加了電容就不再是理想半波，V_p/2 不適用，所以理想欄留空', '0.000'),
-    ('輸出 加 1 µF（第 20 頁）', 'V_avg (V)', round(E3RC[0]['avg'], 3), None, 'CH2 的 Average。漣波越小這一格越靠近 V_peak', '0.000'),
-    ('輸出 加 1 µF（第 20 頁）', '漣波 V_R (V)', round(E3RC[0]['ripple'], 3), 7.2, '峰谷差。線性近似 V_p/(R·C·f) 在 1 µF 已失效，理想欄僅供對照', '0.000'),
+    ('V_in', 'V_peak (V)', round(E3IN['peak'], 3), 5.0, '第 3 步：無電容。[Meas] 來源 CH1（夾 Vin）→ Maximum。10 Vpp 正弦應接近 5 V', '0.000'),
+    ('V_in', 'V_rms (V)', round(E3IN['rms'], 3), round(5 / 2 ** .5, 3), '第 3 步：同上，[Meas] 來源 CH1 → AC RMS。應接近 5/√2 = 3.54 V', '0.000'),
+    ('V_out (no C, p.18)', 'V_peak (V)', round(E3OUT['peak'], 3), E3_VP, '第 4 步：無電容。[Meas] 來源 CH2（夾 Vout）→ Maximum。比輸入峰值少約一個二極體壓降', '0.000'),
+    ('V_out (no C, p.18)', 'V_rms (V)', round(E3OUT['rms'], 3), round(E3_VP / 2, 3), '第 4 步：[Meas] 來源 CH2 → DC RMS（半波有直流成分，不能選 AC RMS）。理想半波 V_p/2', '0.000'),
+    ('V_out (no C, p.18)', 'V_avg (V)', round(E3OUT['avg'], 3), round(E3_VP / 3.141592653589793, 3), '第 4 步：[Meas] 來源 CH2 → 平均值（Mean／Average）。效率靠這格算，不要留空。理想半波 V_p/π', '0.000'),
+    ('V_out (C = 1 µF, p.20)', 'V_peak (V)', round(E3RC[0]['peak'], 3), None, '第 7 步：並上 1 µF 後。[Meas] 來源 CH2 → Maximum。峰值幾乎不變，變的是谷底', '0.000'),
+    ('V_out (C = 1 µF, p.20)', 'V_rms (V)', round(E3RC[0]['rms'], 3), None, '第 7 步：[Meas] 來源 CH2 → DC RMS。加了電容就不是理想半波，V_p/2 不適用，理想欄留空', '0.000'),
+    ('V_out (C = 1 µF, p.20)', 'V_avg (V)', round(E3RC[0]['avg'], 3), None, '第 7 步：[Meas] 來源 CH2 → 平均值。漣波越小這一格越靠近 V_peak', '0.000'),
+    ('V_out (C = 1 µF, p.20)', '漣波 V_R (V)', round(E3RC[0]['ripple'], 3), 7.2, '第 7 步：[Meas] 來源 CH2 → Vpp（峰-峰值就是峰谷差）。線性近似 V_p/(R·C·f) 在 1 µF 已失效，理想欄僅供對照', '0.000'),
 ]
 
 
 def e3_extras(idx):
-    a, m = idx['輸出 無 C（第 18 頁）|V_avg (V)'], idx['輸出 無 C（第 18 頁）|V_rms (V)']
-    ac, mc = idx['輸出 加 1 µF（第 20 頁）|V_avg (V)'], idx['輸出 加 1 µF（第 20 頁）|V_rms (V)']
+    a, m = idx['V_out (no C, p.18)|V_avg (V)'], idx['V_out (no C, p.18)|V_rms (V)']
+    ac, mc = idx['V_out (C = 1 µF, p.20)|V_avg (V)'], idx['V_out (C = 1 µF, p.20)|V_rms (V)']
     return [('整流效率 η = V_avg² / V_rms²（無 C）',
              f'=IF(OR(C{a}="",C{m}="",C{m}=0),"",C{a}^2/C{m}^2)',
              round(E3OUT['avg'] ** 2 / E3OUT['rms'] ** 2, 4), round(4 / PI2, 4),
@@ -389,24 +405,32 @@ ws3, idx3 = scalar_sheet(
      ('示波器畫面（加 1 µF）1 張', '同上，另外要能看出漣波的谷值'),
      ('麵包板全景照 2 張', '有／無電容各一張，看得出每顆元件插在第幾欄'),
      ('記錄表三個區段填滿', 'V_avg 欄不要留空，效率靠它算'),
-     ('上傳 E3 並找助教登記', '下課前完成')])
+     ('上傳 E3 並找助教登記', '下課前完成')],
+    ['接第 18 頁電路（先不要接電容）：訊號產生器設正弦、60 Hz、10 Vpp；二極體 1N4007 色環那端接 10 kΩ，電阻另一端接地。',
+     '探棒：CH1 尖端夾 Vin（二極體前、訊號產生器那側），CH2 尖端夾 Vout（二極體後、電阻上端），兩支地夾都夾在接地那條線。按 [Auto Scale]。',
+     '按 [Meas]，來源選 CH1：Maximum 抄到「V_in V_peak」、AC RMS 抄到「V_in V_rms」。',
+     '來源改 CH2：Maximum → 「V_out (no C) V_peak」、DC RMS → 「V_out (no C) V_rms」、平均值 → 「V_out (no C) V_avg」。畫面應只剩正半週。',
+     '[Save/Recall] 把畫面存到 USB，拍麵包板全景。效率（無 C）那格會自己算出來，應落在 40% 以下。',
+     '把 1 µF 電容並在 10 kΩ 兩端（第 20 頁）；電解電容長腳接 Vout、短腳接地。波形變成鋸齒狀。',
+     '[Meas] 來源 CH2：Maximum → 「V_out (C = 1 µF) V_peak」、DC RMS → V_rms、平均值 → V_avg、Vpp（峰-峰值）→ 「漣波 V_R」。',
+     '再存一次畫面、再拍一張麵包板。檢查表打勾，下課前上傳 E3。'])
 
 e4_items = [
-    ('輸入 V_in（A–B）', 'V_peak (V)', round(E4IN['peak'], 3), 2.5, '5 Vpp 正弦的峰值。接地陷阱見筆記，不能兩支探棒同時跨輸入與輸出', '0.000'),
-    ('輸入 V_in（A–B）', 'V_rms (V)', round(E4IN['rms'], 3), round(2.5 / 2 ** .5, 3), 'V_p / √2', '0.000'),
-    ('輸出 無 C（第 25 頁）', 'V_peak (V)', round(E4OUT['peak'], 3), E4_VP, '理想 = 2.5 − 2×V_D,on，用 0.7 V 估', '0.000'),
-    ('輸出 無 C（第 25 頁）', 'V_rms (V)', round(E4OUT['rms'], 3), round(E4_VP / 2 ** .5, 3), '理想全波 V_p′ / √2（V_p′ 取理想輸出峰值 1.1 V）', '0.000'),
-    ('輸出 無 C（第 25 頁）', 'V_avg (V)', round(E4OUT['avg'], 3), round(2 * E4_VP / 3.141592653589793, 3), '理想全波 2V_p′ / π', '0.000'),
-    ('輸出 加 1 µF（第 26 頁）', 'V_peak (V)', round(E4RC[0]['peak'], 3), None, 'Tinkercad 跑不動這一版，波形以示波器實測為準', '0.000'),
-    ('輸出 加 1 µF（第 26 頁）', '漣波 V_R (V)', round(E4RC[0]['ripple'], 3), round(E4_VP / (2 * 10000 * 1e-6 * 60), 3), '理想 V_p′/(2·R_L·C·f)', '0.000'),
-    ('輸出 加齊納（第 27 頁）', 'V_peak (V)', round(E4OUT['peak'], 3), None, '預報 = 和沒接齊納時相同：5 Vpp 下輸出峰值只有約 1.5 V，遠低於任何常見 V_Z，齊納不會導通', '0.000'),
-    ('輸出 加齊納（第 27 頁）', 'V_drop (V)', None, None, '講義要記的「V_in < V_Z 期間的落差」。齊納沒導通就沒有削平，照實記錄觀察到的值', '0.000'),
+    ('V_in (A–B)', 'V_peak (V)', round(E4IN['peak'], 3), 2.5, '5 Vpp 正弦的峰值。接地陷阱見筆記，不能兩支探棒同時跨輸入與輸出', '0.000'),
+    ('V_in (A–B)', 'V_rms (V)', round(E4IN['rms'], 3), round(2.5 / 2 ** .5, 3), 'V_p / √2', '0.000'),
+    ('V_out (no C, p.25)', 'V_peak (V)', round(E4OUT['peak'], 3), E4_VP, '理想 = 2.5 − 2×V_D,on，用 0.7 V 估', '0.000'),
+    ('V_out (no C, p.25)', 'V_rms (V)', round(E4OUT['rms'], 3), round(E4_VP / 2 ** .5, 3), '理想全波 V_p′ / √2（V_p′ 取理想輸出峰值 1.1 V）', '0.000'),
+    ('V_out (no C, p.25)', 'V_avg (V)', round(E4OUT['avg'], 3), round(2 * E4_VP / 3.141592653589793, 3), '理想全波 2V_p′ / π', '0.000'),
+    ('V_out (C = 1 µF, p.26)', 'V_peak (V)', round(E4RC[0]['peak'], 3), None, 'Tinkercad 跑不動這一版，波形以示波器實測為準', '0.000'),
+    ('V_out (C = 1 µF, p.26)', '漣波 V_R (V)', round(E4RC[0]['ripple'], 3), round(E4_VP / (2 * 10000 * 1e-6 * 60), 3), '理想 V_p′/(2·R_L·C·f)', '0.000'),
+    ('V_out (Zener, p.27)', 'V_peak (V)', round(E4OUT['peak'], 3), None, '預報 = 和沒接齊納時相同：5 Vpp 下輸出峰值只有約 1.5 V，遠低於任何常見 V_Z，齊納不會導通', '0.000'),
+    ('V_out (Zener, p.27)', 'V_drop (V)', None, None, '講義要記的「V_in < V_Z 期間的落差」。齊納沒導通就沒有削平，照實記錄觀察到的值', '0.000'),
 ]
 
 
 def e4_extras(idx):
-    a, m = idx['輸出 無 C（第 25 頁）|V_avg (V)'], idx['輸出 無 C（第 25 頁）|V_rms (V)']
-    vp, vr = idx['輸出 加 1 µF（第 26 頁）|V_peak (V)'], idx['輸出 加 1 µF（第 26 頁）|漣波 V_R (V)']
+    a, m = idx['V_out (no C, p.25)|V_avg (V)'], idx['V_out (no C, p.25)|V_rms (V)']
+    vp, vr = idx['V_out (C = 1 µF, p.26)|V_peak (V)'], idx['V_out (C = 1 µF, p.26)|漣波 V_R (V)']
     return [
         ('整流效率 η = V_avg² / V_rms²',
          f'=IF(OR(C{a}="",C{m}="",C{m}=0),"",C{a}^2/C{m}^2)',
@@ -430,13 +454,23 @@ ws4, idx4 = scalar_sheet(
      ('示波器地夾位置 1 張', '地夾只夾 N 或只夾 B，不可同時跨輸入與輸出（接地陷阱）'),
      ('麵包板全景照 3 張', '三個版本各一張，四顆二極體的色環方向要看得清楚'),
      ('記錄表四個區段填滿', 'V_avg 欄不要留空；齊納沒導通就照實記 V_drop'),
-     ('上傳 E3 並找助教登記', '下課前完成')])
+     ('上傳 E3 並找助教登記', '下課前完成')],
+    ['接第 25 頁橋式電路（先不要接電容與齊納）：訊號產生器設正弦、60 Hz、5 Vpp；四顆 1N4007 的方向照 KiCad 圖，兩顆陰極併成 P（輸出 +）、兩顆陽極併成 N（輸出 −，接地）。',
+     '接地陷阱：示波器兩支地夾不可同時夾 B 與 N。先只量 Vin：CH1 尖端夾 A、地夾夾 B，[Meas] Maximum → 「V_in V_peak」、AC RMS → 「V_in V_rms」，存畫面後拆掉。',
+     '再量 Vout：CH2 尖端夾 P、地夾夾 N。[Meas] Maximum → 「V_out (no C) V_peak」、DC RMS → V_rms、平均值 → V_avg。畫面應是每半週都翻正的全波。',
+     '存畫面、拍麵包板。效率那格自動算，理想全波上限 81%。',
+     '把 1 µF 電容並在 P、N 之間（第 26 頁）。[Meas] 來源 CH2：Maximum → 「V_out (C = 1 µF) V_peak」、Vpp → 「漣波 V_R」。漣波比那格自動算。存畫面、拍麵包板。',
+     '拆掉電容，把齊納二極體並在 P、N 之間（第 27 頁，色環端接 P）。[Meas] Maximum → 「V_out (Zener) V_peak」；觀察 Vin 低於 V_Z 時輸出掉多少記到 V_drop。5 Vpp 下齊納多半不會導通，照實記。',
+     '存畫面、拍麵包板。檢查表打勾，下課前上傳 E3。'])
 
 for s in wb.worksheets:
     if s.title.startswith('實驗一') or s.title.startswith('實驗二'):
         s.freeze_panes = 'A7'
 
 os.makedirs(os.path.dirname(OUT), exist_ok=True)
+if os.path.exists(OUT) and '--force' not in sys.argv:
+    # 作者會直接在這個檔裡填數據、調格式（2026-10-02 起），所以預設不覆蓋；要重產範本加 --force。
+    sys.exit(f'{OUT} 已存在，未覆蓋（裡面可能有作者填的數據與格式）。確定要重產請加 --force。')
 wb.save(OUT)
 print('wrote', OUT)
 
