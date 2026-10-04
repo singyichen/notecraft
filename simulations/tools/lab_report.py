@@ -133,7 +133,7 @@ class Report:
                 it = OxmlElement('w:instrText'); it.set(qn('xml:space'), 'preserve'); it.text = text; r._r.append(it)
 
     def _toc(self, entries):
-        p = self.doc.add_paragraph(); p.alignment = WD_ALIGN_PARAGRAPH.CENTER; p.paragraph_format.space_after = Pt(14)
+        p = self._apply_break(self.doc.add_paragraph()); p.alignment = WD_ALIGN_PARAGRAPH.CENTER; p.paragraph_format.space_after = Pt(14)
         _font(p.add_run('目錄'), size=20, bold=True)
         for level, text, page in entries:
             p = self.doc.add_paragraph(); pf = p.paragraph_format
@@ -144,15 +144,22 @@ class Report:
         self.page_break()
 
     def page_break(self):
-        self.doc.add_paragraph().add_run().add_break(WD_BREAK.PAGE)
+        # 不另加一個帶分頁符號的空段落（前一頁剛好排滿時它會自己佔一整頁），改成讓下一個標題「段前分頁」
+        self._break_next = True
+
+    def _apply_break(self, p):
+        if getattr(self, '_break_next', False):
+            p.paragraph_format.page_break_before = True
+            self._break_next = False
+        return p
 
     def _heading(self, text, tag, size, space_before, level=None):
         if level:
             self.headings.append((level, text))
-        p = self.doc.add_paragraph(); p.paragraph_format.space_before = Pt(space_before); p.paragraph_format.space_after = Pt(6)
+        p = self._apply_break(self.doc.add_paragraph()); p.paragraph_format.space_before = Pt(space_before); p.paragraph_format.space_after = Pt(6)
         p.paragraph_format.keep_with_next = True
         _font(p.add_run(text), size=size, bold=size < 20)
-        if tag:
+        if tag and not self.final:   # 交件版不印範本的「（必要）」「（選繳）」標記
             _font(p.add_run(tag), size=size, bold=True, color=RED if tag == REQ else BLUE)
         return p
 
@@ -173,7 +180,7 @@ class Report:
 
     # ---- 內容 ----
     def para(self, text, highlight=None, color=None, size=11, align=None, italic=None):
-        p = self.doc.add_paragraph(); p.paragraph_format.space_after = Pt(6); p.paragraph_format.line_spacing = 1.35
+        p = self._apply_break(self.doc.add_paragraph()); p.paragraph_format.space_after = Pt(6); p.paragraph_format.line_spacing = 1.35
         if align == 'center': p.alignment = WD_ALIGN_PARAGRAPH.CENTER
         return add_runs(p, text, size=size, highlight=highlight, color=color, italic=italic)
 
@@ -204,6 +211,7 @@ class Report:
         c.paragraphs[0].paragraph_format.space_after = Pt(0)
         for i, line in enumerate(text.strip('\n').split('\n')):
             p = c.paragraphs[0] if i == 0 else c.add_paragraph()
+            p.paragraph_format.space_before = Pt(0); p.paragraph_format.space_after = Pt(0); p.paragraph_format.line_spacing = 1.0
             r = p.add_run(line); r.font.name = 'Menlo'; r.font.size = Pt(8.5)
             r._element.get_or_add_rPr().get_or_add_rFonts().set(qn('w:eastAsia'), CJK)
         self.doc.add_paragraph()
