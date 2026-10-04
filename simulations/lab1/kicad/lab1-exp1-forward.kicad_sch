@@ -2,7 +2,7 @@
 	(version 20260306)
 	(generator "eeschema")
 	(generator_version "10.0")
-	(uuid "d2b6a2ff-b85f-443d-b525-29092d957e76")
+	(uuid "589c6af7-88ab-4a6a-8c1c-342f3b31bcca")
 	(paper "A5")
 	(title_block
 		(title "Lab 1 實驗一：順偏導通電壓")
@@ -1196,6 +1196,17 @@
 			(embedded_fonts no)
 		)
 	)
+	(text "Lab 1 實驗一：順偏導通電壓量測電路"
+		(exclude_from_sim no)
+		(at 20.32 25.4 0)
+		(effects
+			(font
+				(size 2.5 2.5)
+			)
+			(justify left bottom)
+		)
+		(uuid "19992929-d587-42a0-92f2-7c2c6b1d8fb8")
+	)
 	(text "−"
 		(exclude_from_sim no)
 		(at 125.73 55.88 0)
@@ -1205,7 +1216,7 @@
 			)
 			(justify left bottom)
 		)
-		(uuid "2dd58b1c-0892-4013-a632-7166ebf6311b")
+		(uuid "1a9c274d-c55d-40b9-b246-dd461f9dad96")
 	)
 	(text "V_{s}"
 		(exclude_from_sim no)
@@ -1216,7 +1227,7 @@
 			)
 			(justify right bottom)
 		)
-		(uuid "583a29f3-5c90-4cd8-8e21-e85d920041ee")
+		(uuid "421a906c-e501-435e-9762-e86d13118fcb")
 	)
 	(text "0–2 V"
 		(exclude_from_sim no)
@@ -1227,7 +1238,7 @@
 			)
 			(justify right bottom)
 		)
-		(uuid "59ef7f32-11f3-4218-a0eb-b23c1629ef31")
+		(uuid "7b5ee6fe-c860-47c8-ae28-14c8abbf2e50")
 	)
 	(text "+"
 		(exclude_from_sim no)
@@ -1238,18 +1249,18 @@
 			)
 			(justify left bottom)
 		)
-		(uuid "5bdd2ae4-60e2-4f84-8714-eaadefeb754b")
+		(uuid "9bb81d21-b692-4bf7-b030-e81222095955")
 	)
-	(text "Lab 1 實驗一：順偏導通電壓量測電路"
+	(text ".dc V1 0 2 0.01"
 		(exclude_from_sim no)
-		(at 20.32 25.4 0)
+		(at 20.32 109 0)
 		(effects
 			(font
-				(size 2.5 2.5)
+				(size 1.27 1.27)
 			)
 			(justify left bottom)
 		)
-		(uuid "cf029256-5dca-4fab-84d2-c599148eada7")
+		(uuid "aa6b0eee-7bb0-4ae8-82b2-92ac39a399a8")
 	)
 	(text "V_{s} = V_{D} + I·1 kΩ"
 		(exclude_from_sim no)
@@ -1260,55 +1271,25 @@
 			)
 			(justify left bottom)
 		)
-		(uuid "f99e91a9-5bdb-4779-ba03-02e1579ada95")
-	)
-	(junction
-		(at 104.14 55.88)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "00bc606c-61a3-4199-9753-00bb764f2176")
+		(uuid "e90d011b-6a48-46e5-ad1a-28c3cd509607")
 	)
 	(junction
 		(at 104.14 38.1)
 		(diameter 0)
 		(color 0 0 0 0)
-		(uuid "48a0e9d8-4e22-4dcc-9510-49428065e5f3")
+		(uuid "16c95db5-6d84-424d-9cd2-f409b852f0b5")
+	)
+	(junction
+		(at 104.14 55.88)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "9ae32a02-2def-49ba-9fd0-08c45fe0b9cb")
 	)
 	(junction
 		(at 78.74 88.9)
 		(diameter 0)
 		(color 0 0 0 0)
-		(uuid "eebf0ed3-0b88-4061-ae5e-d53e6ef07fd1")
-	)
-	(wire
-		(pts
-			(xy 104.14 52.07) (xy 104.14 59.69)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "265c0048-063c-4622-840e-d5da7724a36e")
-	)
-	(wire
-		(pts
-			(xy 104.14 88.9) (xy 78.74 88.9)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "2c963c8b-bbc2-47b2-90fc-36fc6f08446f")
-	)
-	(wire
-		(pts
-			(xy 104.14 38.1) (xy 104.14 44.45)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "3d382c74-454f-4d7c-9012-9c1858cfd234")
+		(uuid "bbe51107-f46b-48dd-a86c-153409d77be7")
 	)
 	(wire
 		(pts
@@ -1318,77 +1299,17 @@
 			(width 0)
 			(type default)
 		)
-		(uuid "88b61ec6-e917-4762-972e-ba17dddf71fa")
+		(uuid "1fec2174-5e25-453a-b3c3-0ca6843b993c")
 	)
 	(wire
 		(pts
-			(xy 124.46 55.88) (xy 104.14 55.88)
+			(xy 104.14 52.07) (xy 104.14 59.69)
 		)
 		(stroke
 			(width 0)
 			(type default)
 		)
-		(uuid "a9ce2beb-ebea-4ca9-9860-6e9eb4a06896")
-	)
-	(wire
-		(pts
-			(xy 124.46 38.1) (xy 124.46 43.18)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "b02899f8-7c72-4772-99cb-21d09fbcb784")
-	)
-	(wire
-		(pts
-			(xy 53.34 58.42) (xy 53.34 38.1)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "ba4fc0a3-e905-4a7a-a9eb-d2f3aae27cf7")
-	)
-	(wire
-		(pts
-			(xy 104.14 67.31) (xy 104.14 73.66)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "c8dd626b-dda0-4d9f-9176-46ad25196b6e")
-	)
-	(wire
-		(pts
-			(xy 53.34 88.9) (xy 53.34 68.58)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "d1284072-9463-4a34-98df-5b8471e7865a")
-	)
-	(wire
-		(pts
-			(xy 104.14 83.82) (xy 104.14 88.9)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "d981871c-e654-4042-a722-7b5a1d7aca81")
-	)
-	(wire
-		(pts
-			(xy 78.74 88.9) (xy 53.34 88.9)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "dfcd7a9a-5ab3-486c-900b-001ef124bedf")
+		(uuid "265b5ec1-1b00-41e9-ba35-c00e02e6581b")
 	)
 	(wire
 		(pts
@@ -1398,361 +1319,97 @@
 			(width 0)
 			(type default)
 		)
-		(uuid "faa18c3b-8278-4951-8649-592283ce7187")
+		(uuid "3a818637-8f5b-4e31-9aa7-448d41567882")
 	)
-	(symbol
-		(lib_id "Device:R")
-		(at 104.14 63.5 0)
-		(unit 1)
-		(body_style 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(in_pos_files yes)
-		(dnp no)
-		(uuid "05787b3d-8be9-4f9f-9bc8-f78dfada05ed")
-		(property "Reference" "R1"
-			(at 101.6 62.23 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.5 1.5)
-				)
-				(justify right)
-			)
+	(wire
+		(pts
+			(xy 124.46 38.1) (xy 124.46 43.18)
 		)
-		(property "Value" "1kΩ"
-			(at 101.6 64.77 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.5 1.5)
-				)
-				(justify right)
-			)
+		(stroke
+			(width 0)
+			(type default)
 		)
-		(property "Footprint" ""
-			(at 104.14 63.5 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Datasheet" ""
-			(at 104.14 63.5 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Description" ""
-			(at 104.14 63.5 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(pin "1"
-			(uuid "ee99ed7d-5411-4b28-be09-a2f242ff49cb")
-		)
-		(pin "2"
-			(uuid "81cff0d2-6eaf-4a49-8369-8e05beb4fd40")
-		)
-		(instances
-			(project "lab1-exp1-forward"
-				(path "/d2b6a2ff-b85f-443d-b525-29092d957e76"
-					(reference "R1")
-					(unit 1)
-				)
-			)
-		)
+		(uuid "499592d3-40f8-479b-a917-bd08daa3cc81")
 	)
-	(symbol
-		(lib_id "power:PWR_FLAG")
-		(at 78.74 88.9 0)
-		(unit 1)
-		(body_style 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(in_pos_files yes)
-		(dnp no)
-		(uuid "4805d67a-8d55-4391-bb37-a0d82206e7bb")
-		(property "Reference" "#FLG01"
-			(at 78.74 85.09 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
+	(wire
+		(pts
+			(xy 104.14 88.9) (xy 78.74 88.9)
 		)
-		(property "Value" "PWR_FLAG"
-			(at 78.74 85.09 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
+		(stroke
+			(width 0)
+			(type default)
 		)
-		(property "Footprint" ""
-			(at 78.74 88.9 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Datasheet" ""
-			(at 78.74 88.9 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Description" ""
-			(at 78.74 88.9 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(pin "1"
-			(uuid "539e8c33-8e0a-447e-8e2d-6be1c2cd6e0c")
-		)
-		(instances
-			(project "lab1-exp1-forward"
-				(path "/d2b6a2ff-b85f-443d-b525-29092d957e76"
-					(reference "#FLG01")
-					(unit 1)
-				)
-			)
-		)
+		(uuid "56d830e5-baa9-4a83-8f02-387d481eb5f2")
 	)
-	(symbol
-		(lib_id "Diode:1N4007")
-		(at 104.14 48.26 90)
-		(unit 1)
-		(body_style 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(in_pos_files yes)
-		(dnp no)
-		(uuid "481fcfac-c9e5-47f5-97b9-83de164fa9e4")
-		(property "Reference" "D1"
-			(at 100.33 46.99 90)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.5 1.5)
-				)
-				(justify left)
-			)
+	(wire
+		(pts
+			(xy 124.46 55.88) (xy 104.14 55.88)
 		)
-		(property "Value" "1N4007"
-			(at 100.33 49.53 90)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.5 1.5)
-				)
-				(justify left)
-			)
+		(stroke
+			(width 0)
+			(type default)
 		)
-		(property "Footprint" ""
-			(at 104.14 48.26 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Datasheet" ""
-			(at 104.14 48.26 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Description" ""
-			(at 104.14 48.26 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Sim.Device" "D"
-			(at 104.14 48.26 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Sim.Pins" "1=K 2=A"
-			(at 104.14 48.26 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Sim.Params" "is=90p rs=40m n=1.4 cjo=30p tt=5u bv=1000 ibv=5u"
-			(at 104.14 48.26 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(pin "1"
-			(uuid "8676bd70-3502-4e50-bcd4-e1a0a4b59705")
-		)
-		(pin "2"
-			(uuid "79d7bc0e-7fd3-4ac0-9488-9f19a98ee03c")
-		)
-		(instances
-			(project "lab1-exp1-forward"
-				(path "/d2b6a2ff-b85f-443d-b525-29092d957e76"
-					(reference "D1")
-					(unit 1)
-				)
-			)
-		)
+		(uuid "68baa316-1066-4f4d-898e-ebb35e65d9b3")
 	)
-	(symbol
-		(lib_id "Device:Voltmeter_DC")
-		(at 124.46 48.26 0)
-		(unit 1)
-		(body_style 1)
-		(exclude_from_sim yes)
-		(in_bom yes)
-		(on_board yes)
-		(in_pos_files yes)
-		(dnp no)
-		(uuid "6f25e72b-233b-4603-97eb-6987aa5d800f")
-		(property "Reference" "MES1"
-			(at 129.54 46.99 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
+	(wire
+		(pts
+			(xy 78.74 88.9) (xy 53.34 88.9)
 		)
-		(property "Value" "V_{D}"
-			(at 128.905 48.26 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.5 1.5)
-				)
-				(justify left)
-			)
+		(stroke
+			(width 0)
+			(type default)
 		)
-		(property "Footprint" ""
-			(at 124.46 48.26 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
+		(uuid "91c2773f-c5c1-4b79-b0ba-2659959f9f86")
+	)
+	(wire
+		(pts
+			(xy 53.34 58.42) (xy 53.34 38.1)
 		)
-		(property "Datasheet" ""
-			(at 124.46 48.26 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
+		(stroke
+			(width 0)
+			(type default)
 		)
-		(property "Description" ""
-			(at 124.46 48.26 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
+		(uuid "99f98e4f-bc10-4e02-87b5-033ed97ce03c")
+	)
+	(wire
+		(pts
+			(xy 53.34 88.9) (xy 53.34 68.58)
 		)
-		(pin "1"
-			(uuid "854c6c37-4fc7-49d8-8bfd-2a1a4f7df9e4")
+		(stroke
+			(width 0)
+			(type default)
 		)
-		(pin "2"
-			(uuid "bf2e29b3-c928-4cf8-86fa-6ede5d8c57f3")
+		(uuid "ce70f826-b92c-434d-a689-0f569acafd76")
+	)
+	(wire
+		(pts
+			(xy 104.14 38.1) (xy 104.14 44.45)
 		)
-		(instances
-			(project "lab1-exp1-forward"
-				(path "/d2b6a2ff-b85f-443d-b525-29092d957e76"
-					(reference "MES1")
-					(unit 1)
-				)
-			)
+		(stroke
+			(width 0)
+			(type default)
 		)
+		(uuid "d1139314-65b3-4f3f-95cd-3ed8120b34d9")
+	)
+	(wire
+		(pts
+			(xy 104.14 83.82) (xy 104.14 88.9)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "f4c5001d-d300-4c9a-94ae-abafe75f3a00")
+	)
+	(wire
+		(pts
+			(xy 104.14 67.31) (xy 104.14 73.66)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "faaf27d0-8ee6-4cac-80d2-7f85c15b561d")
 	)
 	(symbol
 		(lib_id "Device:Ammeter_DC")
@@ -1764,7 +1421,7 @@
 		(on_board yes)
 		(in_pos_files yes)
 		(dnp no)
-		(uuid "a2e11655-5f6d-44a8-bc2e-8540db73fac7")
+		(uuid "0c8efc8d-97b6-437e-b192-a9b841311fcb")
 		(property "Reference" "MES2"
 			(at 99.06 77.47 0)
 			(hide yes)
@@ -1865,14 +1522,14 @@
 			)
 		)
 		(pin "1"
-			(uuid "bc8533da-6b13-426c-b0e5-108c11baf267")
+			(uuid "d042d289-6174-4a36-bf8c-b0fbafe8f592")
 		)
 		(pin "2"
-			(uuid "d3c9a2e6-196e-4527-818f-d3566601b8a3")
+			(uuid "343e863d-4bfb-4026-8070-4fedf4ffafa4")
 		)
 		(instances
 			(project "lab1-exp1-forward"
-				(path "/d2b6a2ff-b85f-443d-b525-29092d957e76"
+				(path "/589c6af7-88ab-4a6a-8c1c-342f3b31bcca"
 					(reference "MES2")
 					(unit 1)
 				)
@@ -1889,7 +1546,7 @@
 		(on_board yes)
 		(in_pos_files yes)
 		(dnp no)
-		(uuid "a8cff555-6490-45a5-a50a-40092f879fe0")
+		(uuid "2d040bbd-72a1-4c73-ba4e-920c9be6514b")
 		(property "Reference" "V1"
 			(at 50.8 60.96 0)
 			(hide yes)
@@ -1946,15 +1603,177 @@
 			)
 		)
 		(pin "1"
-			(uuid "d72f2c47-70fc-4fbc-b675-a8d16c3c002e")
+			(uuid "110247c8-13e2-4e70-ae08-47c44f1d738e")
 		)
 		(pin "2"
-			(uuid "d5041bee-b5b4-43c5-9d26-2288c4d32f89")
+			(uuid "122f856f-9f8a-44e5-8c6f-17f6fb99e9d5")
 		)
 		(instances
 			(project "lab1-exp1-forward"
-				(path "/d2b6a2ff-b85f-443d-b525-29092d957e76"
+				(path "/589c6af7-88ab-4a6a-8c1c-342f3b31bcca"
 					(reference "V1")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Device:R")
+		(at 104.14 63.5 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(uuid "44c861cb-6b01-4d04-b9d5-7bad89fa52a8")
+		(property "Reference" "R1"
+			(at 101.6 62.23 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.5 1.5)
+				)
+				(justify right)
+			)
+		)
+		(property "Value" "1kΩ"
+			(at 101.6 64.77 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.5 1.5)
+				)
+				(justify right)
+			)
+		)
+		(property "Footprint" ""
+			(at 104.14 63.5 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 104.14 63.5 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" ""
+			(at 104.14 63.5 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "ca53e489-b39d-4f4d-a67f-e92413044123")
+		)
+		(pin "2"
+			(uuid "c12f7676-4845-42ea-9379-d5c650ac29e7")
+		)
+		(instances
+			(project "lab1-exp1-forward"
+				(path "/589c6af7-88ab-4a6a-8c1c-342f3b31bcca"
+					(reference "R1")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Device:Voltmeter_DC")
+		(at 124.46 48.26 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim yes)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(uuid "d57e1fd9-e01b-4072-ac02-54b123bad16f")
+		(property "Reference" "MES1"
+			(at 129.54 46.99 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "V_{D}"
+			(at 128.905 48.26 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.5 1.5)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" ""
+			(at 124.46 48.26 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 124.46 48.26 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" ""
+			(at 124.46 48.26 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "3388f1ec-ac02-4c18-82b6-8def60b1a564")
+		)
+		(pin "2"
+			(uuid "6100e63a-b3ba-47bd-aea3-c258dbfaba34")
+		)
+		(instances
+			(project "lab1-exp1-forward"
+				(path "/589c6af7-88ab-4a6a-8c1c-342f3b31bcca"
+					(reference "MES1")
 					(unit 1)
 				)
 			)
@@ -1970,7 +1789,7 @@
 		(on_board yes)
 		(in_pos_files yes)
 		(dnp no)
-		(uuid "b0a61281-b74b-43a0-ae89-15636db1ece5")
+		(uuid "dabea904-7e30-4a30-ba0c-176e61ab24da")
 		(property "Reference" "#PWR01"
 			(at 78.74 95.25 0)
 			(hide yes)
@@ -2026,12 +1845,204 @@
 			)
 		)
 		(pin "1"
-			(uuid "013433f5-dfad-42d2-86d6-d5bc619001f7")
+			(uuid "23796a7d-01f3-4c2a-8f7d-6f5bb8e12512")
 		)
 		(instances
 			(project "lab1-exp1-forward"
-				(path "/d2b6a2ff-b85f-443d-b525-29092d957e76"
+				(path "/589c6af7-88ab-4a6a-8c1c-342f3b31bcca"
 					(reference "#PWR01")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Diode:1N4007")
+		(at 104.14 48.26 90)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(uuid "e11f8ec3-8f25-4e49-8b2a-130b6d5c8218")
+		(property "Reference" "D1"
+			(at 100.33 46.99 90)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.5 1.5)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "1N4007"
+			(at 100.33 49.53 90)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.5 1.5)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" ""
+			(at 104.14 48.26 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 104.14 48.26 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" ""
+			(at 104.14 48.26 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Sim.Device" "D"
+			(at 104.14 48.26 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Sim.Pins" "1=K 2=A"
+			(at 104.14 48.26 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Sim.Params" "is=90p rs=40m n=1.4 cjo=30p tt=5u bv=1000 ibv=5u"
+			(at 104.14 48.26 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "71867449-d404-440f-95ac-d21ebea9f482")
+		)
+		(pin "2"
+			(uuid "16f6fcf1-7bd1-41b1-9077-f27fb88e1925")
+		)
+		(instances
+			(project "lab1-exp1-forward"
+				(path "/589c6af7-88ab-4a6a-8c1c-342f3b31bcca"
+					(reference "D1")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:PWR_FLAG")
+		(at 78.74 88.9 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(uuid "f94c56cc-adbd-446f-a286-4f3c24526e14")
+		(property "Reference" "#FLG01"
+			(at 78.74 85.09 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "PWR_FLAG"
+			(at 78.74 85.09 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 78.74 88.9 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 78.74 88.9 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" ""
+			(at 78.74 88.9 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "042c61ba-28fb-42fc-89c7-08270660a453")
+		)
+		(instances
+			(project "lab1-exp1-forward"
+				(path "/589c6af7-88ab-4a6a-8c1c-342f3b31bcca"
+					(reference "#FLG01")
 					(unit 1)
 				)
 			)

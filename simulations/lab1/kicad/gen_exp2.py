@@ -97,6 +97,7 @@ items.append(text('+',XM+1.27,43.18-0.635,size=FS))
 items.append(text('−',XM+1.27,53.34+2.54,size=FS))
 items.append(text('Lab 1 實驗二：逆偏漏電流量測電路（D1 反接）',20.32,25.4,size=2.5,justify='left bottom'))
 items.append(text('V_{s} = V_{D} + I·1 kΩ；逆偏 I ≈ 0，V_{D} ≈ V_{s}，電流表用 µA 檔',20.32,105,size=FS,justify='left bottom'))
+items.append(text('.dc V1 0 20 0.1',20.32,109,size=1.27,justify='left bottom'))   # ngspice 模擬指令：KiCad 的模擬器會直接讀圖上這行
 
 libsyms=['lib_symbols']+[as_lib_symbol(LIBS[p],n,p) for p,n in [('Simulation_SPICE','VDC'),('Diode','1N4007'),('Device','R'),('Device','Ammeter_DC'),('Device','Voltmeter_DC'),('power','GND'),('power','PWR_FLAG')]]
 doc=['kicad_sch',['version','20250114'],['generator','"eeschema"'],['generator_version','"9.0"'],['uuid',ROOT],

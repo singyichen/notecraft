@@ -31,10 +31,11 @@
 +           cjo=30p
 +           bv=1000
 +           ibv=5u
-V1 Net-_D2-K_ Net-_D1-K_ DC SINE(0 2.5 60) 
+.tran 10u 50m
 D2 GND Net-_D2-K_ __D2
 D1 GND Net-_D1-K_ __D1
-D3 Net-_D2-K_ Net-_D3-K_ __D3
+V1 Net-_D2-K_ Net-_D1-K_ DC SINE(0 2.5 60) 
 RL Net-_D3-K_ GND 10k
+D3 Net-_D2-K_ Net-_D3-K_ __D3
 D4 Net-_D1-K_ Net-_D3-K_ __D4
 .end

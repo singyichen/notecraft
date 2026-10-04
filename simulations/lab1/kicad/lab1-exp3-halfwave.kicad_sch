@@ -2,7 +2,7 @@
 	(version 20260306)
 	(generator "eeschema")
 	(generator_version "10.0")
-	(uuid "336376bb-af6b-46a7-918a-d40052da6a28")
+	(uuid "265cdedf-2803-467f-9579-57c8b8b5110a")
 	(paper "A5")
 	(title_block
 		(title "Lab 1 實驗三：半波整流器")
@@ -934,17 +934,6 @@
 			(embedded_fonts no)
 		)
 	)
-	(text "C1 是講義第 20 頁才並上去的濾波電容；第 18 頁的量測先不要接"
-		(exclude_from_sim no)
-		(at 20.32 107 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "186f07b2-94e1-4fe2-a606-c14d492f0ede")
-	)
 	(text "示波器 CH1 跨 V_{in} 與地、CH2 跨 V_{out} 與地，兩支地夾都接同一點 GND"
 		(exclude_from_sim no)
 		(at 20.32 103 0)
@@ -954,29 +943,7 @@
 			)
 			(justify left bottom)
 		)
-		(uuid "31a3eecb-1ca1-4ec5-a564-89dbae297dc5")
-	)
-	(text "V_{out,peak} ≈ V_{in,peak} − V_{D,on}"
-		(exclude_from_sim no)
-		(at 20.32 99 0)
-		(effects
-			(font
-				(size 1.5 1.5)
-			)
-			(justify left bottom)
-		)
-		(uuid "6397f563-7379-4f48-951e-c7fc63e477c9")
-	)
-	(text "正弦 60 Hz、10 Vpp"
-		(exclude_from_sim no)
-		(at 49.53 66.675 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right bottom)
-		)
-		(uuid "64c62913-509c-495b-b986-41fc71005f50")
+		(uuid "17b4cc36-45f9-46b0-9de3-33ef472dac84")
 	)
 	(text "V_{in}"
 		(exclude_from_sim no)
@@ -987,7 +954,40 @@
 			)
 			(justify right bottom)
 		)
-		(uuid "7eacda45-9680-49ab-a91a-3ba3535d0605")
+		(uuid "30cf64a2-f237-4ef7-9f6f-f9da1b1953eb")
+	)
+	(text "V_{out,peak} ≈ V_{in,peak} − V_{D,on}"
+		(exclude_from_sim no)
+		(at 20.32 99 0)
+		(effects
+			(font
+				(size 1.5 1.5)
+			)
+			(justify left bottom)
+		)
+		(uuid "75e22b00-f0d3-484b-960c-62ddc191bc5d")
+	)
+	(text ".tran 10u 50m"
+		(exclude_from_sim no)
+		(at 20.32 111 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "87390826-b024-413b-982a-f6e05cbff2dd")
+	)
+	(text "C1 是講義第 20 頁才並上去的濾波電容；第 18 頁的量測先不要接"
+		(exclude_from_sim no)
+		(at 20.32 107 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "97cb4c81-4380-4514-81b8-a6bf5a32baf5")
 	)
 	(text "Lab 1 實驗三：半波整流器量測電路"
 		(exclude_from_sim no)
@@ -998,7 +998,7 @@
 			)
 			(justify left bottom)
 		)
-		(uuid "d11451f0-22ba-4cee-9ca4-2c6696a40432")
+		(uuid "c06efd24-3346-4c22-b3b5-7e12e6da420d")
 	)
 	(text "V_{out}"
 		(exclude_from_sim no)
@@ -1009,125 +1009,36 @@
 			)
 			(justify left bottom)
 		)
-		(uuid "e2700b9f-caea-4190-934d-debba85ace25")
+		(uuid "e0202666-6296-49de-bd43-9555e314f6e5")
 	)
-	(junction
-		(at 104.14 88.9)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "2dae9dbf-96d7-4e66-9c29-285ef5d36020")
-	)
-	(junction
-		(at 78.74 88.9)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "77abbc63-6c78-4dd8-9098-32bb98d75e63")
+	(text "正弦 60 Hz、10 Vpp"
+		(exclude_from_sim no)
+		(at 49.53 66.675 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right bottom)
+		)
+		(uuid "ec5820d3-c497-442d-a474-ff76a5b7636e")
 	)
 	(junction
 		(at 104.14 55.88)
 		(diameter 0)
 		(color 0 0 0 0)
-		(uuid "c46b4917-21f2-48a5-9227-b1d1734e46fb")
+		(uuid "0b0febdb-932e-47e6-98d7-2528d60d7b38")
 	)
-	(wire
-		(pts
-			(xy 127 67.31) (xy 127 88.9)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "1ee8d323-3802-42e1-a10f-cdc3b1d9ed56")
+	(junction
+		(at 78.74 88.9)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "38c20e0d-0497-4502-9500-4cd7b71fbb91")
 	)
-	(wire
-		(pts
-			(xy 104.14 88.9) (xy 78.74 88.9)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "1f984279-4d7e-4682-9eb8-82a230f9f76c")
-	)
-	(wire
-		(pts
-			(xy 104.14 52.07) (xy 104.14 59.69)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "329229fd-1177-4469-978f-140107d4a2a2")
-	)
-	(wire
-		(pts
-			(xy 127 88.9) (xy 104.14 88.9)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "3a21a624-e186-425f-9598-43eb70238150")
-	)
-	(wire
-		(pts
-			(xy 127 55.88) (xy 127 59.69)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "59de0f55-66b0-484b-bf8c-aecbb30e6733")
-	)
-	(wire
-		(pts
-			(xy 53.34 58.42) (xy 53.34 38.1)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "8fee25d0-ac6d-418f-b0c6-213561a22da6")
-	)
-	(wire
-		(pts
-			(xy 53.34 88.9) (xy 53.34 68.58)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "b23db2d5-a0ed-4aef-a6ef-dafbeb4ac167")
-	)
-	(wire
-		(pts
-			(xy 104.14 55.88) (xy 127 55.88)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "b49f8faa-9bcb-441e-b96d-38f96b9f8db6")
-	)
-	(wire
-		(pts
-			(xy 104.14 38.1) (xy 104.14 44.45)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "c6057219-3ed4-439c-a395-24fce43d03af")
-	)
-	(wire
-		(pts
-			(xy 104.14 67.31) (xy 104.14 88.9)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "dbfc7831-1341-469a-b661-ee4dcde59faf")
+	(junction
+		(at 104.14 88.9)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "fe3569ef-889c-4099-882c-3344582f39b4")
 	)
 	(wire
 		(pts
@@ -1137,7 +1048,67 @@
 			(width 0)
 			(type default)
 		)
-		(uuid "e1b165e7-34a4-44f7-8142-4d87d359198c")
+		(uuid "0e2d3ce2-1832-4d82-9d9b-30dcb3b90de7")
+	)
+	(wire
+		(pts
+			(xy 127 88.9) (xy 104.14 88.9)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "3a2344c3-965c-419a-ad50-31827fa95de5")
+	)
+	(wire
+		(pts
+			(xy 104.14 38.1) (xy 104.14 44.45)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "5255f126-06a1-46bf-8df0-4195ef023048")
+	)
+	(wire
+		(pts
+			(xy 53.34 58.42) (xy 53.34 38.1)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "690ca749-a6b7-47f3-8bd2-30c755b7ab4c")
+	)
+	(wire
+		(pts
+			(xy 104.14 55.88) (xy 127 55.88)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "8b1e584f-2cd6-46c9-a2e5-abc634dcf2c7")
+	)
+	(wire
+		(pts
+			(xy 104.14 88.9) (xy 78.74 88.9)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "966f21ec-1b8c-4884-9624-888e3938f75e")
+	)
+	(wire
+		(pts
+			(xy 104.14 67.31) (xy 104.14 88.9)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "ad232d00-5a54-4a16-8010-b7c7f8cb8426")
 	)
 	(wire
 		(pts
@@ -1147,7 +1118,47 @@
 			(width 0)
 			(type default)
 		)
-		(uuid "ef83b636-28ae-4140-9348-7d813a01858b")
+		(uuid "ad9500fc-0efd-4998-9869-245382c1232f")
+	)
+	(wire
+		(pts
+			(xy 53.34 88.9) (xy 53.34 68.58)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "c1ada11d-028f-4fed-a8de-0acfb38fa679")
+	)
+	(wire
+		(pts
+			(xy 104.14 52.07) (xy 104.14 59.69)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "d24ce705-75c6-4444-a5f0-05276285cfcd")
+	)
+	(wire
+		(pts
+			(xy 127 55.88) (xy 127 59.69)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "fc981197-de51-4e22-a39a-27a4c5ec6d4b")
+	)
+	(wire
+		(pts
+			(xy 127 67.31) (xy 127 88.9)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "fce330e6-a413-4b0c-a300-14e9dea03319")
 	)
 	(symbol
 		(lib_id "power:PWR_FLAG")
@@ -1159,7 +1170,7 @@
 		(on_board yes)
 		(in_pos_files yes)
 		(dnp no)
-		(uuid "1416e65d-12ae-4cbd-b8b4-10cbc31b2e27")
+		(uuid "02cb3fe1-f622-4576-b3c3-3b77fa083f1f")
 		(property "Reference" "#FLG01"
 			(at 78.74 85.09 0)
 			(hide yes)
@@ -1216,93 +1227,12 @@
 			)
 		)
 		(pin "1"
-			(uuid "0b04b24b-e88e-495b-9112-5539d1091c27")
+			(uuid "85169228-6c6a-4f42-813f-b5e9a4588a55")
 		)
 		(instances
-			(project ""
-				(path "/336376bb-af6b-46a7-918a-d40052da6a28"
+			(project "lab1-exp3-halfwave"
+				(path "/265cdedf-2803-467f-9579-57c8b8b5110a"
 					(reference "#FLG01")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "Simulation_SPICE:VSIN")
-		(at 53.34 63.5 0)
-		(unit 1)
-		(body_style 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(in_pos_files yes)
-		(dnp no)
-		(uuid "677190d6-3463-4b32-a338-2d81e86e291f")
-		(property "Reference" "V1"
-			(at 50.8 60.96 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "SINE(0 5 60)"
-			(at 50.8 66.04 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" ""
-			(at 53.34 63.5 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Datasheet" ""
-			(at 53.34 63.5 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Description" ""
-			(at 53.34 63.5 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(pin "1"
-			(uuid "575cd63f-6549-4a1e-ac18-63de6a122d39")
-		)
-		(pin "2"
-			(uuid "28892b0a-2ed4-4132-975b-fe262dd4bdcb")
-		)
-		(instances
-			(project ""
-				(path "/336376bb-af6b-46a7-918a-d40052da6a28"
-					(reference "V1")
 					(unit 1)
 				)
 			)
@@ -1318,7 +1248,7 @@
 		(on_board yes)
 		(in_pos_files yes)
 		(dnp no)
-		(uuid "7553595c-c1d1-429f-8c47-061f07c8f7a2")
+		(uuid "4bed33e4-8357-4323-9012-da47acc1d8ef")
 		(property "Reference" "D1"
 			(at 100.33 46.99 90)
 			(show_name no)
@@ -1408,173 +1338,15 @@
 			)
 		)
 		(pin "1"
-			(uuid "582708d7-844d-4d0d-8631-75b6c47d0390")
+			(uuid "c6c7bd7d-ec94-4215-a252-d1ceccfc76f0")
 		)
 		(pin "2"
-			(uuid "baccdbb0-8dc3-4bb4-b95d-694c42905177")
+			(uuid "b0b14dad-d6ca-458e-9236-7bdb263ed2ca")
 		)
 		(instances
-			(project ""
-				(path "/336376bb-af6b-46a7-918a-d40052da6a28"
+			(project "lab1-exp3-halfwave"
+				(path "/265cdedf-2803-467f-9579-57c8b8b5110a"
 					(reference "D1")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "power:GND")
-		(at 78.74 88.9 0)
-		(unit 1)
-		(body_style 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(in_pos_files yes)
-		(dnp no)
-		(uuid "a3857a54-6f29-4618-86a0-e55396e1a81f")
-		(property "Reference" "#PWR01"
-			(at 78.74 95.25 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "GND"
-			(at 78.74 93.98 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.5 1.5)
-				)
-			)
-		)
-		(property "Footprint" ""
-			(at 78.74 88.9 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Datasheet" ""
-			(at 78.74 88.9 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Description" ""
-			(at 78.74 88.9 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(pin "1"
-			(uuid "a779981b-511d-445c-9592-f5788243a543")
-		)
-		(instances
-			(project ""
-				(path "/336376bb-af6b-46a7-918a-d40052da6a28"
-					(reference "#PWR01")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "Device:C")
-		(at 127 63.5 0)
-		(unit 1)
-		(body_style 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(in_pos_files yes)
-		(dnp no)
-		(uuid "ac67cb50-a511-4c71-bcb4-7d4fea1d3cfb")
-		(property "Reference" "C1"
-			(at 129.54 62.23 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.5 1.5)
-				)
-				(justify left)
-			)
-		)
-		(property "Value" "1µF"
-			(at 129.54 64.77 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.5 1.5)
-				)
-				(justify left)
-			)
-		)
-		(property "Footprint" ""
-			(at 127 63.5 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Datasheet" ""
-			(at 127 63.5 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Description" ""
-			(at 127 63.5 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(pin "1"
-			(uuid "ea02b26d-f84e-41f7-9e16-f2f15be32de3")
-		)
-		(pin "2"
-			(uuid "c0342e83-8c68-4a30-8306-30a00f252f20")
-		)
-		(instances
-			(project ""
-				(path "/336376bb-af6b-46a7-918a-d40052da6a28"
-					(reference "C1")
 					(unit 1)
 				)
 			)
@@ -1590,7 +1362,7 @@
 		(on_board yes)
 		(in_pos_files yes)
 		(dnp no)
-		(uuid "f10b17ba-1a2a-4d01-8a8b-75dc5363afb4")
+		(uuid "7cbc5e9c-288d-4d60-a797-0dd37d951c78")
 		(property "Reference" "R1"
 			(at 101.6 62.23 0)
 			(show_name no)
@@ -1647,15 +1419,254 @@
 			)
 		)
 		(pin "1"
-			(uuid "2e623453-0baa-4bb2-bbe3-a293b9c9b945")
+			(uuid "6fff8c76-1442-4b76-926b-71cee9fedbe5")
 		)
 		(pin "2"
-			(uuid "04a0cb38-9970-4b8f-ba46-f02985a594ad")
+			(uuid "cf8cc3be-ac6e-4404-bc32-0a73358ec1f6")
 		)
 		(instances
-			(project ""
-				(path "/336376bb-af6b-46a7-918a-d40052da6a28"
+			(project "lab1-exp3-halfwave"
+				(path "/265cdedf-2803-467f-9579-57c8b8b5110a"
 					(reference "R1")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Device:C")
+		(at 127 63.5 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(uuid "d0776288-432f-4933-8f27-6c16d33575fd")
+		(property "Reference" "C1"
+			(at 129.54 62.23 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.5 1.5)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "1µF"
+			(at 129.54 64.77 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.5 1.5)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" ""
+			(at 127 63.5 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 127 63.5 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" ""
+			(at 127 63.5 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "fbac4547-cf82-48aa-9279-c664e15a4e91")
+		)
+		(pin "2"
+			(uuid "52b7ba2d-f1ab-42db-8652-143c328d3c21")
+		)
+		(instances
+			(project "lab1-exp3-halfwave"
+				(path "/265cdedf-2803-467f-9579-57c8b8b5110a"
+					(reference "C1")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:GND")
+		(at 78.74 88.9 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(uuid "e0369480-2926-425b-ad70-8ed095ef99b8")
+		(property "Reference" "#PWR01"
+			(at 78.74 95.25 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "GND"
+			(at 78.74 93.98 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.5 1.5)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 78.74 88.9 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 78.74 88.9 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" ""
+			(at 78.74 88.9 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "abe3c11c-5619-46b5-9b96-e43068fc7374")
+		)
+		(instances
+			(project "lab1-exp3-halfwave"
+				(path "/265cdedf-2803-467f-9579-57c8b8b5110a"
+					(reference "#PWR01")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Simulation_SPICE:VSIN")
+		(at 53.34 63.5 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(uuid "eb051cfb-de44-4c40-8aac-dff2321e387f")
+		(property "Reference" "V1"
+			(at 50.8 60.96 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "SINE(0 5 60)"
+			(at 50.8 66.04 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 53.34 63.5 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 53.34 63.5 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" ""
+			(at 53.34 63.5 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "4fe5918d-9d24-4f37-bb2a-a62dd31ba313")
+		)
+		(pin "2"
+			(uuid "84bfaafa-ddd0-46f6-b7d9-5e3247f25766")
+		)
+		(instances
+			(project "lab1-exp3-halfwave"
+				(path "/265cdedf-2803-467f-9579-57c8b8b5110a"
+					(reference "V1")
 					(unit 1)
 				)
 			)

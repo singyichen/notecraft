@@ -115,6 +115,7 @@ items.append(text('正半週 A→D3→P→R_{L}→N→D1→B；負半週 B→D4�
 items.append(text('V_{out,peak} ≈ V_{in,peak} − 2V_{D,on}',20.32,114,size=FS,justify='left bottom'))
 items.append(text('第 26 頁在 R_{L} 兩端並聯 C 1 µF；第 27 頁改並聯齊納，陰極朝 P（輸出 +）那側',20.32,118,size=1.27,justify='left bottom'))
 items.append(text('輸入與輸出沒有共同節點：示波器兩支地夾不可同時接 B 與 N，見筆記的接地陷阱',20.32,122,size=1.27,justify='left bottom'))
+items.append(text('.tran 10u 50m',20.32,126,size=1.27,justify='left bottom'))   # ngspice 模擬指令：KiCad 的模擬器會直接讀圖上這行
 
 libsyms=['lib_symbols']+[as_lib_symbol(LIBS[p],n,p) for p,n in [('Simulation_SPICE','VSIN'),('Diode','1N4007'),('Device','R'),('power','GND'),('power','PWR_FLAG')]]
 doc=['kicad_sch',['version','20250114'],['generator','"eeschema"'],['generator_version','"9.0"'],['uuid',ROOT],

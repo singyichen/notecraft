@@ -29,6 +29,14 @@ $KC sch export netlist --format spice -o lab1-exp1-forward.kicad.cir lab1-exp1-f
 cp lab1-exp1-forward.svg ../../../public/note-images/ec-week3-kicad/
 ```
 
+## 在 KiCad 裡直接跑模擬（2026-10-04 起）
+
+五張原理圖各帶一行 ngspice 指令文字（`.dc V1 0 2 0.01`、`.dc V1 0 20 0.1`、`.tran 10u 50m`、`.tran 10u 50m`、`.tran 10u 200m`），
+D1 的 `Sim.Params` 就是 1N4007 的真實模型，電流表是 0 V 電壓源、電壓表不參與模擬，所以 GUI 開檔後
+**檢查 → 模擬器（Inspect → Simulator）→ 執行** 就能跑，不用另外設定。要看的訊號：實驗一、二在「加入訊號」挑 `I(D1)` 對掃描電壓
+（I-V 曲線）或 `V(Net-_D1-K_)`；實驗三、四挑輸入與輸出節點的電壓看波形。`kicad-cli` 到 10.0 沒有 `sim` 子命令，批次模擬與出圖仍走 `../run-lt.sh`（LTspice）。
+指令文字也會跟著匯進 `*.kicad.cir` 的最後一行，拿去餵 ngspice／LTspice 都能直接跑。
+
 ## 畫法約定
 
 - 電表（`Device:Voltmeter_DC`／`Ammeter_DC`）的 V、A 是文字物件，會跟著符號轉，所以二極體、電阻、電表一律直立擺放。

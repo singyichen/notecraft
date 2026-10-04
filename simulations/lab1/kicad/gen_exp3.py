@@ -92,6 +92,7 @@ items.append(text('Lab 1 實驗三：半波整流器量測電路',20.32,25.4,siz
 items.append(text('V_{out,peak} ≈ V_{in,peak} − V_{D,on}',20.32,99,size=FS,justify='left bottom'))
 items.append(text('示波器 CH1 跨 V_{in} 與地、CH2 跨 V_{out} 與地，兩支地夾都接同一點 GND',20.32,103,size=1.27,justify='left bottom'))
 items.append(text('C1 是講義第 20 頁才並上去的濾波電容；第 18 頁的量測先不要接',20.32,107,size=1.27,justify='left bottom'))
+items.append(text('.tran 10u 50m',20.32,111,size=1.27,justify='left bottom'))   # ngspice 模擬指令：KiCad 的模擬器會直接讀圖上這行
 
 libsyms=['lib_symbols']+[as_lib_symbol(LIBS[p],n,p) for p,n in [('Simulation_SPICE','VSIN'),('Diode','1N4007'),('Device','R'),('Device','C'),('power','GND'),('power','PWR_FLAG')]]
 doc=['kicad_sch',['version','20250114'],['generator','"eeschema"'],['generator_version','"9.0"'],['uuid',ROOT],

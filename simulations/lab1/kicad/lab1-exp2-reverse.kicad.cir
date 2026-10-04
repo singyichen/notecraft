@@ -7,8 +7,9 @@
 +           cjo=30p
 +           bv=1000
 +           ibv=5u
-V1 Net-_D1-K_ GND DC 1 
-D1 Net-_D1-A_ Net-_D1-K_ __D1
+.dc V1 0 20 0.1
 R1 Net-_D1-A_ Net-_MES2-+_ 1k
 VMES2 Net-_MES2-+_ GND DC 0 
+V1 Net-_D1-K_ GND DC 1 
+D1 Net-_D1-A_ Net-_D1-K_ __D1
 .end
