@@ -29,11 +29,15 @@
 ```bash
 cd simulations/lab1
 ../tools/run-lt.sh lab1-*.cir          # 產生 .raw / .log
-python3 -m venv .venv && .venv/bin/pip install numpy matplotlib openpyxl
+python3 -m venv .venv && .venv/bin/pip install numpy matplotlib openpyxl python-docx latex2mathml mathml2omml
 .venv/bin/python plot.py               # 重新輸出八張 PNG 到 public/note-images/ec-week3-ltspice/
 .venv/bin/python ../tools/ltraw.py     # 在 lab1 目錄執行，印出峰值、rms、平均、漣波等數字（JSON）
-.venv/bin/python build_record_xlsx.py  # 重新產生 measured/Lab1-數據記錄.xlsx 與實驗三、四的 CSV 範本
+.venv/bin/python build_record_xlsx.py  # 產生 measured/Lab1-數據記錄.xlsx 與實驗三、四的 CSV 範本；xlsx 已存在時不覆蓋，加 --force 才重產
 ```
+
+**`measured/Lab1-數據記錄.xlsx` 從 2026-10-02 起是作者直接填寫、調格式的工作檔**，不再是腳本的純產物：
+腳本遇到檔案已存在會拒絕覆蓋（加 `--force` 才重產），之後要加欄位或說明請直接改 xlsx（或像
+實驗三、四的「量測順序」那樣只動 sheet XML），不要重產。
 
 `.raw` 不進版控（見 `.gitignore`），而 `plot.py` 與 `build_record_xlsx.py` 都要讀它，
 所以重新 clone 之後**一定要先跑 `run-lt.sh`** 再跑後面兩支腳本。`openpyxl` 只有
@@ -56,6 +60,10 @@ rm <repo>/simulations/lab1/measured/Lab1-數據記錄.xlsx
 zip -Xrq <repo>/simulations/lab1/measured/Lab1-數據記錄.xlsx .
 ```
 
+**散佈圖的實測序列要明確給點的填色**（`build_record_xlsx.py` 的 `dot_series()`）：openpyxl 只設
+`line.noFill` 不設點的填色時，LibreOffice 重算存檔會把點也寫成 `noFill`，序列整個隱形，看起來像
+「填了數據圖卻不動」（2026-10-02 實測）。
+
 **改完字型之後不要再跑一次 `recalc.py`**：它會用 LibreOffice 重新存檔，`Linux Libertine G`
 會再被塞回去（2026-10-02 實測）。要確認重打包沒弄壞檔案，改用唯讀的方式檢查——
 用 Python 的 `zipfile` 讀 `xl/styles.xml` 看字型只剩 `Arial`／`Calibri`、每張 `sheet*.xml`
@@ -76,6 +84,16 @@ cd simulations/lab1
 .venv/bin/python report/build_lab1_report.py --id <學號> --name <姓名>                              # Lab 1 預填版 → report/<學號>_<姓名>_Lab1.docx
 ```
 
+- **公式一律寫 LaTeX**（2026-10-03 起）：`r.equation(r'...')` 吃 LaTeX 產生獨立置中的 Word 原生方程式（OMML），段落、表格、圖說裡的行內公式與符號寫成 `$V_D$`、`$I=\frac{V_R}{R}$`，由 `tools/lab_report.py` 的 `add_runs()` 經 `latex2mathml` → `mathml2omml` 轉成行內方程式；分數用 `\frac`、單位包 `\text{}`，比照 `math-formula-notation` skill。舊的 `V_{D}` 下標寫法仍相容但不要再用。這兩個套件要裝進 `.venv`（`pip install latex2mathml mathml2omml`）。
+- 預設只產基礎實驗一、二；真的做了半波整流再加 `--advanced` 放回實驗三章節。
+- **封面後自動插一頁目錄、頁尾有頁碼**：`build_lab1_report.py` 跑兩段——先組一次轉 PDF、用 `pdftotext` 找每個章節落在第幾頁，再帶著目錄重組（目錄佔一頁，頁碼 +1）。所以本機要有 `soffice` 與 `pdftotext`。表格一律整張不跨頁（每列 `cantSplit`＋列間 keep-with-next），超過一頁放不下的表要自己拆。
+- **`--final` 是交件版**：不印使用說明框、草稿不上綠底也不加標記、待填處改輸出寫好的學生語氣內容（實驗目的、六題講義問題、LTspice 對照、實驗一＋二合併 I-V 圖）、表格空格不塗黃。沒有 `--final` 仍是帶黃綠底的工作版。
 - 預填版已放入實驗一、二的 Tinkercad 截圖與掃描表、KiCad 電路圖、LTspice 網表與曲線、比較表；黃底是待填（照片、實測、自己的分析），綠底是要用自己的話改寫的草稿。
 - 實測數據填進 `measured/lab1-exp1-forward.csv`、`measured/lab1-exp2-reverse.csv` 後重跑，實測表與疊圖會自動帶入。已存在的 docx 不會被覆寫，要加 `--force` 或用 `-o` 另存，避免蓋掉在 Word 手改的內容。
 - `report/*.docx` 與 `report/build/` 已列入 `.gitignore`（含學號，且 repo 是公開的）。
+- **當天上傳用的「實驗數據結果」**：`report/build_lab1_data_results.py --id <學號> --name <姓名>` 讀 `measured/Lab1-數據記錄.xlsx`
+  的快取值（要先在 Excel 存檔）排成實驗一、二的數據表＋matplotlib 重畫的對照圖＋現場照片（放 `_outputs/lab1/photos/`），
+  輸出 `_outputs/lab1/<學號>_<姓名>_Lab 1 實驗數據結果.docx`；已存在時加 `--force`。
+  轉 PDF 用 `soffice --headless --convert-to pdf --outdir <同資料夾> <docx>`。**這台 Mac 的 LibreOffice 原本找不到任何 CJK 字型**
+  （中文全變方框，pptx 那條「微軟正黑體被替代」的根因也是這個），把 `/System/Library/Fonts/Supplemental/Arial Unicode.ttf`
+  複製到 `~/Library/Application Support/LibreOffice/4/user/fonts/` 之後就正常（2026-10-03 已放）。

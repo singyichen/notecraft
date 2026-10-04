@@ -97,23 +97,28 @@ def main_reverse(args):
     series = []
     for p, c in zip(args.csv, (S2, S3, S4)):
         label, vs, vd, iu = read_csv_reverse(p)
+        if args.points_only: label = '實測'
         if len(vs) == 0:
             print(f'{p}: 沒有完整的列（Vs, VD, I_uA 都要有值），跳過'); continue
         series.append((label, vs, vd, iu, c))
 
     f, (a, b) = plt.subplots(1, 2, figsize=(11, 4.4), dpi=160)
     vgrid = np.linspace(0.5, 20, 200)
-    a.plot(lt_v, lt_i, color=S1, label='LTspice 1N4007 漏電流')
-    a.plot(vgrid, vgrid / 10e6 * 1e6, color=INK2, linewidth=1, linestyle='--', label='DMM 10 MΩ 輸入阻抗分走的電流 $V/10\\,\\mathrm{M\\Omega}$')
-    a.axhline(5.0, color=S4, linewidth=1, linestyle=':', label='datasheet 上限 5 µA（1000 V、25 °C）')
+    if not args.points_only:
+        a.plot(lt_v, lt_i, color=S1, label='LTspice 1N4007 漏電流')
+        a.plot(vgrid, vgrid / 10e6 * 1e6, color=INK2, linewidth=1, linestyle='--', label='DMM 10 MΩ 輸入阻抗分走的電流 $V/10\\,\\mathrm{M\\Omega}$')
+        a.axhline(5.0, color=S4, linewidth=1, linestyle=':', label='datasheet 上限 5 µA（1000 V、25 °C）')
     for label, vs, vd, iu, c in series:
         pos = iu > 0
         a.plot(vd[pos], iu[pos], 'o', color=c, label=label, markersize=5, markeredgecolor=SURF, markeredgewidth=0.8)
         b.plot(vs, vd, 'o', color=c, label=label, markersize=5, markeredgecolor=SURF, markeredgewidth=0.8)
     a.set_yscale('log'); a.set_ylim(1e-5, 20); a.set_xlim(0, 21)
-    a.set_xlabel('逆向電壓 $-V_D$ (V)'); a.set_ylabel('逆向電流 (µA，對數)'); a.set_title('逆偏漏電流：實測點多半落在 DMM 那條線附近', loc='left')
+    a.set_xlabel('逆向電壓 $-V_D$ (V)'); a.set_ylabel('逆向電流 (µA，對數)')
+    a.set_title('逆偏漏電流（實測點）' if args.points_only else '逆偏漏電流：實測點多半落在 DMM 那條線附近', loc='left')
     a.legend(loc='center right', fontsize=8.5)
-    b.plot([0, 20], [0, 20], color=S1, label='$V_D = V_s$（電阻上沒有壓降）'); b.set_xlim(0, 21); b.set_ylim(0, 21)
+    if not args.points_only:
+        b.plot([0, 20], [0, 20], color=S1, label='$V_D = V_s$（電阻上沒有壓降）')
+    b.set_xlim(0, 21); b.set_ylim(0, 21)
     b.set_xlabel('$V_s$ (V)'); b.set_ylabel('$-V_D$ (V)'); b.set_title('逆偏：電源加多少，二極體就吃多少', loc='left'); b.legend(loc='upper left')
     f.tight_layout(); f.savefig(os.path.join(args.out, 'exp2-reverse-overlay.png'), facecolor=SURF); plt.close(f)
 
@@ -166,7 +171,7 @@ def main_scalar(args):
             ax.bar(x + (k - 1) * w, [0 if np.isnan(v) else v for v in vals], w, label=name, color=c,
                    edgecolor=SURF, linewidth=0.8)
         ax.set_xticks(x)
-        ax.set_xticklabels(['%s\n%s' % (r['sec'].replace('輸出 ', ''), r['item'].replace(' (V)', '')) for r in data],
+        ax.set_xticklabels(['%s\n%s' % (r['sec'].replace('V_out ', ''), r['item'].replace(' (V)', '')) for r in data],
                            fontsize=8)
         ax.set_ylabel(ylabel)
         ax.set_title(title, loc='left')
@@ -205,6 +210,7 @@ def main():
     ap.add_argument('--out', default=os.path.join(HERE, '..', '..', 'public', 'note-images', 'ec-week3-measured'))
     ap.add_argument('--raw', default=None, help='LTspice .raw，預設依 --exp 選 lab1-exp1-forward.raw 或 lab1-exp2-reverse.raw')
     ap.add_argument('--threshold', type=float, default=1.0, help='準則一的電流門檻 (mA)，預設 1 mA')
+    ap.add_argument('--points-only', action='store_true', help='只畫實測點：不畫 LTspice 曲線、切線外推與參考線（結報用；導通電壓表仍會算 LTspice 那列）')
     args = ap.parse_args()
     os.makedirs(args.out, exist_ok=True)
     if args.raw is None:
@@ -219,21 +225,23 @@ def main():
     series = [('LTspice 1N4007', lt_vs, lt_vd, lt_i, S1, '-')]
     for p, c in zip(args.csv, (S2, S3, S4)):
         label, vs, vd, im = read_csv(p)
-        series.append((label, vs, vd, im, c, 'o'))
+        series.append(('實測' if args.points_only else label, vs, vd, im, c, 'o'))
 
     f, (a, b) = plt.subplots(1, 2, figsize=(11, 4.4), dpi=160)
     rows = []
     for label, vs, vd, im, c, mk in series:
         if mk == '-':
-            a.plot(vd, im, color=c, label=label); b.plot(vs, vd, color=c, label=label)
+            if not args.points_only:
+                a.plot(vd, im, color=c, label=label); b.plot(vs, vd, color=c, label=label)
         else:
             a.plot(vd, im, mk, color=c, label=label, markersize=5, markeredgecolor=SURF, markeredgewidth=0.8)
             b.plot(vs, vd, mk, color=c, label=label, markersize=5, markeredgecolor=SURF, markeredgewidth=0.8)
         k1 = knee_threshold(vd, im, args.threshold); k2, rd = knee_tangent(vd, im)
         rows.append((label, k1, k2, rd, float(im.max())))
-        if not np.isnan(k2):
+        if not np.isnan(k2) and not args.points_only:
             xs = np.array([k2, vd.max()]); a.plot(xs, (xs - k2) * 1e3 / rd, color=c, linewidth=1, alpha=0.5, linestyle='--')
-    a.set_xlabel('$V_D$ (V)'); a.set_ylabel('$I$ (mA)'); a.set_title('順偏 I-V：實測點疊在 LTspice 曲線上（虛線＝切線外推）', loc='left')
+    a.set_xlabel('$V_D$ (V)'); a.set_ylabel('$I$ (mA)')
+    a.set_title('順偏 I-V（實測點）' if args.points_only else '順偏 I-V：實測點疊在 LTspice 曲線上（虛線＝切線外推）', loc='left')
     a.set_xlim(0, max(0.75, max(sr[2].max() for sr in series) + 0.05)); a.legend(loc='upper left')
     b.set_xlabel('$V_s$ (V)'); b.set_ylabel('$V_D$ (V)'); b.set_title('電源每加 0.1 V，$V_D$ 停在哪裡', loc='left'); b.legend(loc='lower right')
     f.tight_layout(); f.savefig(os.path.join(args.out, 'exp1-forward-overlay.png'), facecolor=SURF); plt.close(f)

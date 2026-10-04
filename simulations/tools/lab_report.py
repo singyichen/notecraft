@@ -10,10 +10,12 @@
 需要 python-docx（simulations/lab1/.venv 已裝）。
 """
 import argparse, os, re
+import latex2mathml.converter as _l2m
+import mathml2omml as _m2o
 from docx import Document
-from docx.enum.table import WD_TABLE_ALIGNMENT, WD_ROW_HEIGHT_RULE
-from docx.enum.text import WD_ALIGN_PARAGRAPH, WD_BREAK, WD_COLOR_INDEX
-from docx.oxml import OxmlElement
+from docx.enum.table import WD_TABLE_ALIGNMENT, WD_ROW_HEIGHT_RULE, WD_ALIGN_VERTICAL
+from docx.enum.text import WD_ALIGN_PARAGRAPH, WD_BREAK, WD_COLOR_INDEX, WD_TAB_ALIGNMENT, WD_TAB_LEADER
+from docx.oxml import OxmlElement, parse_xml
 from docx.oxml.ns import qn
 from docx.shared import Cm, Pt, RGBColor
 
@@ -41,12 +43,28 @@ def _font(run, size=None, bold=None, color=None, highlight=None, italic=None):
     return run
 
 
+OMML_NS = 'http://schemas.openxmlformats.org/officeDocument/2006/math'
+
+
+def omml(latex, display=False):
+    """LaTeX → MathML（latex2mathml）→ OMML（mathml2omml），回傳可直接掛進 <w:p> 的 lxml 元素。
+    display=True 包成 <m:oMathPara>，Word 會當獨立的置中方程式；否則是行內方程式。"""
+    xml = _m2o.convert(_l2m.convert(latex))
+    xml = xml.replace('<m:oMath>', f'<m:oMath xmlns:m="{OMML_NS}">', 1)
+    if display:
+        xml = f'<m:oMathPara xmlns:m="{OMML_NS}">{xml}</m:oMathPara>'
+    return parse_xml(xml)
+
+
 def add_runs(par, text, **kw):
-    """支援 _{下標}、^{上標}、**粗體** 的極簡標記，其餘照字面輸出。"""
-    for tok in re.split(r'(_\{[^}]*\}|\^\{[^}]*\}|\*\*[^*]+\*\*)', text):
+    """支援 $LaTeX$（Word 原生方程式）、_{下標}、^{上標}、**粗體** 的極簡標記，其餘照字面輸出。
+    公式一律寫 $...$，_{}／^{} 只是舊寫法的相容。"""
+    for tok in re.split(r'(\$[^$]+\$|_\{[^}]*\}|\^\{[^}]*\}|\*\*[^*]+\*\*)', text):
         if not tok:
             continue
-        if tok.startswith('_{'):
+        if tok.startswith('$') and tok.endswith('$') and len(tok) > 2:
+            par._p.append(omml(tok[1:-1]))
+        elif tok.startswith('_{'):
             _font(par.add_run(tok[2:-1]), **kw).font.subscript = True
         elif tok.startswith('^{'):
             _font(par.add_run(tok[2:-1]), **kw).font.superscript = True
@@ -74,7 +92,9 @@ def _shade(cell, fill='EEEEEE'):
 
 
 class Report:
-    def __init__(self, lab, title, name='王◯◯', student_id='5156610◯◯'):
+    def __init__(self, lab, title, name='王◯◯', student_id='5156610◯◯', final=False, instructor='林尚亭', ta='林承恩', toc=None):
+        """toc：[(level, text, page), ...] 給就在封面後插一頁目錄（頁碼要兩段式產生：先 build 一次轉 PDF 找頁碼，見 build_lab1_report.py）。"""
+        self.final = final   # True：交件版，不印使用說明、草稿不上色、待填一律不輸出、空格不塗黃
         self.doc = Document()
         sec = self.doc.sections[0]
         sec.page_width, sec.page_height = Cm(21), Cm(29.7)
@@ -82,8 +102,13 @@ class Report:
         st = self.doc.styles['Normal']; st.font.name = LATIN; st.font.size = Pt(11)
         st.element.get_or_add_rPr().get_or_add_rFonts().set(qn('w:eastAsia'), CJK)
         self.lab, self.title, self.name, self.sid = lab, title, name, student_id
+        self.instructor, self.ta = instructor, ta
         self._h1 = 0; self._h2 = 0; self._h3 = 0; self._fig = 0; self._tab = 0
+        self.headings = []   # (level, 編號後的標題文字)，給目錄用
+        self._footer_page_number()
         self._cover()
+        if toc:
+            self._toc(toc)
 
     # ---- 結構 ----
     def _cover(self):
@@ -91,17 +116,39 @@ class Report:
         for line in (f'Lab {self.lab}', self.title, '結報'):
             p = self.doc.add_paragraph(); p.alignment = WD_ALIGN_PARAGRAPH.CENTER
             _font(p.add_run(line), size=24, bold=True)
-        for _ in range(12): self.doc.add_paragraph()
-        for label, val in (('姓名：', self.name), ('學號：', self.sid)):
+        for _ in range(7): self.doc.add_paragraph()
+        for label, val in (('課程教師：', self.instructor), ('課程助教：', self.ta), ('姓名：', self.name), ('學號：', self.sid)):
             p = self.doc.add_paragraph(); p.paragraph_format.left_indent = Cm(8.5)
             _font(p.add_run(label), size=16, bold=True)
             _font(p.add_run(val), size=16, bold=True, highlight=TODO if '◯' in val else None)
         self.page_break()
 
+    def _footer_page_number(self):
+        p = self.doc.sections[0].footer.paragraphs[0]; p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        r = p.add_run(); _font(r, size=9)
+        for tag, text in (('begin', None), (None, ' PAGE '), ('end', None)):
+            if tag:
+                fc = OxmlElement('w:fldChar'); fc.set(qn('w:fldCharType'), tag); r._r.append(fc)
+            else:
+                it = OxmlElement('w:instrText'); it.set(qn('xml:space'), 'preserve'); it.text = text; r._r.append(it)
+
+    def _toc(self, entries):
+        p = self.doc.add_paragraph(); p.alignment = WD_ALIGN_PARAGRAPH.CENTER; p.paragraph_format.space_after = Pt(14)
+        _font(p.add_run('目錄'), size=20, bold=True)
+        for level, text, page in entries:
+            p = self.doc.add_paragraph(); pf = p.paragraph_format
+            pf.left_indent = Cm({1: 0, 2: 0.9, 3: 1.8}.get(level, 2.5)); pf.space_before = Pt(6 if level == 1 else 1); pf.space_after = Pt(1)
+            pf.tab_stops.add_tab_stop(Cm(15.9), WD_TAB_ALIGNMENT.RIGHT, WD_TAB_LEADER.DOTS)
+            size = {1: 12.5, 2: 11, 3: 10.5}.get(level, 10.5)
+            _font(p.add_run(text), size=size, bold=(level == 1)); _font(p.add_run(f'\t{page}'), size=size, bold=(level == 1))
+        self.page_break()
+
     def page_break(self):
         self.doc.add_paragraph().add_run().add_break(WD_BREAK.PAGE)
 
-    def _heading(self, text, tag, size, space_before):
+    def _heading(self, text, tag, size, space_before, level=None):
+        if level:
+            self.headings.append((level, text))
         p = self.doc.add_paragraph(); p.paragraph_format.space_before = Pt(space_before); p.paragraph_format.space_after = Pt(6)
         p.paragraph_format.keep_with_next = True
         _font(p.add_run(text), size=size, bold=size < 20)
@@ -111,15 +158,15 @@ class Report:
 
     def h1(self, text, tag=REQ):
         self._h1 += 1; self._h2 = 0
-        return self._heading(f'{CN[self._h1 - 1]}、{text}', tag, 20, 18)
+        return self._heading(f'{CN[self._h1 - 1]}、{text}', tag, 20, 18, level=1)
 
     def h2(self, text, tag=None):
         self._h2 += 1; self._h3 = 0
-        return self._heading(f'({CN[self._h2 - 1]})、{text}', tag, 14, 12)
+        return self._heading(f'({CN[self._h2 - 1]})、{text}', tag, 14, 12, level=2)
 
     def h3(self, text, tag=None):
         self._h3 += 1
-        return self._heading(f'{self._h3}、{text}', tag, 12, 8)
+        return self._heading(f'{self._h3}、{text}', tag, 12, 8, level=3)
 
     def h4(self, text):
         return self._heading(text, None, 11, 6)
@@ -131,9 +178,13 @@ class Report:
         return add_runs(p, text, size=size, highlight=highlight, color=color, italic=italic)
 
     def todo(self, text):
+        if self.final:
+            return None
         return self.para(f'【待填】{text}', highlight=TODO)
 
     def draft(self, text):
+        if self.final:
+            return self.para(text)
         return self.para(f'【草稿，改寫後刪除此標記】{text}', highlight=DRAFT)
 
     def bullets(self, items, highlight=None):
@@ -141,9 +192,11 @@ class Report:
             p = self.doc.add_paragraph(style='List Bullet'); p.paragraph_format.space_after = Pt(3)
             add_runs(p, it, size=11, highlight=highlight)
 
-    def equation(self, text):
+    def equation(self, latex):
+        """獨立置中的方程式；參數是 LaTeX（不含 $）。"""
         p = self.doc.add_paragraph(); p.alignment = WD_ALIGN_PARAGRAPH.CENTER; p.paragraph_format.space_after = Pt(6)
-        return add_runs(p, text, size=12, italic=True)
+        p._p.append(omml(latex, display=True))
+        return p
 
     def code(self, text):
         t = self.doc.add_table(rows=1, cols=1); t.alignment = WD_TABLE_ALIGNMENT.CENTER
@@ -187,9 +240,18 @@ class Report:
                 c = t.rows[i].cells[j]; _cell_borders(c)
                 p = c.paragraphs[0]; p.alignment = WD_ALIGN_PARAGRAPH.CENTER
                 if v is None or v == '':
-                    if todo_blank: _font(p.add_run('　　'), size=font_size, highlight=TODO)
+                    if todo_blank and not self.final: _font(p.add_run('　　'), size=font_size, highlight=TODO)
                 else:
                     add_runs(p, str(v), size=font_size)
+        n = len(t.rows)
+        for i, row in enumerate(t.rows):   # 整張表不跨頁：每列不可切開、列與列之間 keep-with-next
+            trPr = row._tr.get_or_add_trPr(); cs = OxmlElement('w:cantSplit'); trPr.append(cs)
+            for c in row.cells:
+                c.vertical_alignment = WD_ALIGN_VERTICAL.CENTER   # 儲存格文字水平＋垂直都置中
+                for cp in c.paragraphs:
+                    cp.alignment = WD_ALIGN_PARAGRAPH.CENTER
+                    cp.paragraph_format.space_before = Pt(0); cp.paragraph_format.space_after = Pt(0); cp.paragraph_format.line_spacing = 1.0
+                    if i < n - 1: cp.paragraph_format.keep_with_next = True
         tw = t._tbl.tblPr.find(qn('w:tblW'))
         if tw is not None and not col_widths:
             tw.set(qn('w:type'), 'pct'); tw.set(qn('w:w'), '5000')   # 資料表撐滿版心
@@ -200,6 +262,8 @@ class Report:
         return t
 
     def legend(self):
+        if self.final:
+            return
         t = self.doc.add_table(rows=1, cols=1); t.alignment = WD_TABLE_ALIGNMENT.CENTER
         c = t.rows[0].cells[0]; _cell_borders(c, 4); _shade(c, 'FFF9E5')
         p = c.paragraphs[0]
@@ -211,6 +275,9 @@ class Report:
         self.doc.add_paragraph()
 
     def save(self, path, force=False):
+        z = self.doc.settings.element.find(qn('w:zoom'))   # python-docx 預設範本少了 w:percent，XSD 驗證會抱怨
+        if z is not None and z.get(qn('w:percent')) is None:
+            z.set(qn('w:percent'), '100')
         if os.path.exists(path) and not force:
             raise SystemExit(f'{path} 已存在。重跑會蓋掉你在 Word 裡手改的內容；確定要覆寫請加 --force，或用 -o 指定新檔名。')
         os.makedirs(os.path.dirname(os.path.abspath(path)), exist_ok=True)
