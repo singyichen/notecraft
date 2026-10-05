@@ -35,7 +35,9 @@ export async function getStaticPaths() {
 }
 
 const { note, redirectTo } = Astro.props;
-const { Content, headings } = await render(note);
+const renderedNote = redirectTo ? null : await render(note);
+const Content = renderedNote?.Content;
+const headings = renderedNote?.headings ?? [];
 const markers = parseMarkers(note.body);
 const genCount = markers.filter((m) => m.status === "generated").length;
 const pendingMarkers = markers.filter((m) => m.status !== "generated");
@@ -164,7 +166,7 @@ const toc = headings
       <div id="nc-online-editor-slot"></div>
 
       <div id="nc-note-content" class="nc-prose" data-pagefind-body>
-        <Content />
+        {Content && <Content />}
       </div>
 
       <DonePrompt client:visible slug={note.id} />
