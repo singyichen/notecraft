@@ -20,13 +20,21 @@ import { getDataFiles } from "@/lib/plugins";
 import { getWorkbenchIndex, noteRelPath, promptPathOf } from "@/lib/workbench";
 import { notesFolderHref } from "@/lib/wb-routes";
 import { ROOT_GROUP } from "@/lib/wb-types";
+import NoteSlugRedirect from "@/components/NoteSlugRedirect.astro";
+import { legacyNoteSlugRedirectsFor } from "@/lib/legacy-note-slugs";
 
 export async function getStaticPaths() {
   const notes = await getAllNotes();
-  return notes.map((n) => ({ params: { slug: n.id }, props: { note: n } }));
+  const notesBySlug = new Map(notes.map((note) => [note.id, note]));
+  const canonicalPaths = notes.map((note) => ({ params: { slug: note.id }, props: { note } }));
+  const legacyPaths = legacyNoteSlugRedirectsFor(new Set(notesBySlug.keys())).flatMap(({ slug, canonicalSlug }) => {
+    const note = notesBySlug.get(canonicalSlug);
+    return note ? [{ params: { slug }, props: { note, redirectTo: canonicalSlug } }] : [];
+  });
+  return [...canonicalPaths, ...legacyPaths];
 }
 
-const { note } = Astro.props;
+const { note, redirectTo } = Astro.props;
 const { Content, headings } = await render(note);
 const markers = parseMarkers(note.body);
 const genCount = markers.filter((m) => m.status === "generated").length;
@@ -74,6 +82,9 @@ const toc = headings
   .filter((h) => h.depth <= 3)
   .map((h) => ({ id: h.slug, label: h.text, lv: h.depth as 1 | 2 | 3 }));
 ---
+{redirectTo ? (
+  <NoteSlugRedirect destination={withBase(`/notes/${encodeURIComponent(redirectTo)}`)} />
+) : (
 <WorkbenchLayout
   title={note.data.title}
   description={note.data.description}
@@ -176,6 +187,7 @@ const toc = headings
   </div>
   </div>
 </WorkbenchLayout>
+)}
 
 <style is:global>
   /* 筆記頁內文滿版：解除 global.css 的 .nc-prose 760px 上限（PluginView 仍保留） */
