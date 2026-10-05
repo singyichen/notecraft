@@ -1,0 +1,37 @@
+---
+interface Props {
+  destination: string;
+}
+
+const { destination } = Astro.props;
+const isSafeDestination =
+  destination.startsWith("/") &&
+  !destination.startsWith("//") &&
+  !destination.includes("\\") &&
+  !destination.includes("?") &&
+  !destination.includes("#") &&
+  destination.includes("/notes/");
+---
+
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="noindex,follow" />
+    {isSafeDestination && <meta http-equiv="refresh" content={`0;url=${destination}`} />}
+    <title>筆記網址已更新 — NoteCraft</title>
+  </head>
+  <body>
+    {isSafeDestination ? (
+      <>
+        <p>此筆記網址已更新，正在前往 <a href={destination}>正確的筆記頁面</a>。</p>
+        <script is:inline define:vars={{ destination }}>
+          window.location.replace(destination);
+        </script>
+      </>
+    ) : (
+      <p>無效的重定向目標。</p>
+    )}
+  </body>
+</html>
