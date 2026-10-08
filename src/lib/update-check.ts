@@ -49,7 +49,7 @@ export const NPM_PACKUMENT_URL = "https://registry.npmjs.org/notecraftapp";
 type Semver = { major: number; minor: number; patch: number; pre: string };
 
 export function parseSemver(v: string): Semver | null {
-  const m = /^(\d+)\.(\d+)\.(\d+)(?:-([0-9A-Za-z.-]+))?$/.exec(String(v).trim());
+  const m = /^(\d+)\.(\d+)\.(\d+)(?:-([0-9A-Za-z.-]+))?(?:\+[0-9A-Za-z.-]+)?$/.exec(String(v).trim());
   if (!m) return null;
   return { major: Number(m[1]), minor: Number(m[2]), patch: Number(m[3]), pre: m[4] ?? "" };
 }

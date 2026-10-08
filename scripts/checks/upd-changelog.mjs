@@ -36,7 +36,8 @@ const allItems = versions.flatMap((v) => v.sections.flatMap((s) => s.items));
 console.log("upd-changelog");
 
 await check("第一段是 package.json 的版本；區間標題", () => {
-  assert.equal(versions[0].v, pkg.version);
+  // build metadata（fork 的 1.12.0+symlink.1）不影響版本先後，CHANGELOG 仍記在 1.12.0
+  assert.equal(versions[0].v, pkg.version.replace(/\+.*$/, ""));
   const range = versions.find((v) => v.vFrom);
   assert.ok(range, "找不到區間標題");
   assert.equal(range.vFrom, "0.1.1");

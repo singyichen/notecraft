@@ -33,7 +33,8 @@ export interface WalkResult {
 export interface WalkFile {
   rel: string;
   abs: string;
-  dirent: Dirent;
+  /** 跟隨 symlink 後的型別判斷（src/lib/fs-walk.mjs），不是原生 Dirent */
+  dirent: Pick<Dirent, "name" | "isDirectory" | "isFile">;
 }
 
 export interface WalkDir {

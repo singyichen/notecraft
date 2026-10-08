@@ -8,6 +8,7 @@ import { fileURLToPath } from "node:url";
 import matter from "gray-matter";
 import { slug as githubSlug } from "github-slugger";
 import { buildDefIndex } from "../lib/defs-state.mjs";
+import { readdirFollow } from "../lib/fs-walk.mjs";
 import {
   createNotesIgnore,
   IGNORED_LOCATION_MESSAGE,
@@ -530,20 +531,15 @@ async function handleFolderList(cwd, notesRoot, res, ig) {
   // 回傳格式不變：字串陣列、以 / 結尾；父層恆排在子層之前。
   // 被 ignore.json 排除的資料夾（含內建的 . 開頭、node_modules/、dist/）不列。
   const folders = [displayRoot];
-  const walk = async (absDir, relPrefix) => {
-    let ents;
-    try {
-      ents = await fs.readdir(absDir, { withFileTypes: true });
-    } catch {
-      return;
-    }
+  const walk = async (absDir, relPrefix, chain) => {
+    const ents = await readdirFollow(absDir, chain);
     const dirs = ents
       .filter((e) => e.isDirectory() && !ig.ignores(`${relPrefix}${e.name}/`))
       .sort((a, b) => a.name.localeCompare(b.name, "zh-Hant"));
     for (const e of dirs) {
       const rel = `${relPrefix}${e.name}/`;
       folders.push(`${displayRoot}${rel}`);
-      await walk(path.join(absDir, e.name), rel);
+      await walk(path.join(absDir, e.name), rel, e.chain);
     }
   };
   await walk(notesRoot, "");
