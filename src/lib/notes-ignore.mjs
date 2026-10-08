@@ -9,6 +9,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import ignore from "ignore";
+import { readdirFollow, readdirFollowSync } from "./fs-walk.mjs";
 
 export const IGNORE_FILE = "ignore.json";
 
@@ -190,19 +191,15 @@ export function toNotesRel(notesDir, abs) {
  * 同步走訪 notesDir：被排除的資料夾不進入（剪枝）、被排除的檔案略過。
  * @param {string} notesDir
  * @param {ReturnType<typeof createNotesIgnore>} ig
- * @param {(e: { rel: string; abs: string; dirent: import("node:fs").Dirent }) => void} [onFile]
+ * @param {(e: { rel: string; abs: string; dirent: import("./fs-walk.mjs").FollowEntry }) => void} [onFile]
  * @param {(e: { rel: string; abs: string }) => void} [onDir] 沒被排除的資料夾（rel 帶結尾 /）
  */
 export function walkNotes(notesDir, ig, onFile, onDir) {
   const prunedDirs = [];
   const ignoredFiles = [];
-  const walk = (dir, prefix) => {
-    let ents;
-    try {
-      ents = fs.readdirSync(dir, { withFileTypes: true });
-    } catch {
-      return; // 權限或競態：當作空
-    }
+  const walk = (dir, prefix, chain) => {
+    // 跟隨 symlink（Dirent 對連結的 isDirectory()/isFile() 恆為 false）；讀不到時回空陣列
+    const ents = readdirFollowSync(dir, chain);
     ents.sort((a, b) => (a.name < b.name ? -1 : a.name > b.name ? 1 : 0));
     for (const e of ents) {
       const abs = path.join(dir, e.name);
@@ -213,7 +210,7 @@ export function walkNotes(notesDir, ig, onFile, onDir) {
           continue;
         }
         onDir?.({ rel, abs });
-        walk(abs, rel);
+        walk(abs, rel, e.chain);
       } else if (e.isFile()) {
         const rel = `${prefix}${e.name}`;
         if (ig.ignores(rel)) {
@@ -232,13 +229,8 @@ export function walkNotes(notesDir, ig, onFile, onDir) {
 export async function walkNotesAsync(notesDir, ig, onFile, onDir) {
   const prunedDirs = [];
   const ignoredFiles = [];
-  const walk = async (dir, prefix) => {
-    let ents;
-    try {
-      ents = await fs.promises.readdir(dir, { withFileTypes: true });
-    } catch {
-      return;
-    }
+  const walk = async (dir, prefix, chain) => {
+    const ents = await readdirFollow(dir, chain);
     ents.sort((a, b) => (a.name < b.name ? -1 : a.name > b.name ? 1 : 0));
     for (const e of ents) {
       const abs = path.join(dir, e.name);
@@ -249,7 +241,7 @@ export async function walkNotesAsync(notesDir, ig, onFile, onDir) {
           continue;
         }
         if (onDir) await onDir({ rel, abs });
-        await walk(abs, rel);
+        await walk(abs, rel, e.chain);
       } else if (e.isFile()) {
         const rel = `${prefix}${e.name}`;
         if (ig.ignores(rel)) {

@@ -19,6 +19,7 @@ import chokidar from "chokidar";
 import { localhostOnly, resetHandlersIgnore, tryHandleAssetsRequest } from "../src/dev-api/handlers.mjs";
 import { createNotesIgnore, IGNORE_FILE, loadNotesIgnore, toNotesRel, walkNotesAsync } from "../src/lib/notes-ignore.mjs";
 import { installPlugin, listStore, removePlugin } from "./install-plugin.mjs";
+import { readdirFollow } from "../src/lib/fs-walk.mjs";
 
 // ── .notecraft/ignore.json（docs/notecraft-ignore-config.md §5.4）────────────────
 // 快取失效判斷與 serve 的 watcher 都只看沒被排除的檔：被排除的檔改了不觸發 rebuild、不計入檔數。
@@ -239,17 +240,12 @@ async function shouldRebuild(cacheDir, notesDir, force, userCwd) {
   // Pass 1.6（Task 56）：已安裝的 plugin 套件
   let pluginFileCount = 0;
   let latestPlugin = { mtime: 0, path: "" };
-  async function walkPlugins(dir) {
-    let ents;
-    try {
-      ents = await fs.readdir(dir, { withFileTypes: true });
-    } catch {
-      return;
-    }
+  async function walkPlugins(dir, chain) {
+    const ents = await readdirFollow(dir, chain);
     for (const e of ents) {
       const p = path.join(dir, e.name);
       if (e.isDirectory()) {
-        await walkPlugins(p);
+        await walkPlugins(p, e.chain);
       } else if (/\.(tsx|ts|json)$/.test(e.name)) {
         pluginFileCount += 1;
         const st = statSync(p);
@@ -356,15 +352,10 @@ async function writeMeta(cacheDir, notesDir, userCwd, fileCount, extra = {}) {
 async function countPluginInputs(notesDir, userCwd) {
   const { count: jsonCount } = await scanNotes(notesDir, cliIgnore(notesDir, userCwd), JSON_RE);
   let pluginFileCount = 0;
-  async function walkPlugins(dir) {
-    let ents;
-    try {
-      ents = await fs.readdir(dir, { withFileTypes: true });
-    } catch {
-      return;
-    }
+  async function walkPlugins(dir, chain) {
+    const ents = await readdirFollow(dir, chain);
     for (const e of ents) {
-      if (e.isDirectory()) await walkPlugins(path.join(dir, e.name));
+      if (e.isDirectory()) await walkPlugins(path.join(dir, e.name), e.chain);
       else if (/\.(tsx|ts|json)$/.test(e.name)) pluginFileCount += 1;
     }
   }

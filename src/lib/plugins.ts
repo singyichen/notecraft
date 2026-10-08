@@ -17,6 +17,7 @@ import picomatch from "picomatch";
 import { stripMarkdownAll, stripMarkdownFirst } from "./strip-markdown";
 import { pickMeta } from "./plugin-meta";
 import { walkNotes } from "./notes-ignore.mjs";
+import { readdirFollowSync } from "./fs-walk.mjs";
 import { getNotecraftDir, getNotesDir, getNotesIgnore } from "./notes-ignore-state.mjs";
 import Ajv2020Module from "ajv/dist/2020.js";
 import type { ValidateFunction } from "ajv";
@@ -212,15 +213,10 @@ function scanNotesDir(): Scan {
   const userIgnored = (): string[] => {
     if (cache) return cache;
     cache = ignoredFiles.filter((f) => ig.ignoresByUser(f));
-    const deep = (dir: string, prefix: string): void => {
-      let ents: fs.Dirent[];
-      try {
-        ents = fs.readdirSync(dir, { withFileTypes: true });
-      } catch {
-        return;
-      }
+    const deep = (dir: string, prefix: string, chain?: Set<string>): void => {
+      const ents = readdirFollowSync(dir, chain);
       for (const e of ents) {
-        if (e.isDirectory()) deep(path.join(dir, e.name), `${prefix}${e.name}/`);
+        if (e.isDirectory()) deep(path.join(dir, e.name), `${prefix}${e.name}/`, e.chain);
         else if (e.isFile()) cache!.push(`${prefix}${e.name}`);
       }
     };
