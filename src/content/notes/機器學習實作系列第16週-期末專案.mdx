@@ -299,73 +299,815 @@ Tier 1 是專案的主體，而它跟第 7 週學的分類評估並不是同一�
 
 Tier 2 不需要會寫 BERT，只需要能回答「為什麼會漏」。三個成因分別是訓練語料的分佈落差（新聞裡的地址是「台北市」，契約裡是完整門牌與樓層，後者在訓練分佈中幾乎不存在）、模型沒有檢核碼的概念（`A123456789` 與 `A123456788` 在它眼裡沒有差別，這解釋了號碼類為什麼 regex 反而贏）、以及超長無分隔符文字被硬切造成的標籤斷裂。
 
-## 新候選方向：預測標註者分歧，協助安排複核
+## 期末專案定案：預測標註者分歧，協助安排複核
 
-### 題目動機
+### 題目與方案決策
 
-Label Suite 的正式開發尚未開始，因此目前還沒有真實使用者的標註紀錄。等系統投入使用後，多位標註者對同一筆資料的標記、審核結果與後續裁決，可以形成真實的分歧資料。期末專題先用公開資料建立離線原型，未來再以 Label Suite 的實際資料驗證，讓專題成果能成為系統是否需要「複核優先排序」功能的實證依據。
+期末專案正式採用**方案 B：真實多標註者資料 + 多語文字 Embedding + 傳統分類模型，GNN 作為選做比較**。
 
-### 暫定研究問題
+暫定題目：
 
-> 在標註預算有限時，能否利用標註者與資料項目的關係，較早找出最可能需要人工複核的項目？GNN 是否比簡單的分歧分數更有效？
+> **以文字特徵與標註歷史預測標註分歧：英文與繁體中文複核排序之比較研究**
 
-專題目標是**協助排序複核項目**，不是取代標註者、裁定哪個標籤正確，或把標註者的分歧直接當成標註錯誤。
+Label Suite 尚未正式累積真實使用紀錄，因此期末階段先以公開的真實多標註者資料驗證方法，再建立一份小型繁體中文 pilot。這兩條證據的角色不同：英文公開資料回答「方法在真實多標註資料上是否可行」，繁中 pilot 回答「方法能否轉移到論文的主要使用者情境」。
 
-### 期末可完成的模擬版本
-
-1. 選一個有文字與標籤的公開資料集，切分出訓練、驗證與測試資料。
-2. 以公開資料的標籤為參考答案，模擬數位具有不同正確率或類別偏好的標註者，產生多份標註結果。模擬資料只用於初步驗證方法，不視為真實使用者證據。
-3. 將標註者和資料項目表示成二分圖：節點包含標註者與項目，邊代表某位標註者對某項目的標記；可加入文字向量、標註者歷史表現等特徵。
-4. 以項目是否出現標註分歧、或是否需要複核作為預測目標，測試 GNN 能否在部分標註可用時找出高風險項目。
-5. 與簡單基準比較，例如標籤熵／多數決分歧分數；另可加入一般分類模型，確認圖結構是否真的帶來改善。
-
-### 評估方式
-
-| 面向 | 初步指標 |
-| --- | --- |
-| 複核排序品質 | Precision@K、Recall@K：在只能複核前 K 筆時，找到多少真正的分歧項目 |
-| 效率 | 固定複核預算下的分歧涵蓋率，或達到目標涵蓋率所需的複核數 |
-| 模型比較 | GNN 對照分歧分數與一般模型；多個隨機種子重複實驗並報告平均與波動 |
-
-資料切分要避免同一項目的標註資訊同時出現在訓練與測試中，否則模型可能只是記住項目。若要主張能泛化到新標註者，也應另外保留未參與訓練的標註者測試；否則結論限定為已知標註者與相近任務情境。
-
-### 與 Label Suite 正式開發的銜接
-
-期末階段先交付可重現的模擬實驗、比較報告、失敗案例，以及一份對未來資料紀錄需求的建議。平台上線並取得真實使用資料後，再檢驗模擬結果是否成立；真實驗證前，不把模型宣稱為可直接用於正式複核。
-
-未來若要驗證，至少需要能將資料項目、標註者、標籤、任務／標籤結構版本及複核或裁決結果串起來的紀錄。蒐集範圍、權限、去識別化和保留方式需依 Label Suite 的正式需求與治理規則另行決定。
-
-### 範圍界線與風險
-
-- **GNN 是待驗證的方法，不是預設答案。** 如果它沒有穩定勝過簡單分歧基準，這也是有用的結果，代表系統可先採用透明、易解釋的排序方式。
-- 公開資料模擬的標註者不等於真實人類；結果只能支持方法可行性，不能代表實際標註流程一定受益。
-- 專題先限於一個資料集、一種分類任務與少量基準；不開發完整標註平台、不訓練大型文字模型，也不做自動裁決。
-- 這個方向屬於 GNN／圖機器學習應用，不是強化學習專題。若課程要求特定章節或演算法，需先和授課老師確認題目符合規範。
-
-### 目前決策狀態
-
-此方向是目前優先考慮的期末專題候選。正式定題前，先確認課程是否接受 GNN 題目，以及可用公開資料集能否合理模擬多位標註者；完成小規模可行性檢查後，再固定研究問題和範圍。
-
-### 專題程式碼要不要另外開 Repo
-
-目前不必先另外開一個 repo。Label Suite 尚未正式進入開發，期末專題可以先定位成正式系統的技術調研與離線原型：把實驗程式、設定、可重現步驟和結果整理在獨立目錄或實驗分支，避免未驗證的模型直接成為正式功能。等資料、方法與系統介面都較清楚，再決定是否併入 Label Suite；若課程要求獨立交件、原型需要獨立部署，或程式與依賴已能獨立維護，再拆成獨立 repo。
-
-正式開始前另確認 Label Suite 的程式碼授權、論文公開範圍與課程規定。未來使用真實標註資料時，也要先確認資料存取權限、去識別化、保留期限與研究倫理要求。
-
-### 技術調研步驟
-
-調研的核心問題先維持為：在複核預算有限時，能否排序出較可能有標註分歧的資料項目？GNN 相較於簡單分歧分數是否帶來實際改善？先研究問題與比較方式，再決定模型，不預設一定要使用 GNN。
-
-| 步驟 | 要查證的問題 | 調研紀錄／產出 |
+| 層級 | 必要性 | 內容 |
 | --- | --- | --- |
-| 1. 找相近研究與 Repo | 標註分歧、crowdsourcing、標註品質估計、複核排序有哪些常見方法？現有實作使用什麼資料與假設？ | 文獻與 Repo 對照表：問題、資料、方法、基準、指標、限制、可重用程式 |
-| 2. 確認資料條件 | 公開資料是否有可用的標籤作為參考答案？能否在同一項目上產生多位標註者的標記？未來 Label Suite 是否會保留這些欄位？ | 資料集卡：來源、授權、欄位、標籤分布、限制；平台欄位需求清單 |
-| 3. 建立最小模擬 | 以公開資料標籤作參考，模擬具有不同正確率或類別偏好的標註者，檢查能否產生可控制的分歧程度 | 可重現的資料產生流程與少量人工抽查結果；清楚標記模擬標註不是真實人類證據 |
-| 4. 先定基準再試 GNN | 多數決分歧分數或標籤熵等簡單方法能做到什麼？加入一般模型或圖結構後是否改善？ | 相同資料切分、複核預算與評估指標下的比較實驗 |
-| 5. 設計資料切分 | 模型是否在測試時看過同一資料項目的其他標註？若要泛化到新標註者，是否有保留未見標註者？ | 以項目為單位隔離訓練與測試；視研究主張增加標註者留出測試，避免資訊洩漏 |
-| 6. 評估複核價值 | 在只能複核前 K 筆時，排序是否比基準更常找出分歧項目？結果對隨機模擬是否穩定？ | Precision@K、Recall@K、固定複核預算下的分歧涵蓋率；多個隨機種子的平均與波動 |
-| 7. 做可行性判斷 | GNN 的收益是否足以抵過資料需求、建置與維護成本？結果能否轉成 Label Suite 的資料或流程建議？ | 一頁結論：是否繼續做 GNN、改用簡單排序，或等待真實資料再驗證 |
+| 真實英文資料 | 必做 | 從 TID-8 選一個保留 `item_id`、`annotator_id` 與個別標籤的子資料集 |
+| 繁體中文 pilot | 必做 | 從論文目標情境抽取 150 至 300 筆文字，每筆由至少 3 位標註者獨立標註 |
+| 隨機與規則基準 | 必做 | 隨機排序、可見標籤熵、票數差距與簡單統計 |
+| 傳統分類模型 | 必做 | Logistic Regression 與 Gradient Boosting |
+| 多語 Embedding | 必做 | 以同一模型處理英文與繁中；本機模型優先，外部 API 作選配對照 |
+| GraphSAGE | 選做 | 驗證 item–annotator 圖結構是否有穩定額外效益 |
+| 完整 Label Suite 功能 | 不做 | 本專題只做離線原型與資料需求建議，不開發正式複核佇列 |
 
-調研時要把「能預測模擬資料中的分歧」和「能改善真實複核流程」分開陳述。公開資料與模擬標註只能先驗證實驗流程與方法可行性；等平台有真實多標註者紀錄及複核／裁決結果後，才有條件驗證實際效益。若公開資料無法合理形成多標註者情境，或 GNN 沒有穩定勝過簡單基準，應縮小主張或調整專題，不把模型複雜度本身當成成果。
+專題目標是**排序較可能出現分歧的資料項目**，不是取代標註者、裁定哪一個標籤正確，也不把分歧直接等同於標註錯誤。
 
-未來要讓平台資料支援這類分析，至少需能串起資料項目、標註者（以適當識別方式）、標籤、任務與標籤結構版本、標註時間，以及複核或裁決結果。這是調研階段的需求清單，不代表現在就要全部實作或蒐集；正式資料設計仍須依產品需求、權限與資料治理規則決定。
+### 英文與繁體中文能否一起處理
+
+可以，但要把「模型支援中文」與「研究已證明繁中有效」分開。
+
+多語 Embedding 可以把英文與中文映射成同維度向量，下游的 Logistic Regression、Gradient Boosting 或 GNN 都只接收數值特徵，因此技術管線可以共用。然而模型宣稱支援 `zh`，不代表它一定掌握臺灣繁體中文的用詞、標點、語氣與領域術語；仍需要繁中資料獨立驗證。
+
+建議的 Embedding 選型如下：
+
+| 模型 | 定位 | 專題角色 | 注意事項 |
+| --- | --- | --- | --- |
+| [`BAAI/bge-m3`](https://huggingface.co/BAAI/bge-m3) | 開源多語 Embedding，1024 維、MIT License | **推薦作主模型**，可本機一次處理英文與中文 | 官方資料以 `zh` 為單位，仍要用臺灣繁中 pilot 驗證 |
+| [`voyage-4-lite`](https://docs.voyageai.com/docs/embeddings) | 多語 Embedding API，偏成本與延遲效率 | 有額度時作 API 對照 | 公開資料可送 API；論文真實資料需先確認資料治理 |
+| [`mistral-embed`](https://docs.mistral.ai/studio/knowledge-rag/embeddings) | 通用文字 Embedding API | Voyage 的替代方案，不需要兩者都做 | 不使用 Mistral 對話模型產生判斷 |
+
+`BGE-M3` 的論文與模型卡描述其多語能力涵蓋超過 100 種語言，且可本機產生 dense embedding。這適合論文以繁體中文為主的情境：英文與繁中可以共用同一特徵產生器，也不必把尚未確認可外傳的文字送到第三方 API。[BGE-M3 論文](https://arxiv.org/abs/2402.03216)
+
+雙語實驗要分成三種，不混成一個模糊的「多語結果」：
+
+1. **英文單語模型**：在英文 TID-8 訓練與測試，驗證方法可行性。
+2. **繁中單語模型**：在繁中 pilot 交叉驗證，回答論文主要使用情境。
+3. **跨語轉移實驗**：英文訓練、繁中測試，或英文與繁中合併訓練；只當探索性結果，不取代繁中單語驗證。
+
+若以同一指標 $M$ 衡量兩種語言，可以另外報告語言落差：
+
+$$
+\Delta_{\text{lang}} = M_{\text{zh-TW}} - M_{\text{en}}
+$$
+
+必須同時列出 $M_{\text{zh-TW}}$ 與 $M_{\text{en}}$，不能只報 pooled score，否則英文樣本量較大時會遮住繁中的弱點。
+
+翻譯英文資料不能直接取代繁中人類標註。翻譯可能消除或新增歧義，而英文標註者的分歧也不是繁中使用者的分歧。機器翻譯資料最多只能當 Embedding 的跨語壓力測試，不得當作繁中主證據。
+
+### 正式研究問題與假設
+
+主要研究問題：
+
+> 在一筆資料只取得部分標註時，能否預測完整標註結果是否會出現分歧，並在固定複核預算下，比隨機或簡單分歧分數更早找出需要人工關注的項目？
+
+子問題：
+
+1. 只使用目前可見標籤的 entropy 與票數差距，可以做到多好？
+2. 加入文字 Embedding 後，是否能找出「目前暫時一致，但後續可能出現分歧」的項目？
+3. 英文與繁中是否呈現相似改善，或存在明顯語言落差？
+4. 加入 annotator 歷史與圖結構後，GraphSAGE 是否穩定勝過非圖模型？
+5. 模型增益是否足以抵銷資料需求、維護成本與可解釋性損失？
+
+預先設定的假設：
+
+| 假設 | 內容 |
+| --- | --- |
+| H1 | 可見標籤 entropy 會顯著勝過隨機排序 |
+| H2 | 多語 Embedding 加上結構化特徵，會勝過只使用可見標籤統計的基準 |
+| H3 | 在具備足夠重複 annotator 與連通圖結構時，GraphSAGE 可能進一步改善排序 |
+| H4 | 英文模型的改善不能直接代表繁中；繁中結果需獨立成立 |
+
+### 問題形式化
+
+令第 $i$ 個資料項目為 $x_i$，標籤集合為 $\mathcal{C}$，完整標註集合為 $A_i$。類別 $c$ 在完整標註中的比例為：
+
+$$
+p_{ic}
+=
+\frac{\sum_{a \in A_i}\mathbf{1}(y_{ia}=c)}{|A_i|}
+$$
+
+其中 $y_{ia}$ 表示 annotator $a$ 對項目 $i$ 的標籤。使用正規化 entropy 表示完整分歧程度：
+
+$$
+H_i
+=
+\frac{-\sum_{c \in \mathcal{C}}p_{ic}\log p_{ic}}
+{\log |\mathcal{C}|}
+$$
+
+$H_i=0$ 代表所有標註完全一致；越接近 $1$，代表標籤分布越分散。
+
+主要二元目標先定義為是否出現任何分歧：
+
+$$
+z_i
+=
+\mathbf{1}
+\left(
+\left|\{y_{ia}:a\in A_i\}\right| > 1
+\right)
+$$
+
+若探索後發現「任何分歧」的陽性比例過高或過低，才改用預先固定的高分歧門檻：
+
+$$
+z_i^{(\tau)} = \mathbf{1}(H_i \ge \tau)
+$$
+
+門檻 $\tau$ 只能由訓練集決定，固定後才可評估測試集。
+
+部分觀測實驗中，只向模型揭露 $r$ 份標註，記為 $O_i$；其餘標註 $U_i=A_i\setminus O_i$ 全部隱藏。主要設定為 $r=2$。模型輸出風險分數：
+
+$$
+s_i
+=
+f_{\theta}
+\left(
+x_i,
+O_i,
+\text{history}(a),
+G_{\text{visible}}
+\right)
+$$
+
+其中 $G_{\text{visible}}$ 只能包含預測當下已可見的 annotation edges。測試項目的隱藏標註不得出現在特徵、統計或圖 adjacency 中。
+
+### 八階段研究流程
+
+{/* @ai-visualize
+id: annotation-disagreement-research-roadmap
+type: motion
+prompt: |
+  建立一個可逐階段點選的研究流程圖，呈現「英文真實多標註資料 + 繁體中文 pilot + 多語 Embedding + 選做 GNN」的八階段期末專案。
+
+  八個階段依序為：
+  1. 固定研究問題 —— 定義預測時點、分歧與成功標準
+  2. 資料與授權調研 —— 英文真實資料與繁中資料策略
+  3. 雙語資料協議 —— item-level split、部分觀測與繁中標註規範
+  4. 最低基準線 —— 隨機、entropy、Logistic Regression、Gradient Boosting
+  5. 多語 Embedding —— BGE-M3 主模型，Voyage／Mistral 選配
+  6. GraphSAGE 選做 —— item–annotator 異質二分圖
+  7. 穩健性與錯誤分析 —— seeds、預算、語言、冷啟動與失敗案例
+  8. 論文與產品決策 —— 將結果轉成 Label Suite 資料與複核建議
+
+  需要兩個明顯的決策分支：
+  - 階段 2 若真實資料不合格，先更換子資料集；仍不合格才使用模擬資料備援。
+  - 階段 6 若 GNN 沒有穩定增益，停止增加複雜度並保留簡單模型，仍然可以完成專題。
+
+  點擊任何階段時，在下方顯示該階段的目標、主要工作、產出與通過條件。凸顯最低成功線是「英文真實資料 + 繁中 pilot + baseline + 多語 Embedding」，GNN 只標示為選做。版面需適合約 647px 的筆記欄寬，手機可單欄閱讀，並尊重 prefers-reduced-motion。
+caption: 點選各階段查看工作、產出與通過條件；兩個分支是資料備援與 GNN 停損點。
+status: generated
+*/}
+
+import AnnotationDisagreementResearchRoadmap from '@/components/generated/annotation-disagreement-research-roadmap'
+
+<GeneratedFrame id="annotation-disagreement-research-roadmap" type="motion" prompt={"建立一個可逐階段點選的研究流程圖，呈現「英文真實多標註資料 + 繁體中文 pilot + 多語 Embedding + 選做 GNN」的八階段期末專案。\n\n八個階段依序為：\n1. 固定研究問題 —— 定義預測時點、分歧與成功標準\n2. 資料與授權調研 —— 英文真實資料與繁中資料策略\n3. 雙語資料協議 —— item-level split、部分觀測與繁中標註規範\n4. 最低基準線 —— 隨機、entropy、Logistic Regression、Gradient Boosting\n5. 多語 Embedding —— BGE-M3 主模型，Voyage／Mistral 選配\n6. GraphSAGE 選做 —— item–annotator 異質二分圖\n7. 穩健性與錯誤分析 —— seeds、預算、語言、冷啟動與失敗案例\n8. 論文與產品決策 —— 將結果轉成 Label Suite 資料與複核建議\n\n需要兩個明顯的決策分支：\n- 階段 2 若真實資料不合格，先更換子資料集；仍不合格才使用模擬資料備援。\n- 階段 6 若 GNN 沒有穩定增益，停止增加複雜度並保留簡單模型，仍然可以完成專題。\n\n點擊任何階段時，在下方顯示該階段的目標、主要工作、產出與通過條件。凸顯最低成功線是「英文真實資料 + 繁中 pilot + baseline + 多語 Embedding」，GNN 只標示為選做。版面需適合約 647px 的筆記欄寬，手機可單欄閱讀，並尊重 prefers-reduced-motion。"} caption="點選各階段查看工作、產出與通過條件；兩個分支是資料備援與 GNN 停損點。">
+  <AnnotationDisagreementResearchRoadmap client:visible />
+</GeneratedFrame>
+
+## 階段 1：固定研究問題與成功標準
+
+### 階段目標
+
+在碰模型之前，先把「何時預測、預測什麼、模型能看見什麼」寫成實驗協議。這一階段若沒有固定，後面很容易把完整標註的資訊不小心放進特徵，得到看似漂亮但無法上線的結果。
+
+### 要做的事情
+
+1. 固定主要情境：每筆資料已取得前兩份標註，系統要判斷是否值得安排額外複核。
+2. 固定主要 target：完整標註是否出現分歧。
+3. 固定主要排序指標：`Recall@10%`。
+4. 固定次要指標：`Precision@5%`、`Precision@10%`、`Recall@5%`、`Recall@20%`、PR-AUC 與 `Lift@10%`。
+5. 固定英文與繁中分開報告，不只報 pooled score。
+6. 列出不研究的問題：不做真值聚合、不評分標註者好壞、不自動決定最終標籤。
+
+### 技術調研
+
+| 主題 | 要查證的問題 | 調研產出 |
+| --- | --- | --- |
+| Annotation disagreement | 分歧何時是主觀差異、何時是標註錯誤或規範不清？ | 名詞定義與研究邊界 |
+| Review prioritization | 文獻是預測錯誤、估計不確定性，還是排序複核項目？ | 問題類型比較表 |
+| Label aggregation | Dawid–Skene、MACE、majority vote 解的是什麼問題？為何不同於本專題？ | 排除與可引用方法清單 |
+| Soft labels | 保留完整標籤分布與壓成單一 label 對分析有何差異？ | Target 設計說明 |
+| 預註冊 | 哪些門檻、指標、資料排除規則必須在測試前固定？ | 一頁實驗協議 |
+
+### 完成條件
+
+- 能以一句話說明模型可見資訊與隱藏資訊。
+- 所有主要指標與門檻在看測試結果前已固定。
+- 「分歧」與「標註錯誤」在論文中明確分開。
+
+### 階段產出
+
+- 研究問題與 H1–H4。
+- 問題形式化與符號表。
+- 指標、門檻與停止條件。
+- 不納入範圍清單。
+
+## 階段 2：公開資料、繁中資料與授權調研
+
+### 階段目標
+
+找到真正保留「誰標了哪一筆、給了什麼標籤」的資料。只有聚合後 majority label 的資料不能支援 annotator–item 圖，也不能研究分歧形成過程。
+
+### 英文主資料：TID-8
+
+[`MichiganNLP/TID-8`](https://huggingface.co/datasets/MichiganNLP/TID-8) 是目前的第一候選。它整合八個具有真實分歧的英文語言理解資料集，涵蓋 NLI、情緒、仇恨言論與幽默等任務，並保留 annotator 與個別 annotation 的關係。[原始研究](https://aclanthology.org/2023.findings-emnlp.832/)
+
+先調研三個候選子資料集：
+
+| 子資料集 | 優點 | 風險 | 初步優先度 |
+| --- | --- | --- | --- |
+| Sentiment | 問題直觀、適合先做分類與分歧排序 | 分歧高度主觀，需確認 label schema | 高 |
+| MultiDomain Agreement | 與 disagreement 主題直接相關 | domain 差異可能形成混雜因素 | 中 |
+| GoEmotions | 標註量大、annotator 重複度可能較好 | 多標籤且類別多，超出期末專案範圍 | 低 |
+
+TID-8 的總 Dataset Card 授權欄目前未完整標示，且每個子資料集有自己的授權與引用。不能因為 Hugging Face 可以下載就假設可以任意使用；必須追到原始來源逐一記錄。
+
+### 繁體中文資料策略
+
+目前不把簡體中文資料或機器翻譯資料直接當成繁中主證據。優先順序是：
+
+1. 搜尋保留穩定 annotator ID 的繁體中文多標註分類資料。
+2. 若沒有合適公開資料，建立 150 至 300 筆繁中 pilot。
+3. 每筆至少 3 位標註者，形成約 $450$ 至 $900$ 份 annotation。
+4. Pilot 題目必須貼近論文主要使用情境，不能只為了方便而選與產品無關的情緒分類。
+5. [`YACLC`](https://github.com/blcuicall/YACLC) 等中文多標註資料可作方法備援調研，但它是中文學習者語料且任務不同，不能取代臺灣繁中 pilot。
+
+### 資料探索要計算的內容
+
+對每個候選資料集建立以下統計：
+
+- 唯一 item 數、annotator 數、annotation 數。
+- 每個 item 的 annotation 數分布。
+- 每位 annotator 的 item 數分布。
+- 類別分布與缺失標籤。
+- 完全一致、部分分歧與高 entropy item 的比例。
+- Item–annotator 矩陣稀疏度。
+- 二分圖的連通分量數與最大連通分量涵蓋率。
+- 只標一次的 annotator 比例。
+- 重複 item、重複 annotation 與格式異常。
+
+令 item 數為 $N_I$、annotator 數為 $N_A$、實際 annotation edge 數為 $|E|$，圖稀疏度可記為：
+
+$$
+\operatorname{Sparsity}
+=
+1-
+\frac{|E|}{N_I N_A}
+$$
+
+### 資料合格門檻
+
+- 至少 1,000 個英文可用 item。
+- 每個 item 至少 3 份 annotation。
+- 至少 10% item 有分歧。
+- 大部分 annotator 不只標一筆。
+- 具備穩定 item ID、annotator ID 與 label。
+- 授權允許課程研究、論文引用與必要的衍生統計。
+
+### 決策分支
+
+若 TID-8 第一個子資料集不合格，先換另一個真實子資料集；只有找不到合理真實資料時，才使用模擬 annotator 作備援。模擬資料只能證明程式管線與方法行為，不能代表真實人類。
+
+### 階段產出
+
+- 候選資料比較表。
+- 主資料 Dataset Card。
+- 授權與引用清單。
+- 圖結構 EDA。
+- 標準化資料 schema：`item_id`、`text`、`annotator_id`、`label`、`language`、`source_dataset`。
+
+## 階段 3：建立雙語、部分觀測與無洩漏資料協議
+
+### 階段目標
+
+建立能模擬「已取得少量標註，要不要把這筆送去複核」的資料切分。這一階段的品質比選哪個模型更重要。
+
+### Item-level split
+
+以 `item_id` 分組切分：
+
+$$
+\mathcal{D}
+=
+\mathcal{D}_{\text{train}}
+\cup
+\mathcal{D}_{\text{val}}
+\cup
+\mathcal{D}_{\text{test}}
+$$
+
+$$
+|\mathcal{D}_{\text{train}}|:
+|\mathcal{D}_{\text{val}}|:
+|\mathcal{D}_{\text{test}}|
+=
+70:15:15
+$$
+
+同一個 item 的所有 annotation 必須留在同一 split。不能逐 annotation 隨機切分，否則模型可能在訓練時已看過測試 item 的其他標註。
+
+TID-8 已提供 annotation split 與 annotator split，但本專題的預測單位是 item，仍需重新驗證它的 split 是否符合 item isolation；不符合就自行建立 group split。
+
+### 部分標註 reveal protocol
+
+對每個 item：
+
+1. 從完整標註中抽出 $r=2$ 份成為可見集合 $O_i$。
+2. 其餘標註成為隱藏集合 $U_i$。
+3. 只用 $O_i$ 與 training history 建立特徵。
+4. 用完整 $A_i$ 計算 target $z_i$。
+5. 因公開資料通常沒有可靠時間順序，重複多個 random reveal seeds。
+
+報告中稱為「隨機部分觀測模擬」，不能寫成真實時間序列預測。
+
+### 繁中 pilot 設計
+
+- 樣本：150 至 300 筆繁中資料。
+- 標註者：至少 3 位，最好 5 位。
+- 每位標註者先閱讀同一份規範，再獨立作答。
+- Pilot 前用 20 至 30 筆做校準，但校準討論後的資料不要直接混入正式測試。
+- 同時保存原始 label、時間、規範版本與後續裁決，不只保存 majority label。
+- 先計算 raw agreement、Fleiss' kappa 或 Krippendorff's alpha，了解任務是否真的存在可研究的分歧。
+
+### 冷啟動測試
+
+建立兩種測試情境：
+
+1. **已知 annotator**：測試 annotator 曾在 training items 出現。
+2. **未知 annotator**：測試 annotator 完全不在 training graph。
+
+如果模型只在已知 annotator 有效，論文結論必須限定為「對既有標註團隊有效」，不能宣稱能直接泛化到新標註者。
+
+### 洩漏檢查
+
+禁止使用：
+
+- Test item 的隱藏標註。
+- Test item 的完整 entropy 或 majority label 作特徵。
+- 用 validation 或 test annotation 算出的 annotator 歷史表現。
+- 完整圖預訓練後再切 train/test。
+- 將 target edge 放入 GNN message passing。
+- 用完整資料調整 $\tau$ 或決定特徵。
+
+### 階段產出
+
+- 固定的 split manifest。
+- Reveal seed manifest。
+- 繁中標註規範與資料字典。
+- 自動洩漏檢查測試。
+- 英文與繁中各自的資料流程圖與樣本統計。
+
+## 階段 4：建立最低基準線
+
+### 階段目標
+
+回答「完全不使用 Embedding 或 GNN 時，可以做到多好」。所有後續模型都必須在相同 split、相同可見資訊與相同 $K$ 下比較。
+
+### Baseline 0：隨機排序
+
+- 對測試 item 隨機排序。
+- 至少執行 30 個 random seeds。
+- 回報平均、標準差與 95% confidence interval。
+
+### Baseline 1：可見標註規則
+
+從 $O_i$ 計算：
+
+- 可見標籤是否已分歧。
+- 可見標籤 entropy。
+- 最高票與第二名票數差距。
+- 可見標籤種類數。
+- 可見標註數。
+
+這條基準非常重要：如果它已經足夠好，就沒有理由先上 GNN。
+
+### Baseline 2：文字表面與 metadata
+
+不使用預訓練 Embedding，只使用：
+
+- 字元數與 token 數。
+- 問號、否定詞、模糊詞與程度詞數量。
+- 文本是否包含多句、引號或條件句。
+- 類別、domain 與來源資料集。
+- 可見標註統計。
+
+模型使用 Logistic Regression、Decision Tree 與 Gradient Boosting；Decision Tree 主要用於解釋，最終比較以 Logistic Regression 和 Gradient Boosting 為主。
+
+### Baseline 3：加入 annotator 歷史
+
+只從 training items 計算：
+
+- 歷史標註數。
+- 各類別標註比例。
+- 與同組其他 annotator 的歷史分歧率。
+- 與 training majority label 的一致率。
+- 覆蓋的 domain 數。
+- 歷史資料不足指示值。
+
+Validation 與 test annotator 的統計要用 training-only 或 out-of-fold 方式產生，避免 target leakage。
+
+### 排序指標
+
+設測試集排序後前 $K$ 筆為 $\operatorname{TopK}$，真正分歧集合為 $\mathcal{P}$：
+
+$$
+\operatorname{Precision@K}
+=
+\frac{|\operatorname{TopK}\cap\mathcal{P}|}{K}
+$$
+
+$$
+\operatorname{Recall@K}
+=
+\frac{|\operatorname{TopK}\cap\mathcal{P}|}{|\mathcal{P}|}
+$$
+
+若測試集共有 $N$ 筆，分歧盛行率為：
+
+$$
+\pi
+=
+\frac{|\mathcal{P}|}{N}
+$$
+
+則相對於隨機抽查的提升為：
+
+$$
+\operatorname{Lift@K}
+=
+\frac{\operatorname{Precision@K}}{\pi}
+$$
+
+固定預算比例 $b$ 時：
+
+$$
+K=\lfloor bN\rfloor,
+\qquad
+b\in\{0.05,0.10,0.20\}
+$$
+
+主要指標固定為 `Recall@10%`，因為它直接回答「只能複核 10% 資料時，可以涵蓋多少真正分歧」。
+
+### 階段產出
+
+| 模型 | PR-AUC | P@5% | R@5% | P@10% | R@10% | Lift@10% |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| Random | | | | | | |
+| Visible entropy | | | | | | |
+| Logistic Regression | | | | | | |
+| Gradient Boosting | | | | | | |
+
+完成條件是至少一個可訓練模型完整跑通，並確認重跑可以得到相同 split 與評估結果。
+
+## 階段 5：多語 Embedding 與雙語模型比較
+
+### 階段目標
+
+驗證文字語意是否能在可見標註統計之外，辨識出較容易引發分歧的內容。
+
+### 主模型與選配模型
+
+主線使用 `BAAI/bge-m3` 產生英文與繁中 dense embedding。它是開源、多語且可本機執行，能避免公開英文資料與未來論文私有資料走不同技術管線。
+
+若時間與 API 額度允許，再從 Voyage `voyage-4-lite` 或 Mistral `mistral-embed` 選一個作外部對照。兩個 API 不必同時比較，否則研究焦點會從複核排序偏成供應商評比。
+
+Embedding 本身不會直接輸出分歧機率。完整模型是：
+
+$$
+\mathbf{e}_i
+=
+\operatorname{Embed}(x_i)
+$$
+
+$$
+\hat{p}_i
+=
+\sigma
+\left(
+\mathbf{w}^{\mathsf{T}}
+[\mathbf{e}_i;\mathbf{v}_i]
++b
+\right)
+$$
+
+其中 $\mathbf{v}_i$ 是可見標註與 annotator 歷史的結構化特徵，$[\cdot;\cdot]$ 表示向量串接。
+
+### 必做消融
+
+| 實驗 | 文字 Embedding | 可見標註統計 | Annotator 歷史 | 語言欄位 |
+| --- | ---: | ---: | ---: | ---: |
+| E1 | ✓ | | | |
+| E2 | | ✓ | ✓ | |
+| E3 | ✓ | ✓ | ✓ | |
+| E4 pooled bilingual | ✓ | ✓ | ✓ | ✓ |
+
+模型至少比較：
+
+- Logistic Regression。
+- Gradient Boosting 或 XGBoost。
+- 英文單語模型。
+- 繁中單語模型。
+- 英繁 pooled model。
+- 英文訓練、繁中 zero-shot 測試，僅作探索結果。
+
+### Embedding 工程調研
+
+- 是否需要固定 pooling 與 normalization 方法。
+- 1024 維向量是否直接輸入 Logistic Regression，或需要 PCA。
+- 不同語言的向量 norm 與分布是否偏移。
+- 繁中標點、全形字元與臺灣領域詞是否需要正規化。
+- 長文本截斷位置是否會丟失造成分歧的上下文。
+- Batch size、CPU／GPU 記憶體與推論時間。
+- 模型版本固定、cache invalidation 與可重現性。
+
+每筆快取至少保存：
+
+```text
+item_id
+language
+provider
+model_name
+model_revision
+dimension
+text_hash
+created_at
+embedding
+```
+
+### 外部 API 資料治理
+
+公開資料可依授權與供應商條款評估後送 API；未來 Label Suite 或論文真實資料在送出前，必須確認：
+
+- 是否含個資或機密內容。
+- API 供應商是否保留輸入。
+- 資料所在地與存取權限。
+- 是否允許論文研究使用。
+- 是否需要去識別化。
+
+### 階段產出
+
+- 固定版本的雙語 embedding cache。
+- 英文、繁中與 pooled 結果表。
+- E1–E4 消融分析。
+- API 成本、延遲與資料治理比較表。
+- 語言落差 $\Delta_{\text{lang}}$。
+
+## 階段 6：GraphSAGE 異質二分圖實驗（選做）
+
+### 階段目標
+
+在相同可見資訊下，驗證圖結構能否穩定勝過 Embedding 加傳統分類器。GNN 是待驗證方法，不是預設答案。
+
+### 圖結構
+
+建立兩種 node：
+
+- `item`：特徵為文字 Embedding、長度、語言與 domain。
+- `annotator`：特徵為 training-only 歷史標籤分布、分歧率、標註量與冷啟動指示。
+
+建立 relation-specific edge：
+
+```text
+annotator --annotated_as_<label>--> item
+item --rev_annotated_as_<label>--> annotator
+```
+
+使用不同 edge type 表示 label，可以避免最小版 GraphSAGE 完全忽略 edge label。PyTorch Geometric 的 [`HeteroData`](https://pytorch-geometric.readthedocs.io/en/latest/notes/heterogeneous.html) 可分別保存不同 node 與 edge type，也支援將 GraphSAGE 轉成異質圖模型。
+
+### 最小模型
+
+- 兩層 GraphSAGE。
+- Hidden dimension 先測 64 與 128。
+- Dropout 先測 0.2 與 0.5。
+- Item node 輸出 disagreement probability。
+- 使用 validation PR-AUC early stopping。
+- 至少 5 個 model seeds。
+
+GraphSAGE 的一層聚合可寫成：
+
+$$
+\mathbf{h}_i^{(\ell+1)}
+=
+\sigma
+\left(
+\mathbf{W}_1\mathbf{h}_i^{(\ell)}
++
+\mathbf{W}_2
+\operatorname{mean}_{j\in\mathcal{N}(i)}
+\mathbf{h}_j^{(\ell)}
+\right)
+$$
+
+處理類別不平衡時，可使用帶正類權重的 binary cross-entropy：
+
+$$
+\mathcal{L}
+=
+-\frac{1}{N}
+\sum_{i=1}^{N}
+\left[
+w_{+}z_i\log \hat{p}_i
++
+(1-z_i)\log(1-\hat{p}_i)
+\right]
+$$
+
+### 公平比較要求
+
+| 模型 | 文字 | 可見標註 | Annotator 歷史 | 圖結構 |
+| --- | ---: | ---: | ---: | ---: |
+| Logistic Regression | ✓ | ✓ | ✓ | |
+| Gradient Boosting | ✓ | ✓ | ✓ | |
+| GraphSAGE | ✓ | ✓ | ✓ | ✓ |
+
+三個模型必須使用同一批 item、同一 reveal seed 與相同可見資訊。
+
+### GNN 特有洩漏風險
+
+- Test item 的 hidden edges 不得進圖。
+- Target edge 不得參與 message passing。
+- 不得先用完整圖學 embedding 再切 split。
+- Test item 若沒有可見 edge，模型只能依賴 item features。
+- 未知 annotator 不可只靠 training 中學到的 ID embedding。
+
+### 停損條件
+
+若 GNN 符合以下條件，才值得在結論中列為候選：
+
+- `Recall@10%` 平均提升至少 3 個百分點。
+- 5 個 seeds 中至少 4 個勝過最佳非圖模型。
+- Paired bootstrap 的改善不是明顯不穩定。
+- 推論與維護成本仍符合未來 Label Suite 情境。
+
+若不符合，正式結論就是「圖結構沒有提供足以抵銷複雜度的穩定增益，應先採簡單模型」。這仍然是完整且有產品價值的研究結果。
+
+## 階段 7：穩健性、雙語誤差與失敗案例分析
+
+### 階段目標
+
+確認結論不依賴單一 random seed、單一 reveal 結果、單一語言或單一複核預算。
+
+### 穩健性矩陣
+
+| 維度 | 測試值 |
+| --- | --- |
+| Reveal 數量 | $r\in\{1,2,3\}$ |
+| 複核預算 | $b\in\{0.05,0.10,0.20\}$ |
+| 模型 seed | 至少 5 個 |
+| Reveal seed | 建議 10 個 |
+| 語言 | 英文、繁中、pooled |
+| Annotator | 已知、未知 |
+| 特徵 | text only、metadata only、combined、graph |
+
+### 統計方法
+
+- 以 item 為單位做 paired bootstrap。
+- 回報平均、標準差與 95% confidence interval。
+- 不只呈現最佳 seed。
+- 所有模型在同一 bootstrap sample 上比較。
+- 樣本數太小時，不把很小的數值差異解讀成模型優勢。
+
+### 雙語錯誤分析
+
+英文與繁中各抽查：
+
+- 30 個 false positives。
+- 30 個 false negatives。
+- 20 個高信心正確案例。
+
+錯誤類型至少區分：
+
+- 文字本身有多種合理解讀。
+- 缺少前後文或外部知識。
+- 否定、反諷與條件句。
+- Label schema 邊界不清。
+- 少數 annotator 的系統性偏好。
+- 臺灣用語、繁簡差異或領域術語。
+- Embedding 截斷或正規化問題。
+- 模型只記住特定詞彙或 domain。
+
+### 公平與倫理
+
+- 不把 disagreement 直接稱為 error。
+- 不將低一致率 annotator 自動標成低品質人員。
+- 不以人口屬性作自動懲罰或排班依據。
+- Annotator ID 必須假名化。
+- 模型只排序 item，不自動裁決標籤。
+- 需要人工檢查模型是否對特定語言、類別或 annotator 群體產生系統性偏差。
+
+### 階段產出
+
+- 穩健性矩陣。
+- Paired bootstrap 信賴區間。
+- 英文與繁中錯誤分類表。
+- 代表性成功與失敗案例。
+- 模型限制與適用條件。
+
+## 階段 8：結果判讀、論文寫作與 Label Suite 銜接
+
+### 階段目標
+
+把模型比較轉成可以執行的產品與研究決策，而不是只留下最高分模型。
+
+### 決策規則
+
+| 實驗結果 | 結論與建議 |
+| --- | --- |
+| 可見 entropy 已經最好 | 先採透明規則排序，不導入模型 |
+| Embedding 穩定提升 | 採 Embedding + 簡單分類器作候選 |
+| GNN 顯著且穩定提升 | 等真實繁中平台資料累積後，再評估 GNN 導入 |
+| 英文有效、繁中無效 | 不可直接導入論文目標情境；需補繁中資料或領域調整 |
+| 模擬有效、真實資料無效 | 不宣稱可改善正式複核流程 |
+| 所有方法都不穩定 | 暫不做自動排序，優先改善資料紀錄與標註規範 |
+
+### Label Suite 未來資料需求
+
+至少要能串起：
+
+```text
+project_id
+item_id
+task_schema_version
+annotator_pseudonymous_id
+assignment_id
+annotation_id
+label_payload
+annotation_started_at
+annotation_submitted_at
+review_id
+review_outcome
+adjudicated_label
+adjudication_reason
+reviewer_pseudonymous_id
+model_score
+model_version
+visible_annotation_count
+```
+
+必須保留評分當下已可見的標註版本，否則未來無法重建模型當時真正知道的資訊。也要區分複核原因是分歧、標註錯誤、規範問題、資料缺漏或其他原因；否則只能預測「分歧」，無法驗證是否真的節省複核成本。
+
+### 論文章節
+
+1. 問題背景與繁中使用情境。
+2. Annotation disagreement 與複核排序相關研究。
+3. 英文公開資料與繁中 pilot。
+4. 部分觀測與 item-level split。
+5. 隨機、規則與傳統 ML baselines。
+6. 多語 Embedding 模型。
+7. GraphSAGE 選做模型。
+8. Precision@K、Recall@K 與 PR-AUC 結果。
+9. 雙語、冷啟動、消融與穩健性分析。
+10. 錯誤分析、倫理與限制。
+11. 對 Label Suite 的資料與流程建議。
+
+### 最終交付物
+
+- 可重現的資料處理與實驗程式。
+- 固定 split 與 reveal manifests。
+- 英文與繁中 Dataset Cards。
+- 標註規範與資料字典。
+- Baseline、Embedding 與選做 GNN 比較表。
+- 雙語錯誤案例與信賴區間。
+- 一頁產品決策摘要。
+- 期末報告與簡報。
+
+## 建議時程
+
+以 2026 年 12 月 21 日第 16 週為目標：
+
+| 日期 | 階段 | 必須完成的結果 |
+| --- | --- | --- |
+| 10/05–10/11 | 階段 1 | 研究問題、target、主要指標與停止條件 |
+| 10/12–10/25 | 階段 2 | TID-8 子資料決策、繁中資料策略、授權與 EDA |
+| 10/26–11/01 | 階段 3 | Item split、reveal protocol、繁中標註規範 |
+| 11/02–11/08 | 階段 4 | Random、entropy、Logistic Regression、Gradient Boosting |
+| 11/09–11/22 | 階段 5 | BGE-M3 雙語 embedding、消融與語言比較 |
+| 11/23–12/06 | 階段 6 | GraphSAGE 選做；未達條件即停止 |
+| 12/07–12/13 | 階段 7 | 多 seeds、bootstrap、雙語錯誤分析 |
+| 12/14–12/20 | 階段 8 | 報告、簡報與 Label Suite 決策建議 |
+
+若進度落後，刪減順序為：
+
+1. 先刪 GAT、HGT 等第二種圖模型。
+2. 再刪跨資料集泛化。
+3. 保留單一 GraphSAGE；仍來不及就整段刪除。
+4. API Embedding 對照只留一個，或完全不做。
+5. 不可刪除 item-level split、隨機與規則 baseline、繁中 pilot、主要指標與錯誤分析。
+
+最低成功線是：**英文真實多標註資料 + 繁中 pilot + 完整 baseline + 一個多語 Embedding 模型 + 雙語獨立評估**。GraphSAGE 沒完成或沒有改善，都不影響專題形成完整結論。
+
+## 專題程式碼與 Repo 邊界
+
+目前不必先拆成新 repo。期末專題仍定位成 Label Suite 的技術調研與離線原型，先把資料處理、設定、模型與結果放在獨立實驗目錄，避免未驗證模型直接成為正式功能。
+
+符合以下任一條件時再拆 repo：
+
+- 課程要求獨立交件。
+- 需要獨立部署 demo。
+- Python／PyTorch 依賴與 Label Suite 主程式明顯不同。
+- 實驗已有自己的版本、資料下載與重現流程。
+
+正式公開前另確認 Label Suite 程式碼授權、公開資料授權、繁中 pilot 的同意與去識別化方式，以及論文是否允許公開原始文字與個別 annotation。
