@@ -3,7 +3,7 @@ title: "機器學習實作系列：第 7 週 - 資料前處理、特徵工程與
 description: ""
 tags: ["機器學習實作系列"]
 createdAt: "2026-10-19"
-updatedAt: "2026-09-26"
+updatedAt: "2026-10-12"
 ---
 
 import PdfRefChip from '@/components/islands/PdfRefChip.tsx'
@@ -25,19 +25,145 @@ import MlWeek7SearchStrategies from '@/components/generated/ml-week7-search-stra
 
 真實資料是一張到處有洞、還混著文字的試算表。**缺值（missing data）** 只有刪或補兩條路：刪整列很乾脆，但某欄十筆有八筆是空的時，該刪的是整欄；補值拿平均數或中位數填，等於說「不知道就當它跟大家一樣」，快，卻把該欄的變異壓平了。類別欄位則要分有序與無序：尺寸 S / M / L 映射成 1 / 2 / 3 合理，顏色紅 / 綠 / 藍若編成 0 / 1 / 2，模型會把「藍是綠的兩倍」當真，得改用**獨熱編碼（one-hot encoding）** 拆成數個 0/1 欄位——代價是欄位膨脹且彼此線性相關，常丟掉一欄避免共線性。
 
+{/* @ai-reference
+id: w6-missing-data-row-col-tradeoff
+file: _references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf
+page: 11
+status: suggested
+excerpt: Removing entries from the dataset：convenient but not feasible；may remove too many samples, or too many feature columns
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf" page={11} status="suggested" excerpt={"Removing entries from the dataset：convenient but not feasible；may remove too many samples, or too many feature columns"} client:visible />
+
+{/* @ai-reference
+id: w6-missing-data-impute-stats
+file: _references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf
+page: 48
+status: suggested
+excerpt: SimpleImputer class：Replace missing values using a descriptive statistic (e.g. mean, median, constant or most_frequent)
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf" page={48} status="suggested" excerpt={"SimpleImputer class：Replace missing values using a descriptive statistic (e.g. mean, median, constant or most_frequent)"} client:visible />
+
+{/* @ai-reference
+id: w6-categorical-ordinal-nominal
+file: _references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf
+page: 15
+status: suggested
+excerpt: Ordinal（順序型）：Can be sorted or ordered，Ex: T-shirt size；Nominal（名義型）：Don't imply any order，Ex: T-shirt color
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf" page={15} status="suggested" excerpt={"Ordinal（順序型）：Can be sorted or ordered，Ex: T-shirt size；Nominal（名義型）：Don't imply any order，Ex: T-shirt color"} client:visible />
+
+{/* @ai-reference
+id: w6-onehot-ordering-mistake
+file: _references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf
+page: 20
+status: suggested
+excerpt: Common mistakes：Model will assume that green greater than blue and red greater than green
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf" page={20} status="suggested" excerpt={"Common mistakes：Model will assume that green greater than blue and red greater than green"} client:visible />
+
+{/* @ai-reference
+id: w6-onehot-collinearity-drop-column
+file: _references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf
+page: 23
+status: suggested
+excerpt: To reduce the correlation among variables, simply remove one feature column from the one-hot encoded array
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf" page={23} status="suggested" excerpt={"To reduce the correlation among variables, simply remove one feature column from the one-hot encoded array"} client:visible />
+
 ### 先切開，再縮放
 
 模型在訓練資料上考幾分不算數，要留一份它沒看過的當期末考——**訓練／測試切分（train/test split）** 通常留兩到三成，分類問題還要分層（stratify）維持類別比例。切完才縮放：坪數是幾十、總價是幾百萬，靠距離或權重運作的演算法（KNN、SVM、帶正則化的線性模型）會被數值大的欄位蓋過去。關鍵是平均與標準差**只能從訓練集算**再套到測試集——測試集的統計量一旦參與計算，答案就偷跑了。
 
+{/* @ai-reference
+id: w6-train-test-split-basics
+file: _references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf
+page: 6
+status: suggested
+excerpt: Training set to build the model；Test set to evaluate its performance on unseen data；The Golden Rule: Split Before Processing
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf" page={6} status="suggested" excerpt={"Training set to build the model；Test set to evaluate its performance on unseen data；The Golden Rule: Split Before Processing"} client:visible />
+
+{/* @ai-reference
+id: w6-stratify-split-ratio
+file: _references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf
+page: 45
+status: suggested
+excerpt: train_test_split()：70% for training 30% for testing；training and test subsets have the same proportions of class labels
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf" page={45} status="suggested" excerpt={"train_test_split()：70% for training 30% for testing；training and test subsets have the same proportions of class labels"} client:visible />
+
+{/* @ai-reference
+id: w6-feature-scaling-order
+file: _references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf
+page: 24
+status: suggested
+excerpt: Feature scaling is a crucial step in preprocessing that can easily be forgotten
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf" page={24} status="suggested" excerpt={"Feature scaling is a crucial step in preprocessing that can easily be forgotten"} client:visible />
+
+{/* @ai-reference
+id: w6-fit-only-on-train-rule
+file: _references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf
+page: 62
+status: suggested
+excerpt: You must strictly follow this order...Never use .fit() or .fit_transform() on the test data
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf" page={62} status="suggested" excerpt={"You must strictly follow this order...Never use .fit() or .fit_transform() on the test data"} client:visible />
+
 ### 特徵太多時的減法
 
 欄位越多，模型越容易連雜訊都背起來。**正則化（regularization）** 在損失函數加一項對大權重的懲罰：$L_2$ 罰平方和，把權重一起往零壓卻很少壓成零；$L_1$ 罰絕對值和，約束區域帶尖角，最佳解常落在座標軸上，一部分權重成為真正的 0，等於順手做了特徵選擇（強度由 `C` 控制，它是懲罰力道的倒數）。另一條路是隨機森林的**特徵重要度（feature importance）**：看某欄在多少分裂點上降低了不純度——但相關的兩欄會互相稀釋分數，低分不代表沒資訊。
+
+{/* @ai-reference
+id: w6-regularization-l1-l2-intro
+file: _references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf
+page: 35
+status: suggested
+excerpt: Introduce additional term to loss function to penalize extreme parameter (weight) values；L2 regularization；L1 regularization
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf" page={35} status="suggested" excerpt={"Introduce additional term to loss function to penalize extreme parameter (weight) values；L2 regularization；L1 regularization"} client:visible />
+
+{/* @ai-reference
+id: w6-regularization-c-inverse
+file: _references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf
+page: 72
+status: suggested
+excerpt: Regularization strength ∝ 1/C（講義以倒數關係標示 C 與 L1／L2 懲罰強度）
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf" page={72} status="suggested" excerpt={"Regularization strength ∝ 1/C（講義以倒數關係標示 C 與 L1／L2 懲罰強度）"} client:visible />
 
 ### 樞紐：資料洩漏與 pipeline
 
 前兩節藏著同一個陷阱。**資料洩漏（data leakage）** 是評估時模型間接看到了不該看的資料，最典型的就是先對整份資料補缺值、標準化再切訓練與測試——補值的平均數混進了測試集，分數漂亮，上線就掉。**管線（pipeline）** 為此而生：把補值、編碼、縮放、模型串成單一物件，fit 時每段轉換器只用當下的訓練資料 fit，predict 時只做 transform。
 
 這在 **$k$ 折交叉驗證（k-fold cross-validation）** 裡才真正致命：把訓練資料切 $k$ 份輪流當驗證、跑 $k$ 輪取平均與標準差，若前處理是在切 fold 之前做的，每輪驗證集都被污染、$k$ 個分數一起偏高。把整條 pipeline 當成「模型」丟給交叉驗證，前處理才會在每個 fold 內各自 fit 一次。
+
+{/* @ai-reference
+id: w6-data-leakage-definition
+file: _references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf
+page: 6
+status: suggested
+excerpt: The Golden Rule: Split Before Processing，to prevent data leakage (unintentionally exposing information from the test set to the model during training)
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf" page={6} status="suggested" excerpt={"The Golden Rule: Split Before Processing，to prevent data leakage (unintentionally exposing information from the test set to the model during training)"} client:visible />
+
+{/* @ai-reference
+id: w6-pipeline-basics-definition
+file: _references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf
+page: 63
+status: suggested
+excerpt: Pipeline：將多個步驟（例如標準化、特徵選擇、分類器）組合成一個物件，依序經過清理、轉換、建模，最後可用於預測結果
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf" page={63} status="suggested" excerpt={"Pipeline：將多個步驟（例如標準化、特徵選擇、分類器）組合成一個物件，依序經過清理、轉換、建模，最後可用於預測結果"} client:visible />
+
+{/* @ai-reference
+id: w6-pipeline-fit-transform-api
+file: _references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf
+page: 47
+status: suggested
+excerpt: Transformer API in Scikit-learn：fit()／transform()／fit_transform()
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf" page={47} status="suggested" excerpt={"Transformer API in Scikit-learn：fit()／transform()／fit_transform()"} client:visible />
 
 ### 分類模型錯在哪
 
@@ -721,6 +847,15 @@ status: confirmed
 excerpt: 用測試集進行評估，針對個別錯誤 (FN) 進行探討；fn_indices = np.where((y_test == 1) & (y_pred == 0))[0]
 */}
 <PdfRefChip file="_references/機器學習實作系列/第7週-特徵工程與模型選擇評估.pdf" page={52} status="confirmed" excerpt={"用測試集進行評估，針對個別錯誤 (FN) 進行探討；fn_indices = np.where((y_test == 1) & (y_pred == 0))[0]"} client:visible />
+
+{/* @ai-reference
+id: w6-breast-cancer-pipeline-recap
+file: _references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf
+page: 74
+status: suggested
+excerpt: 本範例完成了一個完整的端到端機器學習專案原型，只欠缺高規格的模型驗證與超參數調整，我們有 GridSearchCV 代勞（Cross Validation + Grid Search）To be covered in Lecture 6
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第6週-資料前處理與Scikit-learn.pdf" page={74} status="suggested" excerpt={"本範例完成了一個完整的端到端機器學習專案原型，只欠缺高規格的模型驗證與超參數調整，我們有 GridSearchCV 代勞（Cross Validation + Grid Search）To be covered in Lecture 6"} client:visible />
 
 ```python
 fn_indices = np.where((y_test == 1) & (y_pred == 0))[0]
