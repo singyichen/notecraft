@@ -3,7 +3,7 @@ title: "機器學習實作系列：第 5 週 - 邏輯迴歸、Matplotlib 與 Sea
 description: "從 Adaline 使用 MSE 做分類的限制出發，建立邏輯迴歸的條件機率、對數勝算、sigmoid、概似函數與二元交叉熵，推導梯度下降更新；整理 Matplotlib 的 Figure／Axes 層級與兩套介面，並說明作業二的晶圓驗收分類器、特徵工程、標準化與成果要求。"
 tags: ["機器學習實作系列"]
 createdAt: "2026-10-05"
-updatedAt: "2026-10-04"
+updatedAt: "2026-10-12"
 ---
 
 # 第 5 週：邏輯迴歸、Matplotlib 與 Seaborn
@@ -23,6 +23,8 @@ $$
 $$
 
 分類明明非常正確，損失卻很大，優化器還會把決策邊界往錯的方向拉。邏輯迴歸（logistic regression）的想法因此不是直接推翻 Adaline，而是保留同一個線性淨輸入與梯度下降骨架，只替換兩個零件：用 **sigmoid 激活函數** 把輸出限制在機率範圍，再用 **二元交叉熵** 衡量機率預測的好壞。
+
+老師把這個問題稱為「論域不匹配」：標籤只有 0 與 1，激活函數的輸出卻是整條實數線，兩者相減本來就沒有道理。特徵極端的遠端樣本最麻煩：明明分對了卻貢獻最大誤差，優化器把邊界往它們靠，反而切錯原本分對的點。老師也藉此提醒，之後看任何模型先盯兩處：**激活函數**是什麼（深度網路隱藏層常是 ReLU、最後一層常是 softmax），**損失函數**是誰——Adaline 到邏輯迴歸改的正好就是這兩處。
 
 {/* @ai-reference
 id: logistic-mse-problem
@@ -44,6 +46,8 @@ p = p\!\left(y=1\mid\boldsymbol{x}\right), \qquad 0\leq p\leq1
 $$
 
 名稱裡的 regression 指的是模型對「對數勝算」建立線性關係，不是把最終任務做成連續值預測。只要記住它最後回答的是「屬於類別 1 的機率有多大」，就不會被名稱騙走。
+
+老師的說法是：如果把機率看成落在 0 到 1 之間的連續值，「預測機率」這件事確實帶點迴歸的味道，名稱也就沒那麼奇怪。另外兩點課堂補充：邏輯迴歸在業界用得很多，因為它夠穩健（robust）；資料若本來就線性可分，用它就夠了，不必上多層神經網路——該用哪種模型，看的是資料線性可分還是非線性，而不是模型新不新。
 
 {/* @ai-reference
 id: logistic-binary-classifier
@@ -79,6 +83,8 @@ $$
 
 比如 $p=0.8$ 時，勝算是 $\frac{0.8}{0.2}=4$，意思是「發生」相對於「不發生」的比例為 4 比 1；取對數後得到的 logit 約為 1.386。機率低於 0.5 時 logit 為負，高於 0.5 時為正，$p=0.5$ 則剛好對應 $z=0$。
 
+記號慣例也在課堂上順帶說明：機器學習與電腦科學的文獻裡，不寫底數的 $\log$ 預設就是自然對數 $\ln$；真的用 2 或 10 當底時才會特別標成 $\log_2$、$\log_{10}$。
+
 {/* @ai-reference
 id: logistic-odds-logit
 file: _references/機器學習實作系列/第5週-Logistic Regression與Matplotlib.pdf
@@ -95,6 +101,21 @@ excerpt: logit(p) is the natural logarithm of the odds: logit(p)=log[p/(1−p)];
 $$
 p=\sigma(z)=\frac{1}{1+\exp(-z)}
 $$
+
+投影片直接給出這個結果，老師利用下課時間在白板上補了推導。做法是把 $z=\operatorname{logit}(p)$ 反解成「$p=$ 什麼」：看到對數就兩邊取指數（指數與自然對數互為反函數），再把 $p$ 移到同一側：
+
+$$
+\begin{aligned}
+z &= \ln\!\left(\frac{p}{1-p}\right) \\
+e^{z} &= \frac{p}{1-p} \\
+e^{z}\left(1-p\right) &= p \\
+e^{z} &= p\left(1+e^{z}\right) \\
+p &= \frac{e^{z}}{1+e^{z}}
+= \frac{1}{1+e^{-z}}
+\end{aligned}
+$$
+
+最後一步是分子分母同乘 $e^{-z}$。順帶一提，函數要有反函數必須是一對一的；logit 在 $(0,1)$ 上嚴格遞增，所以反函數存在且唯一。
 
 這條 S 形曲線把任何 $z\in\mathbb{R}$ 映射到 $(0,1)$：
 
@@ -114,6 +135,8 @@ $$
 $$
 
 因為 $\sigma(0)=0.5$ 且 sigmoid 單調遞增，這等價於檢查 $z\geq0$。因此決策邊界仍是 $\boldsymbol{w}^T\boldsymbol{x}+b=0$：sigmoid 改變的是輸出的解讀與訓練損失，不會把線性邊界自動變成曲線。
+
+$z=0$ 對應 $\sigma(z)=0.5$ 的意思是「特徵沒有提供任何偏向，只能猜一半一半」。另外 0.5 這個門檻不是鐵律：模型輸出的是機率，門檻可以依應用調整，例如要求通過機率達 90% 才判為合格。老師用天氣預報比喻機率值的價值：只說「會下雨」資訊不夠，說「降雨機率 10%」你才會決定要不要賭一把不帶傘——類別加上機率，才是實務上真正需要的輸出。
 
 {/* @ai-reference
 id: logistic-sigmoid
@@ -143,6 +166,19 @@ $$
 \left[1-\sigma\!\left(z^{(i)}\right)\right]^{1-y^{(i)}}
 $$
 
+為什麼是相乘？因為樣本彼此獨立，「第 1 筆是 1、第 2 筆是 0、……」同時發生的聯合機率（joint probability）就是各自機率的乘積。老師在白板上用四筆資料示意概似在比較什麼：真實標籤是 $1,0,1,1$，兩個分類器各自輸出的正類機率如下（數值依課堂口述整理）。
+
+| 樣本 | 真實 $y$ | 分類器 A 的 $p(y=1)$ | 分類器 B 的 $p(y=1)$ |
+| --- | --- | --- | --- |
+| 1 | 1 | 0.8 | 0.9 |
+| 2 | 0 | 0.1 | 0.1 |
+| 3 | 1 | 0.6 | 0.9 |
+| 4 | 1 | 0.7 | 0.9 |
+
+以 0.5 切分，兩個分類器的硬判斷都是 $1,0,1,1$，全部答對。但把「真實標籤那一側的機率」圈起來相乘，A 是 $0.8\times0.9\times0.6\times0.7\approx0.30$，B 是 $0.9\times0.9\times0.9\times0.9\approx0.66$。差別在第 3 筆——A 只給 0.6，勉強過線；換一批特徵稍微不明顯的資料，它就可能掉到 0.5 以下翻盤。概似衡量的正是「答對之餘有多篤定」，完美情況是四個圈起來的機率都是 1、乘積為 1。
+
+另一個老師特別停下來講的點：訓練資料一旦拿到就固定了，$\boldsymbol{x}$ 與 $y$ 都不會再變，概似是在固定資料下比較不同的 $\boldsymbol{w},b$ 誰更合理。標籤是人標的，標錯就錯了——有些模型學不好不是演算法的問題，而是資料裡有錯誤標註，所以資料品質很重要。
+
 乘積很容易因為許多小機率相乘而發生數值下溢，也不方便微分。取自然對數可把乘積改成加總；再加上負號，就把「最大化對數概似」改寫成機器學習慣用的「最小化損失」：
 
 $$
@@ -155,6 +191,8 @@ y^{(i)}\ln\!\left(\sigma\!\left(z^{(i)}\right)\right)
 $$
 
 這就是**負對數概似（negative log-likelihood, NLL）**，在二元分類裡也稱為**二元交叉熵（binary cross-entropy, BCE）**。
+
+取對數的好處老師列了三個：避免小機率連乘下溢（underflow）、把連乘變連加，以及最實際的——之後對權重偏微分時，加法逐項微分即可，乘法得走乘積法則。用到的只是對數定律兩條：$\ln(ab)=\ln a+\ln b$ 與 $\ln a^{k}=k\ln a$，後者就是 $y^{(i)}$ 與 $1-y^{(i)}$ 從指數跑到係數位置的原因。負號純粹是習慣：機器學習談的都是「最小化損失」，所以把最大化對數概似乘上 $-1$。$\frac{1}{n}$ 可有可無，只是取平均，不除也只差 $n$ 倍。
 
 {/* @ai-reference
 id: logistic-bce
@@ -259,6 +297,8 @@ excerpt: The partial derivative simplifies to ∂L/∂wj=(a−y)xj; the weight u
 
 多類別（multiclass）與多標籤（multi-label）不是同一件事：多類別是「多選一」，多標籤則允許同一筆資料同時屬於多個類別。
 
+老師用眼底攝影舉例：同一張影像可能同時有白內障與高血壓病變，兩者不互斥，這種多標籤問題只能用 OvR——每個類別各自輸出機率，彼此不相干；softmax 把總和綁成 1，最大那一類必然壓低其他類別，正好不適合「可能同時有好幾種」的情況。鳶尾花其實有三類，課堂至今都只拿兩類做二元分類；softmax 搭配多類別交叉熵（multinomial cross-entropy）留到神經網路的單元再介紹。
+
 {/* @ai-reference
 id: logistic-multiclass
 file: _references/機器學習實作系列/第5週-Logistic Regression與Matplotlib.pdf
@@ -271,6 +311,8 @@ excerpt: OvR uses multiple independent sigmoid classifiers whose probabilities d
 ## 從 AdalineGD 改成 LogisticRegressionGD
 
 課堂實作保留第 3 週 `AdalineGD` 的類別骨架，只替換激活函數與損失函數。`np.clip` 有兩個用途：限制 sigmoid 指數避免溢位，以及避免計算 $\ln(0)$。
+
+老師的補充：範例 `04_2.py` 是以**全批次梯度下降（full-batch GD）** 版的 Adaline 改的，同樣的兩處修改也可以套到隨機梯度下降（SGD）版，有興趣可自行練習。`fit`／`predict` 的命名刻意比照 scikit-learn 的 API，之後換成套件時介面不必重學。`np.clip(z, -250, 250)` 的 250 其實很寬鬆：$e^{250}$ 早已是天文數字、sigmoid 也早就飽和在 1，截得更小也無妨，重點是不要真的把趨近無限大的 $z$ 丟進 `np.exp`。
 
 ```python
 import numpy as np
@@ -319,6 +361,10 @@ class LogisticRegressionGD:
 
 訓練時至少要檢查兩張圖：**損失曲線**用來確認梯度下降是否收斂；**決策區域與訓練樣本**用來檢查模型到底用哪條邊界切資料。損失下降只能證明優化器有把訓練目標越做越好，不能單獨證明模型沒有過擬合，也不能證明資料量足夠。
 
+示範的學習率 $\eta=0.3$ 比 Adaline 時大，因為全批次 GD 每輪只用全部樣本的平均梯度走一步，步伐可以放大；SGD 一輪更新很多次、每次都不太可靠，$\eta$ 就不能這麼大。這也解釋了示範的損失曲線要一兩百個 epoch 才明顯下降——full-batch 每輪只走一步，SGD 掉得快得多。鳶尾花示範沒有切訓練／測試集，整份資料都拿來訓練，只是練習看 `fit` 的結果。
+
+老師在這一段結尾講了為什麼要親手寫一遍：scikit-learn 裡一行就能宣告並 `fit` 一個邏輯迴歸，而且它的實作一定比課堂版本好（例如學習率會自適應地越收越小）。但走過一次才知道那一行背後在做什麼；之後遇到 SVM、決策樹、整合學習（ensemble learning）、K 近鄰（KNN）也是同樣的態度——理解原理，實務上再呼叫成熟的函式庫。
+
 {/* @ai-reference
 id: logistic-gd-implementation
 file: _references/機器學習實作系列/第5週-Logistic Regression與Matplotlib.pdf
@@ -332,6 +378,30 @@ excerpt: LogisticRegressionGD modifies the Adaline implementation by replacing t
 
 Matplotlib 的標準工作流程可以固定成五步：匯入 `matplotlib.pyplot as plt`、準備 Python list 或 NumPy array、呼叫繪圖函式、加入標題／座標標籤／圖例，最後用 `plt.show()` 顯示或 `plt.savefig()` 匯出。這套流程在作業二會出現兩次：先畫 `losses_` 對 epoch 的損失曲線，再畫分類器的決策區域。
 
+老師開場說「千言萬語不如一張圖」：資料由大量數字組成時直接看沒有感覺，整理成圓餅圖、折線圖才消化得了。Matplotlib 能畫的遠不止折線——曲面、向量場、直方圖、動畫、互動圖都在範圍內；初學者從官方 [Quick start guide](https://matplotlib.org/stable/users/explain/quick_start.html) 入手，想看它能做什麼翻 [Gallery](https://matplotlib.org/stable/gallery/index.html)。`import matplotlib.pyplot as plt` 取別名 `plt` 不是規定，是和 `np` 一樣的不成文慣例。
+
+老師也坦白說，自己畫圖的程式幾乎都交給 AI 產生——許願要什麼圖就好，但要從產出的程式裡回頭學「原來 Matplotlib 可以這樣用」。**本堂課的範圍**只到 Figure／Axes 層級、兩套介面、常用圖形與幾個通用設定；下文的誤差棒、等高線、色條、標註與 Seaborn 是依《Python Data Science Handbook》Part 4 另外整理的預習內容，老師這堂課沒有講到。
+
+課堂範例 `04_1.py` 用狀態式介面把這套流程走了一遍，幾個容易漏掉的細節值得記下：
+
+```python
+import matplotlib.pyplot as plt
+
+x = [1, 2, 3, 4, 5]
+y = [2, 3, 5, 7, 11]
+
+plt.plot(x, y, marker='o', label='Trend line')  # 有 marker 才會把點畫成圓圈
+plt.title('Line Plot')
+plt.xlabel('X axis')
+plt.ylabel('Y axis')
+plt.legend()        # 有 label 還得呼叫這行，圖例才會出現
+plt.grid(True)      # 不寫或 False 都不畫格線
+plt.show()          # 沒有這行什麼都看不到
+# plt.savefig('line.png')  # 或直接在程式裡存檔
+```
+
+`label` 只是替線命名，沒有 `plt.legend()` 圖例不會自己出現；一條線時圖例可有可無，兩條以上一定要。老師的習慣是先 `show` 看過、滿意再手動存檔。另外兩個通用設定：`plt.style.use('seaborn-v0_8-poster')` 之類的樣式表像簡報套範本，一行換掉整體字級與配色；`plt.tight_layout()` 自動調整子圖間距，文字被擠壓或遮擋時加這行通常就解決。老師也推薦 [W3Schools 的 Matplotlib 教學](https://www.w3schools.com/python/matplotlib_intro.asp)，分門別類、要畫什麼直接查那一節。
+
 {/* @ai-reference
 id: matplotlib-standard-workflow
 file: _references/機器學習實作系列/第5週-Logistic Regression與Matplotlib.pdf
@@ -344,6 +414,10 @@ excerpt: Standard Workflow: import pyplot as plt, prepare data, create plot, cus
 ### 兩套介面：初學者最容易踩的坑
 
 Matplotlib 最容易絆倒人的不是函式名稱，而是同一件事有兩種寫法。**狀態式（MATLAB 風格）** 介面靠 `plt.plot()`、`plt.title()` 這些呼叫，套件內部維持一個「目前這張圖」，指令默默作用在它身上——像白板只有一塊，不必指名要畫在哪裡，寫小圖很順手。**物件導向**介面則先 `fig, ax = plt.subplots()` 拿到把手，之後 `ax.plot()`、`ax.set_title()` 每次都指名對象。兩套的方法名常只差一個 `set_`（`plt.xlabel()` ↔ `ax.set_xlabel()`），照著網路範例混著抄就會出事。判準是「圖裡有幾個 Axes」：一旦有多個子圖、或把畫圖包成可重複呼叫的函式，「目前那張圖」就成了看不見的全域變數。順帶釐清層級：Figure 是整張畫布，Axes 是其中一個有座標軸的作圖區（一整張子圖，不是一條軸）。
+
+兩套介面對子圖的編號方式不同，混用時最容易畫錯格：物件導向的 `axes[0, 2]` 是矩陣下標、從 0 起算；狀態式的 `plt.subplot(2, 3, 3)` 是「2 列 3 行的第 3 號」、從 1 起算並逐列折行，第 4 號落到第二列開頭。兩者指的是同一格。
+
+狀態式傳承自 MATLAB 的函式呼叫風格：先 `plt.subplot(2, 1, 1)` 畫正弦、切到 `plt.subplot(2, 1, 2)` 畫餘弦，你得自己追蹤「目前在哪一格」。物件導向拿到 `fig, axes` 後隨時對 `axes[0]`、`axes[1]` 傳訊息，可以先畫 `axes[1]` 再回頭改 `axes[0]` 的刻度與標題，不必按順序一口氣畫完。老師的建議：單張簡單圖用狀態式最快，要在多個 Axes 間來回就用物件導向。
 
 {/* @ai-reference
 id: matplotlib-object-hierarchy
@@ -363,11 +437,28 @@ excerpt: Implicit interface uses pyplot-style module function calls; explicit in
 */}
 <PdfRefChip file="_references/機器學習實作系列/第5週-Logistic Regression與Matplotlib.pdf" page={28} status="suggested" excerpt={"Implicit interface uses pyplot-style module function calls; explicit interface uses object-oriented method calls on Axes objects"} client:visible />
 
+### 一個 Axes 裡有什麼：刻度、格線與骨架
+
+課堂逐一點名了一個 Axes 裡可以客製的元件，名稱記熟了才查得到對應的方法：
+
+| 元件 | 說明 | 老師的提醒 |
+| --- | --- | --- |
+| 主刻度／次刻度（major／minor tick） | 軸上的短線；tick 是線、tick label 是旁邊的數字 | 粗體的大數字是 major，中間細分的小字是 minor，兩者都可改 |
+| 軸標籤（xlabel／ylabel） | 說明這條軸代表什麼量 | 給別人看圖第一件事就是解釋 X、Y 軸是什麼，一定要設 |
+| 標題（title） | 整個 Axes 的名稱 | — |
+| 圖例（legend） | 對應各條線的名稱與樣式 | 位置可指定四角，或交給 `loc='best'` 自動避開曲線 |
+| 格線（grid） | 對齊讀值用的輔助虛線 | 圖裡已經有十幾條線時別加，格線也是虛線，會分不清誰是誰 |
+| 骨架（spines） | Axes 四邊的框線 | 可以隱藏，也可以把左、下兩條移到中央畫成數學座標系 |
+
+Figure 本身只是個容器，真正的內容都在 Axes 上；上面這些元件在 X 軸與 Y 軸上是對稱的，X 有的 Y 都有。
+
 ### `plt.plot` 與 `plt.scatter`：差別不在折線或散點
 
 `plt.plot` 給 $x$、$y$ 兩個序列就連成折線，第三個參數換成標記符號（如 `'o'`）一樣能畫散佈圖，那為何還需要 `plt.scatter`？差別在「每個點能不能長得不一樣」：`plt.plot` 全部共用一組樣式，畫十萬個點很快；`plt.scatter` 允許逐點指定大小（`s`）、顏色（`c`）、透明度（`alpha`），代價是點多時明顯較慢，好處是一張二維圖能塞進四個變數——例如各縣市的「通勤時間 vs. 房價」，再用點的大小代表人口、顏色代表所得中位數。
 
 課堂講義列出的常用圖形還包括 `plt.bar()` 比較類別數值、`plt.hist()` 觀察分布、`plt.pie()` 顯示整體比例。選圖時先問「資料之間是順序、兩兩關係、類別比較，還是分布」，比背函式名稱更可靠。
+
+老師把這些圖形分成兩群：`plot`、`scatter`、`bar` 吃的是**成對資料（pairwise data）**，要同時給等長的 $x$ 與 $y$，每個點都有自己的座標；`hist` 與 `pie` 則是**統計分布型**，只要丟一組數值進去，分箱計數或算比例都由函式自己完成。常畫統計圖時直接找後面這兩個。物件導向介面也有同名方法（`ax.plot`、`ax.scatter`……），不必另外記。
 
 {/* @ai-reference
 id: matplotlib-common-plots
@@ -533,6 +624,8 @@ status: generated
 
 訓練集 `wat_train.csv` 有 15 筆資料，其中 Pass 7 筆、Fail 8 筆；待驗收的 `wat_test.csv` 則有 Wafer A 到 Wafer E 共 5 筆資料。
 
+課堂補充：訓練資料是老師產生的虛擬資料；只挑兩個特徵不是實務上只有兩個，而是超過二維就畫不出決策區域。15 筆不多，但特徵只有兩個，夠用。5 片待驗收晶圓沒有標準答案，老師刻意讓它們「一眼就看得出結果」，避免為邊緣案例爭論；實務上一定會遇到通過機率五六成的晶圓，那時門檻偏嚴或偏鬆由製程要求決定（門檻可調的意義見前文 sigmoid 一節）。
+
 {/* @ai-reference
 id: wat-assignment-background
 file: _references/機器學習實作系列/第5週-Assignment2.pdf
@@ -567,6 +660,8 @@ $$
 
 要注意：加入 $\lvert x_1\rvert$ 或 $x_1^2$ 後，模型在「轉換後的特徵空間」仍是線性的，但映射回原始 $x_1$ 空間時，決策形狀已經可以表達兩側偏差過大的情況。這就是特徵工程讓簡單模型解決非線性模式的典型例子。
 
+老師的比喻是「一刀還是兩刀」：原始 $x_1$ 在數線上要切兩刀（太正一刀、太負一刀）才能把 Fail 圈出來，但線性分類器只有一刀；取絕對值或平方後，「超過某個門檻就是壞」只需一刀。這一步需要領域知識（domain knowledge）：拿到資料集先不要急著訓練，抽幾筆樣本看特徵與標籤的關聯，能靠人工先做特徵轉換或刪掉無用特徵，模型就省很多力氣。
+
 {/* @ai-reference
 id: wat-feature-engineering
 file: _references/機器學習實作系列/第5週-Assignment2.pdf
@@ -587,6 +682,8 @@ x_{j,\mathrm{std}}^{(i)}
 $$
 
 待驗收資料必須做完全相同的特徵轉換，並沿用訓練集算出的 $\mu_j^{(\mathrm{train})}$ 與 $s_j^{(\mathrm{train})}$。不能在測試集重新計算平均值與標準差，否則模型看到的座標系會改變，也會引入資料洩漏。
+
+老師的講法是：訓練集你怎麼算都可以，但測試集的每一筆都要當成「只看一眼、當下就得預測、沒有機會再拿去訓練」。雖然作業一次給了 5 筆，也不能拿這 5 筆重新算平均與變異數再縮放。
 
 ```python
 # 先做相同的特徵工程
@@ -630,6 +727,8 @@ excerpt: 檢驗資料需要進行與訓練集一致的資料前處理：特徵�
 | 前處理說明 | 使用哪種 $x_1$ 轉換？測試集是否沿用訓練集統計量？ |
 | 驗收結果 DataFrame | 每片晶圓的 Pass 機率與最終 Pass／Fail 是什麼？ |
 | 限制說明 | 為何只看訓練 loss 不能判斷過擬合或泛化能力？ |
+
+示範圖跑了 1,000 個 epoch 只是跑久一點，不是硬性要求。老師看著示範的決策邊界提醒：這一刀切得漂亮但也有風險——訓練集裡有幾筆剛好貼在邊緣，斜率再偏一點就會錯分；訓練集上 perfect 不代表泛化能力好，也許邊界就是為了迎合那幾個邊緣點才長這樣，而這正是損失曲線看不出來的事。
 
 講義提供的示範輸出如下，適合用來檢查實作方向；初始化、學習率、epoch 與數值穩定處理不同時，末位數字可能略有差異。
 
@@ -745,6 +844,18 @@ $\lambda=0.1$ 把權重範數壓回 4.18、LOO log-loss 由 0.201 降到 0.182�
 除原始 $x_1$ 外，三種組合的 LOO 正確率都是 86.67%，而且誤判的始終是同兩筆：$(1.5, 1.8)$（實際 Pass）與 $(-1.0, 2.5)$（實際 Fail），正是決策邊界圖上最貼近邊界的兩點，任何設定都無法同時把它們分對。$x_1^2$ 的 LOO log-loss 最低，但它把 Wafer D 的機率從 9.55% 推到 22.36%、Wafer B 從 4.91% 壓到 0.65%，五筆分類結果不變、置信度差很多。
 
 **最後的取捨**：所有調整都沒有改變 LOO 正確率，改變的只有置信度；log-loss 的差距（0.17–0.20）在 15 筆資料下約等於一筆樣本的機率變動，不足以據此換設定。以 LOO 為準最值得採用的是 $\lambda=0.1$ 或 $x_1^2$，但兩者都會使五筆機率偏離講義的參考輸出，而本作業的目的是正確實作流程並重現參考結果，故繳交版本維持 $\lvert x_1\rvert$、$\eta=0.3$、1,000 epoch、$\lambda=0$。若用於實務，建議加入 $\lambda\approx 0.1$ 或在約 300 個 epoch 提早停止，避免模型輸出過度自信的機率。
+
+### 繳交規範與助教批改方式
+
+- **期限**：10 月 9 日（週四）晚上 12 點前為正常繳交；之後算逾期，最晚下週上課前（10 月 13 日）補交。
+- **仍不得用 scikit-learn**：下一次作業起才解禁。
+- **打包內容**：助教會從 E3 下載每個人的壓縮檔、解壓到自己電腦的某個資料夾、在 VS Code 直接按 Run。所以 `.py` 之外，程式讀的 CSV 也要一起打包——就算是老師給的檔，你可能改過檔名，助教不會幫你找。
+- **用相對路徑讀檔**：`pd.read_csv('wat_train.csv')` 這種不帶路徑的寫法會在 `.py` 同一層找檔案；寫成 `C:\Users\你的名字\...` 的絕對路徑在助教電腦上必定找不到。作業一有同學因為這兩點被扣分。
+- **抄襲**：可以大量用 AI，但語言模型有隨機性，兩個人問出來的程式不可能一模一樣；從作業二起若助教發現兩份程式完全相同，不追究誰抄誰，兩份都 0 分。評分若有疑問，先看 E3 上助教留下的評語。
+
+## 下週預告：資料前處理與 scikit-learn
+
+下一份投影片是資料前處理（data preprocessing），七十多頁、面向很多，一堂課講不完，老師第一次明確要求課前預習。他強調這一塊才是真正重要的：前處理做得好模型效果才上得去，做不好再厲害的模型都沒用。同一堂課也正式開放 scikit-learn——老師形容「一旦用了就回不去，以後只會接管線（pipeline）」，所以才堅持先把底層功夫做扎實。
 
 ## 關鍵定義
 
