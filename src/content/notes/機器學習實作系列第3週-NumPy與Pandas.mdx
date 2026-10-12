@@ -3,7 +3,7 @@ title: "機器學習實作系列：第 3 週 - Adaline 與 NumPy、Pandas"
 description: "Adaline（自適應線性神經元）的模型架構、可微分的均方誤差損失、梯度下降與隨機梯度下降的推導、特徵縮放；NumPy 向量矩陣運算與廣播機制、Pandas 表格資料處理；並在 Iris 資料集上實作 AdalineGD 與 AdalineSGD，比較加上特徵縮放前後的收斂表現。"
 tags: ["機器學習實作系列"]
 createdAt: "2026-09-21"
-updatedAt: "2026-09-26"
+updatedAt: "2026-10-12"
 ---
 
 import PdfRefChip from '@/components/islands/PdfRefChip.tsx'
@@ -17,9 +17,13 @@ import MlWeek3Pipeline from '@/components/generated/ml-week3-pipeline'
 
 > 本週參考：[《Python Data Science Handbook》](/notes/python-data-science-handbook)（NumPy／Pandas 部分）
 
+> 本堂課（9 月 21 日）前 50 分鐘先把第 2 週沒講完的 `Perceptron` 類別逐行帶過：`random_state` 與可重複實驗、權重不全設為 0 的理由、`X.shape[1]` 決定權重個數、決策區域是用網格逐點 `predict` 暴力畫出來的——這些都已補在[第 2 週筆記](/notes/機器學習實作系列第2週-python基礎)的實作一節，本篇不重複。
+
 ## Adaline：從感知器到可微分的損失函數
 
 [第 2 週](/notes/機器學習實作系列第2週-python基礎)的 PLA 用一條「答對不動、答錯才推一步」的規則更新權重，這條規則本身無法回答「這次錯得多離譜」；Adaline（Adaptive Linear Neuron，自適應線性神經元，1960）把這件事變成一個**連續、可微分的損失函數最小化問題**，也因此第一次真正用得上微積分裡的梯度下降——這是後面所有神經網路（包含第 10 週的多層神經網路）共用的優化骨架的起點。
+
+老師開場把本堂課要帶走的東西收成三個：**激活函數**、**損失函數**、**梯度下降**。這三個概念都是從 Adaline 這顆單一神經元開始出現的，之後多層神經網路一樣靠它們運作；差別只在深度網路幾乎不會再用線性激活，會換成 ReLU 這類非線性函數，模型才處理得了非線性問題。
 
 ### 為什麼要改良 PLA：從「對或錯」到「差多少」
 
@@ -98,6 +102,8 @@ excerpt: Loss function：Mean Squared Error (MSE) between the calculated outcome
 
 **梯度（gradient）** 是一個可微分多元函數 $f(\boldsymbol{w})$ 對每個參數的偏微分排成的向量，它指向這個函數在當前這一點**上升最快**的方向；反過來，**負梯度**就是下降最快的方向。
 
+老師的比喻是爬山：站在某一點，東南西北、東偏南 45 度都可以走，梯度直接告訴你「往東偏北 15 度坡最陡」，不必一個方向一個方向試；想最快下山就反過來走。梯度也永遠垂直於等高線——沿著等高線走高度不變，所以那個方向絕對不會是梯度。這就是為什麼梯度下降不會「往旁邊試試看」：旁邊不會比較快。
+
 $$
 \nabla f(\boldsymbol{w}) = \left[\frac{\partial f}{\partial w_1}, \frac{\partial f}{\partial w_2}, \dots, \frac{\partial f}{\partial w_m}\right]^T
 $$
@@ -168,6 +174,8 @@ $$
 
 （有些教材把損失函數定義成 $L=\frac{1}{2n}\sum(\cdot)^2$，多除一個 2 純粹是為了讓平方項微分出來的 2 被約掉、算式好看一點；用哪一種寫法都不影響梯度指向哪個方向、也不影響收斂到同一個最小值，差別只在於等效學習率被縮放了一半，這裡採用跟下一節程式碼實作完全一致的 $L=\frac{1}{n}\sum(\cdot)^2$ 寫法，避免公式與程式碼對不起來。）
 
+老師對鏈式法則（連鎖率）的提醒：合成函數 $f(g(x))$ 對 $x$ 微分，要先把外層 $f$ 微分並代入 $g(x)$，**再乘上內層 $g'(x)$**——很多人微完外層就停了。這裡的外層是平方（2 次方降成 2 倍），內層是 $y-\sigma(z)$ 對 $w_j$ 的微分；而 $z$ 對 $w_j$ 微分時其他權重都是常數，只留下 $x_j$。推導看不懂也沒關係，實作只需要最後那一行結果。
+
 {/* @ai-reference
 id: gd-update-rule
 file: _references/機器學習實作系列/第3週-Adaline與NumPy Pandas.pdf
@@ -189,6 +197,8 @@ excerpt: Derivation of the partial derivative (Chain Rule)：∂L/∂wj = −(2/
 ### Full-batch GD 的性質與限制
 
 這個更新規則每一步都要用**整個訓練資料集**算出梯度後才更新一次參數，因此又稱為**全批次梯度下降（full batch gradient descent）**——跟 PLA 逐筆增量更新（每看一筆樣本就可能更新一次）形成對比。在資料量到百萬筆等級的大規模資料集上，全批次 GD 每走一步都要掃過全部資料算梯度，計算成本相當可觀，這正是後面 SGD、mini-batch GD 要解決的問題。
+
+老師用「多數決」形容兩者的差別：PLA 很隨性，哪一筆樣本說有錯就跟著改；全批次 GD 要全班一起算出平均方向才動一步，聽起來比較可靠。但實務上很少用純全批次——幾萬筆資料算完天荒地老，只回報「更新一小步」，一輪才一步，像把整本考古題做完才反省一次觀念。
 
 {/* @ai-reference
 id: gd-full-batch-notes
@@ -217,6 +227,8 @@ excerpt: Issue on learning rate η：Well-chosen v.s. too-large；too-large it o
 <PdfRefChip file="_references/機器學習實作系列/第3週-Adaline與NumPy Pandas.pdf" page={15} status="suggested" excerpt={"Issue on learning rate η：Well-chosen v.s. too-large；too-large it overshoots the global minimum and even diverge"} client:visible />
 
 反過來，學習率太小雖然不會發散，但每一步只往下降一點點，需要非常多輪（epoch）才能收斂到接近最低點，訓練時間拉得很長。學習率（以及訓練輪次 epoch 數等）統稱**超參數（hyperparameters）**，實務上通常需要一些嘗試（experimentation）才能找到讓收斂又快又穩的數值。
+
+自適應學習率的直覺老師用高爾夫球講：開球時大膽揮桿先把距離拉近，上了果嶺才換推桿慢慢修正，沒有人一開始就用推桿。超參數是工程師（也就是你）要調的，不是模型學出來的；經驗不一定可靠，所以之後會學 grid search 這類工具，用暴力法在一群組合裡自動找最好的。
 
 {/* @ai-reference
 id: gd-hyperparameters
@@ -290,6 +302,8 @@ excerpt: Stochastic GD (SGD)：Update parameters incrementally for each training
 
 因為每一步只看一筆樣本，SGD 走的路徑比全批次 GD 顛簸得多，損失曲面看起來更「吵雜（noisy）」——但這反而是優點：對於非凸（non-convex）的損失函數（例如後面多層神經網路的損失曲面），這種雜訊有機會幫助跳出較淺的局部最小值。實務上 SGD 也常搭配隨訓練過程遞減的**自適應學習率（adaptive learning rate）**，而不是固定一個 $\eta$ 用到底（[第 2 週作業一](/notes/機器學習實作系列第2週-python基礎)用的 $\eta_t=\frac{\eta_0}{1+\alpha t}$ 就是一種常見寫法）。
 
+老師的補充有三點。SGD 像做考古題「每寫一題就對一次答案、立刻修正」，又回到 PLA 的節奏；但單筆樣本算出的梯度只是整體梯度的隨機估計，所以才叫「隨機」梯度，可靠度低，學習率要小一點並隨 epoch 遞減。shuffle 的理由：更新總是偏向最近看到的資料，順序固定時每輪印象最深的都是最後那幾筆，學習會僵化，像把題庫順序背下來。雜訊能跳出局部最小值，老師講成「太乖的學生不會有奇怪的想法，活潑一點反而激發出不同的 idea」。
+
 ![一個吵雜、非凸的 3D 損失曲面圖，橫軸 Parameter X、縱軸 Parameter Y、高度為 Loss Value，曲面上有多個高低起伏的波峰波谷，紅色 X 標記全域最小值 Global Minimum 的位置](/note-images/ml-week3/05-sgd-noisy-error-surface.jpeg)
 
 *示意一個有多個局部低谷的非凸損失曲面：全批次 GD 沿著平滑的梯度方向走，一旦掉進距離起點最近的局部低谷就會停在那裡；SGD 每一步的方向帶有雜訊、不完全跟著平均梯度走，因此有機會「跳出」較淺的局部最小值、繼續往更低的全域最小值移動。*
@@ -306,6 +320,8 @@ excerpt: Error surface is noisier than in GD；SGD can escape shallow local mini
 ### Mini-batch GD：介於兩者之間的折衷
 
 **Mini-batch 梯度下降**是全批次 GD 與 SGD 的折衷：不是每次只用 1 筆樣本、也不是每次用全部樣本，而是每次用一小批（例如 32、64、128 筆——習慣取 2 的次方數）估計梯度。它可以理解成「把全批次 GD 套用在資料的一個小子集上」，好處是把 SGD 裡逐筆的 for 迴圈換成向量化運算，同時兼顧計算效率與訓練過程的穩定性；批次大小（batch size）本身也是一個需要調整的超參數。
+
+老師的比喻：不必問全班意見，一次抓 5 個人算平均就夠可靠。批次大小要看資料量比例——鳶尾花只有 100 到 150 筆，選 64 就不合理，取 8 左右比較恰當。
 
 {/* @ai-visualize
 id: ml-week3-optimizer-paths
@@ -354,6 +370,8 @@ import MlWeek3OptimizerPaths from '@/components/generated/ml-week3-optimizer-pat
 ### 特徵縮放：為什麼 GD 需要它
 
 原始特徵常常落在完全不同的數值範圍——$[0,1]$、$[-1,1]$、$[0,255]$、甚至沒有固定上下界——數值範圍大的特徵會在淨輸入 $z=\boldsymbol{w}^T\boldsymbol{x}+b$ 裡不成比例地主導計算結果。許多依賴距離計算或梯度的 ML 演算法都需要某種**特徵縮放（feature scaling）** 才能訓練得好，梯度下降正是其中之一。
+
+$[0,255]$ 這個常見範圍來自 8 bit 的二進位轉十進位。老師描述尺度不一致的後果：損失對權重的梯度要乘上特徵值，特徵值動輒上萬的那個權重，每次更新量都遠大於其他人，整個學習幾乎由它主導，其他特徵的更新形同虛設。標準化只是減一個數、除一個數，常態分布標準化後還是常態，不會變成均勻分布。
 
 {/* @ai-reference
 id: feature-scaling-why
@@ -509,6 +527,8 @@ class AdalineGD:
 
 `self.w_ += self.eta * 2.0 * (X.T @ errors) / X.shape[0]` 這一行就是前面推導的 $\Delta w_j=\eta\cdot\frac{2}{n}\sum_i(y^{(i)}-\sigma(z^{(i)}))x_j^{(i)}$ 向量化寫法：`X.T @ errors` 一次算出所有特徵維度的加總、除以 `X.shape[0]`（樣本數 $n$）取平均，比 PLA 逐筆更新快上許多；`self.losses_` 記錄的是每個 epoch 結束後的 MSE，用來畫訓練曲線（loss curve）。`activation()` 這個方法在程式碼裡其實沒有實質效果（就是把輸入原封不動傳回去），保留它純粹是為了跟之後要學的邏輯迴歸（把這裡換成 sigmoid 函式）共用同一套程式碼骨架。
 
+`X.T @ errors` 矩陣乘法「相乘相加」的動作本身就是 $\sum_i$，沒有任何 for 迴圈，這是老師強調的向量化；早期寫法是 `np.dot()`，現在建議直接用 `@`。老師也特別說：到 Adaline 才真的能叫**損失曲線（loss curve）**，PLA 沒有損失函數，第 2 週畫的只能叫錯誤次數曲線。範例裡 `ada1`、`ada2` 是同一張藍圖的兩個實例，各有各的權重，只是超參數不同。
+
 {/* @ai-reference
 id: adalinegd-fit-vectorized
 file: _references/機器學習實作系列/第3週-Adaline與NumPy Pandas.pdf
@@ -525,6 +545,8 @@ excerpt: self.w_ += self.eta * 2.0 * (X.T @ errors) / X.shape[0]；self.b_ += se
 ![兩張損失曲線並排：左圖標題 Adaline GD - Learning rate 0.1，縱軸 log(Mean squared error)，曲線隨 Epochs 增加從約 0 一路陡升到 23 以上，明顯發散；右圖標題 Adaline GD - Learning rate 0.0001，縱軸 Mean squared error，曲線從 0.435 緩慢下降到 0.381，下降幅度很小](/note-images/ml-week3/11-loss-curve-eta-comparison.png)
 
 *左圖 $\eta=0.1$：損失（取 log 之後）隨 epoch 遞增而暴增，對應前面「學習率太大會發散」的理論——這裡還沒做特徵縮放，原始特徵的數值範圍本身就偏大，讓有效步伐更容易超出安全範圍。右圖 $\eta=0.0001$：損失確實在下降，但一輪只降一點點，15 個 epoch 遠遠不夠收斂，對應「學習率太小收斂太慢」。*
+
+老師看著左圖說：這不是程式寫錯、也不是忘了加負號，純粹是步伐太大每次都衝過頭；右圖則是太保守，要再跑幾百個 epoch 才會降到滿意的地方，沒有人有這個耐心。大也不行、小也不行，根因就是兩個特徵尺度不同，「適合 A 的學習率不適合 B」，所以接下來才要先做標準化。
 
 {/* @ai-reference
 id: adalinegd-eta-comparison
@@ -674,6 +696,8 @@ class AdalineSGD:
 
 跟 `AdalineGD` 對照，`net_input`、`activation`、`predict` 三個方法完全沒變（同一套模型架構），真正的差異在 `fit`：外層 `for i in range(self.n_iter)` 仍然是跑 `n_iter` 個 epoch，但每個 epoch 一開始先呼叫 `self._shuffle(X, y)` 重新打散資料，再用內層 `for xi, target in zip(X, y)` **逐筆**呼叫 `_update_weights`，一筆樣本更新一次參數；`_update_weights` 裡的更新式 `self.w_ += self.eta * 2.0 * xi * error` 正是前面推導的單筆樣本梯度下降。`partial_fit` 是特別為線上學習設計的方法——呼叫它不會重新初始化權重（跟 `fit` 不同），可以在模型已經訓練過的基礎上，用新進來的一筆或多筆資料繼續更新，例如 `ada_sgd.partial_fit(X_std[0, :], y[0])` 就是拿第一筆資料做一次線上更新。
 
+老師補充的設計細節：`shuffle=True` 是預設，保留參數是讓你能關掉做實驗，證明「沒有 shuffle 效果有多差」；`_shuffle` 用同一個隨機排列同時打亂 `X` 與 `y`，題目換到第十題、答案也要跟著換，否則對不上。SGD 的 $\eta$ 設 0.01 而不是 GD 的 0.5，因為單筆梯度很 noisy，「連它自己都沒把握」，每次只相信一點點；即使如此它第 6 個 epoch 就收斂，比 GD 的第 10 個快——「100 個臭皮匠抵過一個諸葛亮」，GD 深思熟慮走一大步，SGD 一輪莽撞走 100 小步。
+
 {/* @ai-reference
 id: adalinesgd-fit-loop
 file: _references/機器學習實作系列/第3週-Adaline與NumPy Pandas.pdf
@@ -758,9 +782,13 @@ import MlWeek3LossCurvesOverview from '@/components/generated/ml-week3-loss-curv
 
 後面「NumPy 與 Pandas 概念整理」一節把 NumPy／Pandas 的核心概念講過一輪，這裡先補上投影片實際跑過的程式範例與課堂練習，銜接「概念」跟「手上敲得出來的程式碼」。
 
+課堂上老師因時間關係跳過投影片約 25 頁的 NumPy／Pandas 摘要，只講 ndarray 的維度與形狀、`@` 矩陣乘法、廣播與距離練習，其餘請自行複習。他建議學套件直接讀官方文件（第一手、附範例），特殊功能查文件或問 AI 即可，但最基礎的資料結構一定要懂。Pandas 在這門課頂多用來載入資料；老師的看法是資料分析現在可以直接餵給 AI，我們要學的是「怎麼訓練出這樣的 AI」。
+
 ### 向量與矩陣：形狀的陷阱
 
 一維陣列 `shape=(3,)` **既不是列向量、也不是行向量**——它跟 `shape=(3,1)`、`shape=(1,3)` 這兩種明確標出列數／欄數的二維陣列（矩陣）是三種不同的形狀，混用會在做矩陣運算時踩到廣播或維度不匹配的坑。如果特定的矩陣運算需要一個明確的欄向量（column vector），要用 `np.array([[1], [2], [3]])` 顯式建立 `shape=(3,1)` 的陣列，不能只靠 `shape=(3,)` 的一維陣列頂替。
+
+老師教的判讀法：`ndim` 看有幾層成對的中括號，一層一維、三層三維；`shape` 是每一層裡有幾個元素。例如 `[[[1], [2]]]` 的形狀是 `(1, 2, 1)`：最外層一個元素、第二層兩個、最內層各一個；`(3,)` 是一維的 tuple，和 `(3, 1)`、`(1, 3)` 都不同。形狀搞不清楚，之後 PyTorch 看到 `(64, 3, 224, 224)` 這種四維張量（tensor）就會很痛苦——超過二維統稱張量，也畫不出來了。
 
 {/* @ai-reference
 id: numpy-shape-3-vs-3-1
@@ -906,6 +934,8 @@ excerpt: Example 2 sample code (03_2.py)：Matrix Addition、Scalar Multiplicati
 ### 廣播規則與三個例子
 
 後面「NumPy 與 Pandas 概念整理」一節會再講一次廣播的直覺，這裡先補上投影片的正式規則與圖解。NumPy 比較兩個陣列的形狀時，**從最右邊（trailing）的維度開始往左**逐一比較，兩個維度只有在**相等**或**其中一個是 1** 時才相容；輸入陣列不需要有相同的維度數，結果陣列的維度數等於輸入中較大的那個，缺少的維度視為 1，每個維度的大小取輸入中較大的那個值；只要有任何一個維度既不相等、也不是 1，就會丟出 `ValueError`。
+
+投影片的高維例子：形狀 `(8, 1, 6, 1)` 的四維陣列與 `(7, 1, 5)` 的三維陣列可以相加——從右邊比：1 對 5、6 對 1、1 對 7 都有一方是 1，最左邊的 8 對「缺少的維度」視為 1；結果每一維取較大者，得到 `(8, 7, 6, 5)`。老師的總結：只要相容，結果形狀就是各維度的「聯集取最大」，缺的維度自然補 1。
 
 {/* @ai-visualize
 id: ml-week3-broadcasting-steps
@@ -1177,9 +1207,15 @@ excerpt: Assignment #1 目的：使用 Adaline SGD 分類模型，透過測試�
 
 *「預期結果 2」的範例呈現：`Coding_Skill & Health_Condition`（右下）兩色區塊幾乎垂直切開、分得最乾淨，`Coding_Skill & Math_Skill`（左下）次之——跟第 2 週結果「`Coding_Skill` 鑑別度最高、`Math_Skill` 次之」的排序吻合；細節與完整正確率數字見第 2 週筆記。*
 
+## 課程行政：作業上傳、停課與期中考形式
+
+- **作業上傳方式**：E3 不允許上傳 `.py`（怕惡意程式），所以要把程式碼與需要的 CSV 一起打包成 zip 上傳，系統不檢查壓縮檔內容。之後的作業都用同一種方式繳交，請趁作業一確認自己會操作。
+- **下週停課**：9 月 28 日不上課，下一堂課是 10 月 6 日（第 5 週筆記）。
+- **期中考形式**：筆試、以選擇題為主，考觀念而不是計算；可能給一小段程式問執行結果，或給一張訓練曲線問看得出什麼傾向（例如是否過擬合）。老師的原則是「在沒有 AI 幫忙的情況下看同學自己理解到哪裡」，因為作業有 AI 協助大多能做得不錯。可帶 A4 雙面小抄，不限定手寫。
+
 ## 教材預習重點
 
-> 摘自 `PythonDataScienceHandbook` 專案的 `STUDY_GUIDE_zh-TW.md`，對應 Part 2（NumPy）、Part 3（Pandas）。上課後請依實際授課內容調整。
+> 摘自 `PythonDataScienceHandbook` 專案的 `STUDY_GUIDE_zh-TW.md`，對應 Part 2（NumPy）、Part 3（Pandas）。課堂實際只講到 NumPy 的維度／形狀與廣播，Pandas 全部留給自行預習。
 
 **在做什麼**：Part 2 建立 NumPy 陣列運算的核心直覺——用固定型別陣列取代 Python list 換取向量化速度；Part 3 學會用 `DataFrame`/`Series` 處理有欄位、有缺值、需要合併分組的真實表格資料。
 
