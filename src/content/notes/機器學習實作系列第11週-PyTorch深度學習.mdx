@@ -1,20 +1,26 @@
 ---
-title: "機器學習實作系列：第 11 週 - PyTorch 深度學習"
+title: "機器學習實作系列：第 11 週 - 卷積神經網路（CNN）與 PyTorch"
 description: ""
 tags: ["機器學習實作系列"]
 createdAt: "2026-11-16"
-updatedAt: "2026-11-16"
+updatedAt: "2026-10-15"
 ---
 
+import PdfRefChip from '@/components/islands/PdfRefChip.tsx'
 import GeneratedFrame from '@/components/GeneratedFrame.astro'
 import MlWeek11AbstractionStack from '@/components/generated/ml-week11-abstraction-stack'
 import MlWeek11TrainingLoop from '@/components/generated/ml-week11-training-loop'
+import MlWeek11ConvStepper from '@/components/generated/ml-week11-conv-stepper'
+import MlWeek11ParamCount from '@/components/generated/ml-week11-param-count'
+import MlWeek11TensorShapes from '@/components/generated/ml-week11-tensor-shapes'
 
-# 第 11 週：PyTorch 深度學習
+# 第 11 週：卷積神經網路（CNN）與 PyTorch
 
-*Deep Learning in Python: PyTorch*
+*Convolutional Neural Networks (CNN) & PyTorch*
 
 > 本週參考：[《Machine Learning with PyTorch and Scikit-Learn》](/notes/machine-learning-with-pytorch-and-scikit-learn)
+>
+> 依第 1 週講義的教學進度表，第 11 週的課堂主題是 CNN（Lecture 8，另附作業四）。下方「本週摘要」是開課前依教材 ch12–ch13 預先整理的 PyTorch 基礎（tensor、Dataset、autograd、三種抽象層級），仍是後面 CNN 實作的前置知識，照舊保留；課堂講義的內容從「卷積神經網路：為什麼影像需要不同的網路」一節開始。
 
 ## 本週摘要
 
@@ -126,6 +132,907 @@ status: generated
   <MlWeek11TrainingLoop client:visible />
 </GeneratedFrame>
 
+## 卷積神經網路：為什麼影像需要不同的網路
+
+> 本節起對應課堂講義 `第11週-卷積神經網路CNN與PyTorch.pdf`（Lecture 8）。講義開場引言：「卷積神經網路（CNN）實質為影像特徵提取器，透過稀疏連接與參數共享降低處理影像的 DNN 之參數需求量。」大綱分四段：CNN 的卷積（核、步長、填充）、池化與 dropout；資料增強；在 PyTorch 建深度 CNN 做手寫數字辨識與人臉微笑分類；作業四。
+
+### 大腦的啟發與特徵提取
+
+講義第 3 頁從 1959 年 Hubel 與 Wiesel 的貓初級視覺皮層實驗講起：視覺細胞有分工，前層細胞負責辨識「邊緣與直線」等基礎特徵，後層細胞再把它們組合為「複雜形狀與輪廓」。CNN 的層狀設計就是這個分工的翻版。
+
+任何機器學習演算法的表現，關鍵都在能不能**抽出相關的特徵**。傳統機器學習極度依賴領域專家手工設計特徵（如 HOG、SIFT）；CNN 的卷積層則是**特徵提取器（feature extractor）**，能從原始資料**自動學習**最具代表性的特徵：前面的層從原始像素抽出邊緣、色塊這類**低階特徵**，後面的層（常是像 MLP 一樣的全連接層）再用這些特徵預測連續值或類別標籤。深度 CNN 逐層組合低階特徵形成**高階特徵**——高階特徵能構成更複雜的形狀，例如建築物、貓、狗的輪廓——講義稱這個結構為**特徵階層（feature hierarchy）**。
+
+{/* @ai-reference
+id: w11-cnn-feature-extractor
+file: _references/機器學習實作系列/第11週-卷積神經網路CNN與PyTorch.pdf
+page: 4
+status: suggested
+excerpt: CNN layers, as feature extractors, can automatically learn useful features from raw data；Early layers extract low-level features from raw data（Edges and blobs）；傳統機器學習極度依賴領域專家手工設計特徵（如 HOG、SIFT），CNN 則能從原始數據中「自動學習」最具代表性的特徵
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第11週-卷積神經網路CNN與PyTorch.pdf" page={4} status="suggested" excerpt={"CNN layers, as feature extractors, can automatically learn useful features from raw data；Early layers extract low-level features from raw data（Edges and blobs）；傳統機器學習極度依賴領域專家手工設計特徵（如 HOG、SIFT），CNN 則能從原始數據中「自動學習」最具代表性的特徵"} client:visible />
+
+{/* @ai-reference
+id: w11-feature-hierarchy
+file: _references/機器學習實作系列/第11週-卷積神經網路CNN與PyTorch.pdf
+page: 5
+status: suggested
+excerpt: Deep CNNs construct a feature hierarchy by combining low-level features in a layer-wise fashion to form high-level features；High-level features can form more complex shapes（Contours of objects like buildings, cats or dogs）；Convolutional layers are often described as feature extraction layers
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第11週-卷積神經網路CNN與PyTorch.pdf" page={5} status="suggested" excerpt={"Deep CNNs construct a feature hierarchy by combining low-level features in a layer-wise fashion to form high-level features；High-level features can form more complex shapes（Contours of objects like buildings, cats or dogs）；Convolutional layers are often described as feature extraction layers"} client:visible />
+
+### 特徵圖與局部感知域
+
+CNN 從輸入影像算出**特徵圖（feature map）**：特徵圖的每一個元素都來自輸入影像的**一小塊像素**，這一小塊就叫**局部感知域（local receptive field）**。
+
+![特徵圖與局部感知域示意圖：狗的照片上框出兩個小方格，各自連到右側特徵圖上的一個元素](/note-images/ml-week11/01-feature-map-receptive-field.jpeg)
+
+*第 6 頁：特徵圖上的一個元素只看輸入影像的一小塊，這一小塊是它的局部感知域。*
+
+{/* @ai-reference
+id: w11-feature-map-receptive-field
+file: _references/機器學習實作系列/第11週-卷積神經網路CNN與PyTorch.pdf
+page: 6
+status: suggested
+excerpt: CNN computes feature maps from an input image；Each element comes from a local patch of pixels in the input image；This local patch of pixels is referred to as the local receptive field（局部感知域）
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第11週-卷積神經網路CNN與PyTorch.pdf" page={6} status="suggested" excerpt={"CNN computes feature maps from an input image；Each element comes from a local patch of pixels in the input image；This local patch of pixels is referred to as the local receptive field（局部感知域）"} client:visible />
+
+### 兩個核心想法：稀疏連接與參數共享
+
+CNN 在影像任務上表現好，靠的是兩個想法：
+
+| 想法 | 意思 | 跟 MLP 的差別 |
+| --- | --- | --- |
+| 稀疏連接（sparse connectivity） | 特徵圖上的一個元素只連到輸入影像的一小塊像素 | MLP 的每個隱藏單元連到**整張**輸入影像 |
+| 參數共享（parameter sharing） | 同一組權重套用在輸入影像的不同區塊 | MLP 每條連線各有自己的權重；共享帶來平移不變性（translation invariance） |
+
+用卷積層取代全連接層，權重（參數）數量大幅下降。這對影像資料是合理的假設：**鄰近像素通常比遠處像素更相關**。反過來看傳統 MLP 處理影像的問題：像素全連接會導致參數爆炸——$1024 \times 1024$ 的彩色影像就有百萬級的輸入單元，每個隱藏單元都要配百萬個權重。
+
+典型的 CNN 由數個卷積層與下取樣（池化）層交替組成，最後接一或多個全連接層；全連接層本質上就是一個 MLP，每個輸入單元透過權重 $w_{ij}$ 連到每個輸出單元。
+
+{/* @ai-reference
+id: w11-sparse-connectivity-parameter-sharing
+file: _references/機器學習實作系列/第11週-卷積神經網路CNN與PyTorch.pdf
+page: 7
+status: suggested
+excerpt: Sparse connectivity（稀疏連接）：A single element in the feature map is connected to only a small patch of pixels；Parameter sharing（參數共享）：The same weights are used for different patches of the input image (Translation Invariance（平移不變性）)
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第11週-卷積神經網路CNN與PyTorch.pdf" page={7} status="suggested" excerpt={"Sparse connectivity（稀疏連接）：A single element in the feature map is connected to only a small patch of pixels；Parameter sharing（參數共享）：The same weights are used for different patches of the input image (Translation Invariance（平移不變性）)"} client:visible />
+
+{/* @ai-reference
+id: w11-mlp-parameter-explosion
+file: _references/機器學習實作系列/第11週-卷積神經網路CNN與PyTorch.pdf
+page: 8
+status: suggested
+excerpt: Replacing a fully connected layer with a convolution layer substantially decreases the number of weights (parameters)；鄰近像素通常比遠處像素更具備高度相關性；傳統全連接網路 (MLP) 處理影像時，會因「像素全連接」導致參數爆炸（例如 1024 × 1024 的彩色影像會產生百萬級輸入單元）
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第11週-卷積神經網路CNN與PyTorch.pdf" page={8} status="suggested" excerpt={"Replacing a fully connected layer with a convolution layer substantially decreases the number of weights (parameters)；鄰近像素通常比遠處像素更具備高度相關性；傳統全連接網路 (MLP) 處理影像時，會因「像素全連接」導致參數爆炸（例如 1024 × 1024 的彩色影像會產生百萬級輸入單元）"} client:visible />
+
+{/* @ai-reference
+id: w11-typical-cnn-composition
+file: _references/機器學習實作系列/第11週-卷積神經網路CNN與PyTorch.pdf
+page: 9
+status: suggested
+excerpt: Typically, CNNs are composed of several convolutional and subsampling (pooling) layers that are followed by one or more fully connected layers at the end；The fully connected layers are essentially an MLP
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第11週-卷積神經網路CNN與PyTorch.pdf" page={9} status="suggested" excerpt={"Typically, CNNs are composed of several convolutional and subsampling (pooling) layers that are followed by one or more fully connected layers at the end；The fully connected layers are essentially an MLP"} client:visible />
+
+## 卷積運算
+
+### 一維離散卷積
+
+**離散卷積（discrete convolution）** 的定義：輸出 $\boldsymbol{y}$ 是輸入 $\boldsymbol{x}$ 與**卷積核（kernel）** $\boldsymbol{w}$（又叫濾波器 filter）的運算，實務上兩者都是有限長度的向量：
+
+$$
+\boldsymbol{y} = \boldsymbol{x} * \boldsymbol{w}
+\;\rightarrow\;
+y[i] = \sum_{k=-\infty}^{+\infty} x[i-k]\,w[k]
+= \sum_{k=-\infty}^{+\infty} x[k]\,w[i-k]
+$$
+
+兩種寫法相等（交換律）。重點是式子裡 $\boldsymbol{x}$ 與 $\boldsymbol{w}$ 的**索引方向相反**：算 $y[i]$ 時，核要先翻轉，再與輸入逐元素相乘後加總。
+
+![一維離散卷積示意圖：輸入 x、核 w 與輸出 y 三組離散訊號的火柴圖，輸出長度比輸入長](/note-images/ml-week11/02-1d-convolution.jpeg)
+
+*第 11 頁：翻轉後的核在輸入上一格一格滑動，每個位置做「逐元素相乘再加總」就得到輸出的一格。*
+
+{/* @ai-reference
+id: w11-1d-discrete-convolution-definition
+file: _references/機器學習實作系列/第11週-卷積神經網路CNN與PyTorch.pdf
+page: 10
+status: suggested
+excerpt: Definition of discrete convolution：Output y、Input x、Kernel（卷積核）(filter) w；Finite length vectors in practice；Note that x and w are indexed in different directions in this summation
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第11週-卷積神經網路CNN與PyTorch.pdf" page={10} status="suggested" excerpt={"Definition of discrete convolution：Output y、Input x、Kernel（卷積核）(filter) w；Finite length vectors in practice；Note that x and w are indexed in different directions in this summation"} client:visible />
+
+**互相關（cross-correlation）** 則不翻轉核：
+
+$$
+y[i] = \sum_{k=-\infty}^{+\infty} x[i+k]\,w[k]
+$$
+
+大多數深度學習框架（包括 PyTorch）實作的其實是互相關，卻稱之為卷積。兩者唯一的差別是卷積要先翻轉濾波器再做內積——對一個**要用訓練學出來**的核來說翻不翻轉沒有差別（學到的就是翻轉過的版本），所以這在深度學習領域已經約定俗成統稱為卷積。
+
+{/* @ai-reference
+id: w11-cross-correlation-vs-convolution
+file: _references/機器學習實作系列/第11週-卷積神經網路CNN與PyTorch.pdf
+page: 12
+status: suggested
+excerpt: Most deep learning frameworks (including PyTorch) implement cross-correlation but refer to it as convolution；The distinction is that convolution requires flipping the filter before computing dot products
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第11週-卷積神經網路CNN與PyTorch.pdf" page={12} status="suggested" excerpt={"Most deep learning frameworks (including PyTorch) implement cross-correlation but refer to it as convolution；The distinction is that convolution requires flipping the filter before computing dot products"} client:visible />
+
+### 填充
+
+定義裡的加總是從 $-\infty$ 到 $+\infty$，等於假設 $\boldsymbol{x}$ 與 $\boldsymbol{w}$ 兩側都補了無限多個 0；實務上 $\boldsymbol{x}$ 只補有限個，**每一側**補的 0 的個數記為 $p$，這就是**零填充（zero-padding，或簡稱 padding）**。
+
+![零填充示意圖：原始向量 3 2 1 7 1 2 5 4 兩側各補兩個 0](/note-images/ml-week11/03-zero-padding.png)
+
+*第 13 頁：$p = 2$ 時，長度 8 的輸入變成長度 12。*
+
+設原始輸入 $\boldsymbol{x}$ 有 $n$ 個元素、濾波器 $\boldsymbol{w}$ 有 $m$ 個元素（$m \le n$），填充後的向量 $\boldsymbol{x}^p$ 長度為 $n + 2p$，卷積改寫成有限和：
+
+$$
+\boldsymbol{y} = \boldsymbol{x} * \boldsymbol{w}
+\;\rightarrow\;
+y[i] = \sum_{k=0}^{k=m-1} x^p[i+m-k]\,w[k]
+$$
+
+{/* @ai-reference
+id: w11-zero-padding-definition
+file: _references/機器學習實作系列/第11週-卷積神經網路CNN與PyTorch.pdf
+page: 13
+status: suggested
+excerpt: Zero-padding (or Padding)（填充）：To correctly compute the convolution, it is assumed that x and w are filled with zeros；x is padded only with a finite number of zeros；The number of zeros padded on each side is denoted by p
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第11週-卷積神經網路CNN與PyTorch.pdf" page={13} status="suggested" excerpt={"Zero-padding (or Padding)（填充）：To correctly compute the convolution, it is assumed that x and w are filled with zeros；x is padded only with a finite number of zeros；The number of zeros padded on each side is denoted by p"} client:visible />
+
+填充多少決定輸出比輸入大還是小，講義分三種模式：
+
+| 模式 | $p$ | 輸出 vs. 輸入 | 用途 |
+| --- | --- | --- | --- |
+| full | $m - 1$ | 輸出比輸入大 | 機器學習裡很少用 |
+| same | 依濾波器大小動態算出，使輸出空間尺寸與輸入完全相同 | 相同 | **CNN 最常用**，設計架構時最方便 |
+| valid | $0$（不填充） | 輸出比輸入小 | 張量體積在深層會快速縮水 |
+
+![三種填充模式示意圖：full、same、valid 三欄各畫出核、填充零與輸入、輸出長度的對應](/note-images/ml-week11/04-padding-modes.png)
+
+*第 16 頁：同一個核與輸入，三種填充模式的輸出長度分別是大於、等於、小於輸入。*
+
+{/* @ai-reference
+id: w11-padding-modes
+file: _references/機器學習實作系列/第11週-卷積神經網路CNN與PyTorch.pdf
+page: 15
+status: suggested
+excerpt: Full Mode：p = m − 1, The output is larger than the input (rarely used in ML)；Same Mode：output spatial dimensions exactly match input dimensions, The most commonly used padding mode in CNN；Valid Mode：p = 0 (no padding), Tensor volume drops rapidly across deep layers
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第11週-卷積神經網路CNN與PyTorch.pdf" page={15} status="suggested" excerpt={"Full Mode：p = m − 1, The output is larger than the input (rarely used in ML)；Same Mode：output spatial dimensions exactly match input dimensions, The most commonly used padding mode in CNN；Valid Mode：p = 0 (no padding), Tensor volume drops rapidly across deep layers"} client:visible />
+
+### 步長與輸出尺寸
+
+**步長（stride）** $s$ 是濾波器每一步移動的格數，必須是比輸入尺寸小的正整數。核大小 $m$、填充 $p$、步長 $s$ 都是卷積層的**超參數**。
+
+![步長範例：核大小 4、無填充、步長 2 的一維卷積逐步計算，輸入 3 2 1 7 1 2 5 4 與核 1/2 3/4 1 1/4，先翻轉核再每次移動兩格做內積，得到 y[0]=7、y[1]=9、y[2]=8](/note-images/ml-week11/05-stride-example.png)
+
+*第 17 頁：第一步翻轉濾波器，第二步對每個輸出位置算內積並移動兩格——長度 8 的輸入只得到 3 個輸出。*
+
+輸出大小由濾波器總共移動幾次決定。設輸入大小 $n$、濾波器大小 $m$、填充 $p$、步長 $s$：
+
+$$
+o = \left\lfloor \frac{n + 2p - m}{s} \right\rfloor + 1
+$$
+
+講義的例子：$n = 10$、$m = 5$、$p = 2$、$s = 1$ 時
+
+$$
+o = \left\lfloor \frac{10 + 2 \times 2 - 5}{1} \right\rfloor + 1 = 9 + 1 = 10
+$$
+
+輸出與輸入同樣是 10，這就是 same padding。實務慣例：卷積層用 same padding **維持**空間尺寸，想縮小尺寸就交給池化層（或改用步長 2 的卷積層）。
+
+{/* @ai-reference
+id: w11-stride-hyperparameters
+file: _references/機器學習實作系列/第11週-卷積神經網路CNN與PyTorch.pdf
+page: 17
+status: suggested
+excerpt: Stride（步長）：The number of cells the filter shifts at each step；It must be a positive integer smaller than the input size；Example: Kernel m = 4、Padding p = 0、Stride s = 2；Hyperparameters
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第11週-卷積神經網路CNN與PyTorch.pdf" page={17} status="suggested" excerpt={"Stride（步長）：The number of cells the filter shifts at each step；It must be a positive integer smaller than the input size；Example: Kernel m = 4、Padding p = 0、Stride s = 2；Hyperparameters"} client:visible />
+
+{/* @ai-reference
+id: w11-convolution-output-size-formula
+file: _references/機器學習實作系列/第11週-卷積神經網路CNN與PyTorch.pdf
+page: 18
+status: suggested
+excerpt: Size of the Convolution Output：o = ⌊(n + 2p − m)/s⌋ + 1；In practice, we preserve the spatial size using "same padding" for the convolutional layers；Decrease the spatial size via pooling layers (or convolutional layers with stride 2 instead)
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第11週-卷積神經網路CNN與PyTorch.pdf" page={18} status="suggested" excerpt={"Size of the Convolution Output：o = ⌊(n + 2p − m)/s⌋ + 1；In practice, we preserve the spatial size using \"same padding\" for the convolutional layers；Decrease the spatial size via pooling layers (or convolutional layers with stride 2 instead)"} client:visible />
+
+{/* @ai-visualize
+id: ml-week11-conv-stepper
+type: motion
+prompt: |
+  一個一維卷積的互動步進器，讓讀者親手調整核大小、填充與步長，看輸出怎麼一格一格算出來、長度怎麼變。
+
+  固定輸入：x = [3, 2, 1, 7, 1, 2, 5, 4]（講義第 13、17 頁的例子，n = 8）。
+  三個旋鈕（用 segmented control 或小 slider）：
+  - 核大小 m：2、3、4（預設 4，核的值依 m 取 [1/2, 3/4, 1, 1/4] 的前 m 個；顯示成分數或小數皆可）
+  - 填充 p：0、1、2、3（預設 0）
+  - 步長 s：1、2、3（預設 2）
+  一個「輸出長度」即時顯示：o = ⌊(n + 2p − m) / s⌋ + 1，把代入後的數字也印出來（例如 ⌊(8 + 0 − 4) / 2⌋ + 1 = 3）。
+
+  畫面主體：
+  - 上排：填充後的輸入格子（補的 0 用虛線框與淡色，原始值用實線），每格一個數字
+  - 中排：翻轉後的核 w^r，以一個半透明的框覆蓋在輸入格子上，標出當前視窗
+  - 下排：輸出格子，已算出的格子填數值、尚未算的留空
+  - 一個「下一步」按鈕與「重置」按鈕：每按一次下一步，核的視窗往右移 s 格、用 motion 平滑滑動，
+    同時在視窗下方顯示該步的算式（例如 3×1/4 + 2×1 + 1×3/4 + 7×1/2 = 7），並把結果填進輸出格
+  - 走到最後一格後「下一步」變灰，並以一行字總結「移動了 o 次，所以輸出有 o 格」
+
+  互動規則：改任一旋鈕就重置步進；旋鈕變化時輸出長度即時重算，讓讀者看到 p 變大輸出變長、s 變大輸出變短。
+  預設組合（m = 4, p = 0, s = 2）的三步結果要等於講義的 y = [7, 9, 8]。
+
+  視覺要求：
+  - 格子用 DOM（flex 的 div），不用 SVG
+  - 算式用等寬字，字級不低於 12px
+  - 禁止使用 sm: / md: 等 viewport breakpoint（內文欄實際只有 647px）；格子寬度要在最寬的情況（n + 2p = 14 格）仍放得下
+  - 尊重 prefers-reduced-motion（關閉動畫時視窗直接跳到新位置）
+
+  核心洞察：卷積就是「翻轉的核在輸入上滑動、每一站做一次內積」而已；
+  輸出長度公式裡的三個量各自對應一個旋鈕，轉一下就看得到它在公式裡的位置。
+caption: 轉核大小、填充、步長三個旋鈕，一步一步看卷積怎麼算、輸出長度公式裡每一項從哪裡來。
+status: generated
+*/}
+
+<GeneratedFrame id="ml-week11-conv-stepper" type="motion" prompt={"轉核大小、填充、步長三個旋鈕，一步一步看一維卷積怎麼算、輸出長度從哪裡來。"} caption={"轉核大小、填充、步長三個旋鈕，一步一步看卷積怎麼算、輸出長度公式裡每一項從哪裡來。"}>
+  <MlWeek11ConvStepper client:visible />
+</GeneratedFrame>
+
+### 二維卷積
+
+把定義推到二維：輸出 $\boldsymbol{Y}$、輸入 $\boldsymbol{X}$、核 $\boldsymbol{W}$ 都是矩陣（實務上有限大小）：
+
+$$
+\boldsymbol{Y} = \boldsymbol{X} * \boldsymbol{W}
+\;\rightarrow\;
+Y[i, j] = \sum_{k_1=-\infty}^{+\infty}\sum_{k_2=-\infty}^{+\infty} X[i - k_1,\, j - k_2]\,W[k_1, k_2]
+$$
+
+零填充、翻轉濾波矩陣、步長都同樣適用，**兩個維度各自獨立**延伸。現代 CNN 常用的核大小是 $1 \times 1$、$3 \times 3$、$5 \times 5$。
+
+![二維卷積示意圖：3×3 核在補零後的 8×8 輸入上滑動，每個位置產生 8×8 輸出上的一格](/note-images/ml-week11/06-2d-convolution.png)
+
+*第 20 頁：same padding 下 $8 \times 8$ 輸入配 $3 \times 3$ 核，輸出仍是 $8 \times 8$。*
+
+講義第 21 頁用一個 $3 \times 3$ 輸入、$3 \times 3$ 核、填充 $p = (1, 1)$、步長 $s = (2, 2)$ 的例子算到底：填充後輸入 $5 \times 5$，核翻轉後每次移動兩格，只有四個位置，輸出是 $2 \times 2$。
+
+![二維卷積計算範例：5×5 的填充輸入與翻轉後的 3×3 核在四個位置做逐元素相乘再加總，得到 2×2 的輸出 4.6 1.6 7.5 2.9](/note-images/ml-week11/07-2d-convolution-example.png)
+
+*第 21 頁：步長 2 讓 $5 \times 5$ 的填充輸入只剩四個視窗位置。講義註明在 PyTorch 這類工具裡濾波矩陣其實不會翻轉。*
+
+{/* @ai-reference
+id: w11-2d-convolution-definition
+file: _references/機器學習實作系列/第11週-卷積神經網路CNN與PyTorch.pdf
+page: 19
+status: suggested
+excerpt: 2D Discrete Convolution：Output Y、Input X、Kernel (filter) W；Finite size matrices in practice；Zero padding, rotating the filter matrix, and the use of strides are also applicable to 2D convolutions (extended to both dimensions independently)
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第11週-卷積神經網路CNN與PyTorch.pdf" page={19} status="suggested" excerpt={"2D Discrete Convolution：Output Y、Input X、Kernel (filter) W；Finite size matrices in practice；Zero padding, rotating the filter matrix, and the use of strides are also applicable to 2D convolutions (extended to both dimensions independently)"} client:visible />
+
+{/* @ai-reference
+id: w11-2d-convolution-example
+file: _references/機器學習實作系列/第11週-卷積神經網路CNN與PyTorch.pdf
+page: 21
+status: suggested
+excerpt: Example：Padding p = (1,1)、Stride s = (2,2)；Rotated filter；3 × 3 → 5 × 5 padded → 2 × 2 output；Note that the filter matrix is actually not rotated in most tools like PyTorch
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第11週-卷積神經網路CNN與PyTorch.pdf" page={21} status="suggested" excerpt={"Example：Padding p = (1,1)、Stride s = (2,2)；Rotated filter；3 × 3 → 5 × 5 padded → 2 × 2 output；Note that the filter matrix is actually not rotated in most tools like PyTorch"} client:visible />
+
+## 池化層
+
+**池化層（pooling layer）**，又稱下取樣（subsampling）層，記作 $P_{n_1 \times n_2}$，池化大小 $n_1 \times n_2$ 是鄰域的大小。兩種運算：**最大池化（max-pooling）** 取鄰域最大值，**平均池化（mean-pooling 或 average-pooling）** 取平均。
+
+![池化範例：6×6 輸入以 3×3 的鄰域、步長 3 做不重疊池化，最大池化得到 8 5 6 3、平均池化得到 3.78 2.33 3 1.22](/note-images/ml-week11/08-pooling.png)
+
+*第 22 頁：步長等於池化大小就是不重疊池化（non-overlapping pooling），$6 \times 6$ 縮成 $2 \times 2$。*
+
+**全域平均池化（global average-pooling, GAP）** 是平均池化的特例：池化大小等於整張特徵圖，每個通道縮成一個數：
+
+$$
+\text{GAP} = \frac{1}{36}\sum x_{i,j} \qquad (\text{池化大小 } 6 \times 6)
+$$
+
+![全域平均池化示意圖：6×6×3 的特徵圖每個通道整張取平均，縮成 1×1×3](/note-images/ml-week11/09-global-average-pooling.jpeg)
+
+*第 23 頁：GAP 把 $h = 6$、$w = 6$、$d = 3$ 的特徵圖壓成 $1 \times 1 \times 3$，常用在分類網路的尾端取代攤平。*
+
+為什麼要池化？兩個理由：
+
+- **引入局部不變性**：鄰域內的小變動不會改變最大池化的結果，對輸入雜訊更穩健
+- **縮小特徵尺寸**：計算效率更高，也可能降低過擬合的程度
+
+![最大池化不變性範例：兩個 6×6 的矩陣數值不同，以 2×2 步長 2 做最大池化後得到完全相同的 3×3 結果](/note-images/ml-week11/10-max-pooling-invariance.png)
+
+*第 24 頁：$\boldsymbol{X}_1$ 與 $\boldsymbol{X}_2$ 很多格不一樣，最大池化後的 $3 \times 3$ 卻完全相同——這就是局部不變性。步長小於池化大小時稱為重疊池化。*
+
+池化層**沒有可學習的參數**。替代做法是改用**步長 2 的卷積層**來縮小特徵尺寸——可以把它想成「有可學習權重的池化層」。
+
+{/* @ai-reference
+id: w11-pooling-definition
+file: _references/機器學習實作系列/第11週-卷積神經網路CNN與PyTorch.pdf
+page: 22
+status: suggested
+excerpt: Pooling layer（池化層）is usually denoted by P n1×n2；Pooling size: n1 × n2 (size of the neighborhood)；Two forms of operations：Max-pooling（最大池化）、Mean-pooling (or average-pooling)（平均池化）；Non-overlapping pooling
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第11週-卷積神經網路CNN與PyTorch.pdf" page={22} status="suggested" excerpt={"Pooling layer（池化層）is usually denoted by P n1×n2；Pooling size: n1 × n2 (size of the neighborhood)；Two forms of operations：Max-pooling（最大池化）、Mean-pooling (or average-pooling)（平均池化）；Non-overlapping pooling"} client:visible />
+
+{/* @ai-reference
+id: w11-why-pooling
+file: _references/機器學習實作系列/第11週-卷積神經網路CNN與PyTorch.pdf
+page: 24
+status: suggested
+excerpt: Why Pooling?：Introduces a local invariance（Small changes in a local neighborhood do not change the result (of max-pooling)；More robust to noise）；Decreases the size of features（Higher computational efficiency；May reduce the degree of overfitting）；Overlapping pooling occurs if the stride is smaller than the pooling size
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第11週-卷積神經網路CNN與PyTorch.pdf" page={24} status="suggested" excerpt={"Why Pooling?：Introduces a local invariance（Small changes in a local neighborhood do not change the result (of max-pooling)；More robust to noise）；Decreases the size of features（Higher computational efficiency；May reduce the degree of overfitting）；Overlapping pooling occurs if the stride is smaller than the pooling size"} client:visible />
+
+{/* @ai-reference
+id: w11-strided-conv-as-learnable-pooling
+file: _references/機器學習實作系列/第11週-卷積神經網路CNN與PyTorch.pdf
+page: 25
+status: suggested
+excerpt: Note that subsampling (pooling) layers do not have any learnable parameters；Instead of using pooling layers to reduce the feature size, researchers use convolutional layers with a stride of 2；Treat it as a pooling layer with learnable weights
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第11週-卷積神經網路CNN與PyTorch.pdf" page={25} status="suggested" excerpt={"Note that subsampling (pooling) layers do not have any learnable parameters；Instead of using pooling layers to reduce the feature size, researchers use convolutional layers with a stride of 2；Treat it as a pooling layer with learnable weights"} client:visible />
+
+## 多通道輸入與輸出
+
+### 影像是三階張量
+
+一張影像是三維陣列 $\boldsymbol{X}_{H \times W \times C}$：$H$ 是高（像素）、$W$ 是寬、$C$ 是**輸入通道數**——灰階影像 $C = 1$，RGB 彩色影像 $C = 3$（紅、綠、藍三個通道）。它由一個三階張量表示；注意 torchvision 的影像張量格式是 `Tensor[channels, image_height, image_width]`，**通道在最前面**。
+
+![RGB 影像的三個通道示意圖：紅綠藍三層矩陣疊起來，每個像素是三個 0 到 255 的值，例如黃色是 [255, 255, 0]、灰色是 [127, 127, 127]](/note-images/ml-week11/11-rgb-channels.png)
+
+*第 26 頁：一個像素在三個通道各有一個值；`read_image` 讀進來的張量形狀是 `[3, 252, 221]`。*
+
+{/* @ai-reference
+id: w11-multi-channel-input-tensor
+file: _references/機器學習實作系列/第11週-卷積神經網路CNN與PyTorch.pdf
+page: 26
+status: suggested
+excerpt: 3D array X H×W×C：H image height、W image width、C number of input channels；Gray-scale image: C = 1；RGB color image: C = 3；In torchvision, image tensors are in the format Tensor[channels, image_height, image_width]
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第11週-卷積神經網路CNN與PyTorch.pdf" page={26} status="suggested" excerpt={"3D array X H×W×C：H image height、W image width、C number of input channels；Gray-scale image: C = 1；RGB color image: C = 3；In torchvision, image tensors are in the format Tensor[channels, image_height, image_width]"} client:visible />
+
+### 多通道卷積：各通道分別卷積再相加
+
+輸入有多個通道時，**每個通道分別做卷積**，第 $c$ 個通道有自己的核矩陣 $\boldsymbol{W}[:, :, c]$，再把各通道的結果用矩陣加法**加起來**。給定輸入 $\boldsymbol{X}_{n_1 \times n_2 \times C_{in}}$、核 $\boldsymbol{W}_{m_1 \times m_2 \times C_{in}}$ 與偏差 $b$：
+
+$$
+\begin{aligned}
+\boldsymbol{Z}^{Conv} &= \sum_{c=1}^{C_{in}} \boldsymbol{W}[:, :, c] * \boldsymbol{X}[:, :, c] \\
+\text{Pre-activation:}\quad \boldsymbol{Z} &= \boldsymbol{Z}^{Conv} + b_c \\
+\text{Feature map:}\quad \boldsymbol{A} &= \sigma(\boldsymbol{Z})
+\end{aligned}
+$$
+
+![多通道卷積公式圖：輸入 X、核 W 與偏差 b 的定義，右側是各通道卷積相加、加偏差、過激活函數三行式子](/note-images/ml-week11/12-multi-channel-conv.png)
+
+*第 27 頁：一個核的深度等於輸入通道數，$C_{in}$ 個通道的卷積結果相加後只剩一張二維的特徵圖。*
+
+典型的卷積層會輸出**不只一張**特徵圖。要產生 $C_{out}$ 張特徵圖，就要 $C_{out}$ 個核，整個核是四維張量 $H \times W \times C_{in} \times C_{out}$；第 $k$ 個核產生第 $k$ 張輸出：
+
+$$
+\begin{aligned}
+\boldsymbol{Z}^{Conv}[:, :, k] &= \sum_{c=1}^{C_{in}} \boldsymbol{W}[:, :, c, k] * \boldsymbol{X}[:, :, c] \\
+\boldsymbol{Z}[:, :, k] &= \boldsymbol{Z}^{Conv}[:, :, k] + b[k] \\
+\boldsymbol{A}[:, :, k] &= \sigma(\boldsymbol{Z}[:, :, k]), \qquad k = 1, 2, \dots, C_{out}
+\end{aligned}
+$$
+
+{/* @ai-reference
+id: w11-multi-channel-convolution-sum
+file: _references/機器學習實作系列/第11週-卷積神經網路CNN與PyTorch.pdf
+page: 27
+status: suggested
+excerpt: Perform the convolution for each channel separately；The convolution associated with each channel (c) has its own kernel matrix as W[:, :, c]；Then add the results together using the matrix summation
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第11週-卷積神經網路CNN與PyTorch.pdf" page={27} status="suggested" excerpt={"Perform the convolution for each channel separately；The convolution associated with each channel (c) has its own kernel matrix as W[:, :, c]；Then add the results together using the matrix summation"} client:visible />
+
+{/* @ai-reference
+id: w11-output-multiple-channels-4d-kernel
+file: _references/機器學習實作系列/第11週-卷積神經網路CNN與PyTorch.pdf
+page: 28
+status: suggested
+excerpt: Typically, a convolutional layer has more than one feature map (output)；4D kernel tensor: H × W × C_in × C_out；C_out is the number of output feature maps
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第11週-卷積神經網路CNN與PyTorch.pdf" page={28} status="suggested" excerpt={"Typically, a convolutional layer has more than one feature map (output)；4D kernel tensor: H × W × C_in × C_out；C_out is the number of output feature maps"} client:visible />
+
+### 一個簡單 CNN 的參數量
+
+講義第 29–30 頁用「一個卷積層接一個池化層」的例子算參數：$C_{in} = 3$、$C_{out} = 5$、核大小 $m_1 \times m_2$、輸入影像 $n_1 \times n_2$。
+
+![簡單 CNN 示意圖：3 通道輸入經 5 個 m1×m2×3 的核得到 5 張特徵圖，再經池化層縮小](/note-images/ml-week11/13-simple-cnn.png)
+
+*第 29 頁：五個核各自對三個輸入通道求和，產生五張特徵圖；池化層只縮尺寸、不帶參數。*
+
+卷積層的可訓練參數只有核矩陣與偏差向量；池化層沒有參數：
+
+$$
+\text{Conv:}\quad m_1 \times m_2 \times 3 \times 5 + 5
+$$
+
+同樣的輸入輸出若用全連接層實作，每個輸出像素都要連到全部輸入像素：
+
+$$
+\text{FC:}\quad (n_1 \times n_2 \times 3) \times (n_1 \times n_2 \times 5) + n_1 \times n_2 \times 5
+= (n_1 \times n_2)^2 \times 3 \times 5 + n_1 \times n_2 \times 5
+$$
+
+因為 $m_1 < n_1$ 且 $m_2 < n_2$，兩者的參數量差距是**顯著的**：卷積層的參數量跟影像大小無關，全連接層的參數量則隨影像面積的**平方**成長。
+
+{/* @ai-reference
+id: w11-conv-vs-fc-parameter-count
+file: _references/機器學習實作系列/第11週-卷積神經網路CNN與PyTorch.pdf
+page: 30
+status: suggested
+excerpt: Number of trainable parameters：Convolutional layer m1 × m2 × 3 × 5 + 5（Kernel matrix + Bias vector）；Pooling layer has no (trainable) parameters；Compared to implementation by a fully connected layer (n1 × n2)² × 3 × 5 + n1 × n2 × 5；Given that m1 < n1 and m2 < n2, the difference in the number of trainable parameters is significant
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第11週-卷積神經網路CNN與PyTorch.pdf" page={30} status="suggested" excerpt={"Number of trainable parameters：Convolutional layer m1 × m2 × 3 × 5 + 5（Kernel matrix + Bias vector）；Pooling layer has no (trainable) parameters；Compared to implementation by a fully connected layer (n1 × n2)² × 3 × 5 + n1 × n2 × 5；Given that m1 < n1 and m2 < n2, the difference in the number of trainable parameters is significant"} client:visible />
+
+{/* @ai-visualize
+id: ml-week11-param-count
+type: chart
+prompt: |
+  一個「卷積層 vs. 全連接層參數量」的互動對照，讓讀者拖影像尺寸看兩者差距怎麼拉開。
+
+  固定條件（講義第 30 頁的例子）：輸入通道 C_in = 3、輸出通道 C_out = 5。
+  兩個旋鈕：
+  - 影像邊長 n（正方形，n1 = n2 = n）：slider 8 到 256，預設 28
+  - 核邊長 m（m1 = m2 = m）：segmented control 3、5、7，預設 5
+  兩條公式即時代入並顯示數值（千分位）：
+  - 卷積層：m × m × 3 × 5 + 5
+  - 全連接層：(n × n)² × 3 × 5 + n × n × 5
+
+  畫面：
+  - 上方兩張並排的數字卡（卷積層／全連接層），各顯示公式代入後的算式與總數，
+    全連接層的卡再附一行「是卷積層的 X 倍」
+  - 下方一張 recharts BarChart，兩根長條，y 軸用對數刻度（scale="log"），
+    讓 n = 28 時 380 vs. 約 920 萬、n = 256 時 380 vs. 約 644 億 都能在同一張圖上看到；
+    長條頂端標數值（用 K / M / B 縮寫）
+  - 卷積層那根長條在拖影像尺寸時「動也不動」，要用一個小標籤強調「與影像大小無關」
+
+  互動規則：拖 n 時全連接長條用 motion 平滑成長；改 m 時只有卷積長條變。
+
+  視覺要求：
+  - 卷積層用 notecraft-design 的 blue、全連接層用 orange
+  - 數字卡與標籤用 DOM，不放進 SVG
+  - 禁止使用 sm: / md: 等 viewport breakpoint（內文欄實際只有 647px）
+  - 尊重 prefers-reduced-motion
+
+  核心洞察：卷積層的參數量只跟核大小有關、跟影像大小無關；全連接層則隨影像面積的平方爆炸——
+  稀疏連接與參數共享省下的不是幾成，是好幾個數量級。
+caption: 拖影像邊長，看全連接層的參數量以面積平方爆炸，而卷積層紋風不動。
+status: generated
+*/}
+
+<GeneratedFrame id="ml-week11-param-count" type="chart" prompt={"拖影像邊長，對照卷積層與全連接層的參數量差距（對數刻度）。"} caption={"拖影像邊長，看全連接層的參數量以面積平方爆炸，而卷積層紋風不動。"}>
+  <MlWeek11ParamCount client:visible />
+</GeneratedFrame>
+
+## 正則化：容量、L2 與 dropout
+
+### 網路容量
+
+網路的**容量（capacity）** 是它能學會逼近的函數複雜度：小網路容量低、會欠擬合；大網路容量高、會過擬合。真實問題裡我們事先不知道網路該多大，實務做法是：選一個**比「在訓練集上做得好」所需略大**的容量，再套用一種或多種正則化方案防止過擬合，換取在新資料上的泛化表現。
+
+{/* @ai-reference
+id: w11-network-capacity
+file: _references/機器學習實作系列/第11週-卷積神經網路CNN與PyTorch.pdf
+page: 31
+status: suggested
+excerpt: Capacity of a network：Small networks → low capacity → underfitting；Large networks → high capacity → overfitting；In practice, choose a capacity that is slightly larger than necessary to do well on the training dataset；Apply one or multiple regularization schemes for preventing overfitting
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第11週-卷積神經網路CNN與PyTorch.pdf" page={31} status="suggested" excerpt={"Capacity of a network：Small networks → low capacity → underfitting；Large networks → high capacity → overfitting；In practice, choose a capacity that is slightly larger than necessary to do well on the training dataset；Apply one or multiple regularization schemes for preventing overfitting"} client:visible />
+
+### L2 正則化
+
+在 PyTorch 做 $L_2$ 正則化最直接的方式，是把某一層的 $L_2$ 懲罰加到損失上：
+
+```python
+loss_func = nn.BCELoss()
+loss = loss_func(torch.tensor([0.9]), torch.tensor([1.0]))
+l2_lambda = 0.001
+conv_layer = nn.Conv2d(in_channels=3, out_channels=5, kernel_size=5)
+l2_penalty = l2_lambda * sum(
+    [(p**2).sum() for p in conv_layer.parameters()]   # Weight: [5, 3, 5, 5]、Bias: [5]
+)
+loss_with_penalty = loss + l2_penalty
+```
+
+另一條路是在優化器設定 `weight_decay` 參數：
+
+```python
+optimizer = torch.optim.SGD(model.parameters(), weight_decay=l2_lambda, ...)
+```
+
+講義註明：$L_2$ 正則化與 `weight_decay` **並不嚴格等價**（對 SGD 等價，對 Adam 這類自適應優化器則不同，這也是 AdamW 存在的理由）。
+
+{/* @ai-reference
+id: w11-l2-weight-decay-not-identical
+file: _references/機器學習實作系列/第11週-卷積神經網路CNN與PyTorch.pdf
+page: 33
+status: suggested
+excerpt: Alternative way of L2 regularization：Setting the weight_decay parameter in a PyTorch optimizer；In fact, L2 regularization and weight_decay are not strictly identical
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第11週-卷積神經網路CNN與PyTorch.pdf" page={33} status="suggested" excerpt={"Alternative way of L2 regularization：Setting the weight_decay parameter in a PyTorch optimizer；In fact, L2 regularization and weight_decay are not strictly identical"} client:visible />
+
+### Dropout
+
+**Dropout（隨機失活）** 通常套用在較高層的隱藏單元：訓練階段，每一次迭代（每個小批次）都以機率 $p_{drop}$（通常 0.5）隨機丟棄一部分隱藏單元。這迫使網路學到資料的**冗餘表徵**——不能依賴特定的神經元組合，必須學習更具泛化性與冗餘性的通用表徵。可以把它解讀成**一群模型的共識（平均）**：一次訓練很多個模型，測試時取它們預測的平均，有效防止過擬合。測試階段則**使用全部神經元**，不做 dropout。
+
+![Dropout 示意圖：左邊訓練時 50% 的隱藏單元被畫上紅叉丟棄，右邊評估時全部單元都使用](/note-images/ml-week11/14-dropout.png)
+
+*第 35 頁：訓練時每批隨機丟一半、評估時全用。為了讓兩個階段的激活值在同一個尺度上，PyTorch 在訓練時會把保留下來的激活值放大（$p_{drop} = 0.5$ 時加倍）。*
+
+{/* @ai-reference
+id: w11-dropout-definition
+file: _references/機器學習實作系列/第11週-卷積神經網路CNN與PyTorch.pdf
+page: 34
+status: suggested
+excerpt: Dropout（隨機失活）is usually applied to the hidden units of higher layers；a fraction of the hidden units is randomly dropped at every iteration (mini-batch) with probability p_drop (usually 0.5)；Force an NN to learn a redundant representation of the data；Interpreted as the consensus (averaging) of an ensemble of models；During testing, all neurons will be used
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第11週-卷積神經網路CNN與PyTorch.pdf" page={34} status="suggested" excerpt={"Dropout（隨機失活）is usually applied to the hidden units of higher layers；a fraction of the hidden units is randomly dropped at every iteration (mini-batch) with probability p_drop (usually 0.5)；Force an NN to learn a redundant representation of the data；Interpreted as the consensus (averaging) of an ensemble of models；During testing, all neurons will be used"} client:visible />
+
+{/* @ai-reference
+id: w11-dropout-scaling
+file: _references/機器學習實作系列/第11週-卷積神經網路CNN與PyTorch.pdf
+page: 35
+status: suggested
+excerpt: PyTorch scale the activations during training (for example, by doubling the activations if p_drop = 0.5)；To ensure that the overall activations are on the same scale during training and testing
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第11週-卷積神經網路CNN與PyTorch.pdf" page={35} status="suggested" excerpt={"PyTorch scale the activations during training (for example, by doubling the activations if p_drop = 0.5)；To ensure that the overall activations are on the same scale during training and testing"} client:visible />
+
+## 在 PyTorch 設定 CNN 層
+
+用 `torch.nn.Sequential` 把層依序疊起來最方便。四個會用到的層：`nn.Conv2d`（二維卷積，輸入假設是 NCHW 格式 `[Batch_Size, Channels, Height, Width]`）、`nn.MaxPool2d`（最大池化）、`nn.AvgPool2d`（平均池化）、`nn.Dropout`。各層的選用參數要查文件：
+
+```python
+model = nn.Sequential()
+model.add_module('conv1', nn.Conv2d(in_channels=1, out_channels=32, kernel_size=5, padding=2))
+model.add_module('relu1', nn.ReLU())
+model.add_module('pool1', nn.MaxPool2d(kernel_size=2))
+```
+
+{/* @ai-reference
+id: w11-configuring-cnn-layers
+file: _references/機器學習實作系列/第11週-卷積神經網路CNN與PyTorch.pdf
+page: 36
+status: suggested
+excerpt: Conveniently, use torch.nn.Sequential class to stack (add) different layers；nn.Conv2d for a 2D convolution layer（Assumes that inputs are in NCHW format [Batch_Size, Channels, Height, Width]）；nn.MaxPool2d for max-pooling；nn.AvgPool2d for average-pooling；nn.Dropout for dropout
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第11週-卷積神經網路CNN與PyTorch.pdf" page={36} status="suggested" excerpt={"Conveniently, use torch.nn.Sequential class to stack (add) different layers；nn.Conv2d for a 2D convolution layer（Assumes that inputs are in NCHW format [Batch_Size, Channels, Height, Width]）；nn.MaxPool2d for max-pooling；nn.AvgPool2d for average-pooling；nn.Dropout for dropout"} client:visible />
+
+## 資料增強
+
+**資料增強（data augmentation, DA）** 是對既有資料產生略微修改的副本（甚至人工合成的資料），以增加訓練資料的**多樣性與數量**的技術。四個好處：防止過擬合（模型不能只背訓練細節）、改善泛化（學會適應真實世界的變化）、修正資料不平衡（把小資料集擴充到跟大的相當）、節省成本（減少人工標註）。
+
+{/* @ai-reference
+id: w11-data-augmentation-definition
+file: _references/機器學習實作系列/第11週-卷積神經網路CNN與PyTorch.pdf
+page: 38
+status: suggested
+excerpt: Data Augmentation (DA)（資料增強）：A technique used to increase the diversity and volume of training data by generating slightly modified copies of existing data；Prevents overfitting；Improves generalization；Fixes data imbalance；Saves cost
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第11週-卷積神經網路CNN與PyTorch.pdf" page={38} status="suggested" excerpt={"Data Augmentation (DA)（資料增強）：A technique used to increase the diversity and volume of training data by generating slightly modified copies of existing data；Prevents overfitting；Improves generalization；Fixes data imbalance；Saves cost"} client:visible />
+
+常見手法依資料型態分三組：
+
+| 資料型態 | 手法 | 做法 |
+| --- | --- | --- |
+| 影像 | 翻轉（flipping） | 水平或垂直鏡射 |
+| 影像 | 旋轉（rotation） | 轉特定角度 |
+| 影像 | 裁切（cropping） | 隨機裁下一塊再縮放 |
+| 影像 | 色彩抖動（color jittering） | 改亮度、對比或飽和度 |
+| 文字 | 同義詞替換（synonym replacement） | 換成意思相近的詞 |
+| 文字 | 回譯（back-translation） | 翻成另一種語言再翻回來 |
+| 文字 | 隨機插入／刪除 | 隨機加減字詞 |
+| 音訊 | 雜訊注入（noise injection） | 加背景音或靜電聲 |
+| 音訊 | 時間平移（time shifting） | 把音訊往前或往後移 |
+| 音訊 | 變速（speed alteration） | 加快或放慢 |
+
+影像的增強可以直接用 `torchvision.transforms`：裁切到邊界框、水平翻轉、調對比、調亮度、中央裁切再縮放回原尺寸；講義用 CelebA 的 $218 \times 178$ 人臉示範。**所有轉換都可以隨機化**，訓練時建議用隨機版本：
+
+![五種 torchvision 轉換套在同一張人臉上的效果：裁切、水平翻轉、調對比、調亮度、中央裁切再縮放](/note-images/ml-week11/15-augmentation-transforms.jpeg)
+
+*第 40 頁：同一張原圖，五種確定性的轉換。*
+
+![隨機增強流程：原圖依序經隨機裁切、隨機水平翻轉、縮放三步，上下兩列各跑一次得到不同結果](/note-images/ml-week11/16-augmentation-random.jpeg)
+
+*第 41 頁：隨機裁切加隨機翻轉再縮放，同一張圖每次跑出來都不一樣，這才是訓練時要的。*
+
+兩條不可違反的規則：
+
+1. **只對訓練資料做增強**——絕不增強驗證或測試資料
+2. **保留標籤的語意**——修改後的資料必須維持原本的意思；例如把「左手」的照片翻轉，它就變成「右手」了
+
+{/* @ai-reference
+id: w11-data-augmentation-rules
+file: _references/機器學習實作系列/第11週-卷積神經網路CNN與PyTorch.pdf
+page: 44
+status: suggested
+excerpt: Important Rules of DA：Apply to training data only（Never augment validation or test data）；Preserve the label context（Modified data must keep its original meaning；For example, flipping a picture of a "left hand" turns it into a "right hand"）
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第11週-卷積神經網路CNN與PyTorch.pdf" page={44} status="suggested" excerpt={"Important Rules of DA：Apply to training data only（Never augment validation or test data）；Preserve the label context（Modified data must keep its original meaning；For example, flipping a picture of a \"left hand\" turns it into a \"right hand\"）"} client:visible />
+
+## 實作一：MNIST 手寫數字的深度 CNN
+
+資料集沿用上週（第 10 週講義第 20–26 頁）。網路是「兩段卷積加池化，接兩層全連接」的經典結構：
+
+![MNIST 深度 CNN 架構圖：28×28×1 輸入經 5×5×32 卷積與 2×2 池化變 14×14×32，再經 5×5×64 卷積與 2×2 池化變 7×7×64，攤平後接 1024 節點全連接層與 dropout，最後輸出 10 個節點](/note-images/ml-week11/17-mnist-cnn-architecture.png)
+
+*第 46 頁：每個卷積層後面都接 ReLU，第一個全連接層後面接 ReLU 與 dropout。輸入全連接層的張量必須是二階 $[\text{batchsize} \times \text{input\_units}]$。*
+
+講義第 47 頁把每一層的張量形狀列得很細，這張表是 debug 維度錯誤時最好用的對照：
+
+| 層 | 輸出形狀 | 說明 |
+| --- | --- | --- |
+| 輸入 | $[64, 1, 28, 28]$ | 批次 64、灰階 1 通道 |
+| Conv2d_1 | $[64, 32, 28, 28]$ | 32 個 $5 \times 5$ 核，$p = 2$、$s = 1$（same padding） |
+| MaxPool2d_1 | $[64, 32, 14, 14]$ | 池化 $2 \times 2$、$s = 2$（預設等於池化大小） |
+| Conv2d_2 | $[64, 64, 14, 14]$ | 64 個 $5 \times 5$ 核，$p = 2$、$s = 1$ |
+| MaxPool2d_2 | $[64, 64, 7, 7]$ | 池化 $2 \times 2$、$s = 2$ |
+| Flatten | $[64, 3136]$ | $64 \times 7 \times 7 = 3136$ |
+| FC_1 | $[64, 1024]$ | 全連接 |
+| Dropout | $[64, 1024]$ | $p_{drop} = 0.5$ |
+| FC_2 | $[64, 10]$ | 輸出 10 個 logits |
+
+形狀可以手算，也可以丟一個假張量進模型讓 PyTorch 自己算：`model(torch.ones((4, 1, 28, 28))).shape` 會回 `torch.Size([4, 64, 7, 7])`（只接到第二段池化時）。
+
+{/* @ai-reference
+id: w11-mnist-cnn-tensor-sizes
+file: _references/機器學習實作系列/第11週-卷積神經網路CNN與PyTorch.pdf
+page: 47
+status: suggested
+excerpt: Tensor sizes in detail：Input [64, 1, 28, 28]；Conv2d_1 [64, 32, 28, 28]（32 kernels 5 × 5, p = 2, s = 1, same padding）；MaxPool2d_1 [64, 32, 14, 14]；Conv2d_2 [64, 64, 14, 14]；MaxPool2d_2 [64, 64, 7, 7]；Flatten [64, 3136]；FC_1 [64, 1024]；Dropout p_drop = 0.5；FC_2 [64, 10] (Output 10 logits)
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第11週-卷積神經網路CNN與PyTorch.pdf" page={47} status="suggested" excerpt={"Tensor sizes in detail：Input [64, 1, 28, 28]；Conv2d_1 [64, 32, 28, 28]（32 kernels 5 × 5, p = 2, s = 1, same padding）；MaxPool2d_1 [64, 32, 14, 14]；Conv2d_2 [64, 64, 14, 14]；MaxPool2d_2 [64, 64, 7, 7]；Flatten [64, 3136]；FC_1 [64, 1024]；Dropout p_drop = 0.5；FC_2 [64, 10] (Output 10 logits)"} client:visible />
+
+{/* @ai-visualize
+id: ml-week11-tensor-shapes
+type: motion
+prompt: |
+  一個「張量形狀逐層走查」的步進元件，對應講義第 47 頁 MNIST CNN 的九個階段。
+
+  九個階段（依序）：
+  1. 輸入 [64, 1, 28, 28]
+  2. Conv2d_1 [64, 32, 28, 28] —— 32 個 5×5 核、p = 2、s = 1；說明：same padding，空間尺寸不變、通道 1 → 32
+  3. MaxPool2d_1 [64, 32, 14, 14] —— 2×2、s = 2；說明：空間尺寸減半、通道不變
+  4. Conv2d_2 [64, 64, 14, 14] —— 64 個 5×5 核、p = 2、s = 1；說明：通道 32 → 64
+  5. MaxPool2d_2 [64, 64, 7, 7] —— 2×2、s = 2
+  6. Flatten [64, 3136] —— 64 × 7 × 7 = 3136；說明：四階張量變二階，才進得了全連接層
+  7. FC_1 [64, 1024]
+  8. Dropout [64, 1024] —— p_drop = 0.5；說明：形狀不變、只在訓練時隨機歸零
+  9. FC_2 [64, 10] —— 輸出 10 個 logits，不接 softmax
+
+  畫面：
+  - 左側一條直向的九格流程帶（每格一個階段名稱），當前階段高亮
+  - 右側一個「形狀面板」：用四個欄位 N / C / H / W（Flatten 之後只剩 N / features 兩欄）顯示當前形狀，
+    跟上一階段比有變化的欄位用 orange 標示並以 motion 閃一下；下方一行說明文字
+  - 面板裡再畫一個小的「體積示意」：以 C 個疊起來的方格（最多畫 8 個加省略）與 H×W 的格子比例，
+    讓「通道變多、空間變小」這個趨勢看得見；Flatten 後改畫一條長條
+  - 「上一步」「下一步」按鈕；也可以直接點流程帶的任一格跳過去
+
+  視覺要求：
+  - 全部用 DOM，不用 SVG；形狀數字用等寬字
+  - 流程帶與面板上下堆疊也可以，但不要用 sm: / md: 等 viewport breakpoint（內文欄實際只有 647px）
+  - 尊重 prefers-reduced-motion
+
+  核心洞察：CNN 的前半段在做「空間變小、通道變多」的交換——把位置資訊換成特徵資訊；
+  Flatten 是四階到二階的轉折點，全連接層只吃二階張量。
+caption: 一步一步走過九個階段，看張量形狀怎麼從 [64, 1, 28, 28] 變成 [64, 10]：空間變小、通道變多，再攤平進全連接層。
+status: generated
+*/}
+
+<GeneratedFrame id="ml-week11-tensor-shapes" type="motion" prompt={"逐站走過 MNIST CNN 的九個階段，看張量形狀怎麼從 [64, 1, 28, 28] 變成 [64, 10]。"} caption={"一步一步走過九個階段，看張量形狀怎麼從 [64, 1, 28, 28] 變成 [64, 10]：空間變小、通道變多，再攤平進全連接層。"}>
+  <MlWeek11TensorShapes client:visible />
+</GeneratedFrame>
+
+程式（範例 `08_1.py`）先載資料：驗證集取 `training_data` 的前 10,000 筆、訓練集取後 50,000 筆（用 `Subset` 加 `torch.arange` 切），再建 `DataLoader`（批次 64，訓練集洗牌、驗證集不洗）。模型照上面的表用 `nn.Sequential` 疊出來：
+
+```python
+model = nn.Sequential(
+    # 第一層卷積與池化（輸入通道 1，輸出通道 32）
+    nn.Conv2d(in_channels=1, out_channels=32, kernel_size=5, padding=2),
+    nn.ReLU(),
+    nn.MaxPool2d(kernel_size=2),
+
+    # 第二層卷積與池化（輸入通道 32，輸出通道 64）
+    nn.Conv2d(in_channels=32, out_channels=64, kernel_size=5, padding=2),
+    nn.ReLU(),
+    nn.MaxPool2d(kernel_size=2),
+
+    # 分類器
+    nn.Flatten(),
+    nn.Linear(64 * 7 * 7, 1024),
+    nn.ReLU(),
+    nn.Dropout(p=0.5),
+    nn.Linear(1024, 10),   # 輸出 logits，交由 nn.CrossEntropyLoss 處理
+).to(device)                # 將模型移至指定硬體
+
+loss_fn = nn.CrossEntropyLoss()
+optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)   # lr = 1e-3
+```
+
+超參數：學習率 $10^{-3}$、批次 64、20 個 epoch。訓練結束後把 `state_dict` 存成 `model_CNN_MNIST.pth`，測試腳本 `08_2.py` 再載回來跑測試集。
+
+{/* @ai-reference
+id: w11-mnist-cnn-dataloader-split
+file: _references/機器學習實作系列/第11週-卷積神經網路CNN與PyTorch.pdf
+page: 48
+status: suggested
+excerpt: Sample code: 08_1.py；驗證集取前 10000 筆 samples；訓練集取後 50000 筆 samples；train_dataloader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)；valid_dataloader = DataLoader(valid_dataset, batch_size=batch_size, shuffle=False)
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第11週-卷積神經網路CNN與PyTorch.pdf" page={48} status="suggested" excerpt={"Sample code: 08_1.py；驗證集取前 10000 筆 samples；訓練集取後 50000 筆 samples；train_dataloader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)；valid_dataloader = DataLoader(valid_dataset, batch_size=batch_size, shuffle=False)"} client:visible />
+
+{/* @ai-reference
+id: w11-mnist-cnn-build-sequential
+file: _references/機器學習實作系列/第11週-卷積神經網路CNN與PyTorch.pdf
+page: 49
+status: suggested
+excerpt: Build the Deep CNN：model = nn.Sequential(nn.Conv2d(in_channels=1, out_channels=32, kernel_size=5, padding=2), nn.ReLU(), nn.MaxPool2d(kernel_size=2), …, nn.Flatten(), nn.Linear(64 * 7 * 7, 1024), nn.ReLU(), nn.Dropout(p=0.5), nn.Linear(1024, 10)).to(device)
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第11週-卷積神經網路CNN與PyTorch.pdf" page={49} status="suggested" excerpt={"Build the Deep CNN：model = nn.Sequential(nn.Conv2d(in_channels=1, out_channels=32, kernel_size=5, padding=2), nn.ReLU(), nn.MaxPool2d(kernel_size=2), …, nn.Flatten(), nn.Linear(64 * 7 * 7, 1024), nn.ReLU(), nn.Dropout(p=0.5), nn.Linear(1024, 10)).to(device)"} client:visible />
+
+![MNIST CNN 的訓練與驗證損失曲線：訓練損失從 0.16 降到接近 0，驗證損失穩定在 0.04 到 0.06 之間](/note-images/ml-week11/18-mnist-cnn-loss-curves.png)
+
+*第 51 頁：驗證損失從第 2 個 epoch 起就壓在 0.05 以下，之後只在雜訊範圍內抖動。*
+
+![MNIST CNN 的十類別混淆矩陣：對角線接近滿分，非對角線只有個位數](/note-images/ml-week11/19-mnist-cnn-confusion-matrix.png)
+
+*第 53 頁：測試正確率 0.99，誤判只有 63／10,000 筆——上週手刻 MLP 是 94.54%，誤判約 550 筆。*
+
+![25 張 MNIST CNN 誤判的樣本，多數是筆跡潦草或殘缺的數字](/note-images/ml-week11/20-mnist-cnn-misclassified.png)
+
+*第 54 頁：剩下的誤判多是人眼也要猶豫的筆跡。*
+
+{/* @ai-reference
+id: w11-mnist-cnn-classification-report
+file: _references/機器學習實作系列/第11週-卷積神經網路CNN與PyTorch.pdf
+page: 52
+status: suggested
+excerpt: Classification Report；Sample code: 08_2.py；accuracy 0.99；Total misclassified samples: 63 / 10000
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第11週-卷積神經網路CNN與PyTorch.pdf" page={52} status="suggested" excerpt={"Classification Report；Sample code: 08_2.py；accuracy 0.99；Total misclassified samples: 63 / 10000"} client:visible />
+
+## 實作二：CelebA 人臉微笑分類
+
+**CelebA** 資料集有 202,599 張名人臉部的 RGB 影像，已分好訓練／驗證／測試，每張標了 40 個二元臉部屬性（微笑與否、年輕與否……）。這次只做「微笑」這一個屬性（索引 31）的二元分類，而且為了縮短訓練時間，**訓練集只取前 16,000 筆、驗證集只取 1,000 筆**，並採用資料增強。載入 CelebA 需要 `gdown` 模組從 Google Drive 下載（`python -m pip install gdown`）。
+
+{/* @ai-reference
+id: w11-celeba-dataset
+file: _references/機器學習實作系列/第11週-卷積神經網路CNN與PyTorch.pdf
+page: 56
+status: suggested
+excerpt: CelebA dataset：202,599 RGB images of celebrities' faces；Train / valid / test；Only a small portion of the training data (16,000 training examples) will be used to speed up the training process；Data augmentation adopted；40 binary facial attributes
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第11週-卷積神經網路CNN與PyTorch.pdf" page={56} status="suggested" excerpt={"CelebA dataset：202,599 RGB images of celebrities' faces；Train / valid / test；Only a small portion of the training data (16,000 training examples) will be used to speed up the training process；Data augmentation adopted；40 binary facial attributes"} client:visible />
+
+資料增強的設定（範例 `08_3.py`）把上一節的兩條規則寫進程式：**訓練階段**用隨機轉換，**評估與測試階段**不可以用隨機變換，只能用確定性的中央裁剪與縮放尺寸：
+
+```python
+get_smile = lambda attr: attr[31]
+
+transform_train = v2.Compose([
+    v2.RandomCrop([178, 178]),            # 1. 隨機裁剪
+    v2.RandomHorizontalFlip(),            # 2. 隨機水平翻轉
+    v2.Resize([64, 64]),                  # 3. 縮放到模型指定大小
+    v2.ToImage(),                         # 4. 將圖片轉換為 Tensor 圖像物件
+    v2.ToDtype(torch.float32, scale=True) # 5. 轉換資料型態並縮放到 [0, 1]
+])
+
+transform = v2.Compose([
+    v2.CenterCrop([178, 178]),            # 評估／測試只用確定性的中央裁剪
+    v2.Resize([64, 64]),
+    v2.ToImage(),
+    v2.ToDtype(torch.float32, scale=True)
+])
+```
+
+{/* @ai-reference
+id: w11-celeba-augmentation-train-vs-eval
+file: _references/機器學習實作系列/第11週-卷積神經網路CNN與PyTorch.pdf
+page: 59
+status: suggested
+excerpt: 訓練階段的資料轉換：v2.RandomCrop([178, 178])、v2.RandomHorizontalFlip()、v2.Resize([64, 64])；評估與測試階段 (Validation/Test) 不可以使用隨機變換，僅能使用確定性的中央裁剪與縮放尺寸
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第11週-卷積神經網路CNN與PyTorch.pdf" page={59} status="suggested" excerpt={"訓練階段的資料轉換：v2.RandomCrop([178, 178])、v2.RandomHorizontalFlip()、v2.Resize([64, 64])；評估與測試階段 (Validation/Test) 不可以使用隨機變換，僅能使用確定性的中央裁剪與縮放尺寸"} client:visible />
+
+網路是四層「卷積 + ReLU + 池化 + dropout」的堆疊，尾端用**全域平均池化**取代攤平，最後一層輸出一個經 sigmoid 的機率，搭配 `nn.BCELoss`：
+
+```python
+model = nn.Sequential(
+    # 四層 Conv + ReLU + Pool + Dropout 堆疊
+    nn.Conv2d(3, 32, kernel_size=3, padding=1),   nn.ReLU(), nn.MaxPool2d(2), nn.Dropout(0.5),
+    nn.Conv2d(32, 64, kernel_size=3, padding=1),  nn.ReLU(), nn.MaxPool2d(2), nn.Dropout(0.5),
+    nn.Conv2d(64, 128, kernel_size=3, padding=1), nn.ReLU(), nn.MaxPool2d(2),
+    nn.Conv2d(128, 256, kernel_size=3, padding=1), nn.ReLU(),
+
+    # 全域平均池化層 (GAP)
+    nn.AvgPool2d(kernel_size=8),
+    nn.Flatten(),
+
+    # 輸出層：FC + Sigmoid
+    nn.Linear(256, 1),
+    nn.Sigmoid()        # 輸出 0～1 之間的機率值，搭配 nn.BCELoss 進行訓練
+).to(device)
+
+loss_fn = nn.BCELoss()
+optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)   # lr = 1e-3, batch 32, 30 epochs
+```
+
+$64 \times 64$ 的輸入經三次 $2 \times 2$ 池化變成 $8 \times 8$，所以 GAP 的核大小是 8，把 256 張 $8 \times 8$ 特徵圖壓成 256 個數。講義在架構旁註明：**這個網路架構只是一個示範，並非最好的設計**，有許多地方可以優化（例如加入批次正規化 `nn.BatchNorm2d`）——這句話就是作業四方法一的提示。
+
+{/* @ai-reference
+id: w11-celeba-cnn-architecture
+file: _references/機器學習實作系列/第11週-卷積神經網路CNN與PyTorch.pdf
+page: 60
+status: suggested
+excerpt: 四層 Conv + ReLU + Pool + Dropout 堆疊；全域平均池化層 (GAP) nn.AvgPool2d(kernel_size=8)；輸出層：FC + Sigmoid，輸出 0～1 之間的機率值，搭配 nn.BCELoss 進行訓練；這個網路架構只是一個示範，並非最好的設計，有許多地方可以優化（例如加入批次正規化 nn.BatchNorm2d）
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第11週-卷積神經網路CNN與PyTorch.pdf" page={60} status="suggested" excerpt={"四層 Conv + ReLU + Pool + Dropout 堆疊；全域平均池化層 (GAP) nn.AvgPool2d(kernel_size=8)；輸出層：FC + Sigmoid，輸出 0～1 之間的機率值，搭配 nn.BCELoss 進行訓練；這個網路架構只是一個示範，並非最好的設計，有許多地方可以優化（例如加入批次正規化 nn.BatchNorm2d）"} client:visible />
+
+![CelebA 微笑分類的訓練與驗證損失曲線：兩條線從 0.69 一起下降到 30 個 epoch 時的 0.3 附近，驗證損失略低於訓練損失](/note-images/ml-week11/21-celeba-loss-curves.png)
+
+*第 62 頁：前 10 個 epoch 幾乎沒動（損失停在 $\ln 2 \approx 0.69$，等於瞎猜），之後才開始下降；驗證損失低於訓練損失是因為訓練時有 dropout 與隨機增強、驗證時沒有。*
+
+![CelebA 微笑分類的二乘二混淆矩陣：不微笑預測正確 4428、誤判 557；微笑預測正確 4565、誤判 450](/note-images/ml-week11/22-celeba-confusion-matrix.png)
+
+*第 64 頁：測試集取前 10,000 筆（範例 `08_4.py`），正確率 0.90，誤判 1,007 筆；兩類的 precision 與 recall 都在 0.89 到 0.91 之間。*
+
+![25 張 CelebA 誤判樣本，每張標示真實與預測的微笑標籤](/note-images/ml-week11/23-celeba-misclassified.jpeg)
+
+*第 65 頁：不少誤判樣本連人看了也會猶豫算不算微笑——這呼應作業四的提醒：正確率的天花板來自標籤本身。*
+
+{/* @ai-reference
+id: w11-celeba-classification-report
+file: _references/機器學習實作系列/第11週-卷積神經網路CNN與PyTorch.pdf
+page: 63
+status: suggested
+excerpt: Classification Report；Sample code: 08_4.py；測試集只取 10000 筆 samples；Not Smiling precision 0.91 recall 0.89；Smiling precision 0.89 recall 0.91；accuracy 0.90；Total misclassified samples: 1007 / 10000
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第11週-卷積神經網路CNN與PyTorch.pdf" page={63} status="suggested" excerpt={"Classification Report；Sample code: 08_4.py；測試集只取 10000 筆 samples；Not Smiling precision 0.91 recall 0.89；Smiling precision 0.89 recall 0.91；accuracy 0.90；Total misclassified samples: 1007 / 10000"} client:visible />
+
+## 作業四：改善 CelebA 微笑分類
+
+目標是把 CelebA 微笑分類的正確率拉到 **90% 以上**，**兩種方法都要實作**：
+
+| 方法 | 做法 | 提示 |
+| --- | --- | --- |
+| 方法一：調整網路架構 | 在第 60 頁的架構上動手 | 加入批次正規化（`nn.BatchNorm2d`）、調整網路寬度或深度、調整 dropout 的位置或機率…… |
+| 方法二：預訓練模型微調（fine-tuning） | 用 `torchvision.models` 的預訓練模型 | 以 ResNet-18 為例：`model = torchvision.models.resnet18(weights=models.ResNet18_Weights.DEFAULT)`；輸入影像要縮放到 $224 \times 224$、做影像正規化、修改輸出層對應二分類 |
+
+資料集條件兩種方法須一致：**只用 CelebA 訓練集的前 16,000 筆訓練**（可以用資料增強），**用測試集的前 10,000 筆測試**。繳交四個檔案打包成單一 `.zip`：方法一的 `model_1.pth`（參數檔）與 `model_1_test.py`（測試腳本），方法二的 `model_2.pth` 與 `model_2_test.py`；測試腳本載入模型參數的寫法參考範例 `08-4.py`。預期結果各要有分類報告、混淆矩陣與 25 張誤判樣本——講義給的參考數字是方法一正確率 0.92（誤判 825 筆）、方法二 0.92（誤判 792 筆）。
+
+講義最後留了一句很實際的話：微笑分類的平均正確率通常落在 93.0% 到 93.5% 左右（Smiling 那一類略低），正確率無法再隨模型升級而改善的主因，在於**資料集本身的標籤錯誤率**——這是第 7 週「先看資料再換模型」的具體案例。
+
+{/* @ai-reference
+id: w11-assignment4-two-methods
+file: _references/機器學習實作系列/第11週-卷積神經網路CNN與PyTorch.pdf
+page: 67
+status: suggested
+excerpt: 改善 CelebA 微笑分類任務的性能（正確率 > 90%）；方法一：調整網路架構（加入批次正規化技術 nn.BatchNorm2d、調整網路寬度或深度、調整 Dropout 位置或機率）；方法二：使用 torchvision.models 預訓練模型進行微調 (Fine-tuning)，以 ResNet-18 預訓練模型為例；正確率無法再隨模型升級而改善的主因在於資料集本身的標籤錯誤率
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第11週-卷積神經網路CNN與PyTorch.pdf" page={67} status="suggested" excerpt={"改善 CelebA 微笑分類任務的性能（正確率 > 90%）；方法一：調整網路架構（加入批次正規化技術 nn.BatchNorm2d、調整網路寬度或深度、調整 Dropout 位置或機率）；方法二：使用 torchvision.models 預訓練模型進行微調 (Fine-tuning)，以 ResNet-18 預訓練模型為例；正確率無法再隨模型升級而改善的主因在於資料集本身的標籤錯誤率"} client:visible />
+
+{/* @ai-reference
+id: w11-assignment4-submission
+file: _references/機器學習實作系列/第11週-卷積神經網路CNN與PyTorch.pdf
+page: 68
+status: suggested
+excerpt: 兩種方法皆需要實作，且資料集條件須一致；僅使用 CelebA 訓練集的前 16,000 筆 samples 進行訓練（可以使用資料增強技術）；使用 CelebA 測試集的前 10,000 筆 samples 進行測試；總共四個檔案打包成單一 .zip 檔上傳；方法一：model_1.pth 與 model_1_test.py；方法二：model_2.pth 與 model_2_test.py
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第11週-卷積神經網路CNN與PyTorch.pdf" page={68} status="suggested" excerpt={"兩種方法皆需要實作，且資料集條件須一致；僅使用 CelebA 訓練集的前 16,000 筆 samples 進行訓練（可以使用資料增強技術）；使用 CelebA 測試集的前 10,000 筆 samples 進行測試；總共四個檔案打包成單一 .zip 檔上傳；方法一：model_1.pth 與 model_1_test.py；方法二：model_2.pth 與 model_2_test.py"} client:visible />
+
 ## 教材預習重點
 
 > 摘自 `machine-learning-book` 專案的 `STUDY_GUIDE_zh-TW.md`，對應章節：ch12、ch13。上課後請依實際授課內容調整。
@@ -133,3 +1040,300 @@ status: generated
 **在做什麼**：ch12 把 ch11 手刻的東西換成 PyTorch 寫法，建立 tensor、`DataLoader`、`torch.nn`、`torch.optim` 的基本操作直覺；ch13 深入 PyTorch 底層的自動微分機制，並用兩個實戰專案（車輛油耗迴歸、MNIST 分類）練習，最後介紹 PyTorch Lightning。
 
 **關鍵概念**：tensor 操作、`Dataset`／`DataLoader`、`torch.nn.Module`、activation functions（sigmoid / softmax / tanh / ReLU）、computation graph、`autograd`（automatic differentiation）、`nn.Sequential` vs. 自訂 `nn.Module`、PyTorch Lightning
+
+## 關鍵定義
+
+| 名詞 | 定義 |
+| --- | --- |
+| 卷積神經網路（convolutional neural network, CNN） | 以卷積層當特徵提取器、靠稀疏連接與參數共享降低影像任務參數量的網路；典型結構是數個卷積與池化層交替，最後接全連接層 |
+| 特徵圖（feature map） | 卷積層對輸入影像算出的輸出；每個元素來自輸入的一小塊像素 |
+| 局部感知域（local receptive field） | 特徵圖上某個元素所對應的那一小塊輸入像素 |
+| 特徵階層（feature hierarchy） | 深度 CNN 逐層把邊緣、色塊等低階特徵組合成輪廓等高階特徵的結構 |
+| 稀疏連接（sparse connectivity） | 特徵圖的一個元素只連到輸入的一小塊像素，而非整張影像 |
+| 參數共享（parameter sharing） | 同一組核權重套用在輸入的不同區塊；帶來平移不變性 |
+| 卷積核（kernel、filter） | 卷積運算中滑動的那組權重；實務上是有限大小的向量或矩陣 |
+| 離散卷積（discrete convolution） | $y[i]=\sum_k x[i-k]\,w[k]$；輸入與核的索引方向相反，等於先翻轉核再逐元素相乘加總 |
+| 互相關（cross-correlation） | $y[i]=\sum_k x[i+k]\,w[k]$，不翻轉核；PyTorch 等框架實作的是它，但稱作卷積 |
+| 零填充（zero-padding） | 在輸入每一側補 $p$ 個 0；full（$p=m-1$）、same（輸出尺寸等於輸入）、valid（$p=0$）三種模式 |
+| 步長（stride） | 濾波器每一步移動的格數 $s$；與核大小、填充同為卷積層的超參數 |
+| 池化層（pooling layer） | 以 $n_1 \times n_2$ 鄰域取最大值或平均值做下取樣；沒有可學習參數 |
+| 全域平均池化（global average-pooling, GAP） | 池化大小等於整張特徵圖的平均池化，每個通道縮成一個數 |
+| 局部不變性（local invariance） | 鄰域內的小變動不改變最大池化的結果，使網路對雜訊更穩健 |
+| 通道（channel） | 影像張量的第三個軸：灰階 $C=1$、RGB $C=3$；torchvision 的格式是 `[C, H, W]` |
+| 多通道卷積 | 每個輸入通道各用自己的核矩陣卷積，再把結果相加；$C_{out}$ 個核組成 $H \times W \times C_{in} \times C_{out}$ 的四維核張量 |
+| 容量（capacity） | 網路能學會逼近的函數複雜度；小網路欠擬合、大網路過擬合 |
+| `weight_decay` | 優化器的參數，功能近似 $L_2$ 正則化但不嚴格等價 |
+| Dropout（隨機失活） | 訓練時每個小批次以機率 $p_{drop}$ 隨機丟棄隱藏單元，迫使網路學冗餘表徵；可解讀為一群模型的平均；測試時全部使用 |
+| 資料增強（data augmentation） | 對既有資料產生略微修改的副本以增加多樣性與數量；只對訓練資料做、且必須保留標籤語意 |
+| NCHW | PyTorch 卷積層的輸入格式：批次、通道、高、寬 |
+| 微調（fine-tuning） | 載入 `torchvision.models` 的預訓練模型（如 ResNet-18），改輸出層後在自己的資料上繼續訓練 |
+
+## 公式
+
+- 一維離散卷積：$y[i]=\displaystyle\sum_{k=-\infty}^{+\infty} x[i-k]\,w[k]=\sum_{k=-\infty}^{+\infty} x[k]\,w[i-k]$（交換律）
+- 互相關：$y[i]=\displaystyle\sum_{k=-\infty}^{+\infty} x[i+k]\,w[k]$
+- 零填充後的有限和：$y[i]=\displaystyle\sum_{k=0}^{m-1} x^p[i+m-k]\,w[k]$，填充後長度 $n+2p$
+- 卷積輸出大小：$o=\left\lfloor\dfrac{n+2p-m}{s}\right\rfloor+1$（$n$ 輸入、$m$ 核、$p$ 填充、$s$ 步長）
+- 二維離散卷積：$Y[i,j]=\displaystyle\sum_{k_1}\sum_{k_2} X[i-k_1,\,j-k_2]\,W[k_1,k_2]$
+- 全域平均池化（$6 \times 6$）：$\dfrac{1}{36}\sum x_{i,j}$
+- 多通道卷積：$\boldsymbol{Z}^{Conv}[:,:,k]=\displaystyle\sum_{c=1}^{C_{in}}\boldsymbol{W}[:,:,c,k]*\boldsymbol{X}[:,:,c]$、$\boldsymbol{Z}=\boldsymbol{Z}^{Conv}+b[k]$、$\boldsymbol{A}=\sigma(\boldsymbol{Z})$
+- 卷積層參數量（$C_{in}=3$、$C_{out}=5$）：$m_1 \times m_2 \times 3 \times 5 + 5$
+- 等價全連接層參數量：$(n_1 \times n_2)^2 \times 3 \times 5 + n_1 \times n_2 \times 5$
+- 卷積層參數量（一般式）：$m_1 \times m_2 \times C_{in} \times C_{out} + C_{out}$
+- 攤平後的特徵數：$C \times H \times W$，例如 $64 \times 7 \times 7 = 3136$
+- Dropout 的訓練期縮放：保留的激活值乘上 $\dfrac{1}{1-p_{drop}}$（$p_{drop}=0.5$ 時加倍）
+
+## 考題
+
+### 選擇題
+
+#### 選擇題 1
+
+> 講義說 CNN 在影像任務上表現好，靠的是哪兩個核心想法？
+> :en[According to the handout, which two key ideas make CNNs perform well on image tasks?]
+
+:::choices{answer="C"}
+- 更深的網路與更大的批次 :en[Deeper networks and larger batches]
+- 梯度下降與反向傳播 :en[Gradient descent and backpropagation]
+- 稀疏連接與參數共享 :en[Sparse connectivity and parameter sharing]
+- 資料增強與 dropout :en[Data augmentation and dropout]
+:::
+
+:::tip{collapsible title="詳解"}
+稀疏連接：特徵圖的一個元素只連到一小塊像素，不像 MLP 連到整張圖；參數共享：同一組核在不同區塊重複使用，帶來平移不變性。兩者合起來讓參數量跟影像大小脫鉤。第四項是正則化手段，不是 CNN 的結構性想法。
+
+**考的觀念**：CNN 省參數的兩個機制。
+:::
+
+#### 選擇題 2
+
+> PyTorch 的「卷積」其實是哪一種運算？
+> :en[What operation does PyTorch's "convolution" actually implement?]
+
+:::choices{answer="B"}
+- 嚴格定義的卷積，核會先翻轉 :en[Strict convolution, with the kernel flipped first]
+- 互相關，核不翻轉 :en[Cross-correlation, without flipping the kernel]
+- 傅立葉轉換 :en[A Fourier transform]
+- 矩陣乘法 :en[Matrix multiplication]
+:::
+
+:::tip{collapsible title="詳解"}
+講義第 12 頁：大多數框架實作的是互相關但稱為卷積，差別只在卷積要先翻轉濾波器。對一個要學出來的核，翻不翻轉沒差，所以約定俗成統稱卷積。
+
+**考的觀念**：卷積與互相關只差一個翻轉。
+:::
+
+#### 選擇題 3
+
+> 輸入長度 $n = 10$、核大小 $m = 5$、填充 $p = 2$、步長 $s = 1$，輸出長度是多少？
+> :en[With input length $n = 10$, kernel size $m = 5$, padding $p = 2$ and stride $s = 1$, what is the output length?]
+
+:::choices{answer="A"}
+- 10 :en[10]
+- 6 :en[6]
+- 14 :en[14]
+- 5 :en[5]
+:::
+
+:::tip{collapsible title="詳解"}
+$o = \left\lfloor\frac{10 + 2 \times 2 - 5}{1}\right\rfloor + 1 = 9 + 1 = 10$，輸出等於輸入，這就是 same padding。第二項 6 是 $p = 0$ 的 valid 結果，第三項 14 是 $p = m - 1 = 4$ 的 full 結果。
+
+**考的觀念**：輸出大小公式與三種填充模式。
+:::
+
+#### 選擇題 4
+
+> 關於池化層，下列哪一項正確？
+> :en[Which statement about pooling layers is correct?]
+
+:::choices{answer="D"}
+- 池化層的核是用訓練學出來的 :en[The pooling kernel is learned by training]
+- 平均池化對鄰域內的小變動完全不敏感 :en[Mean-pooling is completely insensitive to small changes in the neighbourhood]
+- 池化只能用 $2 \times 2$ :en[Pooling can only be $2 \times 2$]
+- 池化層沒有可學習參數，可用步長 2 的卷積層取代 :en[Pooling layers have no learnable parameters and can be replaced by stride-2 convolutional layers]
+:::
+
+:::tip{collapsible title="詳解"}
+講義第 25 頁：池化層沒有可學習參數；研究者改用步長 2 的卷積層縮小特徵尺寸，可視為「有可學習權重的池化層」。局部不變性講的是**最大**池化——取最大值時鄰域內非最大的格子怎麼變都不影響結果。
+
+**考的觀念**：池化沒有參數；最大池化的局部不變性。
+:::
+
+#### 選擇題 5
+
+> 輸入有 $C_{in}$ 個通道、卷積層要輸出 $C_{out}$ 張特徵圖，核張量的形狀是？
+> :en[With $C_{in}$ input channels and $C_{out}$ output feature maps, what is the shape of the kernel tensor?]
+
+:::choices{answer="B"}
+- $H \times W$ :en[$H \times W$]
+- $H \times W \times C_{in} \times C_{out}$ :en[$H \times W \times C_{in} \times C_{out}$]
+- $H \times W \times C_{out}$ :en[$H \times W \times C_{out}$]
+- $C_{in} \times C_{out}$ :en[$C_{in} \times C_{out}$]
+:::
+
+:::tip{collapsible title="詳解"}
+每一張輸出特徵圖需要一個深度為 $C_{in}$ 的核（各輸入通道各一片矩陣，卷積後相加），$C_{out}$ 張就有 $C_{out}$ 個，所以是四維 $H \times W \times C_{in} \times C_{out}$。第 32 頁的程式印出 `Weight: [5, 3, 5, 5]` 就是 $C_{out} = 5$、$C_{in} = 3$、$5 \times 5$ 核。
+
+**考的觀念**：核張量的四個維度各代表什麼。
+:::
+
+#### 選擇題 6
+
+> 關於 dropout，下列哪一項正確？
+> :en[Which statement about dropout is correct?]
+
+:::choices{answer="C"}
+- 訓練與測試都隨機丟棄一半的神經元 :en[Half of the neurons are dropped at random in both training and testing]
+- 它會讓網路的參數量減半 :en[It halves the number of parameters]
+- 訓練時隨機丟棄隱藏單元，測試時全部使用；PyTorch 會在訓練時放大保留的激活值以對齊尺度 :en[Hidden units are dropped at random during training and all used at test time; PyTorch scales the kept activations during training to match scales]
+- 它只能用在卷積層 :en[It can only be applied to convolutional layers]
+:::
+
+:::tip{collapsible title="詳解"}
+講義第 34–35 頁：訓練階段每個小批次以 $p_{drop}$ 隨機丟棄，測試階段全部神經元都用；為了讓兩階段的整體激活值在同一尺度，訓練時把保留的激活值放大（$p_{drop} = 0.5$ 時加倍）。參數並沒有變少，只是每次用到的子集不同——這也是「一群模型的平均」這個解讀的來源。
+
+**考的觀念**：dropout 的訓練／測試差異與尺度對齊。
+:::
+
+#### 選擇題 7
+
+> 下列哪一個資料增強做法違反了講義的規則？
+> :en[Which of the following data-augmentation practices violates a rule in the handout?]
+
+:::choices{answer="A"}
+- 對驗證集也做隨機裁切與翻轉，讓它更多樣 :en[Apply random crop and flip to the validation set too, for more variety]
+- 訓練時用 `v2.RandomHorizontalFlip()`、評估時用 `v2.CenterCrop` :en[Use `v2.RandomHorizontalFlip()` for training and `v2.CenterCrop` for evaluation]
+- 對文字資料做回譯 :en[Back-translate text data]
+- 對音訊加背景雜訊 :en[Inject background noise into audio]
+:::
+
+:::tip{collapsible title="詳解"}
+第 44 頁第一條規則：只對訓練資料做增強，**絕不**增強驗證或測試資料；第 59 頁的程式正是訓練用隨機轉換、評估只用確定性的中央裁剪與縮放。另一條規則是保留標籤語意——把「左手」翻轉就變成「右手」。
+
+**考的觀念**：增強只在訓練集，而且不能改變標籤的意義。
+:::
+
+#### 選擇題 8
+
+> 講義第 47 頁的 MNIST CNN，從 `[64, 64, 7, 7]` 攤平後的形狀是？
+> :en[In the MNIST CNN on page 47, what is the shape after flattening `[64, 64, 7, 7]`?]
+
+:::choices{answer="D"}
+- $[64, 64]$ :en[$[64, 64]$]
+- $[64, 49]$ :en[$[64, 49]$]
+- $[3136]$ :en[$[3136]$]
+- $[64, 3136]$ :en[$[64, 3136]$]
+:::
+
+:::tip{collapsible title="詳解"}
+攤平保留批次軸、把 $C \times H \times W = 64 \times 7 \times 7 = 3136$ 併成一軸，所以是 $[64, 3136]$——全連接層要的二階張量 $[\text{batchsize} \times \text{input\_units}]$。第三項漏了批次軸。
+
+**考的觀念**：Flatten 是四階到二階的轉折，批次軸不動。
+:::
+
+### 概念辨析題
+
+#### 複習題 1
+
+> 為什麼講義說 CNN「實質為影像特徵提取器」？卷積層與最後的全連接層各扮演什麼角色？
+> :en[Why does the handout say a CNN is "essentially an image feature extractor"? What roles do the convolutional layers and the final fully connected layers play?]
+
+**詳解**
+
+傳統做法要專家手工設計 HOG、SIFT 這類特徵再交給分類器；CNN 把「設計特徵」這一步也交給訓練。卷積層從原始像素自動學出低階特徵（邊緣、色塊），深層再逐層組合成高階特徵（輪廓、部位），這整段就是特徵提取；尾端的全連接層本質上是一個 MLP，吃的是提取好的特徵向量，負責做預測。第 1 週「CNN 屬於特徵提取」的答案在這裡有了結構上的對應：把一張滿是像素的圖最後變成一個向量。
+
+#### 複習題 2
+
+> 同樣的輸入輸出，為什麼卷積層的參數量跟影像大小無關，全連接層卻隨影像面積的平方成長？
+> :en[For the same input and output, why is the number of parameters in a convolutional layer independent of image size, while a fully connected layer grows with the square of the image area?]
+
+**詳解**
+
+卷積層的參數只有核與偏差：$m_1 \times m_2 \times C_{in} \times C_{out} + C_{out}$，核在整張圖上共用，影像再大也只是多滑幾步，參數不變。全連接層則要讓每個輸出像素（$n_1 \times n_2 \times C_{out}$ 個）各自連到每個輸入像素（$n_1 \times n_2 \times C_{in}$ 個），權重矩陣是兩者相乘，所以出現 $(n_1 \times n_2)^2$。講義第 30 頁的結論：只要 $m_1 < n_1$、$m_2 < n_2$，差距就是顯著的。
+
+#### 複習題 3
+
+> 「same padding」為什麼是 CNN 最常用的填充模式？如果每一層都用 valid padding 會發生什麼事？
+> :en[Why is "same padding" the most common padding mode in CNNs? What happens if every layer uses valid padding?]
+
+**詳解**
+
+same padding 讓輸出的空間尺寸與輸入完全相同，設計架構時不必每加一層就重算尺寸，也不會因為層數多而把特徵圖吃光。valid padding（$p = 0$）每過一層就縮 $m - 1$ 格，講義說張量體積會在深層快速縮水——$28 \times 28$ 配 $5 \times 5$ 核，六層之後就只剩 $4 \times 4$。實務慣例因此是：卷積層用 same padding 維持尺寸，要縮尺寸交給池化層或步長 2 的卷積層，讓「縮多少」成為明確的設計決定。
+
+#### 複習題 4
+
+> CelebA 的損失曲線裡，驗證損失低於訓練損失。這通常不是過擬合的訊號，為什麼？
+> :en[In the CelebA loss curves, validation loss is lower than training loss. Why is this usually not a sign of overfitting?]
+
+**詳解**
+
+訓練時模型有兩個「扣分」來源驗證時沒有：dropout 每批隨機丟一半隱藏單元，訓練時的網路是殘缺版本；資料增強的隨機裁切與翻轉也讓訓練樣本比驗證樣本難。驗證時 `model.eval()` 關掉 dropout、轉換只剩確定性的中央裁剪，模型反而在比較「乾淨」的條件下被評估，損失自然略低。過擬合的訊號是驗證損失**掉頭回升**、與訓練損失的縫越拉越開，像上週 FashionMNIST 的 MLP 那樣。
+
+#### 複習題 5
+
+> 作業四說微笑分類的正確率落在 93% 左右就上不去了，原因是「資料集本身的標籤錯誤率」。這和第 7 週學的東西怎麼連起來？
+> :en[Assignment 4 says smile-classification accuracy plateaus around 93% because of "the dataset's own label error rate". How does this connect to what was learned in week 7?]
+
+**詳解**
+
+第 7 週的收束是「先看資料本身」：標籤有雜訊時，模型越強只是越努力去學那些標錯的樣本，測試集若也含同樣比例的錯標，正確率的天花板就被標籤品質鎖死，與模型無關。誤判樣本那張圖裡不少人臉連人看了也說不準算不算微笑，正是標籤本身模糊的證據。所以作業四的目標定在 90% 以上而不是逼近 100%，比較方法一與方法二時也該看的是「誰先穩定到 92–93%」，而不是去追最後一個百分點。
+
+### 計算題
+
+> 以下的數值為自行設計的練習題，用來套用本週的公式，並非講義原有的習題。
+
+#### 複習題 1
+
+> 輸入 $\boldsymbol{x} = [3, 2, 1, 7, 1, 2, 5, 4]$、核 $\boldsymbol{w} = \left[\tfrac{1}{2}, \tfrac{3}{4}, 1, \tfrac{1}{4}\right]$，填充 $p = 0$、步長 $s = 2$（講義第 17 頁的設定）。請寫出輸出長度，並算出 $y[0]$。
+> :en[Given input $\boldsymbol{x} = [3, 2, 1, 7, 1, 2, 5, 4]$, kernel $\boldsymbol{w} = \left[\tfrac{1}{2}, \tfrac{3}{4}, 1, \tfrac{1}{4}\right]$, padding $p = 0$ and stride $s = 2$ (the setting on page 17), give the output length and compute $y[0]$.]
+
+**詳解**
+
+$$
+o = \left\lfloor \frac{8 + 0 - 4}{2} \right\rfloor + 1 = 2 + 1 = 3
+$$
+
+先翻轉核得到 $\boldsymbol{w}^r = \left[\tfrac{1}{4}, 1, \tfrac{3}{4}, \tfrac{1}{2}\right]$，對輸入前四格做內積：
+
+$$
+y[0] = 3 \times \tfrac{1}{4} + 2 \times 1 + 1 \times \tfrac{3}{4} + 7 \times \tfrac{1}{2} = 0.75 + 2 + 0.75 + 3.5 = 7
+$$
+
+核往右移兩格再算兩次，得到講義的 $y = [7, 9, 8]$。
+
+#### 複習題 2
+
+> 一個卷積層輸入 3 通道、輸出 32 張特徵圖、核 $3 \times 3$（CelebA 網路的第一層）。請算出參數量。若改成全連接層把 $64 \times 64 \times 3$ 的輸入映射到 $64 \times 64 \times 32$ 的輸出，參數量是多少？
+> :en[A convolutional layer takes 3 input channels, outputs 32 feature maps and uses $3 \times 3$ kernels (the first layer of the CelebA network). Compute its parameter count. If a fully connected layer instead mapped a $64 \times 64 \times 3$ input to a $64 \times 64 \times 32$ output, how many parameters would it need?]
+
+**詳解**
+
+$$
+\begin{aligned}
+\text{Conv:}&\ 3 \times 3 \times 3 \times 32 + 32 = 864 + 32 = 896 \\[4pt]
+\text{FC:}&\ (64 \times 64 \times 3) \times (64 \times 64 \times 32) + 64 \times 64 \times 32 \\
+&= 12{,}288 \times 131{,}072 + 131{,}072 \\
+&= 1{,}610{,}612{,}736 + 131{,}072 \approx 1.61 \times 10^{9}
+\end{aligned}
+$$
+
+卷積層不到一千個參數，全連接層要十六億個——差了六個數量級。
+
+#### 複習題 3
+
+> 講義第 47 頁的 MNIST CNN，請計算 Conv2d_1、Conv2d_2、FC_1、FC_2 四層各自的參數量與總和。
+> :en[For the MNIST CNN on page 47, compute the parameter count of Conv2d_1, Conv2d_2, FC_1 and FC_2, and their total.]
+
+**詳解**
+
+$$
+\begin{aligned}
+\text{Conv2d\_1:}&\ 5 \times 5 \times 1 \times 32 + 32 = 800 + 32 = 832 \\
+\text{Conv2d\_2:}&\ 5 \times 5 \times 32 \times 64 + 64 = 51{,}200 + 64 = 51{,}264 \\
+\text{FC\_1:}&\ 1024 \times 3136 + 1024 = 3{,}211{,}264 + 1024 = 3{,}212{,}288 \\
+\text{FC\_2:}&\ 10 \times 1024 + 10 = 10{,}240 + 10 = 10{,}250 \\[4pt]
+\text{合計:}&\ 832 + 51{,}264 + 3{,}212{,}288 + 10{,}250 = 3{,}274{,}634
+\end{aligned}
+$$
+
+兩個卷積層加起來只佔 1.6%，九成八的參數在第一個全連接層——這也是為什麼 CelebA 的網路改用全域平均池化：把 $8 \times 8 \times 256$ 壓成 256 再接全連接層，比直接攤平省掉 64 倍的輸入維度。

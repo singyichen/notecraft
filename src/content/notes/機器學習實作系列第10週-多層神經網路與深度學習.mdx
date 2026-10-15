@@ -1,18 +1,21 @@
 ---
-title: "機器學習實作系列：第 10 週 - 多層神經網路與深度學習"
+title: "機器學習實作系列：第 10 週 - 多層神經網路與 PyTorch"
 description: ""
 tags: ["機器學習實作系列"]
 createdAt: "2026-11-09"
-updatedAt: "2026-11-09"
+updatedAt: "2026-10-15"
 ---
 
+import PdfRefChip from '@/components/islands/PdfRefChip.tsx'
 import GeneratedFrame from '@/components/GeneratedFrame.astro'
 import MlWeek10TwoDirections from '@/components/generated/ml-week10-two-directions'
 import MlWeek10DeltaChain from '@/components/generated/ml-week10-delta-chain'
+import MlWeek10ActivationExplorer from '@/components/generated/ml-week10-activation-explorer'
+import MlWeek10CrossEntropy from '@/components/generated/ml-week10-cross-entropy'
 
-# 第 10 週：多層神經網路與深度學習
+# 第 10 週：多層神經網路與 PyTorch
 
-*Multilayer Neural Networks and Deep Learning*
+*Multilayer Neural Networks & PyTorch*
 
 > 本週參考：[《Machine Learning with PyTorch and Scikit-Learn》](/notes/machine-learning-with-pytorch-and-scikit-learn)
 
@@ -133,6 +136,983 @@ status: generated
   <MlWeek10DeltaChain client:visible />
 </GeneratedFrame>
 
+## 從單層到多層：網路架構
+
+> 本節起對應課堂講義 `第10週-多層神經網路與PyTorch.pdf`（Lecture 7）。講義開場引言：「深度神經網路能降低表達複雜函式的參數需求量，但需要特別的演算法與技術來訓練（深度學習）。」講義的學習策略分三步：先弄懂多層神經網路的基本概念，再引進深度學習函式庫 PyTorch，最後用 PyTorch 建一個深度神經網路並訓練。
+
+### 單層網路：Adaline 回顧
+
+第 3 週的 Adaline 就是一個**單層神經網路（single-layer NN）**：輸入特徵乘上權重、加上偏差得到淨輸入 $z = \boldsymbol{w}^T\boldsymbol{x} + b$，過一個恆等激活函數、再過門檻函數輸出 0 或 1，損失函數是 MSE。講義特別說明「單層」的意思：輸入與輸出之間只有**一條連結（一個神經元）**，所以叫單層。
+
+{/* @ai-reference
+id: w10-single-layer-adaline
+file: _references/機器學習實作系列/第10週-多層神經網路與PyTorch.pdf
+page: 5
+status: suggested
+excerpt: Adaline (review Lecture 3)；Loss function: MSE；It is called a single-layer network because of its single link (neuron) between the input and output
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第10週-多層神經網路與PyTorch.pdf" page={5} status="suggested" excerpt={"Adaline (review Lecture 3)；Loss function: MSE；It is called a single-layer network because of its single link (neuron) between the input and output"} client:visible />
+
+![Adaline 的結構圖：輸入特徵乘權重加偏差進入淨輸入函數，經恆等激活函數與門檻函數輸出預測，誤差回饋更新權重與偏差](/note-images/ml-week10/01-adaline-single-layer.png)
+
+*第 5 頁：Adaline 是單層網路，輸入到輸出之間只有一個神經元；紅色框住的恆等激活函數正是多層網路要換掉的那一段。*
+
+### 多層感知器：全連接網路
+
+**多層感知器（multilayer perceptron, MLP）** 是**全連接（fully connected）** 的網路。講義以 2 層 MLP 為例：**隱藏層（hidden layer）** 有 $d$ 個神經元，每一個都與全部 $m$ 個輸入特徵相連；**輸出層（output layer）** 有 $t$ 個神經元，每一個都與全部 $d$ 個隱藏神經元相連。一欄神經元就是一層（a column of neurons forms a layer）；神經元在講義裡也叫節點或單元。
+
+{/* @ai-reference
+id: w10-mlp-fully-connected
+file: _references/機器學習實作系列/第10週-多層神經網路與PyTorch.pdf
+page: 6
+status: suggested
+excerpt: Multilayer Perceptron (MLP)：Fully connected（全連接）network；Example: 2-layer MLP；Hidden layer (d neurons) fully connected to m input features；Output layer (t neurons) fully connected to hidden layer
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第10週-多層神經網路與PyTorch.pdf" page={6} status="suggested" excerpt={"Multilayer Perceptron (MLP)：Fully connected（全連接）network；Example: 2-layer MLP；Hidden layer (d neurons) fully connected to m input features；Output layer (t neurons) fully connected to hidden layer"} client:visible />
+
+![兩層多層感知器的結構圖：輸入層 m 個特徵、隱藏層 d 個神經元、輸出層 t 個神經元，層與層之間全連接並標示權重與偏差符號](/note-images/ml-week10/02-two-layer-mlp.jpeg)
+
+*第 6 頁：資料輸入（in）→ 第 1 層（隱藏層 h）→ 第 2 層（輸出層 out）。上標括號標示「這個量屬於哪一層」，下標兩個索引標示「連到哪個神經元、來自哪個輸入」。*
+
+講義在圖旁寫出隱藏層第 1 個神經元的計算：
+
+$$
+\begin{aligned}
+z_1^{(h)} &= x_1^{(in)} w_{1,1}^{(h)} + x_2^{(in)} w_{1,2}^{(h)} + \cdots + x_m^{(in)} w_{1,m}^{(h)} + b_1^{(h)} \\
+a_1^{(h)} &= \sigma\!\left(z_1^{(h)}\right)
+\end{aligned}
+$$
+
+第二行的 $\sigma$ 是**激活函數（activation function）**。這裡有一個命名上的陷阱：講義提醒，「多層感知器」這個名字容易誤導，因為裡面的神經元通常是 sigmoid 單元，**不是感知器**——把 MLP 的每個神經元想成一個邏輯斯迴歸單元會更準確。非線性的激活函數（例如 sigmoid）正是多層網路能解複雜問題的關鍵：
+
+$$
+\sigma(z) = \frac{1}{1 + e^{-z}}
+$$
+
+{/* @ai-reference
+id: w10-mlp-neurons-are-logistic-units
+file: _references/機器學習實作系列/第10週-多層神經網路與PyTorch.pdf
+page: 7
+status: suggested
+excerpt: The term multilayer perceptron may sound a little bit confusing since the neurons are typically sigmoid units, not perceptrons；Think of the neurons in the MLP as logistic regression units
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第10週-多層神經網路與PyTorch.pdf" page={7} status="suggested" excerpt={"The term multilayer perceptron may sound a little bit confusing since the neurons are typically sigmoid units, not perceptrons；Think of the neurons in the MLP as logistic regression units"} client:visible />
+
+### 寬一點還是深一點
+
+**通用近似定理（universal approximation theorem）** 說：一個只有**單一隱藏層**、但隱藏單元**夠多**的前饋網路，就能逼近任意連續函數。加隱藏單元是在增加一層的**寬度（width）**；另一條路是增加隱藏層數、做成更深的架構——超過一個隱藏層的網路就叫**深度神經網路（deep NN, DNN）**。
+
+既然一層夠寬就能逼近任何函數，為什麼還要加深？講義給的理由是**參數效率**：要達到相同的模型容量，深的網路需要的參數比寬的網路少。層數與每層單元數都是超參數，要用交叉驗證來挑。代價是**梯度消失（vanishing gradient）**：網路越深，用來更新參數的損失梯度越往前層傳越小，前面幾層幾乎學不到東西；為了訓練得動這種深層結構而發展出的一整套特別演算法，就是所謂的**深度學習（deep learning）**。
+
+{/* @ai-reference
+id: w10-universal-approximation
+file: _references/機器學習實作系列/第10週-多層神經網路與PyTorch.pdf
+page: 8
+status: suggested
+excerpt: Universal approximation theorem states that a feedforward NN with a single hidden layer and a relatively large number of hidden units can approximate arbitrary continuous functions；A network with more than one hidden layer is a deep NN (DNN)
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第10週-多層神經網路與PyTorch.pdf" page={8} status="suggested" excerpt={"Universal approximation theorem states that a feedforward NN with a single hidden layer and a relatively large number of hidden units can approximate arbitrary continuous functions；A network with more than one hidden layer is a deep NN (DNN)"} client:visible />
+
+{/* @ai-reference
+id: w10-deeper-vs-wider-vanishing-gradient
+file: _references/機器學習實作系列/第10週-多層神經網路與PyTorch.pdf
+page: 9
+status: suggested
+excerpt: Advantage of making a network deeper rather than wider is that fewer parameters are required to achieve a comparable model capacity；However, vanishing gradient（梯度消失）problem makes model learning of a DNN more challenging
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第10週-多層神經網路與PyTorch.pdf" page={9} status="suggested" excerpt={"Advantage of making a network deeper rather than wider is that fewer parameters are required to achieve a comparable model capacity；However, vanishing gradient（梯度消失）problem makes model learning of a DNN more challenging"} client:visible />
+
+| 做法 | 改的是什麼 | 好處 | 代價 |
+| --- | --- | --- | --- |
+| 加寬（更多隱藏單元） | 單層的寬度 | 理論上單層就能逼近任意連續函數 | 參數量大 |
+| 加深（更多隱藏層） | 層數 | 同樣容量所需參數較少 | 梯度消失，訓練困難 |
+
+## 前向傳播：矩陣形式
+
+講義第 10–11 頁把 MLP 的計算整理成矩陣式，約定**大寫粗體表示矩陣、小寫粗體表示向量**。單一樣本的隱藏層計算：
+
+$$
+\begin{aligned}
+\boldsymbol{z}^{(h)} &= \boldsymbol{x}^{(in)} \left(\boldsymbol{W}^{(h)}\right)^T + \boldsymbol{b}^{(h)} \\
+\boldsymbol{a}^{(h)} &= \sigma\!\left(\boldsymbol{z}^{(h)}\right)
+\end{aligned}
+$$
+
+一次處理 $n$ 個樣本時，把特徵向量堆成特徵矩陣 $\boldsymbol{X}^{(in)}$，偏差向量也要複製 $n$ 列堆成矩陣 $\boldsymbol{B}^{(h)}$：
+
+$$
+\begin{aligned}
+\boldsymbol{Z}^{(h)} &= \boldsymbol{X}^{(in)} \left(\boldsymbol{W}^{(h)}\right)^T + \boldsymbol{B}^{(h)}, \qquad
+\boldsymbol{B}^{(h)} = \begin{bmatrix} \boldsymbol{b}^{(h)} \\ \vdots \\ \boldsymbol{b}^{(h)} \end{bmatrix}_{n \times d} \\
+\boldsymbol{A}^{(h)} &= \sigma\!\left(\boldsymbol{Z}^{(h)}\right)
+\end{aligned}
+$$
+
+輸出層把隱藏層的激活矩陣當輸入再做一次同樣的事：
+
+$$
+\begin{aligned}
+\boldsymbol{Z}^{(out)} &= \boldsymbol{A}^{(h)} \left(\boldsymbol{W}^{(out)}\right)^T + \boldsymbol{B}^{(out)} \\
+\boldsymbol{A}^{(out)} &= \sigma\!\left(\boldsymbol{Z}^{(out)}\right)
+\end{aligned}
+$$
+
+每一個樣本都得到 $t$ 個輸出（機率），所以可以直接用於多分類問題。把各個量的形狀列成一張表，寫程式時對維度最有用：
+
+| 量 | 形狀 | 意義 |
+| --- | --- | --- |
+| $\boldsymbol{W}^{(h)}$ | $d \times m$ | 隱藏層權重矩陣，每列是一個隱藏神經元對 $m$ 個輸入的權重 |
+| $\boldsymbol{b}^{(h)}$ | $1 \times d$ | 隱藏層偏差向量 |
+| $\boldsymbol{x}^{(in)}$ | $1 \times m$ | 單一樣本的特徵向量 |
+| $\boldsymbol{z}^{(h)}$、$\boldsymbol{a}^{(h)}$ | $1 \times d$ | 單一樣本的隱藏層淨輸入與激活 |
+| $\boldsymbol{X}^{(in)}$ | $n \times m$ | $n$ 個樣本的特徵矩陣 |
+| $\boldsymbol{Z}^{(h)}$、$\boldsymbol{A}^{(h)}$ | $n \times d$ | $n$ 個樣本的隱藏層淨輸入與激活矩陣 |
+| $\boldsymbol{W}^{(out)}$ | $t \times d$ | 輸出層權重矩陣 |
+| $\boldsymbol{b}^{(out)}$ | $1 \times t$ | 輸出層偏差向量 |
+| $\boldsymbol{Z}^{(out)}$、$\boldsymbol{A}^{(out)}$ | $n \times t$ | 網路的輸出，每個樣本 $t$ 個機率 |
+
+{/* @ai-reference
+id: w10-forward-propagation-hidden-layer
+file: _references/機器學習實作系列/第10週-多層神經網路與PyTorch.pdf
+page: 10
+status: suggested
+excerpt: Hidden layer (m features, d units)；Weight matrix (d × m): W(h)；Net input matrix (n × d): Z(h) = X(in) W(h)T + B(h)；Activation matrix (n × d): A(h) = σ(Z(h))
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第10週-多層神經網路與PyTorch.pdf" page={10} status="suggested" excerpt={"Hidden layer (m features, d units)；Weight matrix (d × m): W(h)；Net input matrix (n × d): Z(h) = X(in) W(h)T + B(h)；Activation matrix (n × d): A(h) = σ(Z(h))"} client:visible />
+
+{/* @ai-reference
+id: w10-forward-propagation-output-layer
+file: _references/機器學習實作系列/第10週-多層神經網路與PyTorch.pdf
+page: 11
+status: suggested
+excerpt: Output layer (d hidden inputs, t units)；Net input matrix (n × t): Z(out) = A(h) W(out)T + B(out)；每一個樣本都有 t 個輸出（機率）可用於多分類問題
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第10週-多層神經網路與PyTorch.pdf" page={11} status="suggested" excerpt={"Output layer (d hidden inputs, t units)；Net input matrix (n × t): Z(out) = A(h) W(out)T + B(out)；每一個樣本都有 t 個輸出（機率）可用於多分類問題"} client:visible />
+
+## 反向傳播：從損失到每一個權重
+
+### 損失函數
+
+訓練多分類的 MLP，先要選一個**損失函數（loss function）** $L(\boldsymbol{W}, \boldsymbol{b})$ 來計算輸出與目標之間的誤差。講義為了方便示範選 MSE：先對 $t$ 個輸出單元平均，再對 $n$ 個樣本平均（上標 $[i]$ 是訓練集中第 $i$ 個樣本的索引）：
+
+$$
+L(\boldsymbol{W}, \boldsymbol{b}) = \frac{1}{n} \sum_{i=1}^{n} \frac{1}{t} \sum_{j=1}^{t} \left( y_j^{[i]} - a_j^{(out)[i]} \right)^2
+$$
+
+講義第 22 頁自己註明：MSE 對多分類問題**不是最佳選擇**，單純是為了跟第 6–15 頁的推導呼應；多分類實務上用的是後面 PyTorch 段落的交叉熵。
+
+{/* @ai-reference
+id: w10-mse-loss-for-illustration
+file: _references/機器學習實作系列/第10週-多層神經網路與PyTorch.pdf
+page: 12
+status: suggested
+excerpt: Need to choose a loss function L(W, b) to calculate the error between the output and the target；Example: MSE (just for the ease of illustration)；Average over t activation units；Average over n samples
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第10週-多層神經網路與PyTorch.pdf" page={12} status="suggested" excerpt={"Need to choose a loss function L(W, b) to calculate the error between the output and the target；Example: MSE (just for the ease of illustration)；Average over t activation units；Average over n samples"} client:visible />
+
+### 要算的東西：每一層每一個權重的偏導數
+
+$\boldsymbol{W}$ 其實是好幾個矩陣（$\boldsymbol{W}^{(h)}$ 與 $\boldsymbol{W}^{(out)}$）的集合，講義把它畫成一個三維張量：列是隱藏單元、欄是特徵、第三個軸是層。要最小化 $L(\boldsymbol{W}, \boldsymbol{b})$，就得對**每一層**的**每一個**權重算偏導數 $\frac{\partial}{\partial w_{j,k}^{(l)}} L(\boldsymbol{W}, \boldsymbol{b})$。做這件事最流行的解法就是**反向傳播演算法（backpropagation algorithm）**。
+
+![三維權重張量示意圖：以堆疊方塊表示隱藏單元（列）、特徵（欄）、層（深度）三個軸，標出 W(h) 與 W(out) 兩片](/note-images/ml-week10/03-weight-tensor-3d.png)
+
+*第 13 頁：全部權重合起來是一個三維張量 $\boldsymbol{W}$，反向傳播要替這個張量裡的每一格算出損失的偏導數。*
+
+{/* @ai-reference
+id: w10-backprop-partial-derivatives-every-layer
+file: _references/機器學習實作系列/第10週-多層神經網路與PyTorch.pdf
+page: 13
+status: suggested
+excerpt: W consists of multiple matrices (W(h) and W(out))；To minimize the loss function L(W, b), we need to calculate its partial derivative w.r.t each weight for every layer in the network；A popular solution：The backpropagation algorithm
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第10週-多層神經網路與PyTorch.pdf" page={13} status="suggested" excerpt={"W consists of multiple matrices (W(h) and W(out))；To minimize the loss function L(W, b), we need to calculate its partial derivative w.r.t each weight for every layer in the network；A popular solution：The backpropagation algorithm"} client:visible />
+
+### 輸出層權重的梯度：鏈鎖律從輸出端往回走
+
+講義的定位很乾脆：反向傳播只是**反向模式自動微分（reverse-mode automatic differentiation）** 的一個特例——從輸出端開始、沿著鏈鎖律往回走。以輸出層權重 $w_{1,1}^{(out)}$（隱藏單元 1 連到輸出單元 1）為例，損失對它的偏導數拆成三段：
+
+![輸出層權重梯度示意圖：兩個輸入、三個隱藏單元、兩個輸出單元的網路，標出損失對 a1(out) 的偏導與 a1(out) 對 w1,1(out) 的偏導，右側寫出鏈鎖律](/note-images/ml-week10/04-gradient-output-layer.png)
+
+*第 14 頁：損失先傳到輸出激活 $a_1^{(out)}$，再經過激活函數傳到淨輸入，最後落到權重 $w_{1,1}^{(out)}$。*
+
+$$
+\frac{\partial L}{\partial w_{1,1}^{(out)}}
+= \frac{\partial L}{\partial a_1^{(out)}} \cdot
+  \frac{\partial a_1^{(out)}}{\partial z_1^{(out)}} \cdot
+  \frac{\partial z_1^{(out)}}{\partial w_{1,1}^{(out)}}
+$$
+
+第 15 頁把三段各自算出來（為了簡化，省略對樣本平均的 $\frac{1}{n}\sum_{i=1}^{n}$）。第一段是 MSE 對輸出激活的導數，第二段是 sigmoid 的導數，第三段是淨輸入對權重的導數：
+
+$$
+\begin{aligned}
+\frac{\partial L}{\partial a_1^{(out)}}
+  &= \frac{\partial}{\partial a_1^{(out)}} \left( y_1 - a_1^{(out)} \right)^2
+   = 2\left( a_1^{(out)} - y_1 \right) \\[4pt]
+\frac{\partial a_1^{(out)}}{\partial z_1^{(out)}}
+  &= \frac{\partial}{\partial z_1^{(out)}} \frac{1}{1 + e^{-z_1^{(out)}}}
+   = \left( \frac{1}{1 + e^{-z_1^{(out)}}} \right)\left( 1 - \frac{1}{1 + e^{-z_1^{(out)}}} \right)
+   = a_1^{(out)} \left( 1 - a_1^{(out)} \right) \\[4pt]
+\frac{\partial z_1^{(out)}}{\partial w_{1,1}^{(out)}}
+  &= \frac{\partial}{\partial w_{1,1}^{(out)}} \left( a_1^{(h)} w_{1,1}^{(out)} + b_1^{(out)} \right)
+   = a_1^{(h)}
+\end{aligned}
+$$
+
+三段相乘就是整個梯度，再用梯度下降更新權重：
+
+$$
+\begin{aligned}
+\frac{\partial L}{\partial w_{1,1}^{(out)}}
+  &= 2\left( a_1^{(out)} - y_1 \right) \cdot a_1^{(out)} \left( 1 - a_1^{(out)} \right) \cdot a_1^{(h)} \\[4pt]
+w_{1,1}^{(out)} &:= w_{1,1}^{(out)} - \eta \, \frac{\partial L}{\partial w_{1,1}^{(out)}}
+\end{aligned}
+$$
+
+{/* @ai-reference
+id: w10-backprop-reverse-mode-autodiff
+file: _references/機器學習實作系列/第10週-多層神經網路與PyTorch.pdf
+page: 14
+status: suggested
+excerpt: Backpropagation is simply a special case of reverse-mode automatic differentiation；Traverse the chain rule from the output；Example: Gradient for the output layer weight
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第10週-多層神經網路與PyTorch.pdf" page={14} status="suggested" excerpt={"Backpropagation is simply a special case of reverse-mode automatic differentiation；Traverse the chain rule from the output；Example: Gradient for the output layer weight"} client:visible />
+
+{/* @ai-reference
+id: w10-backprop-output-weight-derivation
+file: _references/機器學習實作系列/第10週-多層神經網路與PyTorch.pdf
+page: 15
+status: suggested
+excerpt: Weight update by GD；For simplicity, averaging over individual samples 1/n Σ is omitted；∂L/∂w(out)1,1 = 2(a(out)1 − y1)·a(out)1(1 − a(out)1)·a(h)1
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第10週-多層神經網路與PyTorch.pdf" page={15} status="suggested" excerpt={"Weight update by GD；For simplicity, averaging over individual samples 1/n Σ is omitted；∂L/∂w(out)1,1 = 2(a(out)1 − y1)·a(out)1(1 − a(out)1)·a(h)1"} client:visible />
+
+### 隱藏層權重的梯度：一條權重、兩條路徑
+
+往前一層，情況多了一個轉折。隱藏層權重 $w_{1,1}^{(h)}$ 影響的是隱藏激活 $a_1^{(h)}$，而 $a_1^{(h)}$ **同時連到兩個輸出單元**，所以損失對它的影響有兩條路徑，必須用多變數鏈鎖律把兩條路徑**加起來**：
+
+![隱藏層權重梯度示意圖：隱藏單元 a1(h) 以粗箭頭同時連向兩個輸出單元，右側的公式是兩條路徑的鏈鎖律乘積相加](/note-images/ml-week10/05-gradient-hidden-layer.png)
+
+*第 16 頁：粗箭頭標出的兩條路徑各自套鏈鎖律，再相加。這就是「責任」從輸出層分攤回隱藏層的實體動作。*
+
+$$
+\begin{aligned}
+\frac{\partial L}{\partial w_{1,1}^{(h)}}
+  &= \frac{\partial L}{\partial a_1^{(out)}} \cdot
+     \frac{\partial a_1^{(out)}}{\partial a_1^{(h)}} \cdot
+     \frac{\partial a_1^{(h)}}{\partial w_{1,1}^{(h)}} \\[4pt]
+  &\quad + \frac{\partial L}{\partial a_2^{(out)}} \cdot
+     \frac{\partial a_2^{(out)}}{\partial a_1^{(h)}} \cdot
+     \frac{\partial a_1^{(h)}}{\partial w_{1,1}^{(h)}}
+\end{aligned}
+$$
+
+把「本週摘要」的責任鏈說法對回這條式子：$\frac{\partial L}{\partial a_j^{(out)}}$ 是下游已經算好的責任，$\frac{\partial a_j^{(out)}}{\partial a_1^{(h)}}$ 含有權重 $w_{j,1}^{(out)}$ 與輸出層激活函數的導數（責任乘上權重往回送、再過這一層的閘門），最後的 $\frac{\partial a_1^{(h)}}{\partial w_{1,1}^{(h)}}$ 則含有隱藏層激活函數的導數與輸入 $x_1$。隱藏單元連到幾個輸出單元，就有幾項要加。
+
+{/* @ai-reference
+id: w10-backprop-hidden-weight-two-paths
+file: _references/機器學習實作系列/第10週-多層神經網路與PyTorch.pdf
+page: 16
+status: suggested
+excerpt: Example: Gradient for the hidden layer weight；Note: The weight w(h)1,1 is connected to both output nodes, we have to use the multi-variable chain rule to sum the two paths highlighted with bold arrows
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第10週-多層神經網路與PyTorch.pdf" page={16} status="suggested" excerpt={"Example: Gradient for the hidden layer weight；Note: The weight w(h)1,1 is connected to both output nodes, we have to use the multi-variable chain rule to sum the two paths highlighted with bold arrows"} client:visible />
+
+## 激活函數
+
+技術上，任何**可微分**的函數都能當多層網路的激活函數。但隱藏層與輸出層都用線性激活沒有意義——線性函數的和仍是線性函數，疊再多層等於一層。要讓網路能處理複雜問題，就必須引入**非線性（nonlinearity）**。
+
+{/* @ai-reference
+id: w10-activation-any-differentiable-nonlinearity
+file: _references/機器學習實作系列/第10週-多層神經網路與PyTorch.pdf
+page: 17
+status: suggested
+excerpt: Technically, any differentiable function can be used as an activation function in multilayer NNs；The sum of linear functions yields a linear function after all；We want to introduce nonlinearity in a typical artificial NN
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第10週-多層神經網路與PyTorch.pdf" page={17} status="suggested" excerpt={"Technically, any differentiable function can be used as an activation function in multilayer NNs；The sum of linear functions yields a linear function after all；We want to introduce nonlinearity in a typical artificial NN"} client:visible />
+
+講義第 18 頁列出五個常見的非線性激活函數，重點不只是公式，而是**各自用在哪裡**：
+
+| 激活函數 | 公式 | 值域 | 典型用途 |
+| --- | --- | --- | --- |
+| 邏輯斯（logistic / sigmoid） | $\sigma(z) = \dfrac{1}{1 + e^{-z}}$ | $(0, 1)$ | 二元分類的輸出層 |
+| softmax | $\sigma(z_i) = \dfrac{e^{z_i}}{\sum_{j=1}^{M} e^{z_j}}$ | $(0, 1)$，加總為 1 | 多類別分類的輸出層 |
+| 雙曲正切（tanh） | $\sigma(z) = \tanh z = \dfrac{e^{z} - e^{-z}}{e^{z} + e^{-z}}$ | $(-1, 1)$ | RNN 的隱藏層 |
+| 線性整流單元（ReLU） | $\sigma(z) = \max(0, z)$ | $[0, \infty)$ | CNN 與 DNN 的隱藏層 |
+| 洩漏線性整流單元（leaky ReLU） | $\sigma(z) = \max(\alpha z, z)$ | $(-\infty, \infty)$ | 標準 ReLU 失效時的隱藏層 |
+
+{/* @ai-reference
+id: w10-common-activation-functions
+file: _references/機器學習實作系列/第10週-多層神經網路與PyTorch.pdf
+page: 18
+status: suggested
+excerpt: Logistic (sigmoid): Range (0,1), Output layer for binary classification；Softmax: Output layer for multi-class classification；tanh: Range (−1,1), Hidden layers in RNNs；ReLU: max(0, z), Hidden layers in CNNs and DNNs；Leaky ReLU: max(αz, z), Hidden layers when standard ReLU fails
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第10週-多層神經網路與PyTorch.pdf" page={18} status="suggested" excerpt={"Logistic (sigmoid): Range (0,1), Output layer for binary classification；Softmax: Output layer for multi-class classification；tanh: Range (−1,1), Hidden layers in RNNs；ReLU: max(0, z), Hidden layers in CNNs and DNNs；Leaky ReLU: max(αz, z), Hidden layers when standard ReLU fails"} client:visible />
+
+![激活函數對照表：線性、單位階梯、符號、分段線性、邏輯斯、雙曲正切、ReLU 七種函數的公式、對應模型範例與一維圖形](/note-images/ml-week10/06-activation-functions-table.jpeg)
+
+*第 19 頁：從感知器用的階梯函數到多層網路用的 sigmoid、tanh、ReLU，同一張表可以對回前幾週學過的每一個模型。*
+
+這張表要和「梯度消失」連起來讀。sigmoid 的導數 $a(1-a)$ 最大只有 0.25，反向傳播每退一層就再乘一次，層一深梯度就指數級縮小；ReLU 在正區間的導數恆為 1，梯度往回傳不會被壓扁，這就是深層網路的隱藏層幾乎預設用 ReLU 的理由。ReLU 的弱點是負區間導數為 0，神經元一旦落在負區就永遠更新不到（dead ReLU），leaky ReLU 用一個小斜率 $\alpha$ 留一條活路。
+
+{/* @ai-visualize
+id: ml-week10-activation-explorer
+type: motion
+prompt: |
+  一個激活函數與其導數的互動探索器，讓讀者親眼看到「為什麼 sigmoid 會梯度消失、ReLU 不會」。
+
+  候選函數（用 tab 或 chip 切換，一次只顯示一個）：
+  1. sigmoid：σ(z) = 1 / (1 + e^(−z))，導數 σ(z)(1 − σ(z))，導數最大值 0.25
+  2. tanh：導數 1 − tanh²(z)，導數最大值 1 但兩側同樣飽和
+  3. ReLU：max(0, z)，導數在 z > 0 為 1、z < 0 為 0
+  4. leaky ReLU：max(αz, z)，α = 0.1，導數在 z < 0 為 α
+
+  畫面：
+  - 上方一張 recharts LineChart，橫軸 z 從 −6 到 6，畫兩條線：函數本身（實線）與導數（虛線），
+    y 軸範圍固定 −1.2 到 1.2 讓四個函數可以對照
+  - 一個 z 的 slider（−6 到 6，步進 0.1），拖動時圖上出現一條垂直參考線，
+    旁邊即時顯示 f(z) 與 f'(z) 的數值（保留三位小數）
+  - 下方一條「連乘 5 層」的示意：顯示 (f'(z))^5 的數值，並用五個等寬方塊的透明度表示梯度每退一層後剩多少，
+    讓 sigmoid 在 z = 0 時 0.25^5 ≈ 0.001 與 ReLU 在 z > 0 時 1^5 = 1 的對比一眼可見
+
+  視覺要求：
+  - 四個函數用 notecraft-design 的 blue / orange / neutral 色票區分，函數與導數用同色的實線與虛線
+  - 中文標註放 DOM，不放進 SVG
+  - 禁止使用 sm: / md: 等 viewport breakpoint（內文欄實際只有 647px）
+  - 尊重 prefers-reduced-motion
+
+  核心洞察：激活函數的選擇其實是在選「導數長什麼樣」——導數最大只有 0.25 的函數，
+  往回傳五層就剩千分之一；導數恆為 1 的函數，傳多少層都不縮水。
+caption: 拖動 z、切換函數，看導數連乘五層後還剩多少：這就是梯度消失，也是深層網路隱藏層改用 ReLU 的理由。
+status: generated
+*/}
+
+<GeneratedFrame id="ml-week10-activation-explorer" type="motion" prompt={"拖動 z、切換四種激活函數，看導數連乘五層後剩多少，體驗梯度消失。"} caption={"拖動 z、切換函數，看導數連乘五層後還剩多少：這就是梯度消失，也是深層網路隱藏層改用 ReLU 的理由。"}>
+  <MlWeek10ActivationExplorer client:visible />
+</GeneratedFrame>
+
+## 從零手刻 MLP：MNIST 手寫數字
+
+講義第二部分用 MNIST 資料集實作並訓練第一個多層網路：70,000 張 $28 \times 28$ 的灰階影像，特徵是 784 個像素（整數 $[0, 255]$），標籤是 0 到 9 共 10 類。
+
+![MNIST 手寫數字 0 到 9 各一張的範例影像](/note-images/ml-week10/07-mnist-digits.png)
+
+*第 21 頁：MNIST 的十個類別。用 `fetch_openml('mnist_784')` 即可載入。*
+
+{/* @ai-reference
+id: w10-mnist-dataset
+file: _references/機器學習實作系列/第10週-多層神經網路與PyTorch.pdf
+page: 21
+status: suggested
+excerpt: Implement and train our first multilayer NN to classify handwritten digits from the popular MNIST dataset；70,000 images of resolution 28 × 28 (grayscale)；Features: 784 pixels (integer [0, 255])；Labels: (0, 1, …, 9) (10 classes)
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第10週-多層神經網路與PyTorch.pdf" page={21} status="suggested" excerpt={"Implement and train our first multilayer NN to classify handwritten digits from the popular MNIST dataset；70,000 images of resolution 28 × 28 (grayscale)；Features: 784 pixels (integer [0, 255])；Labels: (0, 1, …, 9) (10 classes)"} client:visible />
+
+網路結構是 784 → 50 → 10：隱藏層權重矩陣 $50 \times 784$、輸出層權重矩陣 $10 \times 50$，兩層都用 sigmoid，損失用 MSE。類別標籤要先**獨熱編碼（one-hot encoding）** 成 10 維向量，才能跟 10 個輸出逐元素相減。
+
+![從零實作 MLP 的資料流程圖：28×28 影像攤平成 784 維輸入，經 50 節點隱藏層與 10 節點輸出層得到類別機率；類別標籤獨熱編碼後與輸出比較，forward 與 backward 兩個方法標在流程兩側](/note-images/ml-week10/08-mlp-from-scratch-flow.png)
+
+*第 22 頁：`NeuralNetMLP` 類別只有 `forward()` 與 `backward()` 兩個方法，對應流程圖上下兩條路。*
+
+{/* @ai-reference
+id: w10-mlp-from-scratch-architecture
+file: _references/機器學習實作系列/第10週-多層神經網路與PyTorch.pdf
+page: 22
+status: suggested
+excerpt: Implementing an MLP：50 × 784、10 × 50；Loss: MSE（對於多分類問題不是最佳的選擇，單純只是為了與 pp. 6-15 的推導呼應）
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第10週-多層神經網路與PyTorch.pdf" page={22} status="suggested" excerpt={"Implementing an MLP：50 × 784、10 × 50；Loss: MSE（對於多分類問題不是最佳的選擇，單純只是為了與 pp. 6-15 的推導呼應）"} client:visible />
+
+訓練流程（範例程式 `07_1.py`）：
+
+1. 載入 MNIST，把像素正規化到 $[-1, 1]$（講義註明這在實務上通常效果不錯）
+2. 切成訓練集、驗證集（5,000 筆）與測試集（10,000 筆）
+3. 實作 MLP
+4. 定義小批次資料載入器與訓練迴圈，批次大小 64
+5. 訓練 50 個 epoch
+6. 評估效能
+
+{/* @ai-reference
+id: w10-mlp-training-recipe
+file: _references/機器學習實作系列/第10週-多層神經網路與PyTorch.pdf
+page: 23
+status: suggested
+excerpt: Sample code: 07_1.py；Normalize pixels to [−1, 1] range (usually works well in practice)；Split into training, validation (5,000) and test set (10,000)；Define mini-batch data loader and training loop；Batch size: 64；Number of epochs: 50
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第10週-多層神經網路與PyTorch.pdf" page={23} status="suggested" excerpt={"Sample code: 07_1.py；Normalize pixels to [−1, 1] range (usually works well in practice)；Split into training, validation (5,000) and test set (10,000)；Define mini-batch data loader and training loop；Batch size: 64；Number of epochs: 50"} client:visible />
+
+![MNIST 手刻 MLP 的損失曲線：均方誤差隨 epoch 從 0.05 快速下降到接近 0.01](/note-images/ml-week10/09-mnist-loss-curve.png)
+
+*第 24 頁：損失曲線前 10 個 epoch 下降最快，之後趨緩。*
+
+![MNIST 手刻 MLP 的訓練與驗證正確率曲線：兩條線幾乎重疊，從 75% 爬升到 95% 左右](/note-images/ml-week10/10-mnist-accuracy-curve.png)
+
+*第 25 頁：訓練與驗證正確率貼合，代表沒有明顯過擬合。測試正確率 94.54%。*
+
+![25 張被誤判的 MNIST 樣本，每張標示真實標籤與預測結果](/note-images/ml-week10/11-mnist-misclassified.png)
+
+*第 26 頁：前 25 筆誤判樣本——不少連人眼都難以辨認，這些是手刻 MLP 的能力邊界，也是後面換 CNN 的動機。*
+
+{/* @ai-reference
+id: w10-mlp-test-accuracy
+file: _references/機器學習實作系列/第10週-多層神經網路與PyTorch.pdf
+page: 26
+status: suggested
+excerpt: Evaluate the Performance：Test accuracy: 94.54%；The first 25 misclassified samples
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第10週-多層神經網路與PyTorch.pdf" page={26} status="suggested" excerpt={"Evaluate the Performance：Test accuracy: 94.54%；The first 25 misclassified samples"} client:visible />
+
+## PyTorch 基礎
+
+PyTorch（`torch`）是最流行的深度學習函式庫之一，透過**動態計算圖（dynamic computation graph）** 支援深度學習，提供 GPU 加速、張量運算與自動微分，另有 TorchText、TorchVision、TorchAudio 等領域函式庫與預載資料集。三個核心功能：**張量（tensor）**、**Autograd（自動微分）**、**nn.Module**。
+
+{/* @ai-reference
+id: w10-pytorch-overview
+file: _references/機器學習實作系列/第10週-多層神經網路與PyTorch.pdf
+page: 28
+status: suggested
+excerpt: PyTorch (torch) is one of the most popular deep learning libraries；Supports deep learning via a dynamic computation graph；Provides GPU acceleration, tensor computation, and automatic differentiation；Main features：Tensors, Autograd (automatic differentiation), nn.Module
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第10週-多層神經網路與PyTorch.pdf" page={28} status="suggested" excerpt={"PyTorch (torch) is one of the most popular deep learning libraries；Supports deep learning via a dynamic computation graph；Provides GPU acceleration, tensor computation, and automatic differentiation；Main features：Tensors, Autograd (automatic differentiation), nn.Module"} client:visible />
+
+### 張量
+
+**張量（tensor）** 是一種與陣列、矩陣非常相似的特化資料結構，用來編碼模型的輸入、輸出與參數。它和 NumPy 的 `ndarray` 幾乎一樣，差別只有兩點：張量**為自動微分而最佳化**，而且**能在 GPU 上執行**。
+
+![張量的階數示意圖：Rank 0 是純量（一格）、Rank 1 是向量（一排）、Rank 2 是矩陣（一面）、Rank 3 是立方體](/note-images/ml-week10/12-tensor-ranks.jpeg)
+
+*第 29 頁：純量、向量、矩陣、三維陣列都是張量，差別只在階數（rank）。影像批次會是四階張量。*
+
+{/* @ai-reference
+id: w10-tensor-definition
+file: _references/機器學習實作系列/第10週-多層神經網路與PyTorch.pdf
+page: 29
+status: suggested
+excerpt: Tensor（張量）：Specialized data structure that are very similar to arrays and matrices；Similar to NumPy's ndarrays, except that tensors are optimized for automatic differentiation and can run on GPUs
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第10週-多層神經網路與PyTorch.pdf" page={29} status="suggested" excerpt={"Tensor（張量）：Specialized data structure that are very similar to arrays and matrices；Similar to NumPy's ndarrays, except that tensors are optimized for automatic differentiation and can run on GPUs"} client:visible />
+
+建立張量有三條路：從 Python list、從 NumPy 陣列、或用隨機／常數值：
+
+```python
+data = [[1, 2], [3, 4]]
+x_data = torch.tensor(data)            # 從 list
+
+np_array = np.array(data)
+x_np = torch.from_numpy(np_array)      # 從 NumPy 陣列
+
+shape = (2, 3)
+rand_tensor = torch.rand(shape)        # 隨機值
+ones_tensor = torch.ones(shape)        # 全 1
+zeros_tensor = torch.zeros(shape)      # 全 0
+```
+
+張量的三個屬性分別描述形狀、資料型別與存放裝置。預設在 CPU 上建立，要用加速器（CUDA 或 Apple 的 MPS）得**明確**用 `.to()` 搬過去：
+
+```python
+tensor = torch.rand(3, 4)
+print(tensor.shape)    # torch.Size([3, 4])
+print(tensor.dtype)    # torch.float32
+print(tensor.device)   # cpu
+
+if torch.accelerator.is_available():
+    tensor = tensor.to(torch.accelerator.current_accelerator())
+```
+
+運算面幾乎照 NumPy 的直覺：算術、線性代數（`torch.matmul` 矩陣乘法、`tensor * tensor` 逐元素乘）、轉置、索引、切片、接合（`torch.cat`、`torch.stack`）、`torch.sum()`、`.mean()`、`.std()`、`.squeeze()`、`.chunk()`、`.split()` 等。兩個容易踩到的細節：
+
+- **與 NumPy 共用記憶體**：CPU 上的張量與 NumPy 陣列可以共用記憶體位置，`t.numpy()` 或 `torch.from_numpy(n)` 之後改其中一個、另一個也跟著變
+- **原地運算（in-place operation）**：把結果存回運算元本身的運算，以底線結尾表示，例如 `t.add_(1)`
+
+{/* @ai-reference
+id: w10-tensor-attributes-device
+file: _references/機器學習實作系列/第10週-多層神經網路與PyTorch.pdf
+page: 31
+status: suggested
+excerpt: Attributes of a Tensor：Describe their shape, datatype, and the device on which they are stored；By default, tensors are created on the CPU. We need to explicitly move tensors to the accelerator (cuda or mps) using .to() method
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第10週-多層神經網路與PyTorch.pdf" page={31} status="suggested" excerpt={"Attributes of a Tensor：Describe their shape, datatype, and the device on which they are stored；By default, tensors are created on the CPU. We need to explicitly move tensors to the accelerator (cuda or mps) using .to() method"} client:visible />
+
+{/* @ai-reference
+id: w10-tensor-numpy-bridge-inplace
+file: _references/機器學習實作系列/第10週-多層神經網路與PyTorch.pdf
+page: 33
+status: suggested
+excerpt: Tensors on the CPU and NumPy arrays can share their memory locations (changing one will change the other)；Operations that store the result into the operand are called in-place, denoted by a _ suffix
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第10週-多層神經網路與PyTorch.pdf" page={33} status="suggested" excerpt={"Tensors on the CPU and NumPy arrays can share their memory locations (changing one will change the other)；Operations that store the result into the operand are called in-place, denoted by a _ suffix"} client:visible />
+
+### 通用模組地圖
+
+講義第 34 頁把 PyTorch 常用的模組依「訓練一個模型要做的事」分組：
+
+| 工作 | 模組 | 內容 |
+| --- | --- | --- |
+| 處理資料 | `torch.utils.data` | `Dataset`（存樣本與標籤）、`DataLoader`（把 Dataset 包成可迭代物件） |
+| 建模型 | `torch.nn` | `Module`、`Sequential`、`torch.nn.functional` |
+| 最佳化 | `torch.optim` | `SGD`、`Adam`、`AdamW` 等優化器 |
+| 電腦視覺 | `torchvision` | `datasets`（內建資料集）、`transforms`（資料轉換） |
+
+講義附帶提醒：PyTorch 的函式與類別常有帶預設值的參數，範例為了清楚會省略，實際用時要翻線上文件確認。
+
+{/* @ai-reference
+id: w10-general-modules-map
+file: _references/機器學習實作系列/第10週-多層神經網路與PyTorch.pdf
+page: 34
+status: suggested
+excerpt: Working with data: torch.utils.data（Dataset、DataLoader）；Building an NN model: torch.nn（Module、Sequential、torch.nn.functional）；Optimizer: torch.optim；Computer vision: torchvision（datasets、transforms）
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第10週-多層神經網路與PyTorch.pdf" page={34} status="suggested" excerpt={"Working with data: torch.utils.data（Dataset、DataLoader）；Building an NN model: torch.nn（Module、Sequential、torch.nn.functional）；Optimizer: torch.optim；Computer vision: torchvision（datasets、transforms）"} client:visible />
+
+### Dataset、DataLoader 與 Transforms
+
+自訂一個 `Dataset` 子類別**必須實作三個方法**：`__init__` 在實例化時跑一次，`__len__` 回傳樣本數，`__getitem__` 依索引載入並回傳一筆樣本。影像在 `__getitem__` 被呼叫時才真的打開，所以記憶體裡永遠只有當下這一批：
+
+```python
+class ImageDataset(Dataset):
+    def __init__(self, file_list, labels, transform=None):
+        self.file_list = file_list
+        self.labels = labels
+        self.transform = transform
+
+    def __len__(self):
+        return len(self.labels)
+
+    def __getitem__(self, index):
+        img = Image.open(self.file_list[index])
+        if self.transform is not None:
+            img = self.transform(img)
+        label = self.labels[index]
+        return img, label
+```
+
+影像依類別分資料夾放好時，`torchvision.datasets.ImageFolder` 就是現成的通用載入器；常見資料集（例如 Fashion-MNIST）則由 `torchvision.datasets` 直接提供，`root` 指定存放路徑、`train` 區分訓練或測試、`download=True` 不在本機時自動下載、`transform` 與 `target_transform` 分別指定特徵與標籤的轉換。
+
+{/* @ai-reference
+id: w10-custom-dataset-three-methods
+file: _references/機器學習實作系列/第10週-多層神經網路與PyTorch.pdf
+page: 35
+status: suggested
+excerpt: Creating a custom Dataset (subclass)：Must implement three functions：__init__: Run once when instantiating the Dataset object；__len__: Returns the number of samples in the dataset；__getitem__: Loads and returns a sample from the dataset at the given index
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第10週-多層神經網路與PyTorch.pdf" page={35} status="suggested" excerpt={"Creating a custom Dataset (subclass)：Must implement three functions：__init__: Run once when instantiating the Dataset object；__len__: Returns the number of samples in the dataset；__getitem__: Loads and returns a sample from the dataset at the given index"} client:visible />
+
+`Dataset` 一次只取一筆；`DataLoader` 把它包成可迭代物件，負責自動分批、取樣、洗牌與多程序載入：
+
+```python
+train_dataloader = DataLoader(training_data, batch_size=64, shuffle=True)
+test_dataloader = DataLoader(test_data, batch_size=64, shuffle=True)
+
+for X, y in test_dataloader:
+    print(f"Shape of X [N, C, H, W]: {X.shape}")   # torch.Size([64, 1, 28, 28])
+    print(f"Shape of y: {y.shape} {y.dtype}")      # torch.Size([64]) torch.int64
+    break
+```
+
+批次張量的形狀約定是 $(N, C, H, W)$：批次大小、通道數、高、寬。灰階影像 $C = 1$，這個順序到下週的 CNN 會一直用到。
+
+{/* @ai-reference
+id: w10-dataloader-batching
+file: _references/機器學習實作系列/第10週-多層神經網路與PyTorch.pdf
+page: 38
+status: suggested
+excerpt: DataLoader：Wraps an iterable around the Dataset；Supports automatic batching, sampling, shuffling and multiprocess data loading；The Dataset retrieves our dataset's features and labels one sample at a time
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第10週-多層神經網路與PyTorch.pdf" page={38} status="suggested" excerpt={"DataLoader：Wraps an iterable around the Dataset；Supports automatic batching, sampling, shuffling and multiprocess data loading；The Dataset retrieves our dataset's features and labels one sample at a time"} client:visible />
+
+**轉換（transforms）** 把資料整理成適合訓練的形式：`transform` 改特徵、`target_transform` 改標籤。講義用的是新版 `torchvision.transforms.v2`——`v2.ToImage()` 接 `v2.ToDtype(torch.float32, scale=True)` 取代了舊版的 `transforms.ToTensor()`；標籤則用 `v2.Lambda` 包一個 `F.one_hot` 做獨熱編碼：
+
+```python
+from torchvision.transforms import v2
+
+ds = datasets.FashionMNIST(
+    root="data", train=True, download=True,
+    transform=v2.Compose([v2.ToImage(), v2.ToDtype(torch.float32, scale=True)]),
+    target_transform=v2.Lambda(
+        lambda y: F.one_hot(torch.tensor(y), num_classes=10).float()
+    ),
+)
+```
+
+{/* @ai-reference
+id: w10-transforms-v2
+file: _references/機器學習實作系列/第10週-多層神經網路與PyTorch.pdf
+page: 39
+status: suggested
+excerpt: Transforms：transform: to modify the features；target_transform: to modify the labels；取代舊版的 transforms.ToTensor()；新版的 transforms
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第10週-多層神經網路與PyTorch.pdf" page={39} status="suggested" excerpt={"Transforms：transform: to modify the features；target_transform: to modify the labels；取代舊版的 transforms.ToTensor()；新版的 transforms"} client:visible />
+
+### 以 nn.Module 定義模型
+
+`torch.nn` 提供建網路的所有積木。一個神經網路本身就是一個模組（module），由其他模組（層）組成；PyTorch 裡每個模組都是 `nn.Module` 的子類別，所以層可以層層巢狀。每一層的輸入來自前一層，維度因此是固定的——通常只需要關心**輸出**的維度。
+
+定義模型就是繼承 `nn.Module`：在 `__init__` 初始化各層，在 `forward` 寫資料怎麼流過去。`nn.Linear` 就是全連接層（fully connected layer，又稱 dense layer）：
+
+```python
+class Model(nn.Module):
+    def __init__(self, input_size, hidden_size, output_size):
+        super().__init__()
+        self.layer1 = nn.Linear(input_size, hidden_size)
+        self.layer2 = nn.Linear(hidden_size, output_size)
+
+    def forward(self, x):
+        x = self.layer1(x)
+        x = nn.Sigmoid()(x)
+        x = self.layer2(x)
+        # x = nn.Softmax(dim=1)(x)   # 採用 nn.CrossEntropyLoss 時不要加這一行
+        return x
+```
+
+講義在這段程式旁邊用紅字劃掉了最後的 `nn.Softmax`，並寫下本週最重要的實作提醒：**網路的輸出層要與損失函數搭配**——若用 `nn.CrossEntropyLoss()` 當損失函數，它內部已經包含 `nn.LogSoftmax` 與 `nn.NLLLoss`，**不應該**在最後一層再加 `nn.Softmax()`，否則等於做了兩次。
+
+使用模型時直接把輸入丟給它，這會執行模型的 `forward()`；**不要直接呼叫** `model.forward()`：
+
+```python
+model = Model(input_size, hidden_size, output_size)
+logits = model(X)
+pred_probab = nn.Softmax(dim=1)(logits)   # 推論時才把 logits 轉成機率
+y_pred = pred_probab.argmax(1)
+```
+
+繼承 `nn.Module` 會自動追蹤物件裡定義的所有欄位，用 `model.parameters()` 或 `model.named_parameters()` 就能取出權重與偏差——這也是優化器之後拿參數的管道。
+
+{/* @ai-reference
+id: w10-nn-module-nested
+file: _references/機器學習實作系列/第10週-多層神經網路與PyTorch.pdf
+page: 40
+status: suggested
+excerpt: A neural network is a module itself that consists of other modules (layers)；Every module in PyTorch subclasses the nn.Module which allows layers to be stacked to form a network；Typically, we need to concern with the dimensionality of output only
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第10週-多層神經網路與PyTorch.pdf" page={40} status="suggested" excerpt={"A neural network is a module itself that consists of other modules (layers)；Every module in PyTorch subclasses the nn.Module which allows layers to be stacked to form a network；Typically, we need to concern with the dimensionality of output only"} client:visible />
+
+{/* @ai-reference
+id: w10-no-softmax-with-crossentropy
+file: _references/機器學習實作系列/第10週-多層神經網路與PyTorch.pdf
+page: 41
+status: suggested
+excerpt: 注意：網路的輸出層要與 Loss function 搭配；若採用 nn.CrossEntropyLoss() 作為 Loss function，已經包含 nn.LogSoftmax 與 nn.NLLLoss，不應該在最後一層加上 nn.Softmax()
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第10週-多層神經網路與PyTorch.pdf" page={41} status="suggested" excerpt={"注意：網路的輸出層要與 Loss function 搭配；若採用 nn.CrossEntropyLoss() 作為 Loss function，已經包含 nn.LogSoftmax 與 nn.NLLLoss，不應該在最後一層加上 nn.Softmax()"} client:visible />
+
+{/* @ai-reference
+id: w10-do-not-call-forward-directly
+file: _references/機器學習實作系列/第10週-多層神經網路與PyTorch.pdf
+page: 42
+status: suggested
+excerpt: To use the model, we pass it the input data；This executes the model's forward()；Do not call model.forward() directly
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第10週-多層神經網路與PyTorch.pdf" page={42} status="suggested" excerpt={"To use the model, we pass it the input data；This executes the model's forward()；Do not call model.forward() directly"} client:visible />
+
+### 損失函數怎麼選
+
+損失函數的選擇由兩件事決定：**任務型態**，以及**輸入給它的是機率還是 logits**。第 44 頁的清單整理成表：
+
+| 損失函數 | 適用任務 | 輸入 | 備註 |
+| --- | --- | --- | --- |
+| `nn.MSELoss` | 迴歸 | 預測值 | 均方誤差 |
+| `nn.BCELoss` | 二元分類、多標籤分類 | 機率（已過 sigmoid） | 二元交叉熵 |
+| `nn.BCEWithLogitsLoss` | 二元分類、多標籤分類 | logits（**不要**過 sigmoid） | 內含 `nn.Sigmoid` 與 `nn.BCELoss` |
+| `nn.NLLLoss` | 多類別分類 | 對數機率 | 負對數概似 |
+| `nn.CrossEntropyLoss` | 多類別分類 | logits（**不要**過 softmax） | 內含 `nn.LogSoftmax` 與 `nn.NLLLoss` |
+
+**Logits** 是輸出層還沒過 sigmoid 或 softmax 的原始分數。「WithLogits」與 `CrossEntropyLoss` 這兩個版本把激活函數收進損失函數內部，數值上更穩定，也是講義範例採用的做法；代價就是前一節的提醒——模型最後一層不能再疊一次激活函數。
+
+{/* @ai-reference
+id: w10-choose-loss-function
+file: _references/機器學習實作系列/第10週-多層神經網路與PyTorch.pdf
+page: 44
+status: suggested
+excerpt: nn.MSELoss (for regression)；nn.BCELoss Input: probabilities；nn.BCEWithLogitsLoss Input: logits（不要經過 sigmoid），Combines nn.Sigmoid and nn.BCELoss；nn.NLLLoss Input: log-probabilities；nn.CrossEntropyLoss Input: logits（不要經過 softmax），Combines nn.LogSoftmax and nn.NLLLoss
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第10週-多層神經網路與PyTorch.pdf" page={44} status="suggested" excerpt={"nn.MSELoss (for regression)；nn.BCELoss Input: probabilities；nn.BCEWithLogitsLoss Input: logits（不要經過 sigmoid），Combines nn.Sigmoid and nn.BCELoss；nn.NLLLoss Input: log-probabilities；nn.CrossEntropyLoss Input: logits（不要經過 softmax），Combines nn.LogSoftmax and nn.NLLLoss"} client:visible />
+
+**多分類交叉熵（categorical cross entropy）** 的單一樣本損失是：
+
+$$
+L = -\sum_{c=1}^{C} y_c \cdot \log(\hat{y}_c)
+$$
+
+其中 $C$ 是類別總數，$y_c$ 是真實標籤中第 $c$ 個類別的機率值（獨熱編碼下正解類別為 1、其餘為 0），$\hat{y}_c$ 是模型經 softmax 後預測第 $c$ 類的機率。因為非正解類別的 $y_c$ 都是 0，對應的乘法項全部消失，這條式子**實質上只在算「模型對正確答案所預測出的機率，取自然對數後再加負號」**：預測正確答案的機率越接近 1，對數值越接近 0，損失就越低。
+
+一個批次的損失是 $N$ 個樣本的平均（$y_{i,c}$ 與 $\hat{y}_{i,c}$ 分別是第 $i$ 個樣本在第 $c$ 類的真實標籤與預測機率）：
+
+$$
+\text{Loss} = -\frac{1}{N} \sum_{i=1}^{N} \sum_{c=1}^{C} y_{i,c} \cdot \log(\hat{y}_{i,c})
+$$
+
+{/* @ai-reference
+id: w10-categorical-cross-entropy-single
+file: _references/機器學習實作系列/第10週-多層神經網路與PyTorch.pdf
+page: 45
+status: suggested
+excerpt: Categorical Cross Entropy（多分類交叉熵）Single sample loss；非正解類別的 yc 都是 0，對應的乘法項次全部消失；實質只專注計算「模型對正確答案所預測出的機率，取自然對數後再加負號」的數值
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第10週-多層神經網路與PyTorch.pdf" page={45} status="suggested" excerpt={"Categorical Cross Entropy（多分類交叉熵）Single sample loss；非正解類別的 yc 都是 0，對應的乘法項次全部消失；實質只專注計算「模型對正確答案所預測出的機率，取自然對數後再加負號」的數值"} client:visible />
+
+{/* @ai-visualize
+id: ml-week10-cross-entropy
+type: motion
+prompt: |
+  一個「交叉熵只看正確答案那一格」的互動元件，讓讀者體驗損失值怎麼隨預測機率變化。
+
+  畫面分兩部分：
+  上半：一個 4 類別的 softmax 輸出條（類別 A、B、C、D），正解固定是 B。
+  讀者拖一個 slider 控制「模型給正解 B 的機率 p」（0.01 到 0.99），其餘三類平均分掉 1 − p。
+  四根長條用 motion 隨 slider 平滑變化；正解 B 那根用 notecraft-design 的 orange 標示、其他三根用 neutral。
+  四根長條上方各顯示 y_c（one-hot：0、1、0、0）與 ŷ_c（機率，兩位小數），
+  並在每根長條下方顯示該項 −y_c·log(ŷ_c) 的值——非正解三項恆為 0 並以淡色顯示「× 0 消失」，
+  只有 B 那項有值。
+
+  下半：一張 recharts LineChart 畫 −log(p) 曲線，橫軸 p 從 0.01 到 1，縱軸 0 到 4.7；
+  slider 的當前 p 在曲線上畫一個點並標出 L = −log(p) 的值（三位小數）。
+  曲線旁用一行字說明：p 越接近 1 損失越接近 0；p 很小時損失急遽上升。
+
+  互動規則：只有一個 slider。另外提供兩個快捷按鈕「猜對（p = 0.95）」與「猜錯（p = 0.05）」，
+  按下後 slider 以 motion 滑到該值。
+
+  視覺要求：
+  - 長條用 DOM（div）畫，不要用 SVG 估中文寬度
+  - 禁止使用 sm: / md: 等 viewport breakpoint（內文欄實際只有 647px）
+  - 尊重 prefers-reduced-motion（關閉動畫時數值仍即時更新）
+
+  核心洞察：交叉熵的公式看起來要加總 C 項，但 one-hot 讓其他項全部歸零，
+  它其實只是「正確答案的機率取對數加負號」而已——所以它罰的是「對正解不夠有信心」。
+caption: 拖動正解的預測機率，看 one-hot 怎麼讓其他項消失、−log 怎麼把「不夠有信心」放大成損失。
+status: generated
+*/}
+
+<GeneratedFrame id="ml-week10-cross-entropy" type="motion" prompt={"拖動正解的預測機率，看 one-hot 讓其他項消失、−log 把不夠有信心放大成損失。"} caption={"拖動正解的預測機率，看 one-hot 怎麼讓其他項消失、−log 怎麼把「不夠有信心」放大成損失。"}>
+  <MlWeek10CrossEntropy client:visible />
+</GeneratedFrame>
+
+### 優化器與 autograd
+
+**最佳化（optimization）** 是在每個訓練步驟調整模型參數以降低誤差的過程，全部邏輯封裝在**優化器（optimizer）** 物件裡（`torch.optim.SGD`、`Adam`、`AdamW` 等）。初始化時要**登記模型需要訓練的參數**並傳入學習率：
+
+```python
+optimizer = torch.optim.SGD(model.parameters(), lr=learning_rate)
+```
+
+**Autograd** 是 PyTorch 內建的微分引擎，支援任意計算圖的梯度自動計算。套用在張量上以建構計算圖的函式都是 `torch.autograd.Function` 的子類別：前向時算函數值，反向時算導數。要替哪些張量算梯度，就在建立時宣告 `requires_grad=True`：
+
+```python
+x = torch.ones(5)                      # 輸入張量
+y = torch.zeros(3)                     # 期望輸出
+w = torch.randn(5, 3, requires_grad=True)
+b = torch.randn(3, requires_grad=True)
+z = torch.matmul(x, w) + b
+loss = torch.nn.functional.binary_cross_entropy_with_logits(z, y)
+```
+
+訓練迴圈裡，最佳化由三步完成（講義稱之為 autograd 的魔法）：
+
+1. 呼叫 `loss.backward()`：把預測損失反向傳播，算出對每個參數的梯度
+2. 呼叫 `optimizer.step()`：依梯度更新參數
+3. 呼叫 `optimizer.zero_grad()`：把參數的梯度歸零——**梯度預設會累加**，每次迭代都要明確清掉，才不會重複計算
+
+{/* @ai-reference
+id: w10-optimizer-register-parameters
+file: _references/機器學習實作系列/第10週-多層神經網路與PyTorch.pdf
+page: 47
+status: suggested
+excerpt: All optimization logic is encapsulated in the optimizer object（torch.optim.SGD, torch.optim.Adam, torch.optim.AdamW）；Initialize the optimizer by registering the model's parameters that need to be trained, and passing in the learning rate hyperparameter
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第10週-多層神經網路與PyTorch.pdf" page={47} status="suggested" excerpt={"All optimization logic is encapsulated in the optimizer object（torch.optim.SGD, torch.optim.Adam, torch.optim.AdamW）；Initialize the optimizer by registering the model's parameters that need to be trained, and passing in the learning rate hyperparameter"} client:visible />
+
+{/* @ai-reference
+id: w10-autograd-requires-grad
+file: _references/機器學習實作系列/第10週-多層神經網路與PyTorch.pdf
+page: 48
+status: suggested
+excerpt: Automatic differentiation with torch.autograd；A function that we apply to tensors to construct computational graph is a subclass of torch.autograd.Function；Declare Tensors for which gradients should be computed with requires_grad=True
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第10週-多層神經網路與PyTorch.pdf" page={48} status="suggested" excerpt={"Automatic differentiation with torch.autograd；A function that we apply to tensors to construct computational graph is a subclass of torch.autograd.Function；Declare Tensors for which gradients should be computed with requires_grad=True"} client:visible />
+
+{/* @ai-reference
+id: w10-three-steps-backward-step-zero-grad
+file: _references/機器學習實作系列/第10週-多層神經網路與PyTorch.pdf
+page: 49
+status: suggested
+excerpt: Call loss.backward() to compute gradients w.r.t. each parameter；Call optimizer.step() to update parameters by the gradients；Call optimizer.zero_grad() to reset the gradients of parameters；Gradients by default add up；Explicitly zero them at each iteration to prevent double-counting
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第10週-多層神經網路與PyTorch.pdf" page={49} status="suggested" excerpt={"Call loss.backward() to compute gradients w.r.t. each parameter；Call optimizer.step() to update parameters by the gradients；Call optimizer.zero_grad() to reset the gradients of parameters；Gradients by default add up；Explicitly zero them at each iteration to prevent double-counting"} client:visible />
+
+### 訓練迴圈與驗證迴圈
+
+每個 epoch 由兩個部分組成：**訓練迴圈（train loop）** 與**驗證／測試迴圈（validation/test loop）**。訓練迴圈的五個步驟就是「本週摘要」那個循環動畫的來源：
+
+```python
+def train_loop(dataloader, model, loss_fn, optimizer):
+    model.train()          # 切到訓練模式（批次正規化與 dropout 層需要）
+    for batch, (X, y) in enumerate(dataloader):
+        pred = model(X)                 # 1. 產生預測
+        loss = loss_fn(pred, y)         # 2. 計算損失
+        loss.backward()                 # 3. 計算梯度
+        optimizer.step()                # 4. 依梯度更新參數
+        optimizer.zero_grad()           # 5. 梯度歸零
+```
+
+測試迴圈只做預測，不更新參數。兩個細節：`model.eval()` 切到評估模式，`torch.no_grad()` 確保測試時不計算梯度，同時省下 `requires_grad=True` 張量的梯度計算與記憶體：
+
+```python
+def test_loop(dataloader, model, loss_fn):
+    model.eval()
+    test_loss, correct = 0, 0
+    with torch.no_grad():
+        for X, y in dataloader:
+            pred = model(X)
+            test_loss += loss_fn(pred, y).item()
+            correct += (pred.argmax(1) == y).type(torch.float).sum().item()
+```
+
+外層只是一個 epoch 迴圈，每輪先 `train_loop` 再 `test_loop`。
+
+{/* @ai-reference
+id: w10-train-loop-five-steps
+file: _references/機器學習實作系列/第10週-多層神經網路與PyTorch.pdf
+page: 51
+status: suggested
+excerpt: Train Loop：1. Generate predictions；2. Calculate loss；3. Compute gradients；4. Update parameters using gradients；5. Reset the gradients to zero
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第10週-多層神經網路與PyTorch.pdf" page={51} status="suggested" excerpt={"Train Loop：1. Generate predictions；2. Calculate loss；3. Compute gradients；4. Update parameters using gradients；5. Reset the gradients to zero"} client:visible />
+
+{/* @ai-reference
+id: w10-test-loop-no-grad
+file: _references/機器學習實作系列/第10週-多層神經網路與PyTorch.pdf
+page: 52
+status: suggested
+excerpt: Validation/Test Loop：Make predictions only；Set the model to evaluation mode；Evaluating the model with torch.no_grad() ensures that no gradients are computed during test mode
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第10週-多層神經網路與PyTorch.pdf" page={52} status="suggested" excerpt={"Validation/Test Loop：Make predictions only；Set the model to evaluation mode；Evaluating the model with torch.no_grad() ensures that no gradients are computed during test mode"} client:visible />
+
+### 儲存與載入模型
+
+兩種存法。存**整個模型**（架構加全部參數）用 Python 的 pickle 序列化，副檔名 `.pt` 或 `.pth` 只是慣例；只存**權重**則存內部字典 `state_dict`，載入時要先建一個**同樣的模型**實例，再用 `load_state_dict()` 把參數灌進去。不論哪種，推論前都要記得呼叫 `model.eval()`：
+
+```python
+# 整個模型
+torch.save(model, 'iris_classifier.pt')
+model_new = torch.load('iris_classifier.pt')
+model_new.eval()
+
+# 只存權重
+torch.save(model.state_dict(), 'iris_classifier_state.pt')
+model_new = Model(input_size, hidden_size, output_size)
+model_new.load_state_dict(torch.load('iris_classifier_state.pt'))
+model_new.eval()
+```
+
+作業四要求繳交 `.pth` 參數檔與測試腳本，用的就是第二種。
+
+{/* @ai-reference
+id: w10-save-load-state-dict
+file: _references/機器學習實作系列/第10週-多層神經網路與PyTorch.pdf
+page: 54
+status: suggested
+excerpt: Save only the learned parameters；Learned parameters stored in an internal dictionary state_dict；First need to create an instance of the same model；Then load the parameters using load_state_dict() method；Be sure to call model.eval() method before inferencing
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第10週-多層神經網路與PyTorch.pdf" page={54} status="suggested" excerpt={"Save only the learned parameters；Learned parameters stored in an internal dictionary state_dict；First need to create an instance of the same model；Then load the parameters using load_state_dict() method；Be sure to call model.eval() method before inferencing"} client:visible />
+
+## 用 PyTorch 建一個 MLP：FashionMNIST
+
+講義最後一段把前面的零件組起來，分類 FashionMNIST 的服飾影像（範例程式 `07_2.py`、`07_3.py`）。它是 MNIST 的同構資料集：70,000 張 $28 \times 28$ 灰階影像、784 個像素特徵、10 個類別——T 恤、褲子、套頭衫、洋裝、外套、涼鞋、襯衫、運動鞋、包包、短靴。
+
+![FashionMNIST 十個類別的範例影像：T 恤、褲子、套頭衫、洋裝、外套、涼鞋、襯衫、運動鞋、包包、短靴](/note-images/ml-week10/13-fashion-mnist-samples.png)
+
+*第 56 頁：跟 MNIST 一模一樣的形狀與類別數，只是把數字換成衣服，讓程式可以原樣沿用。*
+
+{/* @ai-reference
+id: w10-fashion-mnist-dataset
+file: _references/機器學習實作系列/第10週-多層神經網路與PyTorch.pdf
+page: 56
+status: suggested
+excerpt: Build and train an MLP to classify fashion products from the FashionMNIST dataset；A MNIST-like database；70,000 images of resolution 28 × 28 (grayscale)；Features: 784 pixels；Labels: (0, 1, …, 9) (10 classes)
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第10週-多層神經網路與PyTorch.pdf" page={56} status="suggested" excerpt={"Build and train an MLP to classify fashion products from the FashionMNIST dataset；A MNIST-like database；70,000 images of resolution 28 × 28 (grayscale)；Features: 784 pixels；Labels: (0, 1, …, 9) (10 classes)"} client:visible />
+
+程式的骨架依序是：自動偵測裝置（CUDA → MPS → CPU）、設定超參數（學習率 $10^{-3}$、批次大小 64、20 個 epoch）、載入資料集並建 `DataLoader`、定義模型、定義訓練與測試迴圈、選損失函數與優化器、跑迴圈。模型這次有**兩個隱藏層**，各 512 個節點，隱藏層用 ReLU，輸出層直接回傳 logits（沒有 softmax）：
+
+```python
+class NeuralNetwork(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.flatten = nn.Flatten()
+        self.linear_relu_stack = nn.Sequential(
+            nn.Linear(28 * 28, 512),   # 輸入層 784 個特徵 → 隱藏層 1
+            nn.ReLU(),
+            nn.Linear(512, 512),       # 隱藏層 2
+            nn.ReLU(),
+            nn.Linear(512, 10),        # 輸出層 10 個節點，不接 softmax
+        )
+
+    def forward(self, x):
+        x = self.flatten(x)
+        logits = self.linear_relu_stack(x)
+        return logits
+
+model = NeuralNetwork().to(device)      # 將模型移至指定硬體
+loss_fn = nn.CrossEntropyLoss()         # 多分類交叉熵
+optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
+```
+
+講義在這張投影片旁寫了一句「哇～深度神經網路耶～」：兩個隱藏層，依第 8 頁的定義就已經是 DNN。訓練迴圈裡多了一行 `X, y = X.to(device), y.to(device)`——資料也要搬到跟模型同一個裝置。
+
+{/* @ai-reference
+id: w10-fashion-mnist-two-hidden-layers
+file: _references/機器學習實作系列/第10週-多層神經網路與PyTorch.pdf
+page: 59
+status: suggested
+excerpt: Build the MLP (Two Hidden Layers)：Input layer (784 features)；Hidden layer 1 (512 nodes)；Hidden layer 2 (512 nodes)；Output layer (10 nodes)；Without softmax；哇～深度神經網路耶～
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第10週-多層神經網路與PyTorch.pdf" page={59} status="suggested" excerpt={"Build the MLP (Two Hidden Layers)：Input layer (784 features)；Hidden layer 1 (512 nodes)；Hidden layer 2 (512 nodes)；Output layer (10 nodes)；Without softmax；哇～深度神經網路耶～"} client:visible />
+
+{/* @ai-reference
+id: w10-fashion-mnist-loss-optimizer
+file: _references/機器學習實作系列/第10週-多層神經網路與PyTorch.pdf
+page: 62
+status: suggested
+excerpt: Choose Loss function and Optimizer：loss_fn = nn.CrossEntropyLoss()（Categorical cross entropy）；optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第10週-多層神經網路與PyTorch.pdf" page={62} status="suggested" excerpt={"Choose Loss function and Optimizer：loss_fn = nn.CrossEntropyLoss()（Categorical cross entropy）；optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)"} client:visible />
+
+![FashionMNIST MLP 的訓練與測試損失曲線：訓練損失持續下降到 0.15，測試損失在第 5 個 epoch 後停在 0.33 附近並緩慢回升](/note-images/ml-week10/14-fashion-mnist-loss-curves.png)
+
+*第 63 頁：訓練損失一路下探，測試損失卻在 0.33 左右觸底後回升——兩條線之間越拉越開的縫就是過擬合，對照第 7 週的學習曲線診斷，這是高變異的形狀。*
+
+結果報告（範例程式 `07_3.py`）的整體正確率 0.89，誤判 1,100／10,000 筆。看各類別的分數，差距很大：
+
+| 類別 | precision | recall | f1-score |
+| --- | --- | --- | --- |
+| 褲子（Trouser） | 1.00 | 0.97 | 0.98 |
+| 涼鞋（Sandal） | 0.98 | 0.96 | 0.97 |
+| 包包（Bag） | 0.96 | 0.98 | 0.97 |
+| 短靴（Ankle Boot） | 0.96 | 0.95 | 0.96 |
+| 運動鞋（Sneaker） | 0.94 | 0.97 | 0.96 |
+| 洋裝（Dress） | 0.92 | 0.89 | 0.90 |
+| T 恤（T-Shirt） | 0.85 | 0.83 | 0.84 |
+| 外套（Coat） | 0.82 | 0.79 | 0.81 |
+| 套頭衫（Pullover） | 0.74 | 0.87 | 0.80 |
+| 襯衫（Shirt） | 0.75 | 0.67 | 0.71 |
+
+![FashionMNIST MLP 的十類別混淆矩陣熱圖，紅色虛線框出襯衫與 T 恤、套頭衫、外套之間互相誤判的格子](/note-images/ml-week10/15-fashion-mnist-confusion-matrix.png)
+
+*第 65 頁：誤判集中在「上衣家族」——襯衫被當成 T 恤 114 筆、套頭衫 115 筆、外套 66 筆；套頭衫與外套之間也互相混淆 145 與 71 筆。鞋類與包包幾乎不出錯。*
+
+![25 張被誤判的 FashionMNIST 樣本，多數是襯衫、套頭衫、外套、T 恤之間的混淆](/note-images/ml-week10/16-fashion-mnist-misclassified.png)
+
+*第 66 頁：誤判樣本幾乎全是上衣。把影像攤平成 784 維向量的 MLP 丟掉了像素的空間關係，領口、袖長這種局部形狀差異正是它看不出來的東西——這是下週 CNN 要解的問題。*
+
+{/* @ai-reference
+id: w10-fashion-mnist-classification-report
+file: _references/機器學習實作系列/第10週-多層神經網路與PyTorch.pdf
+page: 64
+status: suggested
+excerpt: Classification Report；Sample code: 07_3.py；Shirt precision 0.75 recall 0.67 f1-score 0.71；accuracy 0.89；Total misclassified samples: 1100 / 10000
+*/}
+<PdfRefChip file="_references/機器學習實作系列/第10週-多層神經網路與PyTorch.pdf" page={64} status="suggested" excerpt={"Classification Report；Sample code: 07_3.py；Shirt precision 0.75 recall 0.67 f1-score 0.71；accuracy 0.89；Total misclassified samples: 1100 / 10000"} client:visible />
+
 ## 教材預習重點
 
 > 摘自 `machine-learning-book` 專案的 `STUDY_GUIDE_zh-TW.md`，對應章節：ch11。上課後請依實際授課內容調整。
@@ -140,3 +1120,321 @@ status: generated
 **在做什麼**：全書轉折點之一，完全不用深度學習框架、純用 numpy 手刻多層神經網路，親手推導 forward propagation 和 backpropagation 怎麼運作，並用 MNIST 手寫數字辨識驗證。之後所有深度學習章節都是這個概念的框架化版本。
 
 **關鍵概念**：multilayer perceptron (MLP)、forward propagation、loss function、backpropagation、gradient 如何逐層往回傳
+
+## 關鍵定義
+
+| 名詞 | 定義 |
+| --- | --- |
+| 單層神經網路（single-layer NN） | 輸入與輸出之間只有一條連結（一個神經元）的網路，例如 Adaline；損失用 MSE |
+| 多層感知器（multilayer perceptron, MLP） | 在輸入與輸出之間插入隱藏層的全連接網路；神經元通常是 sigmoid 單元而非感知器，可視為邏輯斯迴歸單元 |
+| 全連接（fully connected） | 某一層的每個神經元都與前一層的全部輸出相連；`nn.Linear` 就是全連接層（又稱 dense layer） |
+| 隱藏層（hidden layer） | 輸入層與輸出層之間的層；一欄神經元就是一層 |
+| 深度神經網路（deep NN, DNN） | 超過一個隱藏層的網路 |
+| 通用近似定理（universal approximation theorem） | 單一隱藏層、隱藏單元夠多的前饋網路可逼近任意連續函數 |
+| 梯度消失（vanishing gradient） | 網路越深，往前層傳的損失梯度越小，前層幾乎學不到；sigmoid 導數最大僅 0.25 是主因之一 |
+| 深度學習（deep learning） | 為了有效訓練多層神經網路而發展的一整套特別演算法與技術 |
+| 前向傳播（forward propagation） | 由輸入逐層算到輸出的過程：每層先線性組合（淨輸入）再過激活函數 |
+| 反向傳播（backpropagation） | 反向模式自動微分的特例：從輸出端沿鏈鎖律往回走，算出損失對每一層每一個權重的偏導數 |
+| 多變數鏈鎖律（multi-variable chain rule） | 一個權重經多條路徑影響損失時，各路徑的鏈鎖律乘積要相加 |
+| 激活函數（activation function） | 線性組合之後套用的非線性函數；任何可微函數理論上都可用，線性函數的和仍是線性所以無意義 |
+| sigmoid（邏輯斯函數） | $\sigma(z)=\frac{1}{1+e^{-z}}$，值域 $(0,1)$，用於二元分類輸出層 |
+| softmax | 把一排分數正規化成加總為 1 的機率分布，用於多類別分類輸出層 |
+| ReLU | $\max(0,z)$，正區間導數恆為 1，是 CNN 與 DNN 隱藏層的預設選擇 |
+| leaky ReLU | $\max(\alpha z, z)$，負區間保留小斜率，用於標準 ReLU 失效時 |
+| 張量（tensor） | 類似陣列與矩陣的資料結構；與 NumPy 陣列的差別是為自動微分最佳化且可在 GPU 執行 |
+| 原地運算（in-place operation） | 把結果存回運算元本身的運算，以底線結尾，例如 `add_()` |
+| `Dataset` | 存放樣本與標籤的物件；自訂時必須實作 `__init__`、`__len__`、`__getitem__` |
+| `DataLoader` | 把 `Dataset` 包成可迭代物件，負責自動分批、取樣、洗牌與多程序載入 |
+| `nn.Module` | PyTorch 所有層與模型的共同基底；層可巢狀，`parameters()` 自動蒐集可訓練參數 |
+| logits | 輸出層尚未經過 sigmoid 或 softmax 的原始分數；`CrossEntropyLoss` 與 `BCEWithLogitsLoss` 直接吃它 |
+| 多分類交叉熵（categorical cross entropy） | $-\sum_c y_c \log \hat{y}_c$；獨熱編碼使非正解項歸零，實質只算正解機率的負對數 |
+| 優化器（optimizer） | 封裝參數更新邏輯的物件，初始化時登記模型參數與學習率 |
+| Autograd | PyTorch 內建的自動微分引擎；`requires_grad=True` 的張量參與的運算會被記成計算圖，`backward()` 沿圖回推梯度 |
+| `state_dict` | 模型內部存放已學參數的字典；只存權重時存它，載入前要先建同樣的模型實例 |
+
+## 公式
+
+- 隱藏層神經元的淨輸入與激活：$z_1^{(h)} = \sum_{k=1}^{m} x_k^{(in)} w_{1,k}^{(h)} + b_1^{(h)}$、$a_1^{(h)} = \sigma\!\left(z_1^{(h)}\right)$
+- 前向傳播（矩陣形式）：$\boldsymbol{Z}^{(h)} = \boldsymbol{X}^{(in)}\left(\boldsymbol{W}^{(h)}\right)^T + \boldsymbol{B}^{(h)}$、$\boldsymbol{A}^{(h)} = \sigma\!\left(\boldsymbol{Z}^{(h)}\right)$、$\boldsymbol{Z}^{(out)} = \boldsymbol{A}^{(h)}\left(\boldsymbol{W}^{(out)}\right)^T + \boldsymbol{B}^{(out)}$、$\boldsymbol{A}^{(out)} = \sigma\!\left(\boldsymbol{Z}^{(out)}\right)$
+- MSE 損失（$t$ 個輸出、$n$ 個樣本）：$L(\boldsymbol{W},\boldsymbol{b}) = \dfrac{1}{n}\sum_{i=1}^{n}\dfrac{1}{t}\sum_{j=1}^{t}\left(y_j^{[i]} - a_j^{(out)[i]}\right)^2$
+- 輸出層權重的梯度：$\dfrac{\partial L}{\partial w_{1,1}^{(out)}} = \dfrac{\partial L}{\partial a_1^{(out)}}\cdot\dfrac{\partial a_1^{(out)}}{\partial z_1^{(out)}}\cdot\dfrac{\partial z_1^{(out)}}{\partial w_{1,1}^{(out)}} = 2\left(a_1^{(out)} - y_1\right)\cdot a_1^{(out)}\left(1 - a_1^{(out)}\right)\cdot a_1^{(h)}$
+- sigmoid 的導數：$\sigma'(z) = \sigma(z)\left(1 - \sigma(z)\right)$，最大值 $0.25$（在 $z = 0$）
+- 隱藏層權重的梯度（兩條路徑相加）：$\dfrac{\partial L}{\partial w_{1,1}^{(h)}} = \sum_{j=1}^{2}\dfrac{\partial L}{\partial a_j^{(out)}}\cdot\dfrac{\partial a_j^{(out)}}{\partial a_1^{(h)}}\cdot\dfrac{\partial a_1^{(h)}}{\partial w_{1,1}^{(h)}}$
+- 梯度下降更新：$w := w - \eta\,\dfrac{\partial L}{\partial w}$
+- 激活函數：sigmoid $\sigma(z)=\dfrac{1}{1+e^{-z}}$；softmax $\sigma(z_i)=\dfrac{e^{z_i}}{\sum_{j=1}^{M}e^{z_j}}$；tanh $\dfrac{e^{z}-e^{-z}}{e^{z}+e^{-z}}$；ReLU $\max(0,z)$；leaky ReLU $\max(\alpha z, z)$
+- 多分類交叉熵（單一樣本）：$L = -\sum_{c=1}^{C} y_c\log(\hat{y}_c)$；批次平均：$\text{Loss} = -\dfrac{1}{N}\sum_{i=1}^{N}\sum_{c=1}^{C} y_{i,c}\log(\hat{y}_{i,c})$
+- 全連接層參數量：輸入 $m$、輸出 $d$ 時為 $d \times m + d$（權重加偏差）
+
+## 考題
+
+### 選擇題
+
+#### 選擇題 1
+
+> 為什麼講義說「多層感知器」這個名字容易誤導？
+> :en[Why does the handout say the name "multilayer perceptron" can be misleading?]
+
+:::choices{answer="B"}
+- 因為它其實只有一層 :en[Because it actually has only one layer]
+- 因為裡面的神經元通常是 sigmoid 單元，不是感知器 :en[Because its neurons are typically sigmoid units, not perceptrons]
+- 因為它不能用梯度下降訓練 :en[Because it cannot be trained with gradient descent]
+- 因為它的輸出一定是二元的 :en[Because its output is always binary]
+:::
+
+:::tip{collapsible title="詳解"}
+感知器用的是階梯函數，不可微；MLP 的神經元用 sigmoid 這類可微的非線性函數，講義建議把它們想成邏輯斯迴歸單元。名字沿用了歷史，結構已經不同。
+
+第三項相反——正因為可微，MLP 才能用反向傳播加梯度下降訓練。
+
+**考的觀念**：MLP 的神經元是可微的非線性單元。
+:::
+
+#### 選擇題 2
+
+> 關於「加深」與「加寬」網路，講義的說法是哪一項？
+> :en[Which statement matches the handout on making a network deeper versus wider?]
+
+:::choices{answer="C"}
+- 加寬一定比加深好，因為通用近似定理只保證單層 :en[Wider is always better, since the universal approximation theorem only covers one layer]
+- 加深不會有任何代價 :en[Going deeper has no cost]
+- 同樣的模型容量，加深所需參數較少，但會遇到梯度消失 :en[For comparable capacity, deeper needs fewer parameters but runs into vanishing gradients]
+- 層數與單元數不是超參數，不需要用交叉驗證挑 :en[Depth and width are not hyperparameters and need no cross-validation]
+:::
+
+:::tip{collapsible title="詳解"}
+講義第 9 頁兩句話：加深比加寬的優點是達到相近容量所需參數較少；但梯度消失讓 DNN 更難訓練，所以才需要「深度學習」這套特別的技術。層數與每層單元數都是要用交叉驗證最佳化的超參數。
+
+**考的觀念**：深度的好處是參數效率，代價是梯度消失。
+:::
+
+#### 選擇題 3
+
+> 隱藏層有 $d$ 個單元、輸入有 $m$ 個特徵，講義定義的隱藏層權重矩陣 $\boldsymbol{W}^{(h)}$ 形狀是？
+> :en[With $d$ hidden units and $m$ input features, what is the shape of the hidden-layer weight matrix $\boldsymbol{W}^{(h)}$ as defined in the handout?]
+
+:::choices{answer="A"}
+- $d \times m$ :en[$d \times m$]
+- $m \times d$ :en[$m \times d$]
+- $n \times d$ :en[$n \times d$]
+- $d \times d$ :en[$d \times d$]
+:::
+
+:::tip{collapsible title="詳解"}
+講義第 10 頁：$\boldsymbol{W}^{(h)}$ 是 $d \times m$，每一列是一個隱藏單元對 $m$ 個輸入的權重，所以前向傳播寫成 $\boldsymbol{z}^{(h)} = \boldsymbol{x}^{(in)}\left(\boldsymbol{W}^{(h)}\right)^T + \boldsymbol{b}^{(h)}$，乘的是轉置。第三項 $n \times d$ 是 $n$ 個樣本的淨輸入矩陣 $\boldsymbol{Z}^{(h)}$ 的形狀，不是權重。
+
+**考的觀念**：權重矩陣的形狀決定前向傳播要不要轉置。
+:::
+
+#### 選擇題 4
+
+> 算隱藏層權重 $w_{1,1}^{(h)}$ 的梯度時，為什麼要把兩條路徑的鏈鎖律相加？
+> :en[When computing the gradient of the hidden-layer weight $w_{1,1}^{(h)}$, why are two chain-rule paths summed?]
+
+:::choices{answer="D"}
+- 因為損失函數是 MSE，有平方 :en[Because the loss is MSE, which has a square]
+- 因為有兩個輸入特徵 :en[Because there are two input features]
+- 因為要對樣本平均 :en[Because we average over samples]
+- 因為隱藏單元 $a_1^{(h)}$ 同時連到兩個輸出單元，損失經兩條路徑受它影響 :en[Because hidden unit $a_1^{(h)}$ connects to both output units, so the loss depends on it through two paths]
+:::
+
+:::tip{collapsible title="詳解"}
+講義第 16 頁的註記：$w_{1,1}^{(h)}$ 連到兩個輸出節點，必須用多變數鏈鎖律把粗箭頭標出的兩條路徑加總。隱藏單元連到幾個輸出，就有幾項要加——這就是「責任」從輸出層分攤回來的機制。
+
+**考的觀念**：多變數鏈鎖律，路徑相加。
+:::
+
+#### 選擇題 5
+
+> 依講義第 18 頁，下列激活函數與用途的配對哪一項正確？
+> :en[According to page 18 of the handout, which activation-to-use pairing is correct?]
+
+:::choices{answer="B"}
+- sigmoid——多類別分類的輸出層 :en[sigmoid — output layer for multi-class classification]
+- ReLU——CNN 與 DNN 的隱藏層 :en[ReLU — hidden layers in CNNs and DNNs]
+- softmax——RNN 的隱藏層 :en[softmax — hidden layers in RNNs]
+- tanh——二元分類的輸出層 :en[tanh — output layer for binary classification]
+:::
+
+:::tip{collapsible title="詳解"}
+正確配對：sigmoid 二元分類輸出層、softmax 多類別分類輸出層、tanh RNN 隱藏層、ReLU CNN 與 DNN 隱藏層、leaky ReLU 標準 ReLU 失效時。其餘三項都把位置對調了。
+
+**考的觀念**：激活函數的選擇依位置（隱藏層／輸出層）與任務而定。
+:::
+
+#### 選擇題 6
+
+> 使用 `nn.CrossEntropyLoss()` 當損失函數時，模型的最後一層應該怎麼寫？
+> :en[When using `nn.CrossEntropyLoss()` as the loss, how should the model's last layer be written?]
+
+:::choices{answer="C"}
+- 接一層 `nn.Softmax()` 輸出機率 :en[Add an `nn.Softmax()` layer to output probabilities]
+- 接一層 `nn.Sigmoid()` :en[Add an `nn.Sigmoid()` layer]
+- 直接輸出 logits，不加任何激活函數 :en[Output the logits directly with no activation]
+- 接一層 `nn.LogSoftmax()` 再接 `nn.NLLLoss()` :en[Add `nn.LogSoftmax()` followed by `nn.NLLLoss()`]
+:::
+
+:::tip{collapsible title="詳解"}
+`nn.CrossEntropyLoss` 內部已經包含 `nn.LogSoftmax` 與 `nn.NLLLoss`，輸入要是**沒有**經過 softmax 的 logits；最後一層再加 softmax 等於做兩次。講義第 41 頁用紅字把 `nn.Softmax` 劃掉，第 59 頁的模型也註明「Without softmax」。第四項是把損失函數本身寫進模型，順序與角色都錯了。
+
+**考的觀念**：輸出層要與損失函數搭配，logits 直接交給 `CrossEntropyLoss`。
+:::
+
+#### 選擇題 7
+
+> 為什麼每次迭代都要呼叫 `optimizer.zero_grad()`？
+> :en[Why must `optimizer.zero_grad()` be called at every iteration?]
+
+:::choices{answer="A"}
+- 因為梯度預設會累加，不清掉會把上一批的梯度重複算進去 :en[Because gradients accumulate by default; without clearing, the previous batch's gradients are double-counted]
+- 因為它會把學習率重設 :en[Because it resets the learning rate]
+- 因為它會把模型參數歸零 :en[Because it zeroes the model parameters]
+- 因為不呼叫的話 `backward()` 不會執行 :en[Because `backward()` will not run otherwise]
+:::
+
+:::tip{collapsible title="詳解"}
+講義第 49 頁：Gradients by default add up，所以每次迭代要明確歸零以避免重複計算。它清的是**梯度**（`.grad`），不是參數也不是學習率。
+
+**考的觀念**：`backward()` 是累加梯度，不是覆寫。
+:::
+
+#### 選擇題 8
+
+> 只用 `torch.save(model.state_dict(), path)` 存下的檔案，載入時正確的步驟是？
+> :en[For a file saved with `torch.save(model.state_dict(), path)`, what is the correct way to load it?]
+
+:::choices{answer="D"}
+- 直接 `model = torch.load(path)` 就能得到可用的模型 :en[Just `model = torch.load(path)` gives a usable model]
+- 用 pickle 讀進來即可 :en[Read it back with pickle]
+- 先 `model.eval()` 再 `torch.load(path)` :en[Call `model.eval()` first, then `torch.load(path)`]
+- 先建一個同樣架構的模型實例，再 `load_state_dict(torch.load(path))`，推論前呼叫 `model.eval()` :en[Create an instance of the same model, then `load_state_dict(torch.load(path))`, and call `model.eval()` before inference]
+:::
+
+:::tip{collapsible title="詳解"}
+`state_dict` 只有參數、沒有架構，所以必須先用同樣的類別建一個實例當容器。第一項是存整個模型（`torch.save(model, path)`）時的載法。不論哪種存法，推論前都要 `model.eval()`。
+
+**考的觀念**：存權重與存整個模型的載入方式不同。
+:::
+
+### 概念辨析題
+
+#### 複習題 1
+
+> 為什麼隱藏層與輸出層都用線性激活函數「沒有用」？
+> :en[Why is it "not useful" to use linear activation functions in both the hidden and output layers?]
+
+**詳解**
+
+線性函數的合成仍是線性函數：$\boldsymbol{W}^{(out)}\left(\boldsymbol{W}^{(h)}\boldsymbol{x} + \boldsymbol{b}^{(h)}\right) + \boldsymbol{b}^{(out)}$ 可以整理成單一個 $\boldsymbol{W}'\boldsymbol{x} + \boldsymbol{b}'$，多加的那一層沒有增加任何表達能力，網路仍只能在特徵空間劃一刀。要讓網路處理 XOR 這種非線性可分的問題，層與層之間必須夾一個非線性的激活函數。
+
+#### 複習題 2
+
+> 講義說反向傳播「只是反向模式自動微分的一個特例」。這句話對應到 PyTorch 的哪一個功能？手刻與框架的差別在哪？
+> :en[The handout says backpropagation "is simply a special case of reverse-mode automatic differentiation". Which PyTorch feature does this correspond to, and how does hand-coding differ from using the framework?]
+
+**詳解**
+
+對應 `torch.autograd`。手刻時要自己推導每一層的偏導數並寫進 `backward()`；PyTorch 把每個套用在 `requires_grad=True` 張量上的運算記成計算圖的節點，`loss.backward()` 從損失這個純量沿圖往回走，每經過一個運算就套用該運算的導數規則、乘進去——做的正是講義第 14–16 頁從輸出端走鏈鎖律的事，只是自動化了。差別不在數學，在誰來寫導數：手刻一次是為了知道 `backward()` 不是魔法。
+
+#### 複習題 3
+
+> `nn.BCELoss` 與 `nn.BCEWithLogitsLoss` 差在哪？用錯會怎樣？
+> :en[What is the difference between `nn.BCELoss` and `nn.BCEWithLogitsLoss`, and what happens if you use the wrong one?]
+
+**詳解**
+
+`nn.BCELoss` 的輸入是已經過 sigmoid 的**機率**；`nn.BCEWithLogitsLoss` 的輸入是**logits**，它內部先做 sigmoid 再算二元交叉熵，數值上更穩定。若模型最後一層已接 `nn.Sigmoid()` 又用 `BCEWithLogitsLoss`，等於對機率再做一次 sigmoid，輸出被壓進 $(0.5, 0.73)$ 這個窄區間，損失失真、訓練變慢；反過來把 logits 丟給 `BCELoss`，輸入可能落在 $[0,1]$ 之外，直接報錯。多類別的 `CrossEntropyLoss` 與 softmax 是同一組關係。
+
+#### 複習題 4
+
+> 訓練迴圈與測試迴圈各自多了哪一行「模式切換」？為什麼測試迴圈要包在 `torch.no_grad()` 裡？
+> :en[Which "mode switch" line does each of the train loop and the test loop add, and why is the test loop wrapped in `torch.no_grad()`?]
+
+**詳解**
+
+訓練迴圈開頭 `model.train()`、測試迴圈開頭 `model.eval()`——這兩行對批次正規化與 dropout 層有實質影響（dropout 只在訓練時隨機丟棄單元，評估時要全部使用），講義註明本例雖用不到仍建議養成習慣。`torch.no_grad()` 讓測試時不建計算圖、不算梯度：測試只做預測，不更新參數，省掉的是 `requires_grad=True` 張量的梯度計算與記憶體。
+
+#### 複習題 5
+
+> FashionMNIST 的 MLP 整體正確率 0.89，但襯衫的 f1-score 只有 0.71、褲子卻有 0.98。從混淆矩陣與誤判樣本看，問題出在哪裡？這和下週的 CNN 有什麼關係？
+> :en[The FashionMNIST MLP reaches 0.89 overall accuracy, yet the f1-score is only 0.71 for Shirt versus 0.98 for Trouser. Judging from the confusion matrix and misclassified samples, where does the problem lie, and how does this relate to next week's CNN?]
+
+**詳解**
+
+誤判集中在「上衣家族」：襯衫被當成 T 恤 114 筆、套頭衫 115 筆、外套 66 筆，套頭衫與外套之間也互相混淆上百筆；鞋類、包包、褲子則幾乎不錯，因為它們的整體輪廓差異大。區分襯衫與 T 恤靠的是領口、鈕扣、袖長這類**局部形狀**，而 MLP 第一步就把 $28 \times 28$ 的影像攤平成 784 維向量，像素之間的空間鄰近關係全部丟掉，每個隱藏單元都要對全部 784 個像素各學一個權重。CNN 用卷積核在局部區塊上滑動、同一組權重在整張圖上共用，正是為了保住「鄰近像素更相關」這個影像的先驗，所以才能抓到 MLP 看不出來的局部特徵。
+
+### 計算題
+
+> 以下的數值為自行設計的練習題，用來套用本週的公式，並非講義原有的習題。
+
+#### 複習題 1
+
+> 一個 MLP 輸入 784 個特徵、隱藏層 50 個單元、輸出層 10 個單元（講義第 22 頁的結構）。請計算權重與偏差的總參數量。若改成第 59 頁的兩個 512 單元隱藏層，總參數量又是多少？
+> :en[An MLP has 784 input features, a hidden layer of 50 units and an output layer of 10 units (the structure on page 22). Compute the total number of weights and biases. What is the total if it is changed to the two 512-unit hidden layers on page 59?]
+
+**詳解**
+
+全連接層的參數量是「輸出 × 輸入 + 輸出」：
+
+$$
+\begin{aligned}
+\text{隱藏層：}&\ 50 \times 784 + 50 = 39{,}200 + 50 = 39{,}250 \\
+\text{輸出層：}&\ 10 \times 50 + 10 = 500 + 10 = 510 \\
+\text{合計：}&\ 39{,}250 + 510 = 39{,}760
+\end{aligned}
+$$
+
+兩個 512 單元隱藏層的版本：
+
+$$
+\begin{aligned}
+\text{隱藏層 1：}&\ 512 \times 784 + 512 = 401{,}408 + 512 = 401{,}920 \\
+\text{隱藏層 2：}&\ 512 \times 512 + 512 = 262{,}144 + 512 = 262{,}656 \\
+\text{輸出層：}&\ 10 \times 512 + 10 = 5{,}120 + 10 = 5{,}130 \\
+\text{合計：}&\ 401{,}920 + 262{,}656 + 5{,}130 = 669{,}706
+\end{aligned}
+$$
+
+第一層就吃掉六成參數，因為輸入是 784 維——這正是下週 CNN 要用稀疏連接與參數共享砍掉的部分。
+
+#### 複習題 2
+
+> 某輸出單元的激活值 $a_1^{(out)} = 0.8$、目標 $y_1 = 1$，連到它的隱藏激活 $a_1^{(h)} = 0.5$，學習率 $\eta = 0.1$。依講義第 15 頁的公式，請計算 $\frac{\partial L}{\partial w_{1,1}^{(out)}}$ 與更新後的權重變化量。
+> :en[An output unit has activation $a_1^{(out)} = 0.8$, target $y_1 = 1$, the hidden activation feeding it is $a_1^{(h)} = 0.5$, and the learning rate is $\eta = 0.1$. Using the formula on page 15, compute $\frac{\partial L}{\partial w_{1,1}^{(out)}}$ and the resulting weight change.]
+
+**詳解**
+
+$$
+\begin{aligned}
+\frac{\partial L}{\partial w_{1,1}^{(out)}}
+  &= 2\left(a_1^{(out)} - y_1\right)\cdot a_1^{(out)}\left(1 - a_1^{(out)}\right)\cdot a_1^{(h)} \\
+  &= 2(0.8 - 1)\cdot 0.8 \times 0.2 \cdot 0.5 \\
+  &= (-0.4)\cdot 0.16 \cdot 0.5 = -0.032 \\[4pt]
+\Delta w_{1,1}^{(out)} &= -\eta\,\frac{\partial L}{\partial w_{1,1}^{(out)}} = -0.1 \times (-0.032) = +0.0032
+\end{aligned}
+$$
+
+梯度為負、權重往上調：輸出 0.8 比目標 1 小，加大這條連線讓輸出變大，方向正確。注意中間那個 $a(1-a) = 0.16$ 把梯度壓小了——這就是 sigmoid 導數不超過 0.25 的效果。
+
+#### 複習題 3
+
+> 三類別分類，某樣本的正解是第 2 類，模型 softmax 輸出 $\hat{\boldsymbol{y}} = [0.2, 0.7, 0.1]$。請計算該樣本的交叉熵損失。若輸出改為 $[0.3, 0.05, 0.65]$，損失變成多少？
+> :en[In a three-class problem the true class of a sample is class 2 and the model's softmax output is $\hat{\boldsymbol{y}} = [0.2, 0.7, 0.1]$. Compute the cross-entropy loss. What is the loss if the output becomes $[0.3, 0.05, 0.65]$?]
+
+**詳解**
+
+獨熱標籤 $\boldsymbol{y} = [0, 1, 0]$，非正解項全部乘 0 消失：
+
+$$
+\begin{aligned}
+L &= -\sum_{c=1}^{3} y_c\log(\hat{y}_c) = -\left(0\cdot\log 0.2 + 1\cdot\log 0.7 + 0\cdot\log 0.1\right) \\
+  &= -\log 0.7 \approx 0.357
+\end{aligned}
+$$
+
+第二種輸出對正解只給 0.05：
+
+$$
+L = -\log 0.05 \approx 2.996
+$$
+
+正解機率從 0.7 掉到 0.05，損失放大八倍以上——交叉熵對「對正解沒信心」的懲罰是對數級的，這也是它比 MSE 更適合分類的原因。
