@@ -3,8 +3,10 @@ title: "電子學實作系列：第 4 週 - BJT 雙極性電晶體"
 description: ""
 tags: ["電子學實作系列"]
 createdAt: "2026-10-03"
-updatedAt: "2026-10-03"
+updatedAt: "2026-10-17"
 ---
+
+import PdfRefChip from '@/components/islands/PdfRefChip.tsx'
 
 # 第 4 週：BJT 雙極性電晶體
 
@@ -104,9 +106,16 @@ prompt: |
   視覺要求：用 DOM 卡片與色塊呈現，不要畫電路 SVG；主動區用綠色、
   截止與飽和用灰色與橘色；切換時 200-400ms ease-out；
   尊重 prefers-reduced-motion。
-status: pending
+status: generated
 caption: BJT 的三個工作區：放大器只能活在中間那一個，兩側都是開關的世界。
 */}
+
+import GeneratedFrame from '@/components/GeneratedFrame.astro'
+import EcWeek4Regions from '@/components/generated/ec-week4-regions'
+
+<GeneratedFrame id="ec-week4-regions" type="motion" prompt={"用可切換的三態，呈現 BJT 的三個工作區與各自的判斷條件。\n三個狀態（三顆切換鈕，一次顯示一態）：\n1. 截止區：基極-射極接面未順偏，集極電流約為零\n2. 順向主動區：基極-射極順偏、基極-集極逆偏，集極電流由基極-射極電壓\n   指數控制，是放大器唯一能用的區域\n3. 飽和區：集極電壓低於基極電壓，基極-集極變成順偏，基極電流暴增、\n   電流增益下降、速度變慢\n每個狀態顯示四個欄位：兩個接面的偏壓狀態、集極電流的行為、電流增益的變化、\n這個區域的典型用途（關閉的開關／放大器／閉合的開關）。\n另外固定顯示一條實務判準：集極電壓不可比基極電壓低超過約 400mV，\n否則進入軟飽和。\n視覺要求：用 DOM 卡片與色塊呈現，不要畫電路 SVG；主動區用綠色、\n截止與飽和用灰色與橘色；切換時 200-400ms ease-out；\n尊重 prefers-reduced-motion。"} caption="BJT 的三個工作區：放大器只能活在中間那一個，兩側都是開關的世界。">
+  <EcWeek4Regions client:visible />
+</GeneratedFrame>
 
 {/* @ai-visualize
 id: ec-week4-gm
@@ -123,9 +132,15 @@ prompt: |
      但耗電也越大」
   視覺要求：曲線與切線用 SVG（viewBox 寬度不超過 640）；三個讀數用
   DOM 卡片橫排；切線用強調色；拖動時即時更新不要有動畫延遲。
-status: pending
+status: generated
 caption: 轉導就是指數曲線的斜率：電流開得越大，把電壓轉成電流的能力越強，代價是耗電。
 */}
+
+import EcWeek4Gm from '@/components/generated/ec-week4-gm'
+
+<GeneratedFrame id="ec-week4-gm" type="chart" prompt={"互動示範轉導 gm 與偏壓電流的關係。\n互動元素（只有一個旋鈕）：\n- 一條水平滑桿，控制集極偏壓電流的大小\n即時顯示的內容：\n1. 一張集極電流對基極-射極電壓的指數曲線，並在目前偏壓點畫出切線\n2. 三個讀數卡片：目前的集極電流、切線斜率（也就是 gm）、\n   相同基極-射極電壓擺幅下的集極電流擺幅\n3. 一行結論文字，隨滑桿更新，說明「電流開越大、曲線越陡、gm 越大、\n   但耗電也越大」\n視覺要求：曲線與切線用 SVG（viewBox 寬度不超過 640）；三個讀數用\nDOM 卡片橫排；切線用強調色；拖動時即時更新不要有動畫延遲。"} caption="轉導就是指數曲線的斜率：電流開得越大，把電壓轉成電流的能力越強，代價是耗電。">
+  <EcWeek4Gm client:visible />
+</GeneratedFrame>
 
 {/* @ai-visualize
 id: ec-week4-early
@@ -142,9 +157,15 @@ prompt: |
   視覺要求：輸出特性曲線用 SVG（viewBox 寬度不超過 640），畫三條不同
   基極電壓下的曲線；切換時曲線斜率用 200-400ms ease-out 過渡；
   中文說明放 DOM；尊重 prefers-reduced-motion。
-status: pending
+status: generated
 caption: 爾利效應讓「定電流源」帶上斜率：輸出電阻不再無限大，放大器的增益因此有了上限。
 */}
+
+import EcWeek4Early from '@/components/generated/ec-week4-early'
+
+<GeneratedFrame id="ec-week4-early" type="motion" prompt={"用可切換的兩態，呈現爾利效應對輸出特性曲線與最大增益的影響。\n兩個狀態（兩顆切換鈕）：\n1. 忽略爾利效應：輸出特性曲線在主動區完全水平，輸出電阻視為無限大\n2. 考慮爾利效應：曲線在主動區帶向上斜率，延長線交於橫軸負側的同一點，\n   輸出電阻為有限值\n兩態都顯示三個欄位：輸出電阻、輸出電阻對增益的影響、什麼時候可以忽略。\n在狀態 2 額外標註成因：集極電壓升高使基極-集極空乏區往基極擴張，\n有效基極寬度變薄，濃度梯度變陡，集極電流微幅上升。\n視覺要求：輸出特性曲線用 SVG（viewBox 寬度不超過 640），畫三條不同\n基極電壓下的曲線；切換時曲線斜率用 200-400ms ease-out 過渡；\n中文說明放 DOM；尊重 prefers-reduced-motion。"} caption="爾利效應讓「定電流源」帶上斜率：輸出電阻不再無限大，放大器的增益因此有了上限。">
+  <EcWeek4Early client:visible />
+</GeneratedFrame>
 
 ## 教材預習重點
 
@@ -156,3 +177,903 @@ caption: 爾利效應讓「定電流源」帶上斜率：輸出電阻不再無�
 - 4.4 電晶體模型：大訊號模型、輸出特性曲線、轉導及其與電流和面積的關係、小訊號模型推導、交流接地、爾利效應與其在大／小訊號模型中的表示
 - 4.5 飽和區的操作：軟飽和與深飽和、可接受的電源與集極電阻範圍
 - 4.6 PNP 電晶體：極性反轉、偏壓方式、與 NPN 相同的小訊號模型
+
+## CH4：雙極性電晶體的物理（逐頁名詞詳解，中英對照）
+
+> 依教授要求，以下依投影片出現順序、每個名詞先給**完整中文解釋**、原文英文附註在括號中。前面「本週摘要」已經用直覺方式講過放大需要什麼元件、三層結構、主動區與轉導的道理，這裡把投影片裡每個名詞、每道公式與例題數字攤開來，兩邊互相對照著讀。投影片第 1–29 頁是 4.1–4.3（結構、主動區、集極電流推導與電流關係），第 30–48 頁是 4.4 的模型（轉導、小訊號模型、爾利效應），第 49–54 頁是 4.5 飽和區，第 55–64 頁是 4.6 PNP 與例題。公式推導的前提（Boltzmann 邊界條件、擴散電流、質量作用定律）都在[第 1 週](/notes/電子學實作系列第1週-半導體物理基礎)講過，本章只是把它們接在一起。
+
+### 章節架構與全章路線（第 1–3 頁）
+
+{/* @ai-reference
+id: ch4-roadmap
+file: _references/電子學實作系列/第四週/Ch 4 - Physics of Bipolar Transistors.pdf
+page: 2
+status: suggested
+excerpt: 4.1 General Considerations / 4.2 Structure of Bipolar Transistor / 4.3 Operation in Active Mode / 4.4 Models / 4.5 Saturation / 4.6 PNP
+*/}
+<PdfRefChip file="_references/電子學實作系列/第四週/Ch 4 - Physics of Bipolar Transistors.pdf" page={2} status="suggested" excerpt={"4.1 General Considerations / 4.2 Structure of Bipolar Transistor / 4.3 Operation in Active Mode / 4.4 Models / 4.5 Saturation / 4.6 PNP"} client:visible />
+
+- **章節架構（Contents）**：第 2 頁列出六節：4.1 一般考量、4.2 結構、4.3 主動區的操作、4.4 電晶體模型、4.5 飽和區的操作、4.6 PNP 電晶體。本週上課範圍是整章。
+- **本章目標（第 3 頁）**：投影片一句話說明：研究雙極性電晶體的物理，並**推導出大訊號與小訊號模型**。也就是說，本章的終點不是「電晶體是什麼」，而是「把電晶體換成一組可以手算的等效元件」。
+- **全章路線（roadmap）**：第 3 頁下方的流程圖把推理順序畫出來：電壓控制元件可以放大 → 電晶體的結構 → 電晶體的操作 → 大訊號模型 → 小訊號模型。讀本章時抓住這條線，每一節都在回答「為了做出下一個模型，我還需要知道什麼」。
+
+![第 4 章路線圖：Voltage-Controlled Device as Amplifying Element → Structure of Bipolar Transistor → Operation of Bipolar Transistor → Large-Signal Model → Small-Signal Model](/note-images/ec-week4-ch4/00-chapter-roadmap.png)
+
+*整章只有一條線：從「什麼元件能放大」一路推到可以手算的小訊號模型。*
+
+### 電壓控制電流源與放大：Voltage-Dependent Current Source（第 4–5 頁）
+
+{/* @ai-reference
+id: ch4-vccs-amplifier
+file: _references/電子學實作系列/第四週/Ch 4 - Physics of Bipolar Transistors.pdf
+page: 4
+status: suggested
+excerpt: A voltage-dependent current source can act as an amplifier. If KRL is greater than 1, then the signal is amplified.
+*/}
+<PdfRefChip file="_references/電子學實作系列/第四週/Ch 4 - Physics of Bipolar Transistors.pdf" page={4} status="suggested" excerpt={"A voltage-dependent current source can act as an amplifier. If KRL is greater than 1, then the signal is amplified."} client:visible />
+
+- **電壓控制電流源（voltage-dependent current source）**：投影片 (a) 是一個兩埠元件，輸入端的電壓 $V_1$ 決定輸出端的電流 $I_1 = K V_1$，$K$ 的單位是 A/V（也就是西門子 S）。它本身**不產生電壓放大**，只是把電壓翻譯成電流。
+- **簡單放大器（simple amplifier）**：投影片 (b) 在輸出端並上一顆負載電阻 $R_L$，電流流過電阻就變回電壓。推導只有三步：輸入端不吃電流，所以 $V_1 = V_{in}$；受控源輸出 $I_1 = K V_{in}$；這股電流由上往下流過 $R_L$，輸出端電壓是
+
+$$
+\begin{aligned}
+V_{out} &= -I_1 R_L = -K R_L V_{in}\\
+A_V &\triangleq \frac{V_{out}}{V_{in}} = -K R_L .
+\end{aligned}
+$$
+
+負號來自受控源的箭頭方向：電流從輸出節點抽往地，輸入越大、輸出節點被拉得越低，所以輸出波形與輸入反相（投影片右側 $V_{out}$ 的波形相對 $V_{in}$ 上下顛倒）。只要 $K R_L > 1$，輸出擺幅 $K R_L V_p$ 就大於輸入擺幅 $V_p$。因次檢查：$K$ 是 A/V、$R_L$ 是 V/A，相乘無因次，正是增益該有的樣子。
+
+![電壓控制電流源：(a) 輸入電壓 V1 控制輸出電流 I1 = K·V1；(b) 加上負載 RL 後 Vout = −K·RL·Vin，輸出正弦波振幅放大為 K·RL·Vp 且反相](/note-images/ec-week4-ch4/01-voltage-dependent-current-source-amplifier.png)
+
+*放大器＝受控電流源＋負載電阻。增益 K·RL 與輸入端內阻無關，這就是為什麼理想放大器的輸入阻抗要無限大。*
+
+- **指數型電壓控制電流源（exponential voltage-dependent current source）**：第 5 頁說雙極性電晶體正是這種受控源的實例，理想化模型是一個三端元件：端點 1、2 之間的電壓 $V_1$ 控制端點 3 流出的電流 $I_S \exp(V_1/V_T)$，而端點 1 本身不吃電流。這個模型跟第 1 週二極體方程式長得一樣，差別在於**電流不是從同一個接面流出**，而是從第三隻腳流出——為什麼做得到，就是接下來三節要回答的事。
+
+![指數型電壓控制電流源的理想模型：端點 1、2 之間的電壓 V1 控制端點 3 的電流 IS·exp(V1/VT)](/note-images/ec-week4-ch4/02-exponential-vccs-ideal-model.png)
+
+*BJT 的理想模型：跟二極體一樣的指數關係，但電流從第三隻腳出來。*
+
+**一題自測**：若 $K = 10\ \text{mS}$、$R_L = 500\ \Omega$，電壓增益的大小是多少？
+
+<details>
+  <summary>答案</summary>
+  $|A_V| = K R_L = 10\times10^{-3}\ \text{A/V}\times500\ \text{V/A} = 5$，無因次。輸出與輸入反相。
+</details>
+
+### 結構與符號：Structure and Symbol（第 6 頁）
+
+{/* @ai-reference
+id: ch4-structure-symbol
+file: _references/電子學實作系列/第四週/Ch 4 - Physics of Bipolar Transistors.pdf
+page: 6
+status: suggested
+excerpt: Bipolar transistor can be thought of as a sandwich of three doped Si regions. The emitter emits charge carriers and the collector collects them while the base controls the number of carriers.
+*/}
+<PdfRefChip file="_references/電子學實作系列/第四週/Ch 4 - Physics of Bipolar Transistors.pdf" page={6} status="suggested" excerpt={"Bipolar transistor can be thought of as a sandwich of three doped Si regions. The emitter emits charge carriers and the collector collects them while the base controls the number of carriers."} client:visible />
+
+- **三明治結構（sandwich of three doped regions）**：三層摻雜矽疊在一起，外側兩層同極性、中間一層反極性；NPN 就是 n–p–n。投影片 (a) 由上而下是集極 n、基極 p、射極 n。
+- **射極（emitter）／基極（base）／集極（collector）**：投影片用動詞定義三隻腳：射極「發射」載子、集極「收集」載子、基極「控制」載子的數量。三個名字就是三個功能。
+- **電路符號（circuit symbol）**：投影片 (b) 的 NPN 符號，射極那一隻腳帶箭頭，箭頭方向就是射極電流流出的方向（NPN 向外）。圖上同時標出三個端電壓：$V_{BE}$（基極相對射極）、$V_{CB}$（集極相對基極）、$V_{CE}$（集極相對射極）。三者不獨立，繞一圈的 KVL 給出 $V_{CE} = V_{CB} + V_{BE}$。
+
+![NPN 雙極性電晶體：(a) 結構由上而下為 Collector n、Base p、Emitter n；(b) 電路符號 Q1，射極帶箭頭，標出 VCB、VBE、VCE](/note-images/ec-week4-ch4/03-npn-structure-and-symbol.png)
+
+*三層三隻腳：射極發射、集極收集、基極控制。*
+
+### 三種工作模式：Operation Modes（第 7 頁）
+
+{/* @ai-reference
+id: ch4-operation-modes
+file: _references/電子學實作系列/第四週/Ch 4 - Physics of Bipolar Transistors.pdf
+page: 7
+status: suggested
+excerpt: There are 2^2 possibilities for the terminal voltages; three combinations (modes) are practical: Active, Cutoff, Saturation.
+*/}
+<PdfRefChip file="_references/電子學實作系列/第四週/Ch 4 - Physics of Bipolar Transistors.pdf" page={7} status="suggested" excerpt={"There are 2^2 possibilities for the terminal voltages; three combinations (modes) are practical: Active, Cutoff, Saturation."} client:visible />
+
+- **四種組合（$2^2$ possibilities）**：兩個 PN 接面各有順偏、逆偏兩種狀態，所以端電壓有 $2^2 = 4$ 種組合。投影片說其中三種實用：
+
+| 模式 | B–E 接面 | B–C 接面 | 投影片寫法 | 用途 |
+| --- | --- | --- | --- | --- |
+| 主動區（active） | 順偏 | 逆偏 | $V_{BE} > 0$、$V_{CB} < 0$ | 放大器 |
+| 截止區（cutoff） | 逆偏（或未達導通） | 逆偏 | $V_{BE} < 0$、$V_{CB} < 0$ | 斷開的開關 |
+| 飽和區（saturation） | 順偏 | 順偏 | $V_{BE} > 0$、$V_{CB} > 0$ | 閉合的開關 |
+
+- **第四種組合為什麼不用**：B–E 逆偏、B–C 順偏（反向主動區）在數學上存在，但因為射極與集極的摻雜濃度刻意不對稱（見第 8 頁），反過來用的電流增益很差，課程直接略過。
+- **符號提醒**：第 7 頁對「B–C 逆偏」寫成 $V_{CB} < 0$，但第 6 頁符號圖上的 $V_{CB}$ 是「集極相對基極」，依第 8 頁的數字（$V_{BE} = 0.8\ \text{V}$、$V_{CE} = 1\ \text{V}$）算出來是 $V_C - V_B = +0.2\ \text{V}$，第 26 頁 Example 4-7 也用 $V_{CB} = V_X - V_B = 0.624 > 0$ 判定逆偏。所以第 7、8 頁的 $V_{CB} < 0$ 要讀成「基極相對集極為負」（即 $V_{BC} < 0$，第 8 頁圖上的 $-0.2\ \text{V}$ 就是這個量）。判斷模式時直接看**接面是順偏還是逆偏**，不要只看符號的正負。
+
+### 主動區的運作與錯誤模型：Active Mode（第 8–10 頁）
+
+{/* @ai-reference
+id: ch4-active-mode-operation
+file: _references/電子學實作系列/第四週/Ch 4 - Physics of Bipolar Transistors.pdf
+page: 8
+status: suggested
+excerpt: Wrong model: the transistor cannot be modeled as merely two back-to-back diodes. Base region is very thin (~100 Å); high doping level in emitter (n+).
+*/}
+<PdfRefChip file="_references/電子學實作系列/第四週/Ch 4 - Physics of Bipolar Transistors.pdf" page={8} status="suggested" excerpt={"Wrong model: the transistor cannot be modeled as merely two back-to-back diodes. Base region is very thin (~100 Å); high doping level in emitter (n+)."} client:visible />
+
+- **順向主動區（forward active region）**：B–E 順偏、B–C 逆偏。投影片 (a) 用 $V_{BE} = +0.8\ \text{V}$、$V_{CE} = +1\ \text{V}$ 當例子。
+- **錯誤模型（wrong model）**：投影片 (b) 把電晶體畫成兩顆背對背的二極體 $D_1$、$D_2$，然後說這是錯的。錯在哪裡：兩顆獨立二極體裡，逆偏的 $D_2$ 只會流很小的逆向飽和電流 $I_2$，跟 $D_1$ 的順向電流 $I_1$ 毫無關係；真正的電晶體裡兩個接面**共用同一層極薄的基極**，順偏接面注入的電子會穿過基極走到逆偏接面，被它的電場掃走——電流從一個接面「傳」到另一個接面，這是兩顆分離的二極體做不到的。
+- **薄基極（thin base，約 $100\ \text{Å} = 10\ \text{nm}$）**與**重摻雜射極（$n^+$ emitter）**：這兩個結構條件就是「傳得過去」的物理理由，第 9–10 頁會逐張解釋。
+
+![主動區偏壓與錯誤模型：(a) NPN 以 VBE = +0.8 V、VCE = +1 V 偏壓；(b) 把電晶體畫成兩顆背對背二極體 D1、D2 的錯誤模型](/note-images/ec-week4-ch4/04-active-mode-bias-and-wrong-two-diode-model.png)
+
+*兩顆分離的二極體之間沒有「傳遞」：逆偏那顆只會流漏電流。電晶體靠共用的薄基極把電流從一個接面送到另一個接面。*
+
+- **主動區的載子流（carrier flow in active mode，第 9 頁）**：投影片分三格。(a) 射極（$n^+$）往基極注入大量電子 $e^-$，同時基極端只抽走少量電洞 $h^+$（$e^- \gg h^+$，因為射極摻雜遠重於基極）；(b) 基極很薄，大多數電子還沒復合就已經擴散到集極–基極空乏區的邊緣；(c) 幾乎所有電子都被逆偏接面的電場掃進集極，所以 $I_C \approx I_E$。這三格就是第 1 週「逆偏接面會把進入空乏區的少數載子掃到對面」在三層結構裡的應用。
+
+![主動區的載子流動：(a) 射極注入大量電子、基極抽走少量電洞；(b) 電子擴散穿過薄基極到達空乏區邊緣；(c) 幾乎全部電子被掃進集極，IC ≈ IE](/note-images/ec-week4-ch4/05-carrier-flow-in-active-mode.png)
+
+*電子從射極出發、穿過薄基極、被集極接面的電場收走：這就是「集極收集」的字面意思。*
+
+- **基極中的載子分佈（carrier profile in base，第 10 頁）**：把基極沿 $x$ 軸攤開：(a) B–E 接面順偏，邊界 $x_1$ 的電子濃度被抬高；(b) C–B 接面逆偏，邊界 $x_2$ 的電子濃度被電場清到接近零；(c) 兩端固定、中間沒有來源，濃度在基極內呈直線下降。**一條斜線就是一個濃度梯度，濃度梯度就是擴散電流**（第 1 週的 Fick 定律）。下一節的集極電流公式完全從這條斜線算出來。
+
+![基極內的電子濃度分佈：(a) 順偏的 B–E 邊界 x1 電子濃度高；(b) 逆偏的 C–B 邊界 x2 濃度接近零；(c) 兩點之間呈線性下降的電子密度](/note-images/ec-week4-ch4/06-carrier-profile-in-base.png)
+
+*基極裡的電子濃度是一條斜線：一端被順偏抬高、一端被逆偏清空，斜率就是集極電流。*
+
+### 集極電流的推導：Collector Current（第 11–12 頁）
+
+{/* @ai-reference
+id: ch4-collector-current-derivation
+file: _references/電子學實作系列/第四週/Ch 4 - Physics of Bipolar Transistors.pdf
+page: 11
+status: suggested
+excerpt: As the base-emitter junction is in forward bias, the electron concentration at boundary x1 is n(x1) = NE exp(−(V0−VBE)/VT). The flow of electrons into the collector can be approximated as Jn = qDn dn/dx.
+*/}
+<PdfRefChip file="_references/電子學實作系列/第四週/Ch 4 - Physics of Bipolar Transistors.pdf" page={11} status="suggested" excerpt={"As the base-emitter junction is in forward bias, the electron concentration at boundary x1 is n(x1) = NE exp(-(V0-VBE)/VT). The flow of electrons into the collector can be approximated as Jn = qDn dn/dx."} client:visible />
+
+這兩頁是全章唯一一段完整的物理推導，用到的前提全部來自第 1 週：
+
+| 前提 | 來源 | 在這裡的用法 |
+| --- | --- | --- |
+| Boltzmann 邊界條件：順偏接面 P 側少數載子濃度乘上 $e^{V/V_T}$ | 第 1 週順偏 | 給出 $x_1$ 處的電子濃度 |
+| 內建電位 $V_0 = V_T \ln\!\left(\dfrac{N_E N_B}{n_i^2}\right)$ | 第 1 週平衡態 | 把 $e^{-V_0/V_T}$ 換成摻雜濃度 |
+| 擴散電流 $J_n = q D_n \dfrac{dn}{dx}$（Fick 定律） | 第 1 週擴散 | 把濃度斜線換成電流密度 |
+| 逆偏接面把少數載子清到零 | 第 1 週逆偏 | 令 $n(x_2) \approx n_{p,e}$ |
+
+- **邊界濃度（第 11 頁第一式）**：$N_E$ 是射極摻雜濃度。射極側的電子濃度 $N_E$ 跨過一道高度 $V_0 - V_{BE}$ 的障壁進入基極，Boltzmann 因子給出
+
+$$
+n(x_1) = N_E\, e^{-\frac{V_0 - V_{BE}}{V_T}} = N_E\, e^{-\frac{V_0}{V_T}}\cdot e^{\frac{V_{BE}}{V_T}} .
+$$
+
+- **超額電子濃度（excess concentration，式 (1)）**：扣掉基極原本就有的平衡少數載子濃度 $n_{p,e} = N_E e^{-V_0/V_T}$（這就是 $V_{BE} = 0$ 時的值）：
+
+$$
+\Delta n(x_1) \triangleq n(x_1) - n_{p,e} = N_E\, e^{-\frac{V_0}{V_T}}\left(e^{\frac{V_{BE}}{V_T}} - 1\right). \tag{1}
+$$
+
+- **流入集極的電子流（式 (2)）**：基極裡的濃度是直線，導數就是兩端差除以基極寬度 $W_B$；而 $x_2$ 處的濃度被逆偏電場清到 $n_{p,e}$ 附近，所以
+
+$$
+J_n = q D_n \frac{dn}{dx} = q D_n \frac{n(x_1) - n(x_2)}{W_B} \approx q D_n \frac{n(x_1) - n_{p,e}}{W_B} = q D_n \frac{\Delta n(x_1)}{W_B}. \tag{2}
+$$
+
+- **代入與化簡（第 12 頁）**：把 (1) 代進 (2)，再用內建電位的定義 $e^{V_0/V_T} = \dfrac{N_E N_B}{n_i^2}$ 把 $N_E e^{-V_0/V_T}$ 換成 $\dfrac{n_i^2}{N_B}$（$N_B$ 是基極摻雜濃度）：
+
+$$
+\begin{aligned}
+J_n &= \frac{q D_n}{W_B}\, N_E e^{-\frac{V_0}{V_T}}\left(e^{\frac{V_{BE}}{V_T}} - 1\right)
+     = \frac{q D_n}{W_B}\cdot\frac{n_i^2}{N_B}\left(e^{\frac{V_{BE}}{V_T}} - 1\right),\\[4pt]
+I_C &= A_E\,(J_n - J_p) \approx A_E J_n \qquad (J_n \gg J_p)\\
+    &= \frac{A_E\, q D_n\, n_i^2}{N_B W_B}\left(e^{\frac{V_{BE}}{V_T}} - 1\right)
+     \approx I_S\, e^{\frac{V_{BE}}{V_T}},\qquad
+I_S \triangleq \frac{A_E\, q D_n\, n_i^2}{N_B W_B}.
+\end{aligned}
+$$
+
+$A_E$ 是射極的截面積；最後一步假設 $e^{V_{BE}/V_T} \gg 1$（$V_{BE} = 0.7\ \text{V}$ 時這個指數約 $5\times10^{11}$，$-1$ 完全可以丟掉）。
+
+- **因次檢查**（半導體公式用 cm 制）：$A_E\,[\text{cm}^2]\times q\,[\text{C}]\times D_n\,[\text{cm}^2/\text{s}]\times n_i^2\,[\text{cm}^{-6}]\,/\,(N_B\,[\text{cm}^{-3}]\times W_B\,[\text{cm}]) = \text{C/s} = \text{A}$。$I_S$ 確實是電流。
+- **公式告訴我們的設計方向**：$I_S$ 正比於射極面積 $A_E$，反比於基極寬度 $W_B$ 與基極摻雜 $N_B$——所以基極要薄、要輕摻雜。射極摻雜 $N_E$ 在化簡時**消掉了**，它不影響集極電流，但它決定基極電流（第 19 頁）。另外 $I_S \propto n_i^2$，對溫度極敏感，跟二極體一樣。
+- **投影片勘誤**：第 15 頁 Example 4-4 把 $I_S$ 寫成分母 $N_E W_B$，依第 12 頁的推導應為 $N_B W_B$；該例題只用到 $I_S \propto A_E$，結論不受影響。
+
+**一題自測**：其他條件不變，把基極寬度 $W_B$ 減半，$I_S$ 怎麼變？為什麼？
+
+<details>
+  <summary>答案</summary>
+  $I_S$ 加倍。基極內的濃度斜線兩端高度不變、距離減半，斜率加倍，Fick 定律給出的擴散電流也加倍。
+</details>
+
+### 並聯電晶體與面積效應：Example 4-3、4-4（第 13–16 頁）
+
+{/* @ai-reference
+id: ch4-parallel-and-area
+file: _references/電子學實作系列/第四週/Ch 4 - Physics of Bipolar Transistors.pdf
+page: 13
+status: suggested
+excerpt: When two transistors are put in parallel and experience the same potential across all three terminals, they can be thought of as a single transistor with twice the emitter area.
+*/}
+<PdfRefChip file="_references/電子學實作系列/第四週/Ch 4 - Physics of Bipolar Transistors.pdf" page={13} status="suggested" excerpt={"When two transistors are put in parallel and experience the same potential across all three terminals, they can be thought of as a single transistor with twice the emitter area."} client:visible />
+
+- **並聯電晶體（parallel combination）**：兩顆電晶體三隻腳各自並接、承受相同的端電壓時，可以視為一顆射極面積加倍的電晶體 $Q_{eq}$。理由直接來自 $I_S \propto A_E$：兩顆各出 $I_S e^{V_{BE}/V_T}$，加起來就是 $2 I_S e^{V_{BE}/V_T}$。投影片 (b) 用立體圖把兩塊射極拼成一塊 $2A_E$。
+
+![並聯電晶體：(a) Q1、Q2 並聯後等效為射極面積 2AE 的 Qeq；(b) 立體結構圖，兩塊射極 AE 合併成一塊 2AE](/note-images/ec-week4-ch4/07-parallel-transistors-double-area.png)
+
+*並聯＝面積相加。這是後面「大電晶體等於很多小電晶體」的依據。*
+
+- **Example 4-3（第 14 頁）**：$Q_1$、$Q_2$ 相同且都在主動區，要讓 $I_{C1} = 10\, I_{C2}$，$V_1 - V_2$ 該是多少？兩顆的 $I_S$ 相同，相除時消掉：
+
+$$
+\begin{aligned}
+\frac{I_{C1}}{I_{C2}} &= \frac{I_S e^{V_1/V_T}}{I_S e^{V_2/V_T}} = e^{\frac{V_1 - V_2}{V_T}} = 10\\
+V_1 - V_2 &= V_T \ln 10 = 26\ \text{mV}\times 2.303 = 59.9\ \text{mV}.
+\end{aligned}
+$$
+
+這就是第 1 週二極體的「60 mV 法則」在電晶體上重現：集極電流差十倍，基極–射極電壓只差 60 mV。
+
+![Example 4-3 電路：Q1 由 V1 偏壓、Q2 由 V2 偏壓，兩顆集極共接到 V3](/note-images/ec-week4-ch4/08-example-4-3-circuit.jpeg)
+
+*同樣的元件，電流差十倍只需要 60 mV 的電壓差。*
+
+- **Example 4-4（第 15 頁）**：分立電晶體的面積約 $500\ \mu\text{m}\times500\ \mu\text{m}$，積體電路裡的可以小到 $0.5\ \mu\text{m}\times0.2\ \mu\text{m}$。同樣的集極電流，兩者的 $V_{BE}$ 差多少？把 $I_C = I_S e^{V_{BE}/V_T}$ 反解成 $V_{BE} = V_T \ln(I_C/I_S)$，兩式相減、$I_C$ 消掉：
+
+$$
+\begin{aligned}
+V_{BE,IC} - V_{BE,dis} &= V_T \ln\frac{I_C}{I_{S2}} - V_T \ln\frac{I_C}{I_{S1}} = V_T \ln\frac{I_{S1}}{I_{S2}} = V_T \ln\frac{A_{E1}}{A_{E2}}\\
+&= 26\ \text{mV}\times\ln\frac{500\times500}{0.5\times0.2} = 26\ \text{mV}\times\ln\!\left(2.5\times10^{6}\right) = 383\ \text{mV}.
+\end{aligned}
+$$
+
+- **實務修正（第 16 頁）**：實際上因為基極寬度等其他參數也不同，差距落在 $100$ 到 $150\ \text{mV}$。**重點是數字**：積體電路電晶體取 $V_{BE,IC} \approx 800\ \text{mV}$，分立元件降到 $V_{BE,dis} \approx 700\ \text{mV}$。本課程實驗用的是分立電晶體，手算與模擬都應該用 700 mV 這一側。
+
+### 簡單偏壓級與定電流源：Example 4-5（第 17–18 頁）
+
+{/* @ai-reference
+id: ch4-simple-stage-constant-current
+file: _references/電子學實作系列/第四週/Ch 4 - Physics of Bipolar Transistors.pdf
+page: 17
+status: suggested
+excerpt: Example 4-5 Simple stage with biasing: determine the output voltage if IS = 5e-16 A. IC = 1.69 mA, Vout = 1.31 V.
+*/}
+<PdfRefChip file="_references/電子學實作系列/第四週/Ch 4 - Physics of Bipolar Transistors.pdf" page={17} status="suggested" excerpt={"Example 4-5 Simple stage with biasing: determine the output voltage if IS = 5e-16 A. IC = 1.69 mA, Vout = 1.31 V."} client:visible />
+
+- **Example 4-5：帶偏壓的簡單放大級（simple stage with biasing）**：基極接 $750\ \text{mV}$、集極經 $R_L = 1\ \text{k}\Omega$ 接 $3\ \text{V}$，$I_S = 5\times10^{-16}\ \text{A}$。先算電流，再用 KVL 算輸出：
+
+$$
+\begin{aligned}
+I_C &= I_S\, e^{V_{BE}/V_T} = 5\times10^{-16}\ \text{A}\times e^{750/26} = 1.69\ \text{mA}\\
+V_{CC} &= I_C R_L + V_{out} \;\Rightarrow\; V_{out} = 3\ \text{V} - 1.69\ \text{mA}\times1\ \text{k}\Omega = 1.31\ \text{V}.
+\end{aligned}
+$$
+
+投影片沒寫但一定要補的一步：$V_{out} = 1.31\ \text{V} > V_{BE} = 0.75\ \text{V}$，集極比基極高，B–C 接面逆偏，「在主動區」的假設成立，上面的公式才能用。
+
+![Example 4-5 電路：基極接 750 mV，集極經 RL = 1 kΩ 接 3 V 電源，輸出取集極電壓 Vout](/note-images/ec-week4-ch4/09-example-4-5-simple-stage.png)
+
+*手算偏壓的固定三步：指數公式算 IC、KVL 算 Vout、回頭確認集極電壓高於基極電壓。*
+
+- **定電流源（constant current source，第 18 頁）**：上一題顯示集極電流完全由 $V_{BE}$ 決定、不看集極電壓（只要還在主動區）。所以 $V_{BE}$ 固定時，從集極看進去就是一個定電流源 $I_S e^{V_1/V_T}$。投影片 (b) 的 $I_C$–$V_{CE}$ 曲線在 $V_{CE} > V_1$ 之後是一條水平線——水平就是「電流不隨電壓改變」，這正是理想電流源的定義。
+
+![定電流源：(a) VBE 固定的電晶體等效為電流源 IS·exp(V1/VT)；(b) IC–VCE 特性在順向主動區為水平線](/note-images/ec-week4-ch4/10-constant-current-source.png)
+
+*主動區的 BJT 從集極看進去是一個定電流源：IC–VCE 曲線是水平線。*
+
+### 基極電流、射極電流與電流總整理：Example 4-6（第 19–23 頁）
+
+{/* @ai-reference
+id: ch4-base-emitter-currents
+file: _references/電子學實作系列/第四週/Ch 4 - Physics of Bipolar Transistors.pdf
+page: 19
+status: suggested
+excerpt: Base current consists of two components: 1) reverse injection of holes into the emitter and 2) recombination of holes with electrons coming from the emitter. IC = β·IB.
+*/}
+<PdfRefChip file="_references/電子學實作系列/第四週/Ch 4 - Physics of Bipolar Transistors.pdf" page={19} status="suggested" excerpt={"Base current consists of two components: 1) reverse injection of holes into the emitter and 2) recombination of holes with electrons coming from the emitter. IC = beta * IB."} client:visible />
+
+- **基極電流的兩個成分（base current components，第 19 頁）**：(1) 電洞從基極**反向注入**射極（順偏接面兩邊都會互相注入，只是射極重摻雜讓這一股很小）；(2) 電洞在基極裡與射極來的電子**復合**（基極薄，這一股也很小）。投影片 (a) 是理想情況（沒有基極電流）、(b) 是真實情況。
+- **電流增益（current gain，$\beta$，第 20 頁）**：$\beta = I_C / I_B$ 是由摻雜濃度等參數決定的**常數比例**。投影片的例子：射極每注入 200 個電子，基極就得補 1 個電洞，$\beta = 200$。$\beta$ 叫「電流增益」是因為它表示基極電流被「放大」了多少倍。NPN 的 $\beta$ 典型值在 50 到 200 之間，由製程決定，**同一批元件也會差很多**，所以設計上不能依賴 $\beta$ 的精確值（Example 4-6 的重點）。
+
+![基極電流的成分：(a) 理想情況只有電子從射極流到集極；(b) 真實情況基極要補充反向注入與復合消耗的電洞，形成 IB](/note-images/ec-week4-ch4/11-base-current-components.png)
+
+*基極電流是「漏掉的」那一小部分：反向注入的電洞加上復合掉的電洞。*
+
+- **射極電流（emitter current，第 21 頁）**：對整顆電晶體套 KCL：
+
+$$
+I_E = I_C + I_B = I_C\left(1 + \frac{1}{\beta}\right),\qquad \beta = \frac{I_C}{I_B}.
+$$
+
+- **電流總整理（summary of currents，第 22 頁）**：給定元件參數 $I_S$ 與 $\beta$，三隻腳的電流都寫成 $V_{BE}$ 的函數：
+
+$$
+\begin{aligned}
+I_C &= I_S \exp\frac{V_{BE}}{V_T},\qquad
+I_B = \frac{1}{\beta}\, I_S \exp\frac{V_{BE}}{V_T},\qquad
+I_E = \frac{\beta+1}{\beta}\, I_S \exp\frac{V_{BE}}{V_T},\\[4pt]
+I_C &= \alpha\, I_E,\qquad \alpha = \frac{\beta}{\beta+1}.
+\end{aligned}
+$$
+
+$\beta = 100$ 時 $\alpha = 0.99$，所以 $\alpha \approx 1$、$I_C \approx I_E$ 是合理近似——第 9 頁 (c) 「幾乎所有電子都到集極」的定量版本。
+
+- **Example 4-6（第 23 頁）**：$I_S = 5\times10^{-16}\ \text{A}$、$V_{BE} = 750\ \text{mV}$，製程讓 $\beta$ 在 50 到 200 之間變動，求端電流的範圍：
+
+$$
+\begin{aligned}
+I_C &= 5\times10^{-16}\ \text{A}\times e^{750/26} = 1.685\ \text{mA}\\
+\frac{I_C}{200} < I_B &< \frac{I_C}{50} \;\Rightarrow\; 8.43\ \mu\text{A} < I_B < 33.7\ \mu\text{A}\\
+I_C\left(1+\tfrac{1}{200}\right) < I_E &< I_C\left(1+\tfrac{1}{50}\right) \;\Rightarrow\; 1.69\ \text{mA} < I_E < 1.719\ \text{mA}.
+\end{aligned}
+$$
+
+讀法：$\beta$ 變四倍，$I_C$ 一動也不動、$I_E$ 只差 2%，**只有基極電流跟著 $\beta$ 跑**。所以用 $V_{BE}$ 偏壓的電路對 $\beta$ 不敏感，這是後面偏壓設計的核心原則之一。
+
+**一題自測**：$\beta = 50$ 時 $\alpha$ 是多少？$I_C$ 與 $I_E$ 差幾個百分比？
+
+<details>
+  <summary>答案</summary>
+  $\alpha = 50/51 \approx 0.980$，$I_E$ 比 $I_C$ 大 $1/\beta = 2\%$。
+</details>
+
+### 大訊號模型與 Example 4-7（第 24–27 頁）
+
+{/* @ai-reference
+id: ch4-large-signal-model
+file: _references/電子學實作系列/第四週/Ch 4 - Physics of Bipolar Transistors.pdf
+page: 24
+status: suggested
+excerpt: A diode is placed between base and emitter and a voltage controlled current source is placed between the collector and emitter. VBE → IC → IB → IE.
+*/}
+<PdfRefChip file="_references/電子學實作系列/第四週/Ch 4 - Physics of Bipolar Transistors.pdf" page={24} status="suggested" excerpt={"A diode is placed between base and emitter and a voltage controlled current source is placed between the collector and emitter. VBE -> IC -> IB -> IE."} client:visible />
+
+- **大訊號模型（large-signal model，第 24 頁）**：把第 22 頁的三條公式畫成電路：B–E 之間放一顆二極體（電流 $\frac{I_S}{\beta}\exp\frac{V_{BE}}{V_T}$，就是 $I_B$），C–E 之間放一個電壓控制電流源（電流 $I_S \exp\frac{V_{BE}}{V_T}$，就是 $I_C$）。依賴順序是 $V_{BE} \to I_C \to I_B \to I_E$：基極–射極電壓控制集極電流，基極電流是它的 $1/\beta$，兩者相加從射極流出。「大訊號」的意思是**不做線性化**，指數原樣保留，適合算直流偏壓點。
+
+![主動區的大訊號模型：B–E 之間是電流 (IS/β)·exp(VBE/VT) 的二極體，C–E 之間是電流 IS·exp(VBE/VT) 的受控電流源](/note-images/ec-week4-ch4/12-large-signal-model-active.png)
+
+*大訊號模型＝一顆二極體加一個受控電流源，指數關係原封不動。*
+
+- **Example 4-7（第 25–27 頁）**：$I_{S} = 5\times10^{-17}\ \text{A}$、$V_{BE} = 800\ \text{mV}$、$\beta = 100$、$R_C = 500\ \Omega$、$V_{CC} = 2\ \text{V}$。(a) 求端電流與電壓並驗證在主動區：
+
+$$
+\begin{aligned}
+I_C &= 5\times10^{-17}\ \text{A}\times\exp\frac{800\ \text{mV}}{26\ \text{mV}} = 1.153\ \text{mA}\\
+I_B &= \frac{I_C}{\beta} = 11.53\ \mu\text{A},\qquad
+I_E = \left(1+\tfrac{1}{100}\right)I_C = 1.165\ \text{mA}\\
+V_X &= V_{CC} - I_C R_C = 2\ \text{V} - 1.153\ \text{mA}\times500\ \Omega = 1.424\ \text{V}\\
+V_{CB} &= V_X - V_B = 1.424 - 0.8 = 0.624\ \text{V} > 0 .
+\end{aligned}
+$$
+
+集極比基極高 0.624 V，B–C 接面逆偏，主動區假設成立。(b) 最大的 $R_C$：$R_C$ 越大、$V_X$ 越低，降到 $V_X = V_{BE} = 800\ \text{mV}$ 時 B–C 接面剛好零偏壓，是主動區的「邊緣」：
+
+$$
+R_C = \frac{V_{CC} - V_X}{I_C} = \frac{2 - 0.8}{1.153\ \text{mA}} = 1041\ \Omega .
+$$
+
+投影片 (b) 把 $V_X$ 對 $R_C$ 畫成直線：$R_C$ 從 $500\ \Omega$ 加到 $1041\ \Omega$，$V_X$ 從 $1.424\ \text{V}$ 線性掉到 $0.8\ \text{V}$。**集極電阻有上限**，這是放大器增益不能無限加大的第一個理由（第二個是第 42 頁的爾利效應）。
+
+![Example 4-7：(a) 基極 VBE、集極經 RC = 500 Ω 接 VCC = 2 V；(b) VX 隨 RC 線性下降，RC = 500 Ω 時 1.424 V、1041 Ω 時降到 0.800 V](/note-images/ec-week4-ch4/13-example-4-7-circuit-and-vx-vs-rc.png)
+
+*集極電阻越大、集極電壓越低；低到跟基極一樣高就是主動區的邊緣。*
+
+**一題自測**：同一題把 $V_{CC}$ 改成 $3\ \text{V}$，最大的 $R_C$ 變成多少？
+
+<details>
+  <summary>答案</summary>
+  $I_C$ 不變（它只看 $V_{BE}$），$R_{C,max} = (3 - 0.8)/1.153\ \text{mA} \approx 1.91\ \text{k}\Omega$。電源越高，允許的集極電阻越大。
+</details>
+
+### 電流–電壓特性：Example 4-8（第 28–29 頁）
+
+{/* @ai-reference
+id: ch4-iv-characteristics
+file: _references/電子學實作系列/第四週/Ch 4 - Physics of Bipolar Transistors.pdf
+page: 28
+status: suggested
+excerpt: If the device remains in the active mode (VCE > VBE), IC is independent of VCE. Collector current as a function of (a) base-emitter voltage and (b) collector-emitter voltage.
+*/}
+<PdfRefChip file="_references/電子學實作系列/第四週/Ch 4 - Physics of Bipolar Transistors.pdf" page={28} status="suggested" excerpt={"If the device remains in the active mode (VCE > VBE), IC is independent of VCE. Collector current as a function of (a) base-emitter voltage and (b) collector-emitter voltage."} client:visible />
+
+- **I–V 特性（I-V characteristics，第 28 頁）**：兩張圖對應兩個自變數。(a) 固定 $V_{CE}$、掃 $V_{BE}$：$I_C$ 是指數曲線；(b) 固定 $V_{BE}$、掃 $V_{CE}$：只要 $V_{CE} > V_{BE}$（主動區），$I_C$ 是水平線，高度由 $V_{BE}$ 決定，$V_{BE2} > V_{BE1}$ 的線在上面。這兩張圖就是「電壓控制電流源」的圖形定義：輸入電壓決定高度、輸出電壓不影響。
+
+![BJT 的 I–V 特性：(a) IC 對 VBE 為指數曲線；(b) IC 對 VCE 在主動區為水平線，VBE = VB2 的線高於 VBE = VB1](/note-images/ec-week4-ch4/14-ic-vs-vbe-and-vce-characteristics.png)
+
+*輸入端看是指數、輸出端看是水平線——這就是受控電流源的兩張臉。*
+
+- **Example 4-8（第 29 頁）**：$I_S = 5\times10^{-17}\ \text{A}$、$\beta = 100$，畫四張特性曲線。三個基極電壓代進指數公式：
+
+| $V_{BE}$ | $I_C = I_S e^{V_{BE}/V_T}$ | $I_B = I_C/\beta$ |
+| --- | --- | --- |
+| 700 mV | 24.6 µA | 0.246 µA |
+| 750 mV | 169 µA | 1.69 µA |
+| 800 mV | 1.153 mA | 11.5 µA |
+
+每加 50 mV，電流增加 $e^{50/26} \approx 6.8$ 倍。(b)、(d) 兩張對 $V_{CE}$ 的圖都是三條水平線。投影片 (c)、(d) 的縱軸標了 $0.025\ \mu\text{A}$ 與 $0.169\ \mu\text{A}$，依 $I_B = I_C/\beta$ 應為 $0.246\ \mu\text{A}$ 與 $1.69\ \mu\text{A}$，圖上的數字疑為排版錯誤，以公式為準；題目裡的「700 mA」也是 mV 的誤植。
+
+![Example 4-8 的四張特性曲線：(a) IC–VBE 指數曲線標出 700、750、800 mV 對應 24.6 µA、169 µA、1.153 mA；(b) IC–VCE 三條水平線；(c) IB–VBE；(d) IB–VCE](/note-images/ec-week4-ch4/15-example-4-8-four-characteristics.png)
+
+*同一組 IS、β，四張圖都算得出來：指數決定高度，VCE 不改變高度。*
+
+### 轉導：Transconductance（第 30–34 頁）
+
+{/* @ai-reference
+id: ch4-transconductance
+file: _references/電子學實作系列/第四週/Ch 4 - Physics of Bipolar Transistors.pdf
+page: 30
+status: suggested
+excerpt: Transconductance (gm) shows a measure of how well the transistor converts voltage to current. gm = dIC/dVBE = IC/VT.
+*/}
+<PdfRefChip file="_references/電子學實作系列/第四週/Ch 4 - Physics of Bipolar Transistors.pdf" page={30} status="suggested" excerpt={"Transconductance (gm) shows a measure of how well the transistor converts voltage to current. gm = dIC/dVBE = IC/VT."} client:visible />
+
+- **轉導（transconductance，$g_m$，第 30 頁）**：投影片先問「怎麼量化一個電壓控制電流源的好壞？」答案是看它把電壓轉成電流的效率：集極電流對基極–射極電壓的導數。測試電路是在 $V_{BE}$ 上疊一個小階躍 $\Delta V_{BE}$、看 $I_C$ 動多少。對指數函數微分，導數就是函數本身除以 $V_T$：
+
+$$
+\begin{aligned}
+g_m &\triangleq \frac{dI_C}{dV_{BE}} = \frac{d}{dV_{BE}}\left(I_S \exp\frac{V_{BE}}{V_T}\right) = \frac{1}{V_T}\, I_S \exp\frac{V_{BE}}{V_T}\\
+&= \frac{I_C}{V_T}.
+\end{aligned}
+$$
+
+![轉導的測試電路：在 Q1 的 VBE 上疊加小階躍 ΔVBE，集極經 VCE 偏壓，觀察 IC 的變化](/note-images/ec-week4-ch4/16-gm-test-circuit.png)
+
+*轉導的操作型定義：推一點輸入電壓，看輸出電流動多少。*
+
+- **單位（第 31 頁）**：$g_m$ 的單位是 $\Omega^{-1}$，也就是西門子（siemens，S）。例子：$I_C = 1\ \text{mA}$、$V_T = 26\ \text{mV}$ 時
+
+$$
+g_m = \frac{1\ \text{mA}}{26\ \text{mV}} = 0.0385\ \Omega^{-1} = 0.0385\ \text{S} = 38.5\ \text{mS}.
+$$
+
+因次檢查：A/V 就是 S，正確。
+- **轉導的視覺化（visualization of transconductance，第 32 頁）**：$g_m$ 就是 $I_C$–$V_{BE}$ 曲線在偏壓點的**斜率**。輸入在 $V_{BE0}$ 附近擺動 $\Delta V$，輸出就在 $I_{C0}$ 附近擺動 $g_m \Delta V$。「偏壓在 $I_{C0}$」（biased at $I_{C0}$）指的是沒有訊號時元件就流著這麼多**靜態電流（quiescent current）**，而 $I_{C0}$ 要依需要的 $g_m$、也就是最終需要的增益來選。上方「本週摘要」的互動元件讓你拖動 $I_{C0}$ 親手看斜率怎麼變。
+
+![轉導的視覺化：IC–VBE 指數曲線上，偏壓點 (VBE0, IC0) 處輸入擺動 ΔV，輸出擺動 gm·ΔV，電流越大切線越陡](/note-images/ec-week4-ch4/17-gm-visualization-slope.png)
+
+*gm 是切線的斜率：偏壓點越往上、曲線越陡、同樣的 ΔV 換到越大的 ΔIC。*
+
+- **轉導與面積（transconductance and area，第 33 頁）**：面積放大 $n$ 倍、$I_S$ 放大 $n$ 倍；固定 $V_{BE}$ 下 $I_C$ 與 $g_m$ 都放大 $n$ 倍。投影片 (b) 把一顆大電晶體畫成 $n$ 顆並聯的小電晶體，每顆各出 $I_{C0}$，總共 $n I_{C0}$——第 13 頁並聯等效的直接推論。
+
+![轉導與面積：(a) 單顆電晶體偏壓在 IC0；(b) n 顆並聯等效於面積 n 倍，總電流 n·IC0](/note-images/ec-week4-ch4/18-gm-and-area.png)
+
+*面積 n 倍＝n 顆並聯：同樣 VBE 下電流與 gm 都是 n 倍。*
+
+- **轉導與集極電流（transconductance and $I_C$，第 34 頁）**：同樣的 $V_{BE}$ 擺幅 $\Delta V$，偏壓在 $I_{C2}$ 的電流擺幅 $g_{m2}\Delta V$ 比偏壓在 $I_{C1}$ 的 $g_{m1}\Delta V$ 大，因為 $g_{m2} > g_{m1}$。投影片強調：$g_m = I_C/V_T$ **本質上是集極電流的函數，不是基極電流的函數**——不要用 $\beta$ 去想增益。
+
+![轉導與集極電流：IC–VCE 圖上兩組水平線，偏壓 IC2 處同樣 ΔV 造成的擺幅 gm2·ΔV 大於 IC1 處的 gm1·ΔV](/note-images/ec-week4-ch4/19-gm-and-collector-current.png)
+
+*偏壓電流越大、同樣輸入擺幅換到的輸出擺幅越大；代價是靜態耗電。*
+
+**一題自測**：偏壓電流從 1 mA 提高到 2 mA，$g_m$ 變成多少？
+
+<details>
+  <summary>答案</summary>
+  $g_m = 2\ \text{mA}/26\ \text{mV} \approx 77\ \text{mS}$，加倍。轉導與偏壓電流成正比。
+</details>
+
+### 小訊號模型的推導：Small-Signal Model（第 35–37 頁）
+
+{/* @ai-reference
+id: ch4-small-signal-derivation
+file: _references/電子學實作系列/第四週/Ch 4 - Physics of Bipolar Transistors.pdf
+page: 35
+status: suggested
+excerpt: Small signal model is derived by perturbing voltage difference (ΔV), every two terminals while fixing the third terminal and analyzing the change in current of all three terminals.
+*/}
+<PdfRefChip file="_references/電子學實作系列/第四週/Ch 4 - Physics of Bipolar Transistors.pdf" page={35} status="suggested" excerpt={"Small signal model is derived by perturbing voltage difference (dV), every two terminals while fixing the third terminal and analyzing the change in current of all three terminals."} client:visible />
+
+- **推導方法（derivation，第 35 頁）**：小訊號模型的建法是固定的：每次在**兩個端點之間**加一個小擾動 $\Delta V$、第三個端點固定，然後看三隻腳的電流各變化多少（$\Delta I_C$、$\Delta I_B$、$\Delta I_E$）。投影片 (a) 擾動 $V_{BE}$、(b) 擾動 $V_{CE}$。數學上這就是對三變數函數做一階泰勒展開：每個偏導數對應一個線性元件。
+
+![小訊號推導的設定：(a) 在 B–E 之間加 ΔV 擾動、VCE 固定；(b) 在 C–E 之間加 ΔV 擾動、VBE 固定，觀察 ΔIB、ΔIC、ΔIE](/note-images/ec-week4-ch4/20-small-signal-derivation-setup.png)
+
+*一次擾動一對端點、固定第三隻腳：每個偏導數變成一個線性元件。*
+
+- **$V_{BE}$ 變動（第 36 頁）**：集極電流的變化由轉導給出，是一個 C–E 之間的電壓控制電流源；基極電流的變化是它的 $1/\beta$，而「電壓變化除以電流變化」就是電阻，於是 B–E 之間變成一顆電阻 $r_\pi$：
+
+$$
+\begin{aligned}
+\Delta I_C &= g_m\, \Delta V_{BE}\\
+\Delta I_B &= \frac{\Delta I_C}{\beta} = \frac{g_m}{\beta}\, \Delta V_{BE}
+\;\Rightarrow\;
+\Delta V_{BE} = \frac{\beta}{g_m}\, \Delta I_B \triangleq r_\pi\, \Delta I_B,\qquad
+r_\pi = \frac{\beta}{g_m} = \frac{\beta V_T}{I_C} = \frac{V_T}{I_B}.
+\end{aligned}
+$$
+
+投影片把擾動電壓命名為 $v_\pi \triangleq \Delta V_{BE}$，受控源寫成 $g_m v_\pi$。整張圖由左而右：真實電路 → 大訊號模型加擾動 → 只留變化量 → 改名 $v_\pi$ → 補上 $r_\pi$。因次檢查：$\beta$ 無因次、$g_m$ 是 A/V，$\beta/g_m$ 是 V/A，即歐姆。
+
+![小訊號模型的推導（VBE 變動）：從加了 ΔVBE 的電路，依序化成 ΔIC = gm·ΔVBE 的受控源、改名 vπ，最後在 B–E 之間補上 rπ](/note-images/ec-week4-ch4/21-small-signal-vbe-change-to-model.png)
+
+*小訊號模型＝輸入端一顆電阻 rπ、輸出端一個受控源 gm·vπ。*
+
+- **$V_{CE}$ 變動（第 37 頁）**：理想情況下 $V_{CE}$ 對集極電流沒有影響（第 28 頁的水平線），所以不貢獻任何元件；可以證明 $V_{CB}$ 也沒有影響。模型到此只有 $r_\pi$ 與 $g_m v_\pi$ 兩個元件——直到第 42 頁的爾利效應把「沒有影響」修正成「有一點影響」。
+
+![小訊號推導（VCE 變動）：在 C–E 之間加 ΔVCE，大訊號模型裡的受控源 IS·exp(VBE/VT) 不隨之改變，ΔIC = 0](/note-images/ec-week4-ch4/22-small-signal-vce-change.png)
+
+*理想模型裡集極電壓推不動集極電流，所以輸出端什麼元件都不用加。*
+
+**一題自測**：$I_C = 1\ \text{mA}$、$\beta = 100$，$r_\pi$ 是多少？
+
+<details>
+  <summary>答案</summary>
+  $g_m = 1/26\ \Omega^{-1}$，$r_\pi = \beta/g_m = 100\times26\ \Omega = 2.6\ \text{k}\Omega$。也可以直接算 $V_T/I_B = 26\ \text{mV}/10\ \mu\text{A}$。
+</details>
+
+### 小訊號例題：Example 4-10、4-11（第 38–41 頁）
+
+{/* @ai-reference
+id: ch4-small-signal-examples
+file: _references/電子學實作系列/第四週/Ch 4 - Physics of Bipolar Transistors.pdf
+page: 38
+status: suggested
+excerpt: Example 4-10: v1 represents the signal generated by a microphone, IS = 3e-16 A, β = 100. (a) determine the small-signal parameters; (b) if the microphone generates a 1-mV signal, how much change is observed in the collector and base currents?
+*/}
+<PdfRefChip file="_references/電子學實作系列/第四週/Ch 4 - Physics of Bipolar Transistors.pdf" page={38} status="suggested" excerpt={"Example 4-10: v1 represents the signal generated by a microphone, IS = 3e-16 A, beta = 100. (a) determine the small-signal parameters; (b) if the microphone generates a 1-mV signal, how much change is observed in the collector and base currents?"} client:visible />
+
+- **Example 4-10（第 38–39 頁）**：麥克風訊號 $v_1$ 串在 $800\ \text{mV}$ 的基極偏壓上，$I_S = 3\times10^{-16}\ \text{A}$、$\beta = 100$、$V_{CC} = 1.8\ \text{V}$。(a) $v_1 = 0$ 時的小訊號參數，(b) 麥克風出 1 mV 時集極與基極電流各變多少：
+
+$$
+\begin{aligned}
+I_C &= 3\times10^{-16}\ \text{A}\times\exp\frac{800\ \text{mV}}{26\ \text{mV}} = 6.92\ \text{mA}\\
+g_m &= \frac{I_C}{V_T} = \frac{6.92\ \text{mA}}{26\ \text{mV}} = \frac{1}{3.75\ \Omega},\qquad
+r_\pi = \frac{\beta}{g_m} = 100\times3.75\ \Omega = 375\ \Omega\\
+\Delta I_C &= g_m v_1 = \frac{1\ \text{mV}}{3.75\ \Omega} = 0.267\ \text{mA},\qquad
+\Delta I_B = \frac{v_1}{r_\pi} = \frac{1\ \text{mV}}{375\ \Omega} = 2.67\ \mu\text{A}.
+\end{aligned}
+$$
+
+核對：$\Delta I_B = \Delta I_C/\beta = 0.267\ \text{mA}/100 = 2.67\ \mu\text{A}$，兩條路算出同一個數。
+
+![Example 4-10：(a) 麥克風 v1 串在 800 mV 偏壓上、集極接 VCC = 1.8 V；(b) 對應的小訊號模型，v1 跨在 rπ 上、受控源 gm·vπ](/note-images/ec-week4-ch4/23-example-4-10-circuit-and-model.png)
+
+*先用大訊號模型算偏壓點，再把偏壓點換成 gm 與 rπ：這是小訊號分析的固定順序。*
+
+- **Example 4-11（第 40–41 頁）**：同一顆電晶體，集極改經 $R_C = 100\ \Omega$ 接 $V_{CC}$，電阻把集極電流變成電壓。(a) 驗證主動區：$V_{out} = V_{CC} - R_C I_C = 1.8 - 100\times6.92\times10^{-3} = 1.108\ \text{V}$，大於基極的 $800\ \text{mV}$，B–C 逆偏，在主動區。(b) 輸出訊號：
+
+$$
+\begin{aligned}
+\Delta I_C &= g_m v_1 = 0.267\ \text{mA}\\
+v_{out} &= -R_C\, \Delta I_C = -100\ \Omega\times0.267\ \text{mA} = -26.7\ \text{mV}\\
+A_V &= \frac{v_{out}}{v_1} = \frac{-26.7\ \text{mV}}{1\ \text{mV}} = -26.7 .
+\end{aligned}
+$$
+
+把兩步合起來就是 $A_V = -g_m R_C$——第 4 頁的 $-K R_L$，其中 $K$ 就是 $g_m$。負號的意思同第 4 頁：基極電壓升高、集極電流變大、$R_C$ 上壓降變大、集極電壓反而下降。
+
+![Example 4-11 電路：v1 串在 800 mV 偏壓上，集極經 RC = 100 Ω 接 VCC = 1.8 V，輸出取集極 Vout](/note-images/ec-week4-ch4/24-example-4-11-circuit.png)
+
+*加一顆集極電阻就是放大器：Vout = VCC − RC·IC。*
+
+![Example 4-11 的小訊號等效電路：v1 跨在 rπ 上，受控源 gm·vπ 流過 RC = 100 Ω 產生 vout，VCC 在小訊號下接地](/note-images/ec-week4-ch4/25-example-4-11-small-signal-circuit.png)
+
+*小訊號圖裡電源變成地：vout = −gm·RC·vπ，增益 −26.7。*
+
+**一題自測**：把 $R_C$ 改成 $200\ \Omega$ 想把增益加倍，會發生什麼事？
+
+<details>
+  <summary>答案</summary>
+  $V_{out} = 1.8 - 200\times6.92\times10^{-3} = 0.416\ \text{V}$，低於基極的 $0.8\ \text{V}$，B–C 接面順偏，電晶體進入飽和區（第 49 頁），小訊號公式失效。增益不是想加就能加，偏壓點要先撐得住。
+</details>
+
+### 爾利效應：Early Effect（第 42–47 頁）
+
+{/* @ai-reference
+id: ch4-early-effect
+file: _references/電子學實作系列/第四週/Ch 4 - Physics of Bipolar Transistors.pdf
+page: 42
+status: suggested
+excerpt: The claim that collector current does not depend on VCE is not accurate. As VCE increases, the depletion region between base and collector increases. Therefore, the effective base width decreases, which leads to an increase in the collector current.
+*/}
+<PdfRefChip file="_references/電子學實作系列/第四週/Ch 4 - Physics of Bipolar Transistors.pdf" page={42} status="suggested" excerpt={"The claim that collector current does not depend on VCE is not accurate. As VCE increases, the depletion region between base and collector increases. Therefore, the effective base width decreases, which leads to an increase in the collector current."} client:visible />
+
+- **爾利效應的成因（Early effect，第 42 頁）**：「集極電流與 $V_{CE}$ 無關」其實不精確。第 1 週講過**逆偏電壓越大、空乏區越寬**；$V_{CE}$ 從 $V_{CE1}$ 升到 $V_{CE2}$，B–C 空乏區往基極擴張，邊界從 $x_2$ 退到 $x_2'$，有效基極寬度 $W_B$ 變薄。第 11 頁的濃度斜線兩端高度不變、距離變短，斜率變陡，擴散電流（集極電流）微幅上升。整條因果鏈：$V_{CE}\uparrow \to$ 空乏區 $\uparrow \to W_B\downarrow \to$ 梯度 $\uparrow \to I_C\uparrow$。
+
+![爾利效應的成因：VCE 從 VCE1 升到 VCE2，B–C 空乏區邊界從 x2 退到 x2′，有效基極變薄，基極內的電子濃度斜線變陡](/note-images/ec-week4-ch4/26-early-effect-depletion-widening.png)
+
+*集極電壓升高、空乏區吃掉一部分基極、濃度斜線變陡、集極電流微升。*
+
+- **含爾利效應的模型（第 43 頁）**：集極電流多了一個與 $V_{CE}$ 成正比的修正因子，$V_A$ 叫**爾利電壓（Early voltage）**：
+
+$$
+\begin{aligned}
+I_C &\approx I_S \exp\frac{V_{BE}}{V_T}\left(1 + \frac{V_{CE}}{V_A}\right)\\
+\frac{dI_C}{dV_{CE}} &= I_S \exp\frac{V_{BE}}{V_T}\cdot\frac{1}{V_A} \approx \frac{I_C}{V_A}.
+\end{aligned}
+$$
+
+投影片 (a)：有爾利效應時 $I_C$–$V_{BE}$ 曲線整體略高；(b)：$I_C$–$V_{CE}$ 曲線不再水平，帶一個正斜率 $I_C/V_A$。把這條斜線往左延伸，會交橫軸於 $V_{CE} = -V_A$（代 $I_C = 0$ 進公式即得）——上方「本週摘要」的互動元件畫的就是這件事。
+
+![含爾利效應的特性曲線：(a) IC–VBE 曲線有爾利效應時略高於無爾利效應的虛線；(b) IC–VCE 曲線從水平變成帶正斜率的直線](/note-images/ec-week4-ch4/27-early-effect-ic-curves.png)
+
+*水平線長出斜率：這條斜率的倒數就是輸出電阻。*
+
+- **Example 4-13（第 44 頁）**：$I_C = 1\ \text{mA}$、$V_{CE} = 2\ \text{V}$、$I_S = 2\times10^{-16}\ \text{A}$，分別在 $V_A = \infty$ 與 $V_A = 20\ \text{V}$ 時求所需的 $V_{BE}$。把修正因子移到右邊再取對數：
+
+$$
+\begin{aligned}
+V_{BE} &= V_T \ln\!\left(\frac{I_C}{I_S}\cdot\frac{1}{1 + V_{CE}/V_A}\right)\\
+V_A = \infty:\quad V_{BE} &= 26\ \text{mV}\times\ln\frac{10^{-3}}{2\times10^{-16}} = 760\ \text{mV}\\
+V_A = 20\ \text{V}:\quad V_{BE} &= 26\ \text{mV}\times\ln\!\left(\frac{10^{-3}}{2\times10^{-16}}\cdot\frac{1}{1 + 2/20}\right) = 758\ \text{mV}.
+\end{aligned}
+$$
+
+只差 2 mV：**算偏壓點時爾利效應幾乎可以忽略**，它真正重要的地方在小訊號的輸出電阻。
+- **大訊號模型的修正（第 45 頁）**：只要把受控源的電流乘上 $\left(1 + V_{CE}/V_A\right)$，基極電流不變。
+
+![含爾利效應的大訊號模型：B–E 二極體不變，C–E 受控源改為 IS·exp(V1/VT)·(1 + VCE/VA)](/note-images/ec-week4-ch4/28-large-signal-model-with-early.png)
+
+*大訊號模型只改一個地方：受控源乘上修正因子。*
+
+- **小訊號模型的修正：輸出電阻（output resistance，$r_o$，第 46 頁）**：現在 $V_{CE}$ 變動會造成 $I_C$ 變動，「電壓變化除以電流變化」就是一顆電阻，掛在 C–E 之間：
+
+$$
+r_o = \frac{\Delta V_{CE}}{\Delta I_C} = \frac{V_A}{I_S \exp\dfrac{V_{BE}}{V_T}} \approx \frac{V_A}{I_C}.
+$$
+
+![含爾利效應的小訊號模型：(a) 在 C–E 之間加 ΔV 擾動產生 ΔIC；(b) 等效電路在 rπ、gm·vπ 之外多一顆 C–E 之間的 ro](/note-images/ec-week4-ch4/29-small-signal-model-with-ro.png)
+
+*小訊號模型的第三個元件：輸出端並上一顆 ro = VA / IC。*
+
+- **Example 4-14（第 47 頁）**：$I_C = 1\ \text{mA}$、$\beta = 100$、$V_A = 15\ \text{V}$，完整的小訊號模型：
+
+$$
+g_m = \frac{1\ \text{mA}}{26\ \text{mV}} = \frac{1}{26\ \Omega},\qquad
+r_\pi = \frac{\beta}{g_m} = 2.6\ \text{k}\Omega,\qquad
+r_o = \frac{V_A}{I_C} = \frac{15\ \text{V}}{1\ \text{mA}} = 15\ \text{k}\Omega .
+$$
+
+- **為什麼 $r_o$ 限制增益**（投影片未明寫，由第 43、46 頁推得）：$r_o$ 與集極電阻 $R_C$ 並聯，增益變成 $-g_m (R_C \parallel r_o)$；$R_C$ 再大也不會超過 $-g_m r_o = -V_A/V_T$，Example 4-14 的數字是 $15\ \text{V}/26\ \text{mV} \approx 577$。這個上限由製程（$V_A$）與溫度（$V_T$）決定，跟偏壓電流無關——偏壓電流加大，$g_m$ 變大但 $r_o$ 等比例變小。
+
+**一題自測**：$V_A = 15\ \text{V}$，偏壓電流改為 $2\ \text{mA}$，$r_o$ 與 $g_m r_o$ 各是多少？
+
+<details>
+  <summary>答案</summary>
+  $r_o = 15\ \text{V}/2\ \text{mA} = 7.5\ \text{k}\Omega$；$g_m r_o = (2\ \text{mA}/26\ \text{mV})\times7.5\ \text{k}\Omega \approx 577$，不變。
+</details>
+
+### 主動區總結（第 48 頁）
+
+{/* @ai-reference
+id: ch4-active-summary
+file: _references/電子學實作系列/第四週/Ch 4 - Physics of Bipolar Transistors.pdf
+page: 48
+status: suggested
+excerpt: Summary: Operation in Active Mode, Large-Signal Model, I/V Characteristics, Small-Signal Model, Early Effect, Modified Small-Signal Model.
+*/}
+<PdfRefChip file="_references/電子學實作系列/第四週/Ch 4 - Physics of Bipolar Transistors.pdf" page={48} status="suggested" excerpt={"Summary: Operation in Active Mode, Large-Signal Model, I/V Characteristics, Small-Signal Model, Early Effect, Modified Small-Signal Model."} client:visible />
+
+- **總結圖（summary）**：第 48 頁用一張圖把 4.3–4.4 串起來：主動區的載子流 → $I_C = I_S e^{V_{BE}/V_T}$ → 大訊號模型 → I/V 特性 → 小訊號模型 → 爾利效應 → 修正後的小訊號模型。讀完前面各節，這張圖應該每一格都認得。
+
+| 層次 | 模型 | 元件 | 用途 |
+| --- | --- | --- | --- |
+| 物理 | 載子流與濃度斜線 | 薄基極、重摻雜射極 | 解釋為什麼 $I_C = I_S e^{V_{BE}/V_T}$ |
+| 大訊號 | 二極體 $+$ 受控源 $I_S e^{V_{BE}/V_T}(1 + V_{CE}/V_A)$ | 指數原樣保留 | 算直流偏壓點、判斷工作區 |
+| 小訊號 | $r_\pi$、$g_m v_\pi$、$r_o$ | $g_m = I_C/V_T$、$r_\pi = \beta/g_m$、$r_o = V_A/I_C$ | 算增益、輸入／輸出阻抗 |
+
+![第 4 章主動區總結圖：載子流、集極電流公式、大訊號模型、I/V 特性、小訊號模型、爾利效應與修正後的小訊號模型](/note-images/ec-week4-ch4/30-active-mode-summary.png)
+
+*一張圖收齊三個層次：物理、大訊號、小訊號。*
+
+### 飽和區：Saturation（第 49–54 頁）
+
+{/* @ai-reference
+id: ch4-saturation
+file: _references/電子學實作系列/第四週/Ch 4 - Physics of Bipolar Transistors.pdf
+page: 49
+status: suggested
+excerpt: When collector voltage drops below base voltage and forward biases the collector-base junction, base current increases and decreases the current gain factor β. βforced = IC/IB < β.
+*/}
+<PdfRefChip file="_references/電子學實作系列/第四週/Ch 4 - Physics of Bipolar Transistors.pdf" page={49} status="suggested" excerpt={"When collector voltage drops below base voltage and forward biases the collector-base junction, base current increases and decreases the current gain factor beta. beta_forced = IC/IB < beta."} client:visible />
+
+- **進入飽和（bipolar transistor in saturation，第 49 頁）**：集極電壓降到基極電壓以下，B–C 接面轉為順偏，它開始像一顆二極體一樣從基極抽電流 $I_{BC}$：基極電流增加、集極電流反而被扣掉一塊，電流增益下降：
+
+$$
+\begin{aligned}
+I_C &= I_{S1}\exp\frac{V_{BE}}{V_T} - I_{BC},\qquad
+I_B = \frac{I_{S1}}{\beta}\exp\frac{V_{BE}}{V_T} + I_{BC}\\
+\beta_{forced} &\triangleq \frac{I_C}{I_B} < \beta .
+\end{aligned}
+$$
+
+投影片 (b) 的結構圖：原本只有射極往基極注入電子，現在集極也往基極注入電子（空心箭頭），兩個接面互相搶。
+
+![飽和區：(a) 集極電壓低於基極電壓的 Q1；(b) 結構圖中 B–C 接面也順偏，集極往基極注入電子，基極電流增加](/note-images/ec-week4-ch4/31-saturation-forward-biased-bc.png)
+
+*B–C 接面一順偏，就變成第二顆二極體跟基極搶電流。*
+
+- **飽和區的大訊號模型（第 50 頁）**：B–E 二極體 $D_{BE}$ 之外，B–C 之間再並一顆二極體 $D_{BC}$，電流 $I_{BC} = I_{S2}\exp\frac{V_{BC}}{V_T}$。注意**淨集極電流隨著進入飽和而下降**（$I_{S2}$ 那一項是從 $I_C$ 扣掉的），不是「不再成長」而已。
+
+$$
+I_C = I_{S1}\exp\frac{V_{BE}}{V_T} - I_{S2}\exp\frac{V_{BC}}{V_T},\qquad
+I_B = \frac{I_{S1}}{\beta}\exp\frac{V_{BE}}{V_T} + I_{S2}\exp\frac{V_{BC}}{V_T}.
+$$
+
+![飽和區的大訊號模型：(a) B–E 之間 DBE、B–C 之間 DBC 並上受控源 IS1·exp(VBE/VT)；(b) DBC 順偏時的電流路徑](/note-images/ec-week4-ch4/32-large-signal-model-saturation.png)
+
+*飽和區的模型就是多一顆二極體：它分走的電流讓淨集極電流下降。*
+
+- **整體 I/V 特性（overall I/V characteristics，第 51 頁）**：$V_{CE}$ 低於 $V_1$ 時 $I_C$ 開始下滑。叫「飽和」是因為在這個區域**再增加基極電流，集極電流也幾乎不變**（被 $V_{CE}$ 鉗住了）。除了 $\beta$ 下降，電晶體的速度在飽和區也會變慢。**經驗法則**：允許**軟飽和（soft saturation）**，即 $V_{BC} < 400\ \text{mV}$，因為此時 B–C 接面的電流仍可忽略——前提是元件誤差不能把工作點推進深飽和。
+
+![整體 I/V 特性：IC–VCE 曲線在 VCE < V1 的飽和區下滑，V1 右側為順向主動區的水平線；上方標示兩區的接面偏壓方向](/note-images/ec-week4-ch4/33-overall-iv-characteristics.png)
+
+*V1 以左是飽和區、以右是主動區；400 mV 的軟飽和是工程上的容忍帶。*
+
+- **Example 4-16（第 52–53 頁）**：求保證在軟飽和或主動區的 $R_C$ 與 $V_{CC}$ 關係。軟飽和時集極電流仍是 $I_S \exp(V_{BE}/V_T)$，條件是集極電壓不能比基極低超過 400 mV：
+
+$$
+\begin{aligned}
+V_{BC} \le 400\ \text{mV} \;&\Leftrightarrow\; V_{BE} - V_{CE} \le 400\ \text{mV}
+\;\Leftrightarrow\; V_{CE} \ge \underbrace{V_{BE} - 400\ \text{mV}}_{= V_1}\\
+V_{CC} - R_C I_C &\ge V_{BE} - 400\ \text{mV}\\
+V_{CC} &\ge I_C R_C + (V_{BE} - 400\ \text{mV}).
+\end{aligned}
+$$
+
+給定 $V_{BE}$，$I_C$ 是常數，所以 $V_{CC}$ 的下界是一條直線 $V_{CC} = m R_C + b$，斜率 $m = I_C$、截距 $b = V_{BE} - 400\ \text{mV}$；投影片 (b) 直線上方就是可接受區域。
+
+![Example 4-16：(a) 基極 VBE、集極經 RC 接 VCC 的電路；(b) VCC 對 RC 的直線，截距 VBE − 400 mV，直線上方為 Acceptable Region](/note-images/ec-week4-ch4/34-example-4-16-soft-saturation-region.png)
+
+*電源要高於 IC·RC 加上（VBE − 400 mV）：RC 越大、電源就要越高。*
+
+- **深飽和（deep saturation，第 54 頁）**：電晶體完全失去「電壓控制電流」的能力，$V_{CE}$ 被鉗制在常數 $V_{CE,sat} \approx 200\ \text{mV}$。投影片把它畫成兩顆電池：B–E 之間 $800\ \text{mV}$、C–E 之間 $200\ \text{mV}$——這時它就只是一個閉合的開關。
+
+![深飽和的模型：B–E 之間 800 mV 電池、C–E 之間 200 mV 電池，VCE 被鉗制在 VCE,sat](/note-images/ec-week4-ch4/35-deep-saturation-vce-sat.png)
+
+*深飽和＝兩顆電池：VCE 固定 200 mV，放大功能消失。*
+
+**一題自測**：$V_{BE} = 800\ \text{mV}$、$I_C = 1\ \text{mA}$、$R_C = 1\ \text{k}\Omega$，電源至少要多少才不會超過軟飽和？
+
+<details>
+  <summary>答案</summary>
+  $V_{CC} \ge 1\ \text{mA}\times1\ \text{k}\Omega + (0.8 - 0.4)\ \text{V} = 1.4\ \text{V}$。
+</details>
+
+### PNP 電晶體：PNP Transistor（第 55–58 頁）
+
+{/* @ai-reference
+id: ch4-pnp
+file: _references/電子學實作系列/第四週/Ch 4 - Physics of Bipolar Transistors.pdf
+page: 55
+status: suggested
+excerpt: With the polarities of emitter, collector, and base reversed, a PNP transistor is formed. All the principles that applied to NPN's also apply to PNP's, with the exception that emitter is at a higher potential than base and base at a higher potential than collector.
+*/}
+<PdfRefChip file="_references/電子學實作系列/第四週/Ch 4 - Physics of Bipolar Transistors.pdf" page={55} status="suggested" excerpt={"With the polarities of emitter, collector, and base reversed, a PNP transistor is formed. All the principles that applied to NPN's also apply to PNP's, with the exception that emitter is at a higher potential than base and base at a higher potential than collector."} client:visible />
+
+- **PNP 電晶體（第 55 頁）**：把三層的極性反過來（p–n–p）。NPN 的所有原理都適用，唯一差別是電位順序反過來：**射極高於基極、基極高於集極**。載子從電子換成電洞：(a) 結構與基極內的電洞密度斜線、(b) 電流方向（電洞從射極往下流到集極）、(c) 正確的偏壓方式、(d) 比較直覺的畫法（射極朝上、電流由上往下）。符號上射極的箭頭朝內，仍然是「射極電流的方向」。
+
+![PNP 電晶體：(a) p–n–p 結構與基極內的電洞密度；(b) 電洞從射極流向集極、電子由基極流出；(c) 正確偏壓 VBE、VCE 極性反轉；(d) 射極朝上的直覺畫法](/note-images/ec-week4-ch4/36-pnp-structure-current-bias.png)
+
+*PNP 只是把一切反過來：電洞當主角、射極電位最高。*
+
+- **NPN 與 PNP 的比較（第 56 頁）**：投影片 (a) 把兩種電晶體放在同一個電源下畫出電流方向：NPN 的 $I_C$ 流入集極、$I_E$ 流出射極；PNP 的 $I_E$ 流入射極、$I_C$ 流出集極。(b) 三種狀態的接面電壓：主動區（B–C 逆偏）、飽和邊緣（B–C 零偏壓，標 0）、飽和區（B–C 順偏），上排 NPN、下排 PNP 的正負號剛好相反。判斷模式的規則同前：看接面是順偏還是逆偏。
+
+![NPN 與 PNP 的比較：(a) 同一電源下兩種電晶體的電流方向；(b) 主動區、飽和邊緣、飽和區三種狀態下 B–C 接面的電壓極性，NPN 與 PNP 相反](/note-images/ec-week4-ch4/37-npn-vs-pnp-comparison.png)
+
+*對照表：電流方向與接面極性全部反過來，判斷邏輯不變。*
+
+- **PNP 的大訊號模型（第 57 頁）**：把 $V_{BE}$ 換成 $V_{EB}$（射極相對基極）、電流方向反過來，公式形狀完全一樣：
+
+$$
+I_C = I_S \exp\frac{V_{EB}}{V_T},\qquad
+I_B = \frac{I_C}{\beta},\qquad
+I_E = \frac{\beta+1}{\beta}\, I_C;\qquad
+\text{含爾利效應：}\; I_C = I_S \exp\frac{V_{EB}}{V_T}\left(1 + \frac{V_{EC}}{V_A}\right).
+$$
+
+![PNP 的大訊號模型：E–B 之間電流 (IS/β)·exp(VEB/VT) 的二極體，E–C 之間受控源 IS·exp(VEB/VT)，電流由射極流向集極](/note-images/ec-week4-ch4/38-pnp-large-signal-model.png)
+
+*同一組公式，只是把 VBE 寫成 VEB、電流箭頭反向。*
+
+- **PNP 的小訊號模型（第 58 頁）**：與 NPN **完全相同**，投影片特別強調這不是筆誤：電流方向已經由 $v_\pi$（即 $\Delta V_{BE}$）的極性處理掉了。小訊號只看「變化量」，變化量沒有 NPN／PNP 之分。投影片 (b) 把射極畫在上方、看起來不一樣，但元件與連接完全相同。
+
+![PNP 的小訊號模型：(a) 與 NPN 相同的 rπ、gm·vπ、ro；(b) 射極朝上的畫法，元件與連接完全相同](/note-images/ec-week4-ch4/39-pnp-small-signal-model.png)
+
+*小訊號模型不分 NPN／PNP：極性藏在 vπ 的正負號裡。*
+
+**一題自測**：PNP 在主動區時，射極、基極、集極三者的電位由高到低怎麼排？
+
+<details>
+  <summary>答案</summary>
+  $V_E > V_B > V_C$。E–B 順偏要射極高於基極，B–C 逆偏要基極高於集極。
+</details>
+
+### PNP 例題：Example 4-17、4-18（第 59–62 頁）
+
+{/* @ai-reference
+id: ch4-pnp-examples
+file: _references/電子學實作系列/第四週/Ch 4 - Physics of Bipolar Transistors.pdf
+page: 59
+status: suggested
+excerpt: Example 4-17: Determine the terminal currents of Q1 and verify operation in the forward active region. Assume IS = 2e-16 A, β = 50 and VA = ∞.
+*/}
+<PdfRefChip file="_references/電子學實作系列/第四週/Ch 4 - Physics of Bipolar Transistors.pdf" page={59} status="suggested" excerpt={"Example 4-17: Determine the terminal currents of Q1 and verify operation in the forward active region. Assume IS = 2e-16 A, beta = 50 and VA = infinity."} client:visible />
+
+- **Example 4-17（第 59–60 頁）**：PNP 的射極接 $V_{CC} = 2\ \text{V}$、基極接 $1.2\ \text{V}$、集極經 $R_C = 200\ \Omega$ 接地，$I_S = 2\times10^{-16}\ \text{A}$、$\beta = 50$、$V_A = \infty$。射極–基極電壓是 $2 - 1.2 = 0.8\ \text{V}$：
+
+$$
+\begin{aligned}
+I_C &= 2\times10^{-16}\ \text{A}\times e^{(2-1.2)/0.026} = 4.61\ \text{mA}\\
+I_B &= \frac{I_C}{\beta} = 92.2\ \mu\text{A},\qquad
+I_E = \frac{51}{50}\times4.61\ \text{mA} = 4.70\ \text{mA}\\
+V_X &= I_C R_C = 4.61\ \text{mA}\times200\ \Omega = 0.922\ \text{V}.
+\end{aligned}
+$$
+
+集極電壓 $0.922\ \text{V}$ 低於基極 $1.2\ \text{V}$，對 PNP 來說 B–C 接面逆偏，在主動區。注意 PNP 的集極電阻接在**下方**，集極電壓是從地往上算的 $I_C R_C$。
+
+![Example 4-17 電路：PNP Q1 射極接 VCC = 2 V，基極接 1.2 V，集極 X 經 RC = 200 Ω 接地](/note-images/ec-week4-ch4/40-example-4-17-circuit.png)
+
+*PNP 的放大級上下顛倒：電源在上、集極電阻在下。*
+
+- **Example 4-18（第 61–62 頁）**：麥克風訊號 $V_{in}$ 串在基極的 $1.7\ \text{V}$ 上，射極接 $2.5\ \text{V}$、集極經 $300\ \Omega$ 接地，$I_S = 1.5\times10^{-16}\ \text{A}$。$V_{in} = 0$ 時 $V_{EB} = 0.8\ \text{V}$：
+
+$$
+\begin{aligned}
+V_{in} = 0:\quad I_C &= 1.5\times10^{-16}\ \text{A}\times e^{(2.5-1.7)/0.026} = 3.46\ \text{mA},\quad
+V_{out} = I_C R_C = 1.038\ \text{V}\ (< 1.7\ \text{V},\ \text{主動區})\\
+V_{in} = +5\ \text{mV}:\quad I_C &= 1.5\times10^{-16}\ \text{A}\times e^{(2.5-1.705)/0.026} = 2.85\ \text{mA},\quad
+V_{out} = 0.856\ \text{V}\\
+A_V &= \frac{\Delta V_{out}}{\Delta V_{in}} = \frac{0.856 - 1.038}{0.005} = -36.4 .
+\end{aligned}
+$$
+
+基極抬高 5 mV，$V_{EB}$ 變小，電流變小，輸出下降——仍然是反相放大。值得比對：小訊號公式給 $g_m R_C = (3.46\ \text{mA}/26\ \text{mV})\times300\ \Omega \approx 40$，大訊號算出 36.4，差在 5 mV 相對 $V_T = 26\ \text{mV}$ 已經不算「小」（$e^{-5/26} = 0.825$，線性近似給 $1 - 5/26 = 0.808$）。**小訊號模型的適用條件是擺幅遠小於 $V_T$**。
+
+![Example 4-18 電路：Vin 串在 1.7 V 基極偏壓上，PNP 射極接 2.5 V，集極經 RC = 300 Ω 接地，輸出取集極 Vout](/note-images/ec-week4-ch4/41-example-4-18-circuit.png)
+
+*用大訊號模型直接算兩個工作點相減：增益 −36.4，與小訊號的 −40 差在 5 mV 已不算小訊號。*
+
+### 小訊號等效電路的三種拓撲：Example 4-20（第 63–64 頁）
+
+{/* @ai-reference
+id: ch4-ac-ground-topologies
+file: _references/電子學實作系列/第四週/Ch 4 - Physics of Bipolar Transistors.pdf
+page: 63
+status: suggested
+excerpt: Example 4-20: Draw the small-signal equivalent circuits for the topologies shown in (a)-(c) and compare the results. All three topologies reduce to the same equivalent circuit because VCC is grounded in the small-signal representation.
+*/}
+<PdfRefChip file="_references/電子學實作系列/第四週/Ch 4 - Physics of Bipolar Transistors.pdf" page={63} status="suggested" excerpt={"Example 4-20: Draw the small-signal equivalent circuits for the topologies shown in (a)-(c) and compare the results. All three topologies reduce to the same equivalent circuit because VCC is grounded in the small-signal representation."} client:visible />
+
+- **Example 4-20（第 63 頁）**：三個看起來不同的電路：(a) NPN，集極電阻接在上方的 $V_{CC}$；(b) PNP，射極接 $V_{CC}$、集極電阻接地；(c) PNP，訊號源串在 $V_{CC}$ 與基極之間。要求畫出三者的小訊號等效電路並比較。
+- **交流接地（AC ground，第 64 頁）**：直流電源在小訊號分析中是**定值**，變化量為零，所以 $V_{CC}$ 節點在小訊號圖裡就是地。把 $V_{CC}$ 換成地之後，三個電路都化成同一張圖：$v_{in}$ 跨在 $r_\pi$ 上、受控源 $g_m v_\pi$ 與 $r_o$、$R_C$ 全部並聯到地。結論：**接法的差異只影響偏壓，不影響小訊號增益** $-g_m (R_C \parallel r_o)$；而「$V_{CC}$ 接地」這一步是每一次畫小訊號圖都要先做的事。
+
+![Example 4-20 的三種拓撲：(a) NPN 集極電阻接 VCC；(b) PNP 射極接 VCC、集極電阻接地；(c) PNP 訊號源串在 VCC 與基極之間](/note-images/ec-week4-ch4/42-example-4-20-three-topologies.png)
+
+*三張不同的直流接法。*
+
+![Example 4-20 的解答：三個電路把 VCC 接地後，都化成 vin 跨 rπ、gm·vπ 與 ro、RC 並聯到地的同一張小訊號等效電路](/note-images/ec-week4-ch4/43-example-4-20-equivalent-circuits.png)
+
+*VCC 在小訊號下是地：三種拓撲的小訊號等效電路一模一樣。*
+
+## 關鍵定義
+
+> 本節整理第 4 週核心範圍：BJT 的結構、三個工作區、大／小訊號模型、轉導、爾利效應與 PNP。放大器的偏壓設計與各種組態留到後續章節。
+
+| 名詞 | 定義 |
+| --- | --- |
+| 雙極性電晶體（bipolar junction transistor，BJT） | 三層摻雜矽（n–p–n 或 p–n–p）組成的三端元件；基極–射極電壓以指數方式控制集極電流。 |
+| 射極／基極／集極（emitter / base / collector） | 射極發射載子、集極收集載子、基極控制載子數量；射極重摻雜、基極極薄且輕摻雜。 |
+| 順向主動區（forward active region） | B–E 接面順偏、B–C 接面逆偏；集極電流由 $V_{BE}$ 決定、幾乎與 $V_{CE}$ 無關；放大器唯一可用的工作區。 |
+| 截止區（cutoff） | B–E 接面未順偏，三隻腳電流都接近零；等效於斷開的開關。 |
+| 飽和區（saturation） | B–C 接面也順偏，基極電流增加、淨集極電流下降、$\beta$ 下降、速度變慢；等效於閉合的開關。軟飽和（$V_{BC} < 400\ \text{mV}$）可容忍，深飽和時 $V_{CE,sat} \approx 200\ \text{mV}$。 |
+| 飽和電流（saturation current，$I_S$） | $I_S = \dfrac{A_E q D_n n_i^2}{N_B W_B}$；正比於射極面積、反比於基極寬度與基極摻雜；與 $n_i^2$ 一樣對溫度極敏感。 |
+| 電流增益（current gain，$\beta$） | $\beta = I_C / I_B$，由摻雜與結構決定，典型 50–200；製程變動大，偏壓設計不應依賴其精確值。 |
+| 共基極電流增益（$\alpha$） | $\alpha = I_C / I_E = \beta/(\beta+1)$，略小於 1。 |
+| 大訊號模型（large-signal model） | B–E 之間一顆二極體、C–E 之間一個受控電流源，指數關係不線性化；用於算直流偏壓點與判斷工作區。 |
+| 小訊號模型（small-signal model） | 在偏壓點做一階泰勒展開：B–E 之間 $r_\pi$、C–E 之間受控源 $g_m v_\pi$ 與輸出電阻 $r_o$；適用於擺幅遠小於 $V_T$ 的訊號。 |
+| 轉導（transconductance，$g_m$） | $g_m = dI_C/dV_{BE} = I_C/V_T$；$I_C$–$V_{BE}$ 曲線在偏壓點的斜率，衡量電壓轉電流的效率；與集極電流成正比、與面積成正比、與基極電流無關。 |
+| 靜態電流／偏壓電流（quiescent / bias current，$I_{C0}$） | 沒有訊號時流過集極的直流電流；決定 $g_m$，也決定靜態耗電。 |
+| 爾利效應（Early effect） | $V_{CE}$ 升高使 B–C 空乏區擴張、有效基極變薄、集極電流微升；以修正因子 $(1 + V_{CE}/V_A)$ 表示。 |
+| 爾利電壓（Early voltage，$V_A$） | 輸出特性曲線斜線延長線與橫軸的交點 $-V_A$；由製程決定，典型數十伏特。 |
+| 輸出電阻（output resistance，$r_o$） | $r_o = \Delta V_{CE}/\Delta I_C \approx V_A / I_C$；與負載並聯，把增益封頂在 $g_m r_o = V_A / V_T$。 |
+| 交流接地（AC ground） | 直流電源在小訊號分析中變化量為零，視為地；畫小訊號等效電路的第一步。 |
+| PNP 電晶體 | 極性全部反轉的 BJT：射極電位最高、載子為電洞、公式把 $V_{BE}$ 換成 $V_{EB}$；小訊號模型與 NPN 完全相同。 |
+
+## 公式
+
+- 集極電流：$I_C = I_S \exp\!\left(\dfrac{V_{BE}}{V_T}\right)$，其中 $I_S = \dfrac{A_E q D_n n_i^2}{N_B W_B}$。
+- 三隻腳的電流：$I_B = \dfrac{I_C}{\beta}$、$I_E = I_C + I_B = \dfrac{\beta+1}{\beta} I_C$、$I_C = \alpha I_E$，$\alpha = \dfrac{\beta}{\beta+1}$。
+- 電流差十倍的電壓差：$\Delta V_{BE} = V_T \ln 10 \approx 60\ \text{mV}$。
+- 面積比對應的電壓差（同電流）：$\Delta V_{BE} = V_T \ln\dfrac{A_{E1}}{A_{E2}}$。
+- 集極電壓與主動區邊緣：$V_X = V_{CC} - I_C R_C$；需 $V_X > V_{BE}$（NPN）才在主動區，$R_{C,max} = \dfrac{V_{CC} - V_{BE}}{I_C}$。
+- 轉導：$g_m = \dfrac{I_C}{V_T}$（單位 S）。
+- 小訊號輸入電阻：$r_\pi = \dfrac{\beta}{g_m} = \dfrac{V_T}{I_B}$。
+- 含爾利效應的集極電流：$I_C \approx I_S \exp\!\left(\dfrac{V_{BE}}{V_T}\right)\left(1 + \dfrac{V_{CE}}{V_A}\right)$。
+- 輸出電阻：$r_o = \dfrac{\Delta V_{CE}}{\Delta I_C} \approx \dfrac{V_A}{I_C}$；本質增益上限 $g_m r_o = \dfrac{V_A}{V_T}$。
+- 電阻負載放大級的小訊號增益：$A_V = -g_m (R_C \parallel r_o)$；忽略 $r_o$ 時 $A_V = -g_m R_C$。
+- 飽和區的電流：$I_C = I_{S1}\exp\dfrac{V_{BE}}{V_T} - I_{S2}\exp\dfrac{V_{BC}}{V_T}$，$\beta_{forced} = \dfrac{I_C}{I_B} < \beta$。
+- 軟飽和條件：$V_{BC} \le 400\ \text{mV}$，即 $V_{CC} \ge I_C R_C + (V_{BE} - 400\ \text{mV})$。
+- 深飽和：$V_{CE,sat} \approx 200\ \text{mV}$。
+- PNP：$I_C = I_S \exp\!\left(\dfrac{V_{EB}}{V_T}\right)\left(1 + \dfrac{V_{EC}}{V_A}\right)$，小訊號模型同 NPN。
