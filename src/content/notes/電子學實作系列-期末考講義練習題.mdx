@@ -1,0 +1,1133 @@
+---
+title: "電子學實作系列：期末考 - 講義練習題總整理"
+description: "期末考範圍確認為講義裡的全部練習題。把 CH1–CH4 投影片的 38 道 Example 逐題整理：題目中英對照、解題思路、完整計算過程、原題圖片與講義頁碼連結（PNP 一節教授未教，已排除）。"
+tags: ["電子學實作系列"]
+createdAt: "2026-10-17"
+updatedAt: "2026-10-17"
+---
+
+import PdfRefChip from '@/components/islands/PdfRefChip.tsx'
+
+# 期末考：講義練習題總整理
+
+*Final Exam — Worked Examples from the Lecture Slides*
+
+> **範圍與用法**：教授確認期末考題目就是講義裡的練習題。這篇把 CH1–CH4 投影片出現的每一道 Example 依章節順序收齊，每題固定四段：**題目**（中文在上、英文原文在下）→ **解題思路**（先想什麼、用哪條公式）→ **計算過程**（KaTeX 逐步）→ **答案與陷阱**。原題有圖的直接嵌入，每題標題下的頁碼 chip 點開就是講義該頁。CH4 的 PNP 一節（4.6，Example 4-17、4-18、4-20）教授沒有教，不收。投影片在部分例題後面附的 Exercise 也一併列為「延伸練習」，答案是我自己算的，講義沒有給。
+> 概念說明請回各週筆記：[第 1 週](/notes/電子學實作系列第1週-半導體物理基礎)（CH1、CH2）、[第 2 週](/notes/電子學實作系列第2週-二極體與eda模擬)（CH3）、[第 4 週](/notes/電子學實作系列第4週-bjt雙極性電晶體)（CH4）。
+
+## 題目總覽
+
+| 章節 | 題數 | 題號 | 核心公式 |
+| --- | --- | --- | --- |
+| CH1 微電子學導論 | 4 | 1-1、1-2、1-3、1-4 | $A_V(\text{dB}) = 20\log_{10}\frac{v_{out}}{v_{in}}$ |
+| CH2 半導體物理 | 15 | 2-1、2-3、2-5、2-6、2-7、2-8、2-9、2-13、2-14、2-15、2-16、2-17、2-18、2-19、2-21 | $n_i(T)$、$np = n_i^2$、$v = \mu E$、$J = qD\frac{dn}{dx}$、$V_0$、$C_j$、$I_S$、二極體方程式 |
+| CH3 二極體模型與電路 | 8 | 3-1、3-13、3-18、3-19、3-27、3-28、3-31、3-33 | $r_d = \frac{V_T}{I_D}$、$V_R \approx \frac{I_L}{C f_{in}}$、$I_p$、線／負載調整率 |
+| CH4 BJT | 11 | 4-3、4-4、4-5、4-6、4-7、4-8、4-10、4-11、4-13、4-14、4-16 | $I_C = I_S \exp\!\left(\frac{V_{BE}}{V_T}\right)$、$g_m = \frac{I_C}{V_T}$、$r_\pi$、$r_o$、軟飽和判準 |
+
+常數（矽，300 K）：$V_T = 26\ \text{mV}$、$n_i = 1.08\times10^{10}\ \text{cm}^{-3}$、$\mu_n = 1350$、$\mu_p = 480\ \text{cm}^2/(\text{V}\cdot\text{s})$、$D_n = 34$、$D_p = 12\ \text{cm}^2/\text{s}$、$q = 1.6\times10^{-19}\ \text{C}$、$\varepsilon_{si} = 11.7\times8.85\times10^{-14}\ \text{F/cm}$。
+
+## CH1：微電子學導論
+
+### Example 1-1：沒有積體電路的處理器有多大（第 18–20 頁）
+
+{/* @ai-reference
+id: ex-1-1
+file: _references/電子學實作系列/第一週/Ch 1 - Introduction to Microelectronics.pdf
+page: 18
+status: suggested
+excerpt: Today's microprocessors contain about 100 million transistors in a chip area of approximately 3cm x 3cm. Suppose integrated circuits were not invented and we attempted to build a processor using 100 million discrete transistors.
+*/}
+<PdfRefChip file="_references/電子學實作系列/第一週/Ch 1 - Introduction to Microelectronics.pdf" page={18} status="suggested" excerpt={"Today's microprocessors contain about 100 million transistors in a chip area of approximately 3cm x 3cm. Suppose integrated circuits were not invented and we attempted to build a processor using 100 million discrete transistors."} client:visible />
+
+> 現代微處理器在約 3 cm × 3 cm 的晶片上有一億顆電晶體。若沒有積體電路，改用一億顆分立電晶體來做，每顆佔 3 mm × 3 mm × 3 mm 的體積，處理器最小體積是多少？還會有什麼問題？
+> :en[Today's microprocessors contain about 100 million transistors in a chip area of approximately 3 cm × 3 cm. Suppose integrated circuits were not invented and we attempted to build a processor using 100 million discrete transistors. If each device occupies a volume of 3 mm × 3 mm × 3 mm, determine the minimum volume for the processor. What other issues would arise in such an implementation?]
+
+**解題思路**：純粹是數量級估算：單顆體積乘上顆數，再把立方公厘換成公尺看結果有多荒謬。第二問是定性題，從體積推到導線長度、速度、成本、重量。
+
+**計算過程**：
+
+$$
+\begin{aligned}
+V_{min} &= (3\ \text{mm})^3\times10^8 = 27\ \text{mm}^3\times10^8 = 2.7\times10^9\ \text{mm}^3 = 2.7\ \text{m}^3\\
+\sqrt[3]{2.7\ \text{m}^3} &\approx 1.4\ \text{m}.
+\end{aligned}
+$$
+
+**答案與陷阱**：至少是邊長 1.4 m 的立方體，而且這還沒算導線。其他問題：導線長達 1.4 m 讓訊號極慢；每顆 1 分錢、1 克，一台要一百萬美元、重 100 噸。陷阱在單位換算：$1\ \text{m}^3 = 10^9\ \text{mm}^3$，不是 $10^6$。
+
+**延伸練習（第 20 頁 Exercise）**：若每顆電晶體耗 10 µW，整台耗多少功率？$10\ \mu\text{W}\times10^8 = 1000\ \text{W} = 1\ \text{kW}$。
+
+### Example 1-2：數位相機拍棋盤（第 29 頁）
+
+{/* @ai-reference
+id: ex-1-2
+file: _references/電子學實作系列/第一週/Ch 1 - Introduction to Microelectronics.pdf
+page: 29
+status: suggested
+excerpt: A digital camera is focused on a chess board. Sketch the voltage produced by one column as a function of time.
+*/}
+<PdfRefChip file="_references/電子學實作系列/第一週/Ch 1 - Introduction to Microelectronics.pdf" page={29} status="suggested" excerpt={"A digital camera is focused on a chess board. Sketch the voltage produced by one column as a function of time."} client:visible />
+
+> 數位相機對準一個西洋棋盤。畫出某一欄像素依序讀出的電壓對時間的波形。
+> :en[A digital camera is focused on a chess board. Sketch the voltage produced by one column as a function of time.]
+
+![Example 1-2：(a) 相機拍到的棋盤；(b) 每個像素是光二極體加電容與放大器，由開關依序掃描；(c) 同一欄讀出的電壓是黑白交替的方波](/note-images/ec-week1-ch1/20-chessboard-example.jpeg)
+
+**解題思路**：每個像素的光二極體把亮度變成電壓，掃描電路沿一欄依序讀出，棋盤同一欄是黑白交替，所以電壓是高低交替。
+
+**計算過程**：沒有數值計算，答案是波形：白格→高電壓、黑格→低電壓，週期性方波，週期等於掃描兩格的時間。
+
+**答案與陷阱**：方波，如投影片 (c)。延伸討論：每個像素輸出是類比值，要經 ADC 數位化；一個 2500 欄的陣列可以每欄一個 ADC，或共用一個速度加倍的 ADC，實務取兩者之間。考點是「為什麼要數位化」與「ADC 共用要變快」。
+
+### Example 1-3：手機接收機需要多少 dB 增益（第 36–37 頁）
+
+{/* @ai-reference
+id: ex-1-3
+file: _references/電子學實作系列/第一週/Ch 1 - Introduction to Microelectronics.pdf
+page: 36
+status: suggested
+excerpt: A cellphone receives a signal level of 20 uV, but it must deliver a swing of 50 mV to the speaker that reproduces the voice. Calculate the required voltage gain in decibels.
+*/}
+<PdfRefChip file="_references/電子學實作系列/第一週/Ch 1 - Introduction to Microelectronics.pdf" page={36} status="suggested" excerpt={"A cellphone receives a signal level of 20 uV, but it must deliver a swing of 50 mV to the speaker that reproduces the voice. Calculate the required voltage gain in decibels."} client:visible />
+
+> 手機收到的訊號只有 20 µV，但要送給喇叭 50 mV 的擺幅。求所需的電壓增益，以分貝表示。
+> :en[A cellphone receives a signal level of 20 µV, but it must deliver a swing of 50 mV to the speaker that reproduces the voice. Calculate the required voltage gain in decibels.]
+
+**解題思路**：電壓增益的分貝定義是 $20\log_{10}$（功率才是 $10\log_{10}$）。先算倍率再取對數。
+
+**計算過程**：
+
+$$
+\begin{aligned}
+\frac{v_{out}}{v_{in}} &= \frac{50\ \text{mV}}{20\ \mu\text{V}} = 2500\\
+A_V &= 20\log_{10}(2500) \approx 68\ \text{dB}.
+\end{aligned}
+$$
+
+**答案與陷阱**：約 68 dB。陷阱是用成 $10\log_{10}$ 得 34 dB。記法：電壓每 10 倍是 20 dB，2500 倍 ≈ $10^{3.4}$ → 68 dB。
+
+**延伸練習（第 37 頁 Exercise）**：增益改為 50 dB 時輸出擺幅是多少？$10^{\frac{50}{20}} = 316$ 倍，$20\ \mu\text{V}\times316 \approx 6.3\ \text{mV}$。
+
+### Example 1-4：證明開關加電阻就是 NOT 閘（第 42–43 頁）
+
+{/* @ai-reference
+id: ex-1-4
+file: _references/電子學實作系列/第一週/Ch 1 - Introduction to Microelectronics.pdf
+page: 42
+status: suggested
+excerpt: Consider the circuit shown in Fig. 1.17, where switch is controlled by the digital input. That is, if A is high, S1 is on and vice versa. Prove that the circuit provides the NOT function.
+*/}
+<PdfRefChip file="_references/電子學實作系列/第一週/Ch 1 - Introduction to Microelectronics.pdf" page={42} status="suggested" excerpt={"Consider the circuit shown in Fig. 1.17, where switch is controlled by the digital input. That is, if A is high, S1 is on and vice versa. Prove that the circuit provides the NOT function."} client:visible />
+
+> 圖中的開關 $S_1$ 由數位輸入 $A$ 控制：$A$ 為高時 $S_1$ 閉合，反之斷開。證明這個電路實現 NOT 函數。
+> :en[Consider the circuit shown in Fig. 1.17, where the switch is controlled by the digital input. That is, if A is high, $S_1$ is on and vice versa. Prove that the circuit provides the NOT function.]
+
+![Example 1-4 電路：負載電阻 RL 接在 VDD 與輸出節點之間，輸出節點經開關 S1 接地，S1 由輸入 A 控制](/note-images/ec-week1-ch1/37-example-1-4-circuit.png)
+
+**解題思路**：兩種輸入各走一遍。開關閉合時輸出被短路到地；開關斷開時 $R_L$ 沒有電流、沒有壓降，輸出等於電源。
+
+**計算過程**：
+
+| 輸入 $A$ | $S_1$ | $R_L$ 的電流 | $V_{out}$ |
+| --- | --- | --- | --- |
+| 高 | 閉合 | $\frac{V_{DD}}{R_L}$ | $0$（低） |
+| 低 | 斷開 | $0$ | $V_{DD}$（高） |
+
+**答案與陷阱**：兩種輸入的輸出都相反，就是 NOT。陷阱是「開關斷開時電阻上沒電流」這一步——沒電流就沒壓降，所以輸出被電阻「拉」到 $V_{DD}$，這也是「上拉電阻」的由來。
+
+## CH2：半導體物理
+
+### Example 2-1：矽在 300 K 與 600 K 的本質載子濃度（第 11–12 頁）
+
+{/* @ai-reference
+id: ex-2-1
+file: _references/電子學實作系列/第一週/Ch 2 - Basic Physics of Semiconductors.pdf
+page: 11
+status: suggested
+excerpt: Determine the density of electrons in silicon at T = 300 K (room temperature) and T = 600 K.
+*/}
+<PdfRefChip file="_references/電子學實作系列/第一週/Ch 2 - Basic Physics of Semiconductors.pdf" page={11} status="suggested" excerpt={"Determine the density of electrons in silicon at T = 300 K (room temperature) and T = 600 K."} client:visible />
+
+> 求矽在 $T = 300\ \text{K}$（室溫）與 $T = 600\ \text{K}$ 時的電子密度。
+> :en[Determine the density of electrons in silicon at $T = 300\ \text{K}$ (room temperature) and $T = 600\ \text{K}$.]
+
+**解題思路**：純矽的電子密度就是本質載子濃度 $n_i$，套公式 $n_i = 5.2\times10^{15}\,T^{\frac{3}{2}}\exp\!\left(-\frac{E_g}{2kT}\right)$，指數裡 $E_g$ 與 $kT$ 同用 eV。
+
+**計算過程**：
+
+$$
+\begin{aligned}
+E_g &= 1.12\ \text{eV} = 1.792\times10^{-19}\ \text{J}\\
+n_i(300\ \text{K}) &= 5.2\times10^{15}\times300^{\frac{3}{2}}\exp\!\left(-\frac{1.12}{2\times8.617\times10^{-5}\times300}\right) = 1.08\times10^{10}\ \text{cm}^{-3}\\
+n_i(600\ \text{K}) &= 5.2\times10^{15}\times600^{\frac{3}{2}}\exp\!\left(-\frac{1.12}{2\times8.617\times10^{-5}\times600}\right) = 1.54\times10^{15}\ \text{cm}^{-3}.
+\end{aligned}
+$$
+
+**答案與陷阱**：溫度加倍，$n_i$ 增加五個數量級，因為指數項主宰。矽每 $5\times10^{22}$ 個原子只有約 $10^{10}$ 個自由電子（每 $5\times10^{12}$ 個原子才一個），室溫下仍是極差的導體。陷阱：$k$ 要用 $8.617\times10^{-5}\ \text{eV/K}$，用 J/K 會算出天文數字。
+
+**延伸練習（第 12 頁 Exercise）**：能隙改為 1.5 eV 的材料：$n_i(300\ \text{K}) \approx 6.8\times10^{6}\ \text{cm}^{-3}$、$n_i(600\ \text{K}) \approx 3.8\times10^{13}\ \text{cm}^{-3}$。能隙大 0.38 eV，室溫載子少了三個數量級。
+
+### Example 2-3：磷摻雜後的電子與電洞密度（第 19 頁）
+
+{/* @ai-reference
+id: ex-2-3
+file: _references/電子學實作系列/第一週/Ch 2 - Basic Physics of Semiconductors.pdf
+page: 19
+status: suggested
+excerpt: A piece of crystalline silicon is doped uniformly with phosphorus atoms. The doping density is 10^16 electrons/cm3. Determine the electron and hole densities in this material at the room temperature.
+*/}
+<PdfRefChip file="_references/電子學實作系列/第一週/Ch 2 - Basic Physics of Semiconductors.pdf" page={19} status="suggested" excerpt={"A piece of crystalline silicon is doped uniformly with phosphorus atoms. The doping density is 10^16 electrons/cm3. Determine the electron and hole densities in this material at the room temperature."} client:visible />
+
+> 一片矽均勻摻雜磷，摻雜濃度 $10^{16}\ \text{cm}^{-3}$。求室溫下的電子與電洞密度。
+> :en[A piece of crystalline silicon is doped uniformly with phosphorus atoms. The doping density is $10^{16}\ \text{electrons/cm}^3$. Determine the electron and hole densities in this material at room temperature.]
+
+**解題思路**：磷是施體，$N_D \gg n_i$ 時多數載子 $n \approx N_D$；少數載子用質量作用定律 $np = n_i^2$。
+
+**計算過程**：
+
+$$
+\begin{aligned}
+n &\approx N_D = 10^{16}\ \text{cm}^{-3}\\
+p &\approx \frac{n_i^2}{N_D} = \frac{(1.08\times10^{10})^2}{10^{16}} = 1.17\times10^{4}\ \text{cm}^{-3}.
+\end{aligned}
+$$
+
+**答案與陷阱**：電子 $10^{16}$、電洞 $1.17\times10^4$，差 12 個數量級，這就是「多數／少數載子」名稱的由來。陷阱：忘了 $n_i$ 要平方。
+
+### Example 2-5：1 µm 矽條上加 1 V 的電子速度（第 21 頁）
+
+{/* @ai-reference
+id: ex-2-5
+file: _references/電子學實作系列/第一週/Ch 2 - Basic Physics of Semiconductors.pdf
+page: 21
+status: suggested
+excerpt: A uniform piece of n-type of silicon that is 1 um long senses a voltage of 1 V. Determine the velocity of the electrons.
+*/}
+<PdfRefChip file="_references/電子學實作系列/第一週/Ch 2 - Basic Physics of Semiconductors.pdf" page={21} status="suggested" excerpt={"A uniform piece of n-type of silicon that is 1 um long senses a voltage of 1 V. Determine the velocity of the electrons."} client:visible />
+
+> 一片長 1 µm 的均勻 N 型矽兩端加 1 V。求電子的速度。
+> :en[A uniform piece of n-type silicon that is 1 µm long senses a voltage of 1 V. Determine the velocity of the electrons.]
+
+**解題思路**：均勻材料的電場是電壓除以長度，漂移速度 $v = \mu_n E$。單位要統一成 cm。
+
+**計算過程**：
+
+$$
+\begin{aligned}
+E &= \frac{V}{L} = \frac{1\ \text{V}}{10^{-4}\ \text{cm}} = 10^{4}\ \text{V/cm}\ (= 10^{6}\ \text{V/m})\\
+v_e &= \mu_n E = 1350\ \frac{\text{cm}^2}{\text{V}\cdot\text{s}}\times10^{4}\ \frac{\text{V}}{\text{cm}} = 1.35\times10^{7}\ \text{cm/s}\\
+\Delta t &= \frac{L}{v_e} = \frac{10^{-4}\ \text{cm}}{1.35\times10^{7}\ \text{cm/s}} = 7.4\ \text{ps}.
+\end{aligned}
+$$
+
+**答案與陷阱**：$1.35\times10^7\ \text{cm/s}$，穿過 1 µm 只要 7.4 ps。陷阱：$\mu$ 用 cm 制，$E$ 就要用 V/cm；混用 V/m 會差 $10^2$。另外這個速度已經超過 $v_{sat} \approx 10^7\ \text{cm/s}$，實際上會被速度飽和壓住（Example 2-7）。
+
+### Example 2-6：電子與電洞漂移電流相等的條件（第 24 頁）
+
+{/* @ai-reference
+id: ex-2-6
+file: _references/電子學實作系列/第一週/Ch 2 - Basic Physics of Semiconductors.pdf
+page: 24
+status: suggested
+excerpt: In an experiment, it is desired to obtain equal electron and hole drift currents. How should the carrier densities be chosen?
+*/}
+<PdfRefChip file="_references/電子學實作系列/第一週/Ch 2 - Basic Physics of Semiconductors.pdf" page={24} status="suggested" excerpt={"In an experiment, it is desired to obtain equal electron and hole drift currents. How should the carrier densities be chosen?"} client:visible />
+
+> 實驗上希望電子與電洞的漂移電流相等。載子濃度該怎麼選？
+> :en[In an experiment, it is desired to obtain equal electron and hole drift currents. How should the carrier densities be chosen?]
+
+**解題思路**：兩種載子在同一電場下，漂移電流密度 $J = q\mu n E$，相等代表 $\mu_n n = \mu_p p$；再與 $np = n_i^2$ 聯立，兩個方程式解兩個未知數。
+
+**計算過程**：
+
+$$
+\begin{aligned}
+\mu_n n &= \mu_p p \;\Rightarrow\; \frac{n}{p} = \frac{\mu_p}{\mu_n} \qquad (1)\\
+np &= n_i^2 \qquad (2)\\
+\text{由 (1) 代入 (2)：}\quad \frac{\mu_p}{\mu_n}p^2 &= n_i^2 \;\Rightarrow\; p = \sqrt{\frac{\mu_n}{\mu_p}}\,n_i,\qquad n = \sqrt{\frac{\mu_p}{\mu_n}}\,n_i\\
+\text{矽：}\quad \frac{\mu_n}{\mu_p} &= \frac{1350}{480} = 2.81 \;\Rightarrow\; p = 1.68\,n_i,\quad n = 0.596\,n_i .
+\end{aligned}
+$$
+
+**答案與陷阱**：$p = 1.68\,n_i$、$n = 0.596\,n_i$，兩者都與 $n_i$ 同數量級，所以只有極輕摻雜的材料才做得到。陷阱：電子跑得快（$\mu_n$ 大），要電流相等反而要「電洞比較多」，方向別弄反。
+
+### Example 2-7：速度飽和下的有效遷移率（第 27–28 頁）
+
+{/* @ai-reference
+id: ex-2-7
+file: _references/電子學實作系列/第一週/Ch 2 - Basic Physics of Semiconductors.pdf
+page: 27
+status: suggested
+excerpt: A uniform piece of semiconductor 0.2 um long sustains a voltage of 1 V. If the low-field mobility is equal to 1350 cm2/(V·s) and the saturation velocity of the carriers 10^7 cm/s, determine the effective mobility.
+*/}
+<PdfRefChip file="_references/電子學實作系列/第一週/Ch 2 - Basic Physics of Semiconductors.pdf" page={27} status="suggested" excerpt={"A uniform piece of semiconductor 0.2 um long sustains a voltage of 1 V. If the low-field mobility is equal to 1350 cm2/(V s) and the saturation velocity of the carriers 10^7 cm/s, determine the effective mobility."} client:visible />
+
+> 一片長 0.2 µm 的半導體兩端加 1 V。低場遷移率 $1350\ \text{cm}^2/(\text{V}\cdot\text{s})$、飽和速度 $10^7\ \text{cm/s}$。求有效遷移率；再求讓有效遷移率只比 $\mu_0$ 低 10% 的最大電壓。
+> :en[A uniform piece of semiconductor 0.2 µm long sustains a voltage of 1 V. If the low-field mobility is equal to $1350\ \text{cm}^2/(\text{V}\cdot\text{s})$ and the saturation velocity of the carriers is $10^7\ \text{cm/s}$, determine the effective mobility. Also, calculate the maximum allowable voltage such that the effective mobility is only 10% lower than $\mu_0$.]
+
+**解題思路**：速度飽和模型 $v = \frac{\mu_0}{1 + \frac{\mu_0 E}{v_{sat}}}E$，分母那一項就是「有效遷移率縮小的倍數」。第二問反過來：要 $\mu = 0.9\mu_0$，解出 $E$，再乘長度得電壓。
+
+**計算過程**：
+
+$$
+\begin{aligned}
+E &= \frac{V}{L} = \frac{1\ \text{V}}{0.2\times10^{-4}\ \text{cm}} = 5\times10^{4}\ \text{V/cm}\\
+\mu &= \frac{\mu_0}{1 + \frac{\mu_0 E}{v_{sat}}} = \frac{1350}{1 + \frac{1350\times5\times10^{4}}{10^{7}}} = \frac{\mu_0}{7.75} = 0.129\,\mu_0 = 174\ \text{cm}^2/(\text{V}\cdot\text{s})\\
+0.9\mu_0 &= \frac{\mu_0}{1 + \frac{\mu_0 E}{v_{sat}}} \;\Rightarrow\; \frac{\mu_0 E}{v_{sat}} = \frac{1}{9} \;\Rightarrow\; E = \frac{v_{sat}}{9\mu_0} = 823\ \text{V/cm}\\
+V &= EL = 823\ \text{V/cm}\times0.2\times10^{-4}\ \text{cm} = 16.5\ \text{mV}.
+\end{aligned}
+$$
+
+**答案與陷阱**：有效遷移率只剩 174（原來的 13%）；要維持 90% 以上，電壓不能超過 16.5 mV。結論：次微米元件工作電壓遠高於 16.5 mV，速度飽和是常態。陷阱：$0.9 = \frac{1}{1+x}$ 解出 $x = \frac{1}{9}$，不是 $0.1$。
+
+**延伸練習（第 28 頁 Exercise）**：遷移率下降 20% 時的電壓？$0.8 = \frac{1}{1+x} \Rightarrow x = 0.25$，$E = \frac{0.25 v_{sat}}{\mu_0} = 1852\ \text{V/cm}$，$V = 1852\times0.2\times10^{-4} \approx 37\ \text{mV}$。
+
+### Example 2-8：線性濃度梯度的擴散電流（第 31 頁）
+
+{/* @ai-reference
+id: ex-2-8
+file: _references/電子學實作系列/第一週/Ch 2 - Basic Physics of Semiconductors.pdf
+page: 31
+status: suggested
+excerpt: Suppose the electron concentration is equal to N at x = 0 and falls linearly to zero at x = L. Determine the diffusion current.
+*/}
+<PdfRefChip file="_references/電子學實作系列/第一週/Ch 2 - Basic Physics of Semiconductors.pdf" page={31} status="suggested" excerpt={"Suppose the electron concentration is equal to N at x = 0 and falls linearly to zero at x = L. Determine the diffusion current."} client:visible />
+
+> 電子濃度在 $x = 0$ 為 $N$，線性下降到 $x = L$ 為零。求擴散電流。
+> :en[Suppose the electron concentration is equal to $N$ at $x = 0$ and falls linearly to zero at $x = L$. Determine the diffusion current.]
+
+![Example 2-8：電子從左側注入，濃度從 x = 0 的 N 線性降到 x = L 的零](/note-images/ec-week1-ch2/21-example-2-8-linear-gradient.png)
+
+**解題思路**：Fick 定律 $J_n = qD_n\frac{dn}{dx}$，直線的導數是常數斜率 $-\frac{N}{L}$。
+
+**計算過程**：
+
+$$
+n(x) = N\left(1 - \frac{x}{L}\right) \;\Rightarrow\; J_n = qD_n\frac{dn}{dx} = -qD_n\frac{N}{L}.
+$$
+
+**答案與陷阱**：電流密度是常數、不隨 $x$ 改變。負號只表示電子往 $+x$ 擴散時傳統電流方向為 $-x$（電子帶負電）。
+
+### Example 2-9：指數濃度梯度的擴散電流（第 32 頁）
+
+{/* @ai-reference
+id: ex-2-9
+file: _references/電子學實作系列/第一週/Ch 2 - Basic Physics of Semiconductors.pdf
+page: 32
+status: suggested
+excerpt: Repeat the above example but assume an exponential gradient, n(x) = N exp(-x/Ld), where Ld is a constant.
+*/}
+<PdfRefChip file="_references/電子學實作系列/第一週/Ch 2 - Basic Physics of Semiconductors.pdf" page={32} status="suggested" excerpt={"Repeat the above example but assume an exponential gradient, n(x) = N exp(-x/Ld), where Ld is a constant."} client:visible />
+
+> 同上題，但濃度改為指數分佈 $n(x) = N\exp\!\left(-\frac{x}{L_d}\right)$，$L_d$ 為常數。
+> :en[Repeat the above example but assume an exponential gradient, $n(x) = N\exp\!\left(-\frac{x}{L_d}\right)$, where $L_d$ is a constant.]
+
+![Example 2-9：濃度從 x = 0 的 N 以指數曲線衰減](/note-images/ec-week1-ch2/22-example-2-9-exponential-gradient.png)
+
+**解題思路**：一樣對 $n(x)$ 微分，指數函數的導數還是指數。
+
+**計算過程**：
+
+$$
+J_n = qD_n\frac{dn}{dx} = -\frac{qD_n N}{L_d}\exp\!\left(-\frac{x}{L_d}\right).
+$$
+
+**答案與陷阱**：電流密度隨 $x$ 指數衰減，**不是常數**。投影片這頁的結論句寫「電流沿 x 軸為常數」是沿用上一頁的筆誤，依公式它明顯隨 $x$ 變；考試若問「兩題差在哪」，答案就是這一點：線性梯度給常數電流、指數梯度給隨位置衰減的電流（多出來的載子在途中復合掉了）。
+
+### Example 2-13：PN 接面的內建電位（第 42 頁）
+
+{/* @ai-reference
+id: ex-2-13
+file: _references/電子學實作系列/第一週/Ch 2 - Basic Physics of Semiconductors.pdf
+page: 42
+status: suggested
+excerpt: A silicon pn junction employs NA = 2e16 cm-3 and ND = 4e16 cm-3. Determine the built-in potential at room temperature (T = 300 K).
+*/}
+<PdfRefChip file="_references/電子學實作系列/第一週/Ch 2 - Basic Physics of Semiconductors.pdf" page={42} status="suggested" excerpt={"A silicon pn junction employs NA = 2e16 cm-3 and ND = 4e16 cm-3. Determine the built-in potential at room temperature (T = 300 K)."} client:visible />
+
+> 矽 PN 接面 $N_A = 2\times10^{16}\ \text{cm}^{-3}$、$N_D = 4\times10^{16}\ \text{cm}^{-3}$。求室溫下的內建電位。
+> :en[A silicon pn junction employs $N_A = 2\times10^{16}\ \text{cm}^{-3}$ and $N_D = 4\times10^{16}\ \text{cm}^{-3}$. Determine the built-in potential at room temperature ($T = 300\ \text{K}$).]
+
+**解題思路**：直接套 $V_0 = V_T\ln\!\left(\frac{N_A N_D}{n_i^2}\right)$，$n_i$ 用 Example 2-1 的值。
+
+**計算過程**：
+
+$$
+V_0 = (26\ \text{mV})\ln\!\left(\frac{(2\times10^{16})(4\times10^{16})}{(1.08\times10^{10})^2}\right) = (26\ \text{mV})\times29.6 = 768\ \text{mV}.
+$$
+
+**答案與陷阱**：768 mV。陷阱：分母 $n_i^2$ 忘記平方會多出 $\ln(10^{10}) \approx 23$，答案差 600 mV。
+
+### Example 2-14：摻雜增加十倍，內建電位變多少（第 43 頁）
+
+{/* @ai-reference
+id: ex-2-14
+file: _references/電子學實作系列/第一週/Ch 2 - Basic Physics of Semiconductors.pdf
+page: 43
+status: suggested
+excerpt: V0 is a weak function of the doping levels (NA or ND). How much does V0 change if NA or ND is increased by one order of magnitude?
+*/}
+<PdfRefChip file="_references/電子學實作系列/第一週/Ch 2 - Basic Physics of Semiconductors.pdf" page={43} status="suggested" excerpt={"V0 is a weak function of the doping levels (NA or ND). How much does V0 change if NA or ND is increased by one order of magnitude?"} client:visible />
+
+> $V_0$ 是摻雜濃度的弱函數。若 $N_A$ 或 $N_D$ 增加一個數量級，$V_0$ 改變多少？
+> :en[$V_0$ is a weak function of the doping levels ($N_A$ or $N_D$). How much does $V_0$ change if $N_A$ or $N_D$ is increased by one order of magnitude?]
+
+**解題思路**：兩個 $V_0$ 相減，對數相減變成比值的對數，其他項全部消掉。
+
+**計算過程**：
+
+$$
+\begin{aligned}
+\Delta V_0 &= V_T\ln\!\left(\frac{10N_A N_D}{n_i^2}\right) - V_T\ln\!\left(\frac{N_A N_D}{n_i^2}\right)
+= V_T\ln\!\left(\frac{10N_A N_D}{N_A N_D}\right)\\
+&= V_T\ln 10 = 26\ \text{mV}\times2.303 = 60\ \text{mV}.
+\end{aligned}
+$$
+
+**答案與陷阱**：只增加 60 mV，與原本的摻雜濃度無關——這就是「弱函數」的意思。陷阱：$\ln$ 不是 $\log_{10}$，$V_T\log_{10}10 = 26\ \text{mV}$ 是錯的。
+
+### Example 2-15：接面電容在 0 V 與 −1 V（第 47 頁）
+
+{/* @ai-reference
+id: ex-2-15
+file: _references/電子學實作系列/第一週/Ch 2 - Basic Physics of Semiconductors.pdf
+page: 47
+status: suggested
+excerpt: A pn junction is doped with NA = 2e16 cm-3 and ND = 9e15 cm-3. Determine the capacitance of the device with (a) VR = 0 V and (b) VR = -1 V.
+*/}
+<PdfRefChip file="_references/電子學實作系列/第一週/Ch 2 - Basic Physics of Semiconductors.pdf" page={47} status="suggested" excerpt={"A pn junction is doped with NA = 2e16 cm-3 and ND = 9e15 cm-3. Determine the capacitance of the device with (a) VR = 0 V and (b) VR = -1 V."} client:visible />
+
+> PN 接面 $N_A = 2\times10^{16}\ \text{cm}^{-3}$、$N_D = 9\times10^{15}\ \text{cm}^{-3}$。求 (a) $V_R = 0\ \text{V}$ 與 (b) $V_R = -1\ \text{V}$ 時的單位面積電容。
+> :en[A pn junction is doped with $N_A = 2\times10^{16}\ \text{cm}^{-3}$ and $N_D = 9\times10^{15}\ \text{cm}^{-3}$. Determine the capacitance of the device with (a) $V_R = 0\ \text{V}$ and (b) $V_R = -1\ \text{V}$.]
+
+**解題思路**：先算 $V_0$，再算零偏壓電容 $C_{j0}$，逆偏時用 $C_j = \frac{C_{j0}}{\sqrt{1 - \frac{V_R}{V_0}}}$。Razavi 的慣例是逆偏電壓取負值，所以 $V_R = -1$ 代進去分母是 $1 + \frac{1}{V_0}$。
+
+**計算過程**：
+
+$$
+\begin{aligned}
+V_0 &= (26\ \text{mV})\ln\!\left(\frac{(2\times10^{16})(9\times10^{15})}{(1.08\times10^{10})^2}\right) = 730\ \text{mV}\\
+C_{j0} &= \sqrt{\frac{\varepsilon_{si} q}{2}\cdot\frac{N_A N_D}{N_A + N_D}\cdot\frac{1}{V_0}}
+= \sqrt{\frac{(11.7\times8.85\times10^{-14})(1.6\times10^{-19})}{2}\cdot\frac{(2\times10^{16})(9\times10^{15})}{2.9\times10^{16}}\cdot\frac{1}{0.73}}\\
+&= 2.65\times10^{-8}\ \text{F/cm}^2 = 0.265\ \text{fF}/\mu\text{m}^2\\
+\text{(a)}\quad C_j(0) &= C_{j0} = 0.265\ \text{fF}/\mu\text{m}^2\\
+\text{(b)}\quad C_j(-1\ \text{V}) &= \frac{C_{j0}}{\sqrt{1 + \frac{1}{0.73}}} = \frac{0.265}{1.54} = 0.172\ \text{fF}/\mu\text{m}^2 .
+\end{aligned}
+$$
+
+**答案與陷阱**：0.265 與 0.172 fF/µm²。單位換算：$1\ \text{F/cm}^2 = 10^{-8}\ \text{F}/\mu\text{m}^2$，所以 $2.65\times10^{-8}\ \text{F/cm}^2 = 2.65\times10^{-16}\ \text{F}/\mu\text{m}^2 = 0.265\ \text{fF}/\mu\text{m}^2$。陷阱：逆偏讓空乏區變寬、電容變小，算出來比 $C_{j0}$ 大就是符號代錯。
+
+### Example 2-16：用接面電容調振盪頻率（第 48–49 頁）
+
+{/* @ai-reference
+id: ex-2-16
+file: _references/電子學實作系列/第一週/Ch 2 - Basic Physics of Semiconductors.pdf
+page: 48
+status: suggested
+excerpt: A cellphone incorporates a 2-GHz oscillator whose frequency is defined by the resonance frequency of an LC tank. If the tank capacitance is realized as the pn junction of Example 2-15, calculate the change in the oscillation frequency while the reverse voltage goes from 0 to 2 V.
+*/}
+<PdfRefChip file="_references/電子學實作系列/第一週/Ch 2 - Basic Physics of Semiconductors.pdf" page={48} status="suggested" excerpt={"A cellphone incorporates a 2-GHz oscillator whose frequency is defined by the resonance frequency of an LC tank. If the tank capacitance is realized as the pn junction of Example 2-15, calculate the change in the oscillation frequency while the reverse voltage goes from 0 to 2 V."} client:visible />
+
+> 手機內有一個 2 GHz 振盪器，頻率由 LC 槽的共振頻率決定。若電容用 Example 2-15 的 PN 接面實現、面積 2000 µm²，且逆偏 0 V 時剛好 2 GHz，求逆偏從 0 變到 2 V 時振盪頻率的變化。
+> :en[A cellphone incorporates a 2-GHz oscillator whose frequency is defined by the resonance frequency of an LC tank. If the tank capacitance is realized as the pn junction of Example 2-15, calculate the change in the oscillation frequency while the reverse voltage goes from 0 to 2 V. Assume the circuit operates at 2 GHz at a reverse voltage of 0 V, and the junction area is 2000 µm².]
+
+![Example 2-16：LC 振盪槽，可變電容 C 由逆偏 VR 控制，與電感 L 並聯](/note-images/ec-week1-ch2/29-lc-oscillator-circuit.png)
+
+**解題思路**：共振頻率 $f_{res} = \frac{1}{2\pi\sqrt{LC}}$。三步：用 0 V 的電容與 2 GHz 反推 $L$；算 −2 V 的電容；再算新頻率。
+
+**計算過程**：
+
+$$
+\begin{aligned}
+C(0) &= 0.265\ \text{fF}/\mu\text{m}^2\times2000\ \mu\text{m}^2 = 530\ \text{fF}\\
+2\times10^{9} &= \frac{1}{2\pi\sqrt{L\times530\times10^{-15}}} \;\Rightarrow\; L = 11.9\ \text{nH}\\
+C(-2\ \text{V}) &= \frac{C_{j0}}{\sqrt{1 + \frac{2}{0.73}}}\times2000\ \mu\text{m}^2 = 274\ \text{fF}\\
+f_{res}(-2\ \text{V}) &= \frac{1}{2\pi\sqrt{11.9\times10^{-9}\times274\times10^{-15}}} = 2.78\ \text{GHz}.
+\end{aligned}
+$$
+
+**答案與陷阱**：從 2 GHz 調到 2.78 GHz。這就是壓控振盪器（VCO）：逆偏電壓調電容、電容調頻率。陷阱：電容變小頻率要變高，算出來變低就是 $\sqrt{LC}$ 放錯位置。
+
+### Example 2-17：二極體的飽和電流 $I_S$（第 55 頁）
+
+{/* @ai-reference
+id: ex-2-17
+file: _references/電子學實作系列/第一週/Ch 2 - Basic Physics of Semiconductors.pdf
+page: 55
+status: suggested
+excerpt: Determine Is for the junction of Example 2-13 at T = 300 K if A = 100 um2, Ln = 20 um, and Lp = 20 um.
+*/}
+<PdfRefChip file="_references/電子學實作系列/第一週/Ch 2 - Basic Physics of Semiconductors.pdf" page={55} status="suggested" excerpt={"Determine Is for the junction of Example 2-13 at T = 300 K if A = 100 um2, Ln = 20 um, and Lp = 20 um."} client:visible />
+
+> 求 Example 2-13 那個接面在 300 K 的 $I_S$，$A = 100\ \mu\text{m}^2$、$L_n = L_p = 20\ \mu\text{m}$。
+> :en[Determine $I_S$ for the junction of Example 2-13 at $T = 300\ \text{K}$ if $A = 100\ \mu\text{m}^2$, $L_n = 20\ \mu\text{m}$, and $L_p = 20\ \mu\text{m}$.]
+
+**解題思路**：套 $I_S = Aqn_i^2\left(\frac{D_n}{N_A L_n} + \frac{D_p}{N_D L_p}\right)$，全部換成 cm 制：$A = 10^{-6}\ \text{cm}^2$、$L = 2\times10^{-3}\ \text{cm}$。
+
+**計算過程**：
+
+$$
+\begin{aligned}
+I_S &= (10^{-6})(1.6\times10^{-19})(1.08\times10^{10})^2\left(\frac{34}{(2\times10^{16})(2\times10^{-3})} + \frac{12}{(4\times10^{16})(2\times10^{-3})}\right)\\
+&= 1.87\times10^{-26}\times\left(8.5\times10^{-13} + 1.5\times10^{-13}\right)\ \text{A} \approx 1.8\times10^{-17}\ \text{A}.
+\end{aligned}
+$$
+
+**答案與陷阱**：講義答案 $1.77\times10^{-17}\ \text{A}$（用講義列的常數重算約 $1.87\times10^{-17}$，差在 $n_i$、$q$ 取位，考試照講義寫 $1.77\times10^{-17}$）。重點是數量級：$I_S$ 小到 $10^{-17}$ 等級，所以 $\exp\!\left(\frac{V_D}{V_T}\right)$ 必須大到 $10^{13}$ 才能給出 mA 級的電流，這就是二極體要加到 0.7 V 左右才導通的原因。陷阱：投影片把 $q$ 印成 $1.08\times10^{-19}$，正確是 $1.6\times10^{-19}\ \text{C}$。
+
+### Example 2-18：並聯 PN 接面的順向電流（第 60–61 頁）
+
+{/* @ai-reference
+id: ex-2-18
+file: _references/電子學實作系列/第一週/Ch 2 - Basic Physics of Semiconductors.pdf
+page: 60
+status: suggested
+excerpt: Each junction in Fig. 2.33 employs the doping levels described in Example 2-13. Determine the forward bias current of the composite device for VD = 300 mV and 800 mV at T = 300 K.
+*/}
+<PdfRefChip file="_references/電子學實作系列/第一週/Ch 2 - Basic Physics of Semiconductors.pdf" page={60} status="suggested" excerpt={"Each junction in Fig. 2.33 employs the doping levels described in Example 2-13. Determine the forward bias current of the composite device for VD = 300 mV and 800 mV at T = 300 K."} client:visible />
+
+> 圖 2.33 的兩個接面都用 Example 2-13 的摻雜。求整個並聯元件在 $V_D = 300\ \text{mV}$ 與 $800\ \text{mV}$ 時的順向電流。
+> :en[Each junction in Fig. 2.33 employs the doping levels described in Example 2-13. Determine the forward bias current of the composite device for $V_D = 300\ \text{mV}$ and $800\ \text{mV}$ at $T = 300\ \text{K}$.]
+
+![Example 2-18：兩個面積 A 的 PN 接面並聯，等效於一個面積 2A 的接面](/note-images/ec-week1-ch2/32-parallel-junctions-equivalence.png)
+
+**解題思路**：並聯等於面積加倍，$I_S$ 加倍；套二極體方程式。300 mV 時 $\exp\!\left(\frac{V_D}{V_T}\right)$ 只有 $10^5$ 等級，$-1$ 可忽略但電流仍是 pA；800 mV 才到 µA 級。
+
+**計算過程**：
+
+$$
+\begin{aligned}
+I_{D,tot}(300\ \text{mV}) &= 2I_S\left(\exp\frac{300}{26} - 1\right) = 2\times1.77\times10^{-17}\times(1.03\times10^{5}) = 3.63\ \text{pA}\\
+I_{D,tot}(800\ \text{mV}) &= 2\times1.77\times10^{-17}\times\left(\exp\frac{800}{26} - 1\right) = 816\ \mu\text{A}.
+\end{aligned}
+$$
+
+**答案與陷阱**：3.63 pA 與 816 µA，電壓差 500 mV、電流差八個數量級。陷阱：忘記並聯要乘 2。
+
+### Example 2-19：電流增加十倍需要多少 $V_D$（第 62 頁）
+
+{/* @ai-reference
+id: ex-2-19
+file: _references/電子學實作系列/第一週/Ch 2 - Basic Physics of Semiconductors.pdf
+page: 62
+status: suggested
+excerpt: A diode operates in the forward bias region with a typical current level. Suppose we wish to increase the current by a factor of 10. How much change in VD is required?
+*/}
+<PdfRefChip file="_references/電子學實作系列/第一週/Ch 2 - Basic Physics of Semiconductors.pdf" page={62} status="suggested" excerpt={"A diode operates in the forward bias region with a typical current level. Suppose we wish to increase the current by a factor of 10. How much change in VD is required?"} client:visible />
+
+> 二極體工作在典型順向電流（$I_D \approx I_S \exp\!\left(\frac{V_D}{V_T}\right)$）。要讓電流增加 10 倍，$V_D$ 要改變多少？
+> :en[A diode operates in the forward bias region with a typical current level, that is $I_D \approx I_S\exp\!\left(\frac{V_D}{V_T}\right)$. Suppose we wish to increase the current by a factor of 10. How much change in $V_D$ is required?]
+
+**解題思路**：把指數式反解成 $V_D = V_T\ln\frac{I_D}{I_S}$，兩個電壓相減，$I_S$ 消掉。
+
+**計算過程**：
+
+$$
+\begin{aligned}
+V_{D1} &= V_T\ln\frac{10I_D}{I_S} = V_T\ln 10 + V_T\ln\frac{I_D}{I_S} = V_T\ln10 + V_D\\
+\Delta V_D &= V_{D1} - V_D = V_T\ln 10 = 26\ \text{mV}\times2.303 = 59.9\ \text{mV}.
+\end{aligned}
+$$
+
+**答案與陷阱**：約 60 mV——「60 mV 法則」。電流差 100 倍是 120 mV，差 1000 倍是 180 mV。這也是定電壓模型成立的理由：電流動好幾個數量級，電壓只動一百多 mV。
+
+### Example 2-21：指數模型 vs 定電壓模型（第 64–66 頁）
+
+{/* @ai-reference
+id: ex-2-21
+file: _references/電子學實作系列/第一週/Ch 2 - Basic Physics of Semiconductors.pdf
+page: 64
+status: suggested
+excerpt: Consider the following circuit. Calculate IX for VX = 3 V and VX = 1 V using (a) an exponential model with Is = 1e-16 A and (b) a constant-voltage model with VD,on = 800 mV.
+*/}
+<PdfRefChip file="_references/電子學實作系列/第一週/Ch 2 - Basic Physics of Semiconductors.pdf" page={64} status="suggested" excerpt={"Consider the following circuit. Calculate IX for VX = 3 V and VX = 1 V using (a) an exponential model with Is = 1e-16 A and (b) a constant-voltage model with VD,on = 800 mV."} client:visible />
+
+> 電壓源 $V_X$ 串 $R_1 = 1\ \text{k}\Omega$ 與二極體 $D_1$。分別用 (a) 指數模型（$I_S = 10^{-16}\ \text{A}$）與 (b) 定電壓模型（$V_{D,on} = 800\ \text{mV}$）求 $V_X = 3\ \text{V}$ 與 $1\ \text{V}$ 時的 $I_X$。
+> :en[Consider the following circuit. Calculate $I_X$ for $V_X = 3\ \text{V}$ and $V_X = 1\ \text{V}$ using (a) an exponential model with $I_S = 10^{-16}\ \text{A}$ and (b) a constant-voltage model with $V_{D,on} = 800\ \text{mV}$.]
+
+![Example 2-21 電路：VX 串聯 R1 = 1 kΩ 與二極體 D1，電流 IX，二極體跨壓 VD](/note-images/ec-week1-ch2/33-example-2-21-circuit.png)
+
+**解題思路**：KVL 給 $V_X = I_X R_1 + V_D$。指數模型下 $V_D = V_T\ln\frac{I_X}{I_S}$，兩式互相牽扯，只能疊代：先猜 $V_D$ 算 $I_X$，再用 $I_X$ 更新 $V_D$，兩輪就收斂。定電壓模型下 $V_D$ 固定，一條線性式解完。
+
+**計算過程**：
+
+$$
+\begin{aligned}
+\text{(a) } V_X = 3\ \text{V}:\quad &\text{猜 } V_D = 750\ \text{mV} \Rightarrow I_X = \frac{3 - 0.75}{1\ \text{k}\Omega} = 2.25\ \text{mA}\\
+&V_D = 26\ \text{mV}\times\ln\frac{2.25\times10^{-3}}{10^{-16}} = 779\ \text{mV} \Rightarrow I_X = \frac{3 - 0.779}{1\ \text{k}\Omega} = 2.201\ \text{mA}\\
+\text{(a) } V_X = 1\ \text{V}:\quad &I_X = \frac{1 - 0.75}{1\ \text{k}\Omega} = 0.25\ \text{mA} \Rightarrow V_D = 742\ \text{mV} \Rightarrow I_X = 0.258\ \text{mA}\\
+\text{(b)}:\quad &I_X(3\ \text{V}) = \frac{3 - 0.8}{1\ \text{k}\Omega} = 2.2\ \text{mA},\qquad I_X(1\ \text{V}) = \frac{1 - 0.8}{1\ \text{k}\Omega} = 0.2\ \text{mA}.
+\end{aligned}
+$$
+
+**答案與陷阱**：指數模型 2.201／0.258 mA，定電壓模型 2.2／0.2 mA。3 V 時幾乎一樣，1 V 時差 25%（因為 $V_D$ 在 $V_X$ 裡佔的比例大，0.8 V 的假設誤差被放大）。結論：定電壓模型簡單得多，精度在電源遠大於 $V_{D,on}$ 時足夠。陷阱：疊代題要寫出「猜 → 算 → 更新」的過程，不能直接寫答案。
+
+## CH3：二極體模型與電路
+
+### Example 3-1：哪種串聯接法能導通（第 6 頁）
+
+{/* @ai-reference
+id: ex-3-1
+file: _references/電子學實作系列/第二週/Ch 3 - Diode Models and Circuits.pdf
+page: 6
+status: suggested
+excerpt: As with other two-terminal devices, diodes can be placed in series (or in parallel). Determine which one of the configurations in the figure can conduct current.
+*/}
+<PdfRefChip file="_references/電子學實作系列/第二週/Ch 3 - Diode Models and Circuits.pdf" page={6} status="suggested" excerpt={"As with other two-terminal devices, diodes can be placed in series (or in parallel). Determine which one of the configurations in the figure can conduct current."} client:visible />
+
+> 二極體跟其他二端元件一樣可以串聯或並聯。判斷圖中哪一種接法能導通電流。
+> :en[As with other two-terminal devices, diodes can be placed in series (or in parallel). Determine which one of the configurations in the figure can conduct current.]
+
+![Example 3-1：三種 A–D1–B–D2–C 串聯接法：(a) 兩顆同向；(b) D2 反向；(c) D1 反向](/note-images/ec-week2-ch3/04-example-3-1-series-diodes.png)
+
+**解題思路**：串聯路徑上每一顆都要順偏才通。逐顆問「電流從 A 到 C 時，這顆是順向還是逆向」。
+
+**計算過程**：(a) 兩顆都朝 C，從 A 到 C 都順偏，導通。(b) $D_2$ 朝 B，從 A 到 C 時逆偏，不通。(c) $D_1$ 朝 A，逆偏，不通。反方向（C 到 A）三種也都不通，因為 (a) 兩顆都逆偏、(b)(c) 總有一顆逆偏。
+
+**答案與陷阱**：只有 (a) 能讓電流從 A 流到 C。陷阱：把串聯的「有一顆擋住就不通」和並聯的「有一顆通就通」混淆。
+
+### Example 3-13：面積不同的兩顆二極體並聯分流（第 15 頁）
+
+{/* @ai-reference
+id: ex-3-13
+file: _references/電子學實作系列/第二週/Ch 3 - Diode Models and Circuits.pdf
+page: 15
+status: suggested
+excerpt: Assume D1 and D2 have different cross section areas but are otherwise identical. Determine the current flowing through each diode.
+*/}
+<PdfRefChip file="_references/電子學實作系列/第二週/Ch 3 - Diode Models and Circuits.pdf" page={15} status="suggested" excerpt={"Assume D1 and D2 have different cross section areas but are otherwise identical. Determine the current flowing through each diode."} client:visible />
+
+> $D_1$、$D_2$ 截面積不同、其餘相同，並聯後由 $I_{in}$ 驅動。求各自流過的電流。
+> :en[Assume $D_1$ and $D_2$ have different cross section areas but are otherwise identical. Determine the current flowing through each diode.]
+
+![Example 3-13 電路：V1 經 R1 供電流 Iin，D1 與 D2 並聯](/note-images/ec-week2-ch3/12-example-3-13-parallel-diodes.png)
+
+**解題思路**：理想與定電壓模型都沒有「面積」這個變數，必須用指數模型。並聯跨壓相同，所以電流比等於 $I_S$ 比（也就是面積比）。
+
+**計算過程**：
+
+$$
+\begin{aligned}
+I_{D1} &= I_{S1}\exp\frac{V_D}{V_T},\qquad I_{D2} = I_{S2}\exp\frac{V_D}{V_T} \;\Rightarrow\; \frac{I_{D1}}{I_{S1}} = \frac{I_{D2}}{I_{S2}}\\
+I_{in} &= I_{D1} + I_{D2} = I_{D1}\left(1 + \frac{I_{S2}}{I_{S1}}\right)\\
+I_{D1} &= \frac{I_{in}}{1 + \frac{I_{S2}}{I_{S1}}},\qquad I_{D2} = \frac{I_{in}}{1 + \frac{I_{S1}}{I_{S2}}}.
+\end{aligned}
+$$
+
+**答案與陷阱**：電流依 $I_S$（面積）比例分配，面積大的分到多。陷阱：用定電壓模型會得到「兩顆各分一半」，是錯的。
+
+### Example 3-18：偏壓 1 mA 的二極體對小擾動的反應（第 19 頁）
+
+{/* @ai-reference
+id: ex-3-18
+file: _references/電子學實作系列/第二週/Ch 3 - Diode Models and Circuits.pdf
+page: 19
+status: suggested
+excerpt: A diode is biased at a current of 1 mA. (a) Determine the current change if VD changes by 1 mV. (b) Determine the voltage change if ID changes by 10%.
+*/}
+<PdfRefChip file="_references/電子學實作系列/第二週/Ch 3 - Diode Models and Circuits.pdf" page={19} status="suggested" excerpt={"A diode is biased at a current of 1 mA. (a) Determine the current change if VD changes by 1 mV. (b) Determine the voltage change if ID changes by 10%."} client:visible />
+
+> 二極體偏壓在 1 mA。(a) $V_D$ 改變 1 mV，電流變多少？(b) $I_D$ 改變 10%，電壓變多少？
+> :en[A diode is biased at a current of 1 mA. (a) Determine the current change if $V_D$ changes by 1 mV. (b) Determine the voltage change if $I_D$ changes by 10%.]
+
+**解題思路**：小訊號：$\Delta I_D = \frac{I_D}{V_T}\Delta V_D$，反過來 $\Delta V_D = \frac{V_T}{I_D}\Delta I_D$。兩小題是同一條線性關係的兩個方向。
+
+**計算過程**：
+
+$$
+\begin{aligned}
+\text{(a)}\quad \Delta I_D &= \frac{\Delta V_D}{V_T}I_D = \frac{1\ \text{mV}}{26\ \text{mV}}\times1\ \text{mA} = 38.5\ \mu\text{A}\\
+\text{(b)}\quad \Delta V_D &= \frac{V_T}{I_D}\Delta I_D = \frac{26\ \text{mV}}{1\ \text{mA}}\times0.1\ \text{mA} = 2.6\ \text{mV}.
+\end{aligned}
+$$
+
+**答案與陷阱**：38.5 µA 與 2.6 mV。$\frac{V_T}{I_D} = 26\ \Omega$ 就是小訊號電阻 $r_d$。陷阱：這是線性近似，只在 $\Delta V_D \ll V_T$ 時成立。
+
+### Example 3-19：小訊號正弦加在二極體上（第 21–22 頁）
+
+{/* @ai-reference
+id: ex-3-19
+file: _references/電子學實作系列/第二週/Ch 3 - Diode Models and Circuits.pdf
+page: 21
+status: suggested
+excerpt: A sinusoidal signal having a peak amplitude of Vp and a DC value of V0 can be expressed as V(t) = V0 + Vp cos(wt). If this signal is applied across a diode and Vp << VT, determine the resulting AC current of the diode.
+*/}
+<PdfRefChip file="_references/電子學實作系列/第二週/Ch 3 - Diode Models and Circuits.pdf" page={21} status="suggested" excerpt={"A sinusoidal signal having a peak amplitude of Vp and a DC value of V0 can be expressed as V(t) = V0 + Vp cos(wt). If this signal is applied across a diode and Vp << VT, determine the resulting AC current of the diode."} client:visible />
+
+> 訊號 $V(t) = V_0 + V_p\cos\omega t$（直流 $V_0$、峰值 $V_p$）加在二極體上，且 $V_p \ll V_T$。求二極體的交流電流。
+> :en[A sinusoidal signal having a peak amplitude of $V_p$ and a DC value of $V_0$ can be expressed as $V(t) = V_0 + V_p\cos\omega t$. If this signal is applied across a diode and $V_p \ll V_T$, determine the resulting AC current of the diode.]
+
+![Example 3-19：(a) 直流加小正弦的輸入波形；(b) 在指數曲線的偏壓點附近，小正弦電壓對應小正弦電流](/note-images/ec-week2-ch3/17-example-3-19-small-signal-sinusoid.png)
+
+**解題思路**：方法一從指數式硬展開，用 $e^x \approx 1 + x$；方法二直接套小訊號電阻。兩者答案相同，方法二兩行就完。
+
+**計算過程**：
+
+$$
+\begin{aligned}
+I_D &= I_S\exp\!\left(\frac{V_0 + V_p\cos\omega t}{V_T}\right) = \underbrace{I_S\exp\!\left(\frac{V_0}{V_T}\right)}_{I_0}\exp\!\left(\frac{V_p\cos\omega t}{V_T}\right)\\
+&\approx I_0\left(1 + \frac{V_p\cos\omega t}{V_T}\right) = I_0 + \frac{V_p\cos\omega t}{\frac{V_T}{I_0}}\\
+\Delta I_D &= \frac{V_p\cos\omega t}{r_d},\qquad r_d = \frac{V_T}{I_0} = \frac{V_T}{I_S\exp\!\left(\frac{V_0}{V_T}\right)}.
+\end{aligned}
+$$
+
+**答案與陷阱**：交流電流也是正弦，振幅 $\frac{V_p}{r_d}$。流程：先用 $V_0$ 算偏壓電流 $I_0$ 與 $r_d$，訊號部分用歐姆定律。陷阱：$V_p$ 若不遠小於 $V_T$，$e^x \approx 1 + x$ 不成立，電流會有失真。
+
+### Example 3-27：半波整流器要多大的濾波電容（第 31 頁）
+
+{/* @ai-reference
+id: ex-3-27
+file: _references/電子學實作系列/第二週/Ch 3 - Diode Models and Circuits.pdf
+page: 31
+status: suggested
+excerpt: A transformer converts the 110-V, 60-Hz line voltage to a peak-to-peak swing of 9 V. A half-wave rectifier follows the transformer to supply the power to the laptop computer of Example 3-25 (RL = 0.436). Determine the minimum value of the filter capacitor that maintains the ripple below 0.1 V. Assume VD,on = 0.8 V.
+*/}
+<PdfRefChip file="_references/電子學實作系列/第二週/Ch 3 - Diode Models and Circuits.pdf" page={31} status="suggested" excerpt={"A transformer converts the 110-V, 60-Hz line voltage to a peak-to-peak swing of 9 V. A half-wave rectifier follows the transformer to supply the power to the laptop computer of Example 3-25 (RL = 0.436). Determine the minimum value of the filter capacitor that maintains the ripple below 0.1 V. Assume VD,on = 0.8 V."} client:visible />
+
+> 變壓器把 110 V、60 Hz 市電降成峰對峰 9 V，接半波整流器供電給筆電（$R_L = 0.436\ \Omega$）。求讓漣波低於 0.1 V 的最小濾波電容，$V_{D,on} = 0.8\ \text{V}$。
+> :en[A transformer converts the 110-V, 60-Hz line voltage to a peak-to-peak swing of 9 V. A half-wave rectifier follows the transformer to supply the power to the laptop computer of Example 3-25 ($R_L = 0.436\ \Omega$). Determine the minimum value of the filter capacitor that maintains the ripple below 0.1 V. Assume $V_{D,on} = 0.8\ \text{V}$.]
+
+![半波整流器加濾波電容與負載電阻：D1 導通時 C1 充電，截止時 C1 向 RL 放電形成漣波](/note-images/ec-week2-ch3/23-diode-capacitor-load-resistor-ripple.png)
+
+**解題思路**：漣波公式 $V_R \approx \frac{I_L}{C_1 f_{in}}$，負載電流用 $\frac{V_p - V_{D,on}}{R_L}$。峰對峰 9 V 的峰值是 4.5 V。
+
+**計算過程**：
+
+$$
+\begin{aligned}
+C_1 &\approx \frac{I_L}{V_R f_{in}} = \frac{V_p - V_{D,on}}{R_L}\cdot\frac{1}{V_R f_{in}}\\
+&= \frac{4.5 - 0.8}{0.436}\cdot\frac{1}{0.1\times60} = 8.49\ \text{A}\times\frac{1}{6\ \text{V/s}} = 1.417\ \text{F}.
+\end{aligned}
+$$
+
+**答案與陷阱**：1.417 F，大到不切實際（電解電容是 µF 到 mF 等級），鋪陳全波整流與穩壓器的必要性。陷阱：峰對峰 9 V 要除以 2 才是 $V_p$。
+
+### Example 3-28：半波整流器的二極體峰值電流（第 32–35 頁）
+
+{/* @ai-reference
+id: ex-3-28
+file: _references/電子學實作系列/第二週/Ch 3 - Diode Models and Circuits.pdf
+page: 35
+status: suggested
+excerpt: Determine the peak diode current in Example 3-27 assuming VD,on ≈ 0.8 V and C1 = 1.417 F.
+*/}
+<PdfRefChip file="_references/電子學實作系列/第二週/Ch 3 - Diode Models and Circuits.pdf" page={35} status="suggested" excerpt={"Determine the peak diode current in Example 3-27 assuming VD,on = 0.8 V and C1 = 1.417 F."} client:visible />
+
+> 求 Example 3-27 的二極體峰值電流，$V_{D,on} \approx 0.8\ \text{V}$、$C_1 = 1.417\ \text{F}$（投影片註明課本寫 $V_{D,on} \approx 0$ 是筆誤）。
+> :en[Determine the peak diode current in Example 3-27 assuming $V_{D,on} \approx 0.8\ \text{V}$ and $C_1 = 1.417\ \text{F}$.]
+
+![二極體最大電流：Vout 在 t1 的斜率最大、二極體電流在此刻達到峰值 Ip](/note-images/ec-week2-ch3/27-maximum-diode-current.png)
+
+**解題思路**：二極體電流 $= C_1\frac{dV_{out}}{dt} + I_L$，在輸出斜率最大的 $t_1$ 達到峰值；推導結果 $I_p = I_L\left(1 + 2\pi\sqrt{\frac{2V_p}{V_R}}\right)$。先算 $I_L$ 與 $V_R$ 再代入。
+
+**計算過程**：
+
+$$
+\begin{aligned}
+I_L &\approx \frac{V_p - V_{D,on}}{R_L} = \frac{4.5 - 0.8}{0.436} = 8.49\ \text{A}\\
+V_R &\approx \frac{I_L}{C_1 f_{in}} = \frac{8.49}{1.417\times60} = 0.0998\ \text{V}\\
+I_p &= I_L\left(1 + 2\pi\sqrt{\frac{2V_p}{V_R}}\right) = 8.49\times\left(1 + 2\pi\sqrt{\frac{9}{0.0998}}\right) = 515\ \text{A}.
+\end{aligned}
+$$
+
+**答案與陷阱**：515 A（取 $V_R = 0.1$ 得 517 A）。負載平均只抽 8.49 A，二極體每個週期卻要扛 500 A 以上的尖峰——漣波要求越嚴、尖峰越大。陷阱：根號裡是 $\frac{2V_p}{V_R}$，不是 $\frac{V_p}{2V_R}$。
+
+### Example 3-31：設計一個全波整流器（第 41 頁）
+
+{/* @ai-reference
+id: ex-3-31
+file: _references/電子學實作系列/第二週/Ch 3 - Diode Models and Circuits.pdf
+page: 41
+status: suggested
+excerpt: Design a full-wave rectifier to deliver an average power of 2 W to a cellphone with a voltage of 3.6 V and a ripple of 0.2 V. Assume VD,on = 0.8 V.
+*/}
+<PdfRefChip file="_references/電子學實作系列/第二週/Ch 3 - Diode Models and Circuits.pdf" page={41} status="suggested" excerpt={"Design a full-wave rectifier to deliver an average power of 2 W to a cellphone with a voltage of 3.6 V and a ripple of 0.2 V. Assume VD,on = 0.8 V."} client:visible />
+
+> 設計一個全波整流器，供 2 W 平均功率給 3.6 V 的手機，漣波 0.2 V，$V_{D,on} = 0.8\ \text{V}$。
+> :en[Design a full-wave rectifier to deliver an average power of 2 W to a cellphone with a voltage of 3.6 V and a ripple of 0.2 V. Assume $V_{D,on} = 0.8\ \text{V}$.]
+
+![完整的全波（橋式）整流器：變壓器、四顆二極體、濾波電容與負載](/note-images/ec-week2-ch3/31-complete-full-wave-rectifier.png)
+
+**解題思路**：三個設計量：輸入峰值（輸出加兩顆二極體壓降）、電容（全波的漣波公式多一個 $\frac{1}{2}$）、二極體耐壓。負載電流用 $\frac{P}{V_{out}}$。
+
+**計算過程**：
+
+$$
+\begin{aligned}
+V_{in,p} &= V_{out} + 2V_{D,on} = 3.6 + 2\times0.8 = 5.2\ \text{V}\\
+I_L &= \frac{P}{V_{out}} = \frac{2\ \text{W}}{3.6\ \text{V}} = 0.556\ \text{A}\\
+V_R &= \frac{1}{2}\cdot\frac{I_L}{C_1 f_{in}} \;\Rightarrow\; C_1 = \frac{1}{2}\cdot\frac{I_L}{V_R f_{in}} = \frac{1}{2}\cdot\frac{0.556}{0.2\times60} = 23{,}100\ \mu\text{F}.
+\end{aligned}
+$$
+
+**答案與陷阱**：變壓器降到峰值 5.2 V、電容 23,100 µF、二極體耐逆壓 5.2 V。陷阱：橋式路徑上串了兩顆二極體，壓降要算 $2V_{D,on}$；全波的漣波是半波的一半，公式多 $\frac{1}{2}$。
+
+### Example 3-33：齊納穩壓器的線調整率與負載調整率（第 45–46 頁）
+
+{/* @ai-reference
+id: ex-3-33
+file: _references/電子學實作系列/第二週/Ch 3 - Diode Models and Circuits.pdf
+page: 45
+status: suggested
+excerpt: Vin has a nominal value of 5 V, R1 = 100 Ω, and D2 has a reverse breakdown of 2.7 V and a small-signal resistance of 5 Ω. Assuming VD,on ≈ 0.8 V for D1 determine the line and load regulation of the circuit.
+*/}
+<PdfRefChip file="_references/電子學實作系列/第二週/Ch 3 - Diode Models and Circuits.pdf" page={45} status="suggested" excerpt={"Vin has a nominal value of 5 V, R1 = 100 ohm, and D2 has a reverse breakdown of 2.7 V and a small-signal resistance of 5 ohm. Assuming VD,on = 0.8 V for D1 determine the line and load regulation of the circuit."} client:visible />
+
+> 前頁電路：$V_{in}$ 標稱 5 V、$R_1 = 100\ \Omega$，$D_2$ 的逆向崩潰電壓 2.7 V、小訊號電阻 5 Ω；$D_1$ 的 $V_{D,on} \approx 0.8\ \text{V}$。求線調整率與負載調整率。
+> :en[The circuit in the previous page: $V_{in}$ has a nominal value of 5 V, $R_1 = 100\ \Omega$, and $D_2$ has a reverse breakdown of 2.7 V and a small-signal resistance of 5 Ω. Assuming $V_{D,on} \approx 0.8\ \text{V}$ for $D_1$, determine the line and load regulation of the circuit.]
+
+![齊納穩壓器的線調整率與負載調整率：(a) Vin 經 R1 接 D1 順偏串 D2 逆偏齊納；(b) 輸入變動的小訊號分壓；(c) 負載電流變動](/note-images/ec-week2-ch3/35-line-vs-load-regulation.png)
+
+**解題思路**：兩段式：偏壓用定電壓模型算 $I_{D1}$ 與 $r_{D1}$；變動量用小訊號電阻做分壓。線調整率是 $\frac{v_{out}}{v_{in}}$ 的分壓比，負載調整率是輸出節點看到的並聯電阻。
+
+**計算過程**：
+
+$$
+\begin{aligned}
+I_{D1} &= \frac{V_{in} - V_{D1,on} - V_{DZ}}{R_1} = \frac{5 - 0.8 - 2.7}{100} = 15\ \text{mA},\qquad
+r_{D1} = \frac{V_T}{I_{D1}} = \frac{26\ \text{mV}}{15\ \text{mA}} = 1.73\ \Omega\\
+\frac{v_{out}}{v_{in}} &= \frac{r_{D1} + r_{D2}}{r_{D1} + r_{D2} + R_1} = \frac{1.73 + 5}{1.73 + 5 + 100} = 0.0631\\
+\frac{v_{out}}{I_L} &= (r_{D1} + r_{D2})\parallel R_1 = \frac{6.73\times100}{6.73 + 100} = 6.31\ \Omega .
+\end{aligned}
+$$
+
+**答案與陷阱**：線調整率 0.0631（輸入動 1 V、輸出動 63 mV）；負載調整率 6.31 Ω（負載多抽 1 mA、輸出掉 6.31 mV）。陷阱：齊納的 $r_{D2}$ 是題目給的 5 Ω，不要再用 $\frac{V_T}{I}$ 算。
+
+## CH4：BJT 雙極性電晶體
+
+### Example 4-3：集極電流差十倍，$V_{BE}$ 差多少（第 14 頁）
+
+{/* @ai-reference
+id: ex-4-3
+file: _references/電子學實作系列/第四週/Ch 4 - Physics of Bipolar Transistors.pdf
+page: 14
+status: suggested
+excerpt: In the following circuit, Q1 and Q2 are identical and operate in the active mode. Determine V1 − V2 such that IC1 = 10 IC2 at room temperature.
+*/}
+<PdfRefChip file="_references/電子學實作系列/第四週/Ch 4 - Physics of Bipolar Transistors.pdf" page={14} status="suggested" excerpt={"In the following circuit, Q1 and Q2 are identical and operate in the active mode. Determine V1 - V2 such that IC1 = 10 IC2 at room temperature."} client:visible />
+
+> 圖中 $Q_1$、$Q_2$ 相同且都在主動區。求使 $I_{C1} = 10\,I_{C2}$ 的 $V_1 - V_2$（室溫）。
+> :en[In the following circuit, $Q_1$ and $Q_2$ are identical and operate in the active mode. Determine $V_1 - V_2$ such that $I_{C1} = 10\,I_{C2}$ at room temperature.]
+
+![Example 4-3 電路：Q1 由 V1 偏壓、Q2 由 V2 偏壓，兩顆集極共接到 V3](/note-images/ec-week4-ch4/08-example-4-3-circuit.jpeg)
+
+**解題思路**：兩顆 $I_S$ 相同，集極電流相除時消掉，只剩指數的差。
+
+**計算過程**：
+
+$$
+\begin{aligned}
+\frac{I_{C1}}{I_{C2}} &= \frac{I_S \exp\!\left(\frac{V_1}{V_T}\right)}{I_S \exp\!\left(\frac{V_2}{V_T}\right)} = \exp\!\left(\frac{V_1 - V_2}{V_T}\right) = 10\\
+V_1 - V_2 &= V_T\ln 10 = 26\ \text{mV}\times2.303 = 59.9\ \text{mV}.
+\end{aligned}
+$$
+
+**答案與陷阱**：59.9 mV，二極體的 60 mV 法則在 BJT 重現。
+
+### Example 4-4：分立與積體電晶體的 $V_{BE}$ 差（第 15–16 頁）
+
+{/* @ai-reference
+id: ex-4-4
+file: _references/電子學實作系列/第四週/Ch 4 - Physics of Bipolar Transistors.pdf
+page: 15
+status: suggested
+excerpt: Typical discrete bipolar transistors have a large area, e.g., 500 um × 500 um, whereas modern integrated devices may have an area as small as 0.5 um × 0.2 um. Determine the difference between the base-emitter voltage of two such transistors for equal collector currents.
+*/}
+<PdfRefChip file="_references/電子學實作系列/第四週/Ch 4 - Physics of Bipolar Transistors.pdf" page={15} status="suggested" excerpt={"Typical discrete bipolar transistors have a large area, e.g., 500 um x 500 um, whereas modern integrated devices may have an area as small as 0.5 um x 0.2 um. Determine the difference between the base-emitter voltage of two such transistors for equal collector currents."} client:visible />
+
+> 分立電晶體面積約 500 µm × 500 µm，積體電晶體可小到 0.5 µm × 0.2 µm。其他參數相同，同樣集極電流下兩者的 $V_{BE}$ 差多少？
+> :en[Typical discrete bipolar transistors have a large area, e.g., 500 µm × 500 µm, whereas modern integrated devices may have an area as small as 0.5 µm × 0.2 µm. Assuming other device parameters are identical, determine the difference between the base-emitter voltage of two such transistors for equal collector currents.]
+
+**解題思路**：$I_S \propto A_E$。把 $V_{BE} = V_T\ln\frac{I_C}{I_S}$ 相減，$I_C$ 消掉，剩面積比的對數。
+
+**計算過程**：
+
+$$
+\begin{aligned}
+V_{BE,IC} - V_{BE,dis} &= V_T\ln\frac{I_C}{I_{S2}} - V_T\ln\frac{I_C}{I_{S1}} = V_T\ln\frac{I_{S1}}{I_{S2}} = V_T\ln\frac{A_{E1}}{A_{E2}}\\
+&= 26\ \text{mV}\times\ln\frac{500\times500}{0.5\times0.2} = 26\ \text{mV}\times\ln(2.5\times10^{6}) = 383\ \text{mV}.
+\end{aligned}
+$$
+
+**答案與陷阱**：理論 383 mV；實務因基極寬度等差異落在 100–150 mV。記住兩個數字：積體電晶體 $V_{BE} \approx 800\ \text{mV}$、分立元件 $\approx 700\ \text{mV}$。陷阱：面積小的那顆 $I_S$ 小，同樣電流要更高的 $V_{BE}$，方向別反。
+
+### Example 4-5：簡單偏壓級的輸出電壓（第 17 頁）
+
+{/* @ai-reference
+id: ex-4-5
+file: _references/電子學實作系列/第四週/Ch 4 - Physics of Bipolar Transistors.pdf
+page: 17
+status: suggested
+excerpt: Example 4-5 Simple stage with biasing: determine the output voltage if IS = 5e-16 A.
+*/}
+<PdfRefChip file="_references/電子學實作系列/第四週/Ch 4 - Physics of Bipolar Transistors.pdf" page={17} status="suggested" excerpt={"Example 4-5 Simple stage with biasing: determine the output voltage if IS = 5e-16 A."} client:visible />
+
+> 基極接 750 mV、集極經 $R_L = 1\ \text{k}\Omega$ 接 3 V。若 $I_S = 5\times10^{-16}\ \text{A}$，求輸出電壓。
+> :en[Simple stage with biasing: determine the output voltage if $I_S = 5\times10^{-16}\ \text{A}$.]
+
+![Example 4-5 電路：基極 750 mV，集極經 RL = 1 kΩ 接 3 V，輸出取集極電壓](/note-images/ec-week4-ch4/09-example-4-5-simple-stage.png)
+
+**解題思路**：指數公式算 $I_C$，KVL 算 $V_{out}$，最後確認集極高於基極（主動區）。
+
+**計算過程**：
+
+$$
+\begin{aligned}
+I_C &= I_S \exp\!\left(\frac{V_{BE}}{V_T}\right) = 5\times10^{-16}\ \text{A}\times \exp\!\left(\frac{750}{26}\right) = 1.69\ \text{mA}\\
+V_{out} &= V_{CC} - I_C R_L = 3\ \text{V} - 1.69\ \text{mA}\times1\ \text{k}\Omega = 1.31\ \text{V} > 0.75\ \text{V}\ \checkmark
+\end{aligned}
+$$
+
+**答案與陷阱**：1.31 V。集極電流只看 $V_{BE}$，與集極電壓無關（定電流源）。陷阱：算完要回頭驗證主動區假設，否則公式不成立。
+
+### Example 4-6：$\beta$ 變動時三隻腳的電流範圍（第 23 頁）
+
+{/* @ai-reference
+id: ex-4-6
+file: _references/電子學實作系列/第四週/Ch 4 - Physics of Bipolar Transistors.pdf
+page: 23
+status: suggested
+excerpt: A bipolar transistor having IS = 5e-16 A is biased in the forward active region with VBE = 750 mV. If the current gain varies from 50 to 200 due to manufacturing variations, calculate the minimum and maximum terminal currents of the device.
+*/}
+<PdfRefChip file="_references/電子學實作系列/第四週/Ch 4 - Physics of Bipolar Transistors.pdf" page={23} status="suggested" excerpt={"A bipolar transistor having IS = 5e-16 A is biased in the forward active region with VBE = 750 mV. If the current gain varies from 50 to 200 due to manufacturing variations, calculate the minimum and maximum terminal currents of the device."} client:visible />
+
+> $I_S = 5\times10^{-16}\ \text{A}$ 的電晶體以 $V_{BE} = 750\ \text{mV}$ 偏壓在主動區。若製程使 $\beta$ 在 50 到 200 之間變動，求三隻腳電流的最小與最大值。
+> :en[A bipolar transistor having $I_S = 5\times10^{-16}\ \text{A}$ is biased in the forward active region with $V_{BE} = 750\ \text{mV}$. If the current gain varies from 50 to 200 due to manufacturing variations, calculate the minimum and maximum terminal currents of the device.]
+
+**解題思路**：$I_C$ 只看 $V_{BE}$、不含 $\beta$；$I_B = \frac{I_C}{\beta}$、$I_E = \left(1 + \frac{1}{\beta}\right)I_C$ 才跟著 $\beta$ 變。
+
+**計算過程**：
+
+$$
+\begin{aligned}
+I_C &= 5\times10^{-16}\times \exp\!\left(\frac{750}{26}\right) = 1.685\ \text{mA}\\
+\frac{I_C}{200} < I_B &< \frac{I_C}{50} \;\Rightarrow\; 8.43\ \mu\text{A} < I_B < 33.7\ \mu\text{A}\\
+I_C\left(1 + \tfrac{1}{200}\right) < I_E &< I_C\left(1 + \tfrac{1}{50}\right) \;\Rightarrow\; 1.69\ \text{mA} < I_E < 1.719\ \text{mA}.
+\end{aligned}
+$$
+
+**答案與陷阱**：$\beta$ 變四倍，$I_C$ 不動、$I_E$ 差 2%、只有 $I_B$ 差四倍。陷阱：把 $I_C = \beta I_B$ 讀成「$I_C$ 跟著 $\beta$ 跑」，那只在用電流源驅動基極時成立。
+
+### Example 4-7：驗證主動區與集極電阻上限（第 25–27 頁）
+
+{/* @ai-reference
+id: ex-4-7
+file: _references/電子學實作系列/第四週/Ch 4 - Physics of Bipolar Transistors.pdf
+page: 25
+status: suggested
+excerpt: Consider the circuit shown in below, where IS,Q1 = 5e-17 A and VBE = 800 mV. Assume β = 100. (a) Determine the transistor terminal currents and voltages and verify that the device indeed operates in the active mode, (b) Determine the maximum value of RC that permits operation in the active mode.
+*/}
+<PdfRefChip file="_references/電子學實作系列/第四週/Ch 4 - Physics of Bipolar Transistors.pdf" page={25} status="suggested" excerpt={"Consider the circuit shown in below, where IS,Q1 = 5e-17 A and VBE = 800 mV. Assume beta = 100. (a) Determine the transistor terminal currents and voltages and verify that the device indeed operates in the active mode, (b) Determine the maximum value of RC that permits operation in the active mode."} client:visible />
+
+> 圖中 $I_{S} = 5\times10^{-17}\ \text{A}$、$V_{BE} = 800\ \text{mV}$、$\beta = 100$、$R_C = 500\ \Omega$、$V_{CC} = 2\ \text{V}$。(a) 求端電流與電壓並驗證在主動區；(b) 求能維持主動區的最大 $R_C$。
+> :en[Consider the circuit shown below, where $I_{S,Q1} = 5\times10^{-17}\ \text{A}$ and $V_{BE} = 800\ \text{mV}$. Assume $\beta = 100$. (a) Determine the transistor terminal currents and voltages and verify that the device indeed operates in the active mode. (b) Determine the maximum value of $R_C$ that permits operation in the active mode.]
+
+![Example 4-7：(a) 基極 VBE、集極經 RC = 500 Ω 接 VCC = 2 V；(b) VX 隨 RC 線性下降，RC = 1041 Ω 時降到 0.8 V](/note-images/ec-week4-ch4/13-example-4-7-circuit-and-vx-vs-rc.png)
+
+**解題思路**：(a) 指數公式 → $I_B$、$I_E$ → KVL 算 $V_X$ → 比較 $V_X$ 與 $V_B$。(b) $V_X$ 降到 $V_{BE}$ 就是主動區邊緣，反解 $R_C$。
+
+**計算過程**：
+
+$$
+\begin{aligned}
+I_C &= 5\times10^{-17}\times\exp\frac{800}{26} = 1.153\ \text{mA},\qquad I_B = \frac{I_C}{\beta} = 11.53\ \mu\text{A},\qquad I_E = 1.165\ \text{mA}\\
+V_X &= V_{CC} - I_C R_C = 2 - 1.153\ \text{mA}\times500\ \Omega = 1.424\ \text{V}\\
+V_{CB} &= V_X - V_B = 1.424 - 0.8 = 0.624\ \text{V} > 0 \;\Rightarrow\; \text{B–C 逆偏，主動區}\\
+\text{(b)}\quad R_{C,max} &= \frac{V_{CC} - V_{BE}}{I_C} = \frac{2 - 0.8}{1.153\ \text{mA}} = 1041\ \Omega .
+\end{aligned}
+$$
+
+**答案與陷阱**：(a) 1.153 mA、11.53 µA、1.165 mA、$V_X = 1.424\ \text{V}$，主動區；(b) 1041 Ω。陷阱：$R_C$ 越大集極電壓越低，不是越高。
+
+### Example 4-8：畫出四張特性曲線（第 28–29 頁）
+
+{/* @ai-reference
+id: ex-4-8
+file: _references/電子學實作系列/第四週/Ch 4 - Physics of Bipolar Transistors.pdf
+page: 29
+status: suggested
+excerpt: For a bipolar transistor, IS = 5e-17 A and β = 100. Construct the IC−VBE, IC−VCE, IB−VBE, and IB−VCE characteristics.
+*/}
+<PdfRefChip file="_references/電子學實作系列/第四週/Ch 4 - Physics of Bipolar Transistors.pdf" page={29} status="suggested" excerpt={"For a bipolar transistor, IS = 5e-17 A and beta = 100. Construct the IC-VBE, IC-VCE, IB-VBE, and IB-VCE characteristics."} client:visible />
+
+> $I_S = 5\times10^{-17}\ \text{A}$、$\beta = 100$。畫出 $I_C$–$V_{BE}$、$I_C$–$V_{CE}$、$I_B$–$V_{BE}$、$I_B$–$V_{CE}$ 四張特性曲線。
+> :en[For a bipolar transistor, $I_S = 5\times10^{-17}\ \text{A}$ and $\beta = 100$. Construct the $I_C$–$V_{BE}$, $I_C$–$V_{CE}$, $I_B$–$V_{BE}$, and $I_B$–$V_{CE}$ characteristics.]
+
+![Example 4-8 的四張特性曲線：(a) IC–VBE 指數曲線；(b) IC–VCE 三條水平線；(c) IB–VBE；(d) IB–VCE](/note-images/ec-week4-ch4/15-example-4-8-four-characteristics.png)
+
+**解題思路**：取三個 $V_{BE}$ 代指數公式得三個 $I_C$，除以 $\beta$ 得 $I_B$；對 $V_{CE}$ 的兩張圖在主動區都是水平線。
+
+**計算過程**：
+
+| $V_{BE}$ | $I_C = I_S \exp\!\left(\frac{V_{BE}}{V_T}\right)$ | $I_B = \frac{I_C}{\beta}$ |
+| --- | --- | --- |
+| 700 mV | 24.6 µA | 0.246 µA |
+| 750 mV | 169 µA | 1.69 µA |
+| 800 mV | 1.153 mA | 11.5 µA |
+
+**答案與陷阱**：每加 50 mV 電流約 6.8 倍。投影片 (c)(d) 標的 0.025 µA、0.169 µA 依公式應為 0.246 µA、1.69 µA，是排版錯誤；題目的「700 mA」也是 mV。考試照公式算。
+
+### Example 4-10：麥克風訊號的小訊號參數（第 38–39 頁）
+
+{/* @ai-reference
+id: ex-4-10
+file: _references/電子學實作系列/第四週/Ch 4 - Physics of Bipolar Transistors.pdf
+page: 38
+status: suggested
+excerpt: Consider the circuit shown below, where v1 represents the signal generated by a microphone, IS = 3e-16 A, β = 100, and Q1 operates in the active mode. (a) If v1 = 0, determine the small-signal parameters. (b) If the microphone generates a 1-mV signal, how much change is observed in the collector and base currents?
+*/}
+<PdfRefChip file="_references/電子學實作系列/第四週/Ch 4 - Physics of Bipolar Transistors.pdf" page={38} status="suggested" excerpt={"Consider the circuit shown below, where v1 represents the signal generated by a microphone, IS = 3e-16 A, beta = 100, and Q1 operates in the active mode. (a) If v1 = 0, determine the small-signal parameters. (b) If the microphone generates a 1-mV signal, how much change is observed in the collector and base currents?"} client:visible />
+
+> 圖中 $v_1$ 是麥克風訊號，$I_S = 3\times10^{-16}\ \text{A}$、$\beta = 100$，$Q_1$ 在主動區。(a) $v_1 = 0$ 時求小訊號參數；(b) 麥克風產生 1 mV 時，集極與基極電流各變多少？
+> :en[Consider the circuit shown below, where $v_1$ represents the signal generated by a microphone, $I_S = 3\times10^{-16}\ \text{A}$, $\beta = 100$, and $Q_1$ operates in the active mode. (a) If $v_1 = 0$, determine the small-signal parameters. (b) If the microphone generates a 1-mV signal, how much change is observed in the collector and base currents?]
+
+![Example 4-10：(a) 麥克風 v1 串在 800 mV 偏壓上、集極接 VCC = 1.8 V；(b) 小訊號模型 rπ 與 gm·vπ](/note-images/ec-week4-ch4/23-example-4-10-circuit-and-model.png)
+
+**解題思路**：先用大訊號模型算偏壓電流，再換算 $g_m = \frac{I_C}{V_T}$、$r_\pi = \frac{\beta}{g_m}$；訊號部分用 $\Delta I_C = g_m v_1$、$\Delta I_B = \frac{v_1}{r_\pi}$。
+
+**計算過程**：
+
+$$
+\begin{aligned}
+I_C &= 3\times10^{-16}\times\exp\frac{800}{26} = 6.92\ \text{mA}\\
+g_m &= \frac{6.92\ \text{mA}}{26\ \text{mV}} = \frac{1}{3.75\ \Omega},\qquad r_\pi = \frac{\beta}{g_m} = 100\times3.75 = 375\ \Omega\\
+\Delta I_C &= g_m v_1 = \frac{1\ \text{mV}}{3.75\ \Omega} = 0.267\ \text{mA},\qquad \Delta I_B = \frac{v_1}{r_\pi} = \frac{1\ \text{mV}}{375\ \Omega} = 2.67\ \mu\text{A}.
+\end{aligned}
+$$
+
+**答案與陷阱**：$g_m = \frac{1}{3.75\ \Omega} = 267\ \text{mS}$、$r_\pi = 375\ \Omega$、$\Delta I_C = 0.267\ \text{mA}$、$\Delta I_B = 2.67\ \mu\text{A}$。核對：$\Delta I_B = \frac{\Delta I_C}{\beta}$。
+
+### Example 4-11：加上集極電阻後的電壓增益（第 40–41 頁）
+
+{/* @ai-reference
+id: ex-4-11
+file: _references/電子學實作系列/第四週/Ch 4 - Physics of Bipolar Transistors.pdf
+page: 40
+status: suggested
+excerpt: Consider the circuit shown below, where resistor Rc converts the collector current to a voltage. (a) Verify that the transistor (IS = 3e-16 A and β = 100) operates in the active mode. (b) Determine the output signal level if the microphone produces a 1-mV signal.
+*/}
+<PdfRefChip file="_references/電子學實作系列/第四週/Ch 4 - Physics of Bipolar Transistors.pdf" page={40} status="suggested" excerpt={"Consider the circuit shown below, where resistor Rc converts the collector current to a voltage. (a) Verify that the transistor (IS = 3e-16 A and beta = 100) operates in the active mode. (b) Determine the output signal level if the microphone produces a 1-mV signal."} client:visible />
+
+> 圖中 $R_C = 100\ \Omega$ 把集極電流變成電壓，$V_{CC} = 1.8\ \text{V}$。(a) 驗證電晶體（$I_S = 3\times10^{-16}\ \text{A}$、$\beta = 100$）在主動區；(b) 麥克風產生 1 mV 時輸出訊號多大？
+> :en[Consider the circuit shown below, where resistor $R_C$ converts the collector current to a voltage. (a) Verify that the transistor ($I_S = 3\times10^{-16}\ \text{A}$ and $\beta = 100$) operates in the active mode. (b) Determine the output signal level if the microphone produces a 1-mV signal.]
+
+![Example 4-11 電路：v1 串在 800 mV 偏壓上，集極經 RC = 100 Ω 接 VCC = 1.8 V](/note-images/ec-week4-ch4/24-example-4-11-circuit.png)
+
+![Example 4-11 的小訊號等效電路：v1 跨在 rπ 上，受控源 gm·vπ 流過 RC，VCC 接地](/note-images/ec-week4-ch4/25-example-4-11-small-signal-circuit.png)
+
+**解題思路**：(a) 算 $V_{out} = V_{CC} - R_C I_C$，與 $V_B$ 比較。(b) $v_{out} = -R_C\,\Delta I_C = -g_m R_C v_1$。
+
+**計算過程**：
+
+$$
+\begin{aligned}
+I_C &= 6.92\ \text{mA}\ (\text{同 Example 4-10})\\
+V_{out} &= 1.8 - 100\times6.92\times10^{-3} = 1.108\ \text{V} > 0.8\ \text{V} \;\Rightarrow\; \text{主動區}\\
+v_{out} &= -R_C\,g_m v_1 = -100\ \Omega\times\frac{1\ \text{mV}}{3.75\ \Omega} = -26.7\ \text{mV},\qquad A_V = \frac{-26.7\ \text{mV}}{1\ \text{mV}} = -26.7 .
+\end{aligned}
+$$
+
+**答案與陷阱**：增益 −26.7，負號表示反相（基極升、集極電流升、$R_C$ 壓降升、集極電壓降）。陷阱：$R_C$ 加倍成 200 Ω 時 $V_{out} = 0.416\ \text{V} < 0.8\ \text{V}$，進入飽和區，公式失效。
+
+### Example 4-13：有無爾利效應時所需的 $V_{BE}$（第 44 頁）
+
+{/* @ai-reference
+id: ex-4-13
+file: _references/電子學實作系列/第四週/Ch 4 - Physics of Bipolar Transistors.pdf
+page: 44
+status: suggested
+excerpt: A bipolar transistor carries a collector current of 1 mA with VCE = 2 V. Determine the required base-emitter voltage if VA = ∞ or VA = 20 V. Assume IS = 2e-16 A.
+*/}
+<PdfRefChip file="_references/電子學實作系列/第四週/Ch 4 - Physics of Bipolar Transistors.pdf" page={44} status="suggested" excerpt={"A bipolar transistor carries a collector current of 1 mA with VCE = 2 V. Determine the required base-emitter voltage if VA = infinity or VA = 20 V. Assume IS = 2e-16 A."} client:visible />
+
+> 電晶體集極電流 1 mA、$V_{CE} = 2\ \text{V}$。分別在 $V_A = \infty$ 與 $V_A = 20\ \text{V}$ 時求所需的 $V_{BE}$，$I_S = 2\times10^{-16}\ \text{A}$。
+> :en[A bipolar transistor carries a collector current of 1 mA with $V_{CE} = 2\ \text{V}$. Determine the required base-emitter voltage if $V_A = \infty$ or $V_A = 20\ \text{V}$. Assume $I_S = 2\times10^{-16}\ \text{A}$.]
+
+**解題思路**：含爾利效應的公式 $I_C = I_S \exp\!\left(\frac{V_{BE}}{V_T}\right)\left(1 + \frac{V_{CE}}{V_A}\right)$，把修正因子移到右邊再取對數。
+
+**計算過程**：
+
+$$
+\begin{aligned}
+V_{BE} &= V_T\ln\!\left(\frac{I_C}{I_S}\cdot\frac{1}{1 + \frac{V_{CE}}{V_A}}\right)\\
+V_A = \infty:\quad V_{BE} &= 26\ \text{mV}\times\ln\frac{10^{-3}}{2\times10^{-16}} = 760\ \text{mV}\\
+V_A = 20\ \text{V}:\quad V_{BE} &= 26\ \text{mV}\times\ln\!\left(\frac{10^{-3}}{2\times10^{-16}}\cdot\frac{1}{1.1}\right) = 758\ \text{mV}.
+\end{aligned}
+$$
+
+**答案與陷阱**：760 mV 與 758 mV，只差 2 mV——算偏壓點時爾利效應可忽略；它重要的地方在小訊號的 $r_o$（下一題）。
+
+### Example 4-14：含 $r_o$ 的完整小訊號模型（第 47 頁）
+
+{/* @ai-reference
+id: ex-4-14
+file: _references/電子學實作系列/第四週/Ch 4 - Physics of Bipolar Transistors.pdf
+page: 47
+status: suggested
+excerpt: A transistor is biased at a collector current of 1 mA. Determine the small-signal model if β = 100 and VA = 15 V.
+*/}
+<PdfRefChip file="_references/電子學實作系列/第四週/Ch 4 - Physics of Bipolar Transistors.pdf" page={47} status="suggested" excerpt={"A transistor is biased at a collector current of 1 mA. Determine the small-signal model if beta = 100 and VA = 15 V."} client:visible />
+
+> 電晶體偏壓在 1 mA。若 $\beta = 100$、$V_A = 15\ \text{V}$，求小訊號模型。
+> :en[A transistor is biased at a collector current of 1 mA. Determine the small-signal model if $\beta = 100$ and $V_A = 15\ \text{V}$.]
+
+**解題思路**：三個參數都由 $I_C$ 決定：$g_m = \frac{I_C}{V_T}$、$r_\pi = \frac{\beta}{g_m}$、$r_o = \frac{V_A}{I_C}$。
+
+**計算過程**：
+
+$$
+g_m = \frac{1\ \text{mA}}{26\ \text{mV}} = \frac{1}{26\ \Omega},\qquad
+r_\pi = \frac{\beta}{g_m} = 100\times26\ \Omega = 2.6\ \text{k}\Omega,\qquad
+r_o = \frac{V_A}{I_C} = \frac{15\ \text{V}}{1\ \text{mA}} = 15\ \text{k}\Omega .
+$$
+
+**答案與陷阱**：$g_m = 38.5\ \text{mS}$、$r_\pi = 2.6\ \text{k}\Omega$、$r_o = 15\ \text{k}\Omega$。延伸：本質增益 $g_m r_o = \frac{V_A}{V_T} \approx 577$，與偏壓電流無關。
+
+### Example 4-16：保證軟飽和的 $R_C$ 與 $V_{CC}$ 關係（第 52–53 頁）
+
+{/* @ai-reference
+id: ex-4-16
+file: _references/電子學實作系列/第四週/Ch 4 - Physics of Bipolar Transistors.pdf
+page: 52
+status: suggested
+excerpt: Determine the relation between RC and VCC that guarantees operation in soft saturation or active region.
+*/}
+<PdfRefChip file="_references/電子學實作系列/第四週/Ch 4 - Physics of Bipolar Transistors.pdf" page={52} status="suggested" excerpt={"Determine the relation between RC and VCC that guarantees operation in soft saturation or active region."} client:visible />
+
+> 求保證電晶體在軟飽和或主動區的 $R_C$ 與 $V_{CC}$ 關係。
+> :en[Determine the relation between $R_C$ and $V_{CC}$ that guarantees operation in soft saturation or active region.]
+
+![Example 4-16：(a) 基極 VBE、集極經 RC 接 VCC；(b) VCC 對 RC 的直線，截距 VBE − 400 mV，直線上方為可接受區域](/note-images/ec-week4-ch4/34-example-4-16-soft-saturation-region.png)
+
+**解題思路**：軟飽和判準是集極不能比基極低超過 400 mV，即 $V_{BC} \le 400\ \text{mV}$；把 $V_{CE} = V_{CC} - I_C R_C$ 代進去整理成 $V_{CC}$ 的下界。軟飽和時 $I_C$ 仍是 $I_S \exp\!\left(\frac{V_{BE}}{V_T}\right)$，是常數。
+
+**計算過程**：
+
+$$
+\begin{aligned}
+V_{BC} \le 400\ \text{mV} \;&\Leftrightarrow\; V_{BE} - V_{CE} \le 400\ \text{mV} \;\Leftrightarrow\; V_{CE} \ge V_{BE} - 400\ \text{mV}\\
+V_{CC} - I_C R_C &\ge V_{BE} - 400\ \text{mV}\\
+V_{CC} &\ge I_C R_C + (V_{BE} - 400\ \text{mV}).
+\end{aligned}
+$$
+
+**答案與陷阱**：$V_{CC}$ 的下界是一條直線 $V_{CC} = mR_C + b$，斜率 $m = I_C$、截距 $b = V_{BE} - 400\ \text{mV}$，直線上方是可接受區域。陷阱：這題要的是「關係式」不是數字；若題目給數值（例如 $V_{BE} = 0.8\ \text{V}$、$I_C = 1\ \text{mA}$、$R_C = 1\ \text{k}\Omega$）就代入得 $V_{CC} \ge 1.4\ \text{V}$。
+
+## 考前速記：各章公式一頁
+
+| 章 | 公式 | 用在哪幾題 |
+| --- | --- | --- |
+| 1 | $A_V(\text{dB}) = 20\log_{10}\dfrac{v_{out}}{v_{in}}$ | 1-3 |
+| 2 | $n_i = 5.2\times10^{15}\,T^{\frac{3}{2}}\exp\!\left(-\dfrac{E_g}{2kT}\right)$；$np = n_i^2$ | 2-1、2-3 |
+| 2 | $E = \dfrac{V}{L}$、$v = \mu E$、$\mu = \dfrac{\mu_0}{1 + \frac{\mu_0 E}{v_{sat}}}$ | 2-5、2-6、2-7 |
+| 2 | $J_n = qD_n\dfrac{dn}{dx}$ | 2-8、2-9 |
+| 2 | $V_0 = V_T\ln\dfrac{N_A N_D}{n_i^2}$；$\Delta V_0 = V_T\ln 10 = 60\ \text{mV}$ | 2-13、2-14 |
+| 2 | $C_{j0} = \sqrt{\dfrac{\varepsilon_{si} q}{2}\dfrac{N_A N_D}{N_A + N_D}\dfrac{1}{V_0}}$、$C_j = \dfrac{C_{j0}}{\sqrt{1 - \frac{V_R}{V_0}}}$、$f_{res} = \dfrac{1}{2\pi\sqrt{LC}}$ | 2-15、2-16 |
+| 2 | $I_S = Aqn_i^2\left(\dfrac{D_n}{N_A L_n} + \dfrac{D_p}{N_D L_p}\right)$；$I_D = I_S\left(\exp\!\left(\frac{V_D}{V_T}\right) - 1\right)$ | 2-17、2-18、2-19、2-21 |
+| 3 | $r_d = \dfrac{V_T}{I_D}$；$\Delta I_D = \dfrac{\Delta V_D}{r_d}$ | 3-18、3-19、3-33 |
+| 3 | 半波 $V_R \approx \dfrac{I_L}{C f_{in}}$；全波 $V_R \approx \dfrac{I_L}{2C f_{in}}$；$I_p = I_L\left(1 + 2\pi\sqrt{\dfrac{2V_p}{V_R}}\right)$ | 3-27、3-28、3-31 |
+| 3 | 線調整率 $\dfrac{r_{D1} + r_{D2}}{r_{D1} + r_{D2} + R_1}$；負載調整率 $(r_{D1} + r_{D2})\parallel R_1$ | 3-33 |
+| 4 | $I_C = I_S \exp\!\left(\frac{V_{BE}}{V_T}\right)$、$I_B = \dfrac{I_C}{\beta}$、$I_E = \left(1 + \dfrac{1}{\beta}\right)I_C$ | 4-3 到 4-8 |
+| 4 | $g_m = \dfrac{I_C}{V_T}$、$r_\pi = \dfrac{\beta}{g_m}$、$r_o = \dfrac{V_A}{I_C}$、$A_V = -g_m R_C$ | 4-10、4-11、4-14 |
+| 4 | $I_C = I_S \exp\!\left(\frac{V_{BE}}{V_T}\right)\left(1 + \dfrac{V_{CE}}{V_A}\right)$ | 4-13 |
+| 4 | 軟飽和 $V_{CC} \ge I_C R_C + (V_{BE} - 400\ \text{mV})$ | 4-7、4-16 |
