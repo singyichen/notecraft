@@ -188,10 +188,10 @@ import EcWeek4Early from '@/components/generated/ec-week4-early'
 id: ch4-roadmap
 file: _references/電子學實作系列/第四週/Ch 4 - Physics of Bipolar Transistors.pdf
 page: 2
-status: suggested
+status: confirmed
 excerpt: 4.1 General Considerations / 4.2 Structure of Bipolar Transistor / 4.3 Operation in Active Mode / 4.4 Models / 4.5 Saturation / 4.6 PNP
 */}
-<PdfRefChip file="_references/電子學實作系列/第四週/Ch 4 - Physics of Bipolar Transistors.pdf" page={2} status="suggested" excerpt={"4.1 General Considerations / 4.2 Structure of Bipolar Transistor / 4.3 Operation in Active Mode / 4.4 Models / 4.5 Saturation / 4.6 PNP"} client:visible />
+<PdfRefChip file="_references/電子學實作系列/第四週/Ch 4 - Physics of Bipolar Transistors.pdf" page={2} status="confirmed" excerpt={"4.1 General Considerations / 4.2 Structure of Bipolar Transistor / 4.3 Operation in Active Mode / 4.4 Models / 4.5 Saturation / 4.6 PNP"} client:visible />
 
 - **章節架構（Contents）**：第 2 頁列出六節：4.1 一般考量、4.2 結構、4.3 主動區的操作、4.4 電晶體模型、4.5 飽和區的操作、4.6 PNP 電晶體。本週上課範圍是整章。
 - **本章目標（第 3 頁）**：投影片一句話說明：研究雙極性電晶體的物理，並**推導出大訊號與小訊號模型**。也就是說，本章的終點不是「電晶體是什麼」，而是「把電晶體換成一組可以手算的等效元件」。
@@ -207,10 +207,10 @@ excerpt: 4.1 General Considerations / 4.2 Structure of Bipolar Transistor / 4.3 
 id: ch4-vccs-amplifier
 file: _references/電子學實作系列/第四週/Ch 4 - Physics of Bipolar Transistors.pdf
 page: 4
-status: suggested
+status: confirmed
 excerpt: A voltage-dependent current source can act as an amplifier. If KRL is greater than 1, then the signal is amplified.
 */}
-<PdfRefChip file="_references/電子學實作系列/第四週/Ch 4 - Physics of Bipolar Transistors.pdf" page={4} status="suggested" excerpt={"A voltage-dependent current source can act as an amplifier. If KRL is greater than 1, then the signal is amplified."} client:visible />
+<PdfRefChip file="_references/電子學實作系列/第四週/Ch 4 - Physics of Bipolar Transistors.pdf" page={4} status="confirmed" excerpt={"A voltage-dependent current source can act as an amplifier. If KRL is greater than 1, then the signal is amplified."} client:visible />
 
 - **電壓控制電流源（voltage-dependent current source）**：投影片 (a) 是一個兩埠元件，輸入端的電壓 $V_1$ 決定輸出端的電流 $I_1 = K V_1$，$K$ 的單位是 A/V（也就是西門子 S）。它本身**不產生電壓放大**，只是把電壓翻譯成電流。
 - **簡單放大器（simple amplifier）**：投影片 (b) 在輸出端並上一顆負載電阻 $R_L$，電流流過電阻就變回電壓。推導只有三步：輸入端不吃電流，所以 $V_1 = V_{in}$；受控源輸出 $I_1 = K V_{in}$；這股電流由上往下流過 $R_L$，輸出端電壓是
@@ -247,10 +247,10 @@ $$
 id: ch4-structure-symbol
 file: _references/電子學實作系列/第四週/Ch 4 - Physics of Bipolar Transistors.pdf
 page: 6
-status: suggested
+status: confirmed
 excerpt: Bipolar transistor can be thought of as a sandwich of three doped Si regions. The emitter emits charge carriers and the collector collects them while the base controls the number of carriers.
 */}
-<PdfRefChip file="_references/電子學實作系列/第四週/Ch 4 - Physics of Bipolar Transistors.pdf" page={6} status="suggested" excerpt={"Bipolar transistor can be thought of as a sandwich of three doped Si regions. The emitter emits charge carriers and the collector collects them while the base controls the number of carriers."} client:visible />
+<PdfRefChip file="_references/電子學實作系列/第四週/Ch 4 - Physics of Bipolar Transistors.pdf" page={6} status="confirmed" excerpt={"Bipolar transistor can be thought of as a sandwich of three doped Si regions. The emitter emits charge carriers and the collector collects them while the base controls the number of carriers."} client:visible />
 
 - **三明治結構（sandwich of three doped regions）**：三層摻雜矽疊在一起，外側兩層同極性、中間一層反極性；NPN 就是 n–p–n。投影片 (a) 由上而下是集極 n、基極 p、射極 n。
 - **射極（emitter）／基極（base）／集極（collector）**：投影片用動詞定義三隻腳：射極「發射」載子、集極「收集」載子、基極「控制」載子的數量。三個名字就是三個功能。
@@ -266,10 +266,10 @@ excerpt: Bipolar transistor can be thought of as a sandwich of three doped Si re
 id: ch4-operation-modes
 file: _references/電子學實作系列/第四週/Ch 4 - Physics of Bipolar Transistors.pdf
 page: 7
-status: suggested
+status: confirmed
 excerpt: There are 2^2 possibilities for the terminal voltages; three combinations (modes) are practical: Active, Cutoff, Saturation.
 */}
-<PdfRefChip file="_references/電子學實作系列/第四週/Ch 4 - Physics of Bipolar Transistors.pdf" page={7} status="suggested" excerpt={"There are 2^2 possibilities for the terminal voltages; three combinations (modes) are practical: Active, Cutoff, Saturation."} client:visible />
+<PdfRefChip file="_references/電子學實作系列/第四週/Ch 4 - Physics of Bipolar Transistors.pdf" page={7} status="confirmed" excerpt={"There are 2^2 possibilities for the terminal voltages; three combinations (modes) are practical: Active, Cutoff, Saturation."} client:visible />
 
 - **四種組合（$2^2$ possibilities）**：兩個 PN 接面各有順偏、逆偏兩種狀態，所以端電壓有 $2^2 = 4$ 種組合。投影片說其中三種實用：
 
@@ -288,10 +288,10 @@ excerpt: There are 2^2 possibilities for the terminal voltages; three combinatio
 id: ch4-active-mode-operation
 file: _references/電子學實作系列/第四週/Ch 4 - Physics of Bipolar Transistors.pdf
 page: 8
-status: suggested
+status: confirmed
 excerpt: Wrong model: the transistor cannot be modeled as merely two back-to-back diodes. Base region is very thin (~100 Å); high doping level in emitter (n+).
 */}
-<PdfRefChip file="_references/電子學實作系列/第四週/Ch 4 - Physics of Bipolar Transistors.pdf" page={8} status="suggested" excerpt={"Wrong model: the transistor cannot be modeled as merely two back-to-back diodes. Base region is very thin (~100 Å); high doping level in emitter (n+)."} client:visible />
+<PdfRefChip file="_references/電子學實作系列/第四週/Ch 4 - Physics of Bipolar Transistors.pdf" page={8} status="confirmed" excerpt={"Wrong model: the transistor cannot be modeled as merely two back-to-back diodes. Base region is very thin (~100 Å); high doping level in emitter (n+)."} client:visible />
 
 - **順向主動區（forward active region）**：B–E 順偏、B–C 逆偏。投影片 (a) 用 $V_{BE} = +0.8\ \text{V}$、$V_{CE} = +1\ \text{V}$ 當例子。
 - **錯誤模型（wrong model）**：投影片 (b) 把電晶體畫成兩顆背對背的二極體 $D_1$、$D_2$，然後說這是錯的。錯在哪裡：兩顆獨立二極體裡，逆偏的 $D_2$ 只會流很小的逆向飽和電流 $I_2$，跟 $D_1$ 的順向電流 $I_1$ 毫無關係；真正的電晶體裡兩個接面**共用同一層極薄的基極**，順偏接面注入的電子會穿過基極走到逆偏接面，被它的電場掃走——電流從一個接面「傳」到另一個接面，這是兩顆分離的二極體做不到的。
@@ -319,10 +319,10 @@ excerpt: Wrong model: the transistor cannot be modeled as merely two back-to-bac
 id: ch4-collector-current-derivation
 file: _references/電子學實作系列/第四週/Ch 4 - Physics of Bipolar Transistors.pdf
 page: 11
-status: suggested
+status: confirmed
 excerpt: As the base-emitter junction is in forward bias, the electron concentration at boundary x1 is n(x1) = NE exp(−(V0−VBE)/VT). The flow of electrons into the collector can be approximated as Jn = qDn dn/dx.
 */}
-<PdfRefChip file="_references/電子學實作系列/第四週/Ch 4 - Physics of Bipolar Transistors.pdf" page={11} status="suggested" excerpt={"As the base-emitter junction is in forward bias, the electron concentration at boundary x1 is n(x1) = NE exp(-(V0-VBE)/VT). The flow of electrons into the collector can be approximated as Jn = qDn dn/dx."} client:visible />
+<PdfRefChip file="_references/電子學實作系列/第四週/Ch 4 - Physics of Bipolar Transistors.pdf" page={11} status="confirmed" excerpt={"As the base-emitter junction is in forward bias, the electron concentration at boundary x1 is n(x1) = NE exp(-(V0-VBE)/VT). The flow of electrons into the collector can be approximated as Jn = qDn dn/dx."} client:visible />
 
 這兩頁是全章唯一一段完整的物理推導，用到的前提全部來自第 1 週：
 
@@ -383,10 +383,10 @@ $A_E$ 是射極的截面積；最後一步假設 $e^{V_{BE}/V_T} \gg 1$（$V_{BE
 id: ch4-parallel-and-area
 file: _references/電子學實作系列/第四週/Ch 4 - Physics of Bipolar Transistors.pdf
 page: 13
-status: suggested
+status: confirmed
 excerpt: When two transistors are put in parallel and experience the same potential across all three terminals, they can be thought of as a single transistor with twice the emitter area.
 */}
-<PdfRefChip file="_references/電子學實作系列/第四週/Ch 4 - Physics of Bipolar Transistors.pdf" page={13} status="suggested" excerpt={"When two transistors are put in parallel and experience the same potential across all three terminals, they can be thought of as a single transistor with twice the emitter area."} client:visible />
+<PdfRefChip file="_references/電子學實作系列/第四週/Ch 4 - Physics of Bipolar Transistors.pdf" page={13} status="confirmed" excerpt={"When two transistors are put in parallel and experience the same potential across all three terminals, they can be thought of as a single transistor with twice the emitter area."} client:visible />
 
 - **並聯電晶體（parallel combination）**：兩顆電晶體三隻腳各自並接、承受相同的端電壓時，可以視為一顆射極面積加倍的電晶體 $Q_{eq}$。理由直接來自 $I_S \propto A_E$：兩顆各出 $I_S e^{V_{BE}/V_T}$，加起來就是 $2 I_S e^{V_{BE}/V_T}$。投影片 (b) 用立體圖把兩塊射極拼成一塊 $2A_E$。
 
@@ -426,10 +426,10 @@ $$
 id: ch4-simple-stage-constant-current
 file: _references/電子學實作系列/第四週/Ch 4 - Physics of Bipolar Transistors.pdf
 page: 17
-status: suggested
+status: confirmed
 excerpt: Example 4-5 Simple stage with biasing: determine the output voltage if IS = 5e-16 A. IC = 1.69 mA, Vout = 1.31 V.
 */}
-<PdfRefChip file="_references/電子學實作系列/第四週/Ch 4 - Physics of Bipolar Transistors.pdf" page={17} status="suggested" excerpt={"Example 4-5 Simple stage with biasing: determine the output voltage if IS = 5e-16 A. IC = 1.69 mA, Vout = 1.31 V."} client:visible />
+<PdfRefChip file="_references/電子學實作系列/第四週/Ch 4 - Physics of Bipolar Transistors.pdf" page={17} status="confirmed" excerpt={"Example 4-5 Simple stage with biasing: determine the output voltage if IS = 5e-16 A. IC = 1.69 mA, Vout = 1.31 V."} client:visible />
 
 - **Example 4-5：帶偏壓的簡單放大級（simple stage with biasing）**：基極接 $750\ \text{mV}$、集極經 $R_L = 1\ \text{k}\Omega$ 接 $3\ \text{V}$，$I_S = 5\times10^{-16}\ \text{A}$。先算電流，再用 KVL 算輸出：
 
@@ -458,10 +458,10 @@ $$
 id: ch4-base-emitter-currents
 file: _references/電子學實作系列/第四週/Ch 4 - Physics of Bipolar Transistors.pdf
 page: 19
-status: suggested
+status: confirmed
 excerpt: Base current consists of two components: 1) reverse injection of holes into the emitter and 2) recombination of holes with electrons coming from the emitter. IC = β·IB.
 */}
-<PdfRefChip file="_references/電子學實作系列/第四週/Ch 4 - Physics of Bipolar Transistors.pdf" page={19} status="suggested" excerpt={"Base current consists of two components: 1) reverse injection of holes into the emitter and 2) recombination of holes with electrons coming from the emitter. IC = beta * IB."} client:visible />
+<PdfRefChip file="_references/電子學實作系列/第四週/Ch 4 - Physics of Bipolar Transistors.pdf" page={19} status="confirmed" excerpt={"Base current consists of two components: 1) reverse injection of holes into the emitter and 2) recombination of holes with electrons coming from the emitter. IC = beta * IB."} client:visible />
 
 - **基極電流的兩個成分（base current components，第 19 頁）**：(1) 電洞從基極**反向注入**射極（順偏接面兩邊都會互相注入，只是射極重摻雜讓這一股很小）；(2) 電洞在基極裡與射極來的電子**復合**（基極薄，這一股也很小）。投影片 (a) 是理想情況（沒有基極電流）、(b) 是真實情況。
 - **電流增益（current gain，$\beta$，第 20 頁）**：$\beta = I_C / I_B$ 是由摻雜濃度等參數決定的**常數比例**。投影片的例子：射極每注入 200 個電子，基極就得補 1 個電洞，$\beta = 200$。$\beta$ 叫「電流增益」是因為它表示基極電流被「放大」了多少倍。NPN 的 $\beta$ 典型值在 50 到 200 之間，由製程決定，**同一批元件也會差很多**，所以設計上不能依賴 $\beta$ 的精確值（Example 4-6 的重點）。
@@ -514,10 +514,10 @@ $$
 id: ch4-large-signal-model
 file: _references/電子學實作系列/第四週/Ch 4 - Physics of Bipolar Transistors.pdf
 page: 24
-status: suggested
+status: confirmed
 excerpt: A diode is placed between base and emitter and a voltage controlled current source is placed between the collector and emitter. VBE → IC → IB → IE.
 */}
-<PdfRefChip file="_references/電子學實作系列/第四週/Ch 4 - Physics of Bipolar Transistors.pdf" page={24} status="suggested" excerpt={"A diode is placed between base and emitter and a voltage controlled current source is placed between the collector and emitter. VBE -> IC -> IB -> IE."} client:visible />
+<PdfRefChip file="_references/電子學實作系列/第四週/Ch 4 - Physics of Bipolar Transistors.pdf" page={24} status="confirmed" excerpt={"A diode is placed between base and emitter and a voltage controlled current source is placed between the collector and emitter. VBE -> IC -> IB -> IE."} client:visible />
 
 - **大訊號模型（large-signal model，第 24 頁）**：把第 22 頁的三條公式畫成電路：B–E 之間放一顆二極體（電流 $\frac{I_S}{\beta}\exp\frac{V_{BE}}{V_T}$，就是 $I_B$），C–E 之間放一個電壓控制電流源（電流 $I_S \exp\frac{V_{BE}}{V_T}$，就是 $I_C$）。依賴順序是 $V_{BE} \to I_C \to I_B \to I_E$：基極–射極電壓控制集極電流，基極電流是它的 $1/\beta$，兩者相加從射極流出。「大訊號」的意思是**不做線性化**，指數原樣保留，適合算直流偏壓點。
 
@@ -562,10 +562,10 @@ $$
 id: ch4-iv-characteristics
 file: _references/電子學實作系列/第四週/Ch 4 - Physics of Bipolar Transistors.pdf
 page: 28
-status: suggested
+status: confirmed
 excerpt: If the device remains in the active mode (VCE > VBE), IC is independent of VCE. Collector current as a function of (a) base-emitter voltage and (b) collector-emitter voltage.
 */}
-<PdfRefChip file="_references/電子學實作系列/第四週/Ch 4 - Physics of Bipolar Transistors.pdf" page={28} status="suggested" excerpt={"If the device remains in the active mode (VCE > VBE), IC is independent of VCE. Collector current as a function of (a) base-emitter voltage and (b) collector-emitter voltage."} client:visible />
+<PdfRefChip file="_references/電子學實作系列/第四週/Ch 4 - Physics of Bipolar Transistors.pdf" page={28} status="confirmed" excerpt={"If the device remains in the active mode (VCE > VBE), IC is independent of VCE. Collector current as a function of (a) base-emitter voltage and (b) collector-emitter voltage."} client:visible />
 
 - **I–V 特性（I-V characteristics，第 28 頁）**：兩張圖對應兩個自變數。(a) 固定 $V_{CE}$、掃 $V_{BE}$：$I_C$ 是指數曲線；(b) 固定 $V_{BE}$、掃 $V_{CE}$：只要 $V_{CE} > V_{BE}$（主動區），$I_C$ 是水平線，高度由 $V_{BE}$ 決定，$V_{BE2} > V_{BE1}$ 的線在上面。這兩張圖就是「電壓控制電流源」的圖形定義：輸入電壓決定高度、輸出電壓不影響。
 
@@ -593,10 +593,10 @@ excerpt: If the device remains in the active mode (VCE > VBE), IC is independent
 id: ch4-transconductance
 file: _references/電子學實作系列/第四週/Ch 4 - Physics of Bipolar Transistors.pdf
 page: 30
-status: suggested
+status: confirmed
 excerpt: Transconductance (gm) shows a measure of how well the transistor converts voltage to current. gm = dIC/dVBE = IC/VT.
 */}
-<PdfRefChip file="_references/電子學實作系列/第四週/Ch 4 - Physics of Bipolar Transistors.pdf" page={30} status="suggested" excerpt={"Transconductance (gm) shows a measure of how well the transistor converts voltage to current. gm = dIC/dVBE = IC/VT."} client:visible />
+<PdfRefChip file="_references/電子學實作系列/第四週/Ch 4 - Physics of Bipolar Transistors.pdf" page={30} status="confirmed" excerpt={"Transconductance (gm) shows a measure of how well the transistor converts voltage to current. gm = dIC/dVBE = IC/VT."} client:visible />
 
 - **轉導（transconductance，$g_m$，第 30 頁）**：投影片先問「怎麼量化一個電壓控制電流源的好壞？」答案是看它把電壓轉成電流的效率：集極電流對基極–射極電壓的導數。測試電路是在 $V_{BE}$ 上疊一個小階躍 $\Delta V_{BE}$、看 $I_C$ 動多少。對指數函數微分，導數就是函數本身除以 $V_T$：
 
@@ -649,10 +649,10 @@ $$
 id: ch4-small-signal-derivation
 file: _references/電子學實作系列/第四週/Ch 4 - Physics of Bipolar Transistors.pdf
 page: 35
-status: suggested
+status: confirmed
 excerpt: Small signal model is derived by perturbing voltage difference (ΔV), every two terminals while fixing the third terminal and analyzing the change in current of all three terminals.
 */}
-<PdfRefChip file="_references/電子學實作系列/第四週/Ch 4 - Physics of Bipolar Transistors.pdf" page={35} status="suggested" excerpt={"Small signal model is derived by perturbing voltage difference (dV), every two terminals while fixing the third terminal and analyzing the change in current of all three terminals."} client:visible />
+<PdfRefChip file="_references/電子學實作系列/第四週/Ch 4 - Physics of Bipolar Transistors.pdf" page={35} status="confirmed" excerpt={"Small signal model is derived by perturbing voltage difference (dV), every two terminals while fixing the third terminal and analyzing the change in current of all three terminals."} client:visible />
 
 - **推導方法（derivation，第 35 頁）**：小訊號模型的建法是固定的：每次在**兩個端點之間**加一個小擾動 $\Delta V$、第三個端點固定，然後看三隻腳的電流各變化多少（$\Delta I_C$、$\Delta I_B$、$\Delta I_E$）。投影片 (a) 擾動 $V_{BE}$、(b) 擾動 $V_{CE}$。數學上這就是對三變數函數做一階泰勒展開：每個偏導數對應一個線性元件。
 
@@ -697,10 +697,10 @@ $$
 id: ch4-small-signal-examples
 file: _references/電子學實作系列/第四週/Ch 4 - Physics of Bipolar Transistors.pdf
 page: 38
-status: suggested
+status: confirmed
 excerpt: Example 4-10: v1 represents the signal generated by a microphone, IS = 3e-16 A, β = 100. (a) determine the small-signal parameters; (b) if the microphone generates a 1-mV signal, how much change is observed in the collector and base currents?
 */}
-<PdfRefChip file="_references/電子學實作系列/第四週/Ch 4 - Physics of Bipolar Transistors.pdf" page={38} status="suggested" excerpt={"Example 4-10: v1 represents the signal generated by a microphone, IS = 3e-16 A, beta = 100. (a) determine the small-signal parameters; (b) if the microphone generates a 1-mV signal, how much change is observed in the collector and base currents?"} client:visible />
+<PdfRefChip file="_references/電子學實作系列/第四週/Ch 4 - Physics of Bipolar Transistors.pdf" page={38} status="confirmed" excerpt={"Example 4-10: v1 represents the signal generated by a microphone, IS = 3e-16 A, beta = 100. (a) determine the small-signal parameters; (b) if the microphone generates a 1-mV signal, how much change is observed in the collector and base currents?"} client:visible />
 
 - **Example 4-10（第 38–39 頁）**：麥克風訊號 $v_1$ 串在 $800\ \text{mV}$ 的基極偏壓上，$I_S = 3\times10^{-16}\ \text{A}$、$\beta = 100$、$V_{CC} = 1.8\ \text{V}$。(a) $v_1 = 0$ 時的小訊號參數，(b) 麥克風出 1 mV 時集極與基極電流各變多少：
 
@@ -753,10 +753,10 @@ $$
 id: ch4-early-effect
 file: _references/電子學實作系列/第四週/Ch 4 - Physics of Bipolar Transistors.pdf
 page: 42
-status: suggested
+status: confirmed
 excerpt: The claim that collector current does not depend on VCE is not accurate. As VCE increases, the depletion region between base and collector increases. Therefore, the effective base width decreases, which leads to an increase in the collector current.
 */}
-<PdfRefChip file="_references/電子學實作系列/第四週/Ch 4 - Physics of Bipolar Transistors.pdf" page={42} status="suggested" excerpt={"The claim that collector current does not depend on VCE is not accurate. As VCE increases, the depletion region between base and collector increases. Therefore, the effective base width decreases, which leads to an increase in the collector current."} client:visible />
+<PdfRefChip file="_references/電子學實作系列/第四週/Ch 4 - Physics of Bipolar Transistors.pdf" page={42} status="confirmed" excerpt={"The claim that collector current does not depend on VCE is not accurate. As VCE increases, the depletion region between base and collector increases. Therefore, the effective base width decreases, which leads to an increase in the collector current."} client:visible />
 
 - **爾利效應的成因（Early effect，第 42 頁）**：「集極電流與 $V_{CE}$ 無關」其實不精確。第 1 週講過**逆偏電壓越大、空乏區越寬**；$V_{CE}$ 從 $V_{CE1}$ 升到 $V_{CE2}$，B–C 空乏區往基極擴張，邊界從 $x_2$ 退到 $x_2'$，有效基極寬度 $W_B$ 變薄。第 11 頁的濃度斜線兩端高度不變、距離變短，斜率變陡，擴散電流（集極電流）微幅上升。整條因果鏈：$V_{CE}\uparrow \to$ 空乏區 $\uparrow \to W_B\downarrow \to$ 梯度 $\uparrow \to I_C\uparrow$。
 
@@ -829,10 +829,10 @@ $$
 id: ch4-active-summary
 file: _references/電子學實作系列/第四週/Ch 4 - Physics of Bipolar Transistors.pdf
 page: 48
-status: suggested
+status: confirmed
 excerpt: Summary: Operation in Active Mode, Large-Signal Model, I/V Characteristics, Small-Signal Model, Early Effect, Modified Small-Signal Model.
 */}
-<PdfRefChip file="_references/電子學實作系列/第四週/Ch 4 - Physics of Bipolar Transistors.pdf" page={48} status="suggested" excerpt={"Summary: Operation in Active Mode, Large-Signal Model, I/V Characteristics, Small-Signal Model, Early Effect, Modified Small-Signal Model."} client:visible />
+<PdfRefChip file="_references/電子學實作系列/第四週/Ch 4 - Physics of Bipolar Transistors.pdf" page={48} status="confirmed" excerpt={"Summary: Operation in Active Mode, Large-Signal Model, I/V Characteristics, Small-Signal Model, Early Effect, Modified Small-Signal Model."} client:visible />
 
 - **總結圖（summary）**：第 48 頁用一張圖把 4.3–4.4 串起來：主動區的載子流 → $I_C = I_S e^{V_{BE}/V_T}$ → 大訊號模型 → I/V 特性 → 小訊號模型 → 爾利效應 → 修正後的小訊號模型。讀完前面各節，這張圖應該每一格都認得。
 
@@ -852,10 +852,10 @@ excerpt: Summary: Operation in Active Mode, Large-Signal Model, I/V Characterist
 id: ch4-saturation
 file: _references/電子學實作系列/第四週/Ch 4 - Physics of Bipolar Transistors.pdf
 page: 49
-status: suggested
+status: confirmed
 excerpt: When collector voltage drops below base voltage and forward biases the collector-base junction, base current increases and decreases the current gain factor β. βforced = IC/IB < β.
 */}
-<PdfRefChip file="_references/電子學實作系列/第四週/Ch 4 - Physics of Bipolar Transistors.pdf" page={49} status="suggested" excerpt={"When collector voltage drops below base voltage and forward biases the collector-base junction, base current increases and decreases the current gain factor beta. beta_forced = IC/IB < beta."} client:visible />
+<PdfRefChip file="_references/電子學實作系列/第四週/Ch 4 - Physics of Bipolar Transistors.pdf" page={49} status="confirmed" excerpt={"When collector voltage drops below base voltage and forward biases the collector-base junction, base current increases and decreases the current gain factor beta. beta_forced = IC/IB < beta."} client:visible />
 
 - **進入飽和（bipolar transistor in saturation，第 49 頁）**：集極電壓降到基極電壓以下，B–C 接面轉為順偏，它開始像一顆二極體一樣從基極抽電流 $I_{BC}$：基極電流增加、集極電流反而被扣掉一塊，電流增益下降：
 
@@ -926,10 +926,10 @@ $$
 id: ch4-pnp
 file: _references/電子學實作系列/第四週/Ch 4 - Physics of Bipolar Transistors.pdf
 page: 55
-status: suggested
+status: confirmed
 excerpt: With the polarities of emitter, collector, and base reversed, a PNP transistor is formed. All the principles that applied to NPN's also apply to PNP's, with the exception that emitter is at a higher potential than base and base at a higher potential than collector.
 */}
-<PdfRefChip file="_references/電子學實作系列/第四週/Ch 4 - Physics of Bipolar Transistors.pdf" page={55} status="suggested" excerpt={"With the polarities of emitter, collector, and base reversed, a PNP transistor is formed. All the principles that applied to NPN's also apply to PNP's, with the exception that emitter is at a higher potential than base and base at a higher potential than collector."} client:visible />
+<PdfRefChip file="_references/電子學實作系列/第四週/Ch 4 - Physics of Bipolar Transistors.pdf" page={55} status="confirmed" excerpt={"With the polarities of emitter, collector, and base reversed, a PNP transistor is formed. All the principles that applied to NPN's also apply to PNP's, with the exception that emitter is at a higher potential than base and base at a higher potential than collector."} client:visible />
 
 - **PNP 電晶體（第 55 頁）**：把三層的極性反過來（p–n–p）。NPN 的所有原理都適用，唯一差別是電位順序反過來：**射極高於基極、基極高於集極**。載子從電子換成電洞：(a) 結構與基極內的電洞密度斜線、(b) 電流方向（電洞從射極往下流到集極）、(c) 正確的偏壓方式、(d) 比較直覺的畫法（射極朝上、電流由上往下）。符號上射極的箭頭朝內，仍然是「射極電流的方向」。
 
@@ -975,10 +975,10 @@ $$
 id: ch4-pnp-examples
 file: _references/電子學實作系列/第四週/Ch 4 - Physics of Bipolar Transistors.pdf
 page: 59
-status: suggested
+status: confirmed
 excerpt: Example 4-17: Determine the terminal currents of Q1 and verify operation in the forward active region. Assume IS = 2e-16 A, β = 50 and VA = ∞.
 */}
-<PdfRefChip file="_references/電子學實作系列/第四週/Ch 4 - Physics of Bipolar Transistors.pdf" page={59} status="suggested" excerpt={"Example 4-17: Determine the terminal currents of Q1 and verify operation in the forward active region. Assume IS = 2e-16 A, beta = 50 and VA = infinity."} client:visible />
+<PdfRefChip file="_references/電子學實作系列/第四週/Ch 4 - Physics of Bipolar Transistors.pdf" page={59} status="confirmed" excerpt={"Example 4-17: Determine the terminal currents of Q1 and verify operation in the forward active region. Assume IS = 2e-16 A, beta = 50 and VA = infinity."} client:visible />
 
 - **Example 4-17（第 59–60 頁）**：PNP 的射極接 $V_{CC} = 2\ \text{V}$、基極接 $1.2\ \text{V}$、集極經 $R_C = 200\ \Omega$ 接地，$I_S = 2\times10^{-16}\ \text{A}$、$\beta = 50$、$V_A = \infty$。射極–基極電壓是 $2 - 1.2 = 0.8\ \text{V}$：
 
@@ -1021,10 +1021,10 @@ $$
 id: ch4-ac-ground-topologies
 file: _references/電子學實作系列/第四週/Ch 4 - Physics of Bipolar Transistors.pdf
 page: 63
-status: suggested
+status: confirmed
 excerpt: Example 4-20: Draw the small-signal equivalent circuits for the topologies shown in (a)-(c) and compare the results. All three topologies reduce to the same equivalent circuit because VCC is grounded in the small-signal representation.
 */}
-<PdfRefChip file="_references/電子學實作系列/第四週/Ch 4 - Physics of Bipolar Transistors.pdf" page={63} status="suggested" excerpt={"Example 4-20: Draw the small-signal equivalent circuits for the topologies shown in (a)-(c) and compare the results. All three topologies reduce to the same equivalent circuit because VCC is grounded in the small-signal representation."} client:visible />
+<PdfRefChip file="_references/電子學實作系列/第四週/Ch 4 - Physics of Bipolar Transistors.pdf" page={63} status="confirmed" excerpt={"Example 4-20: Draw the small-signal equivalent circuits for the topologies shown in (a)-(c) and compare the results. All three topologies reduce to the same equivalent circuit because VCC is grounded in the small-signal representation."} client:visible />
 
 - **Example 4-20（第 63 頁）**：三個看起來不同的電路：(a) NPN，集極電阻接在上方的 $V_{CC}$；(b) PNP，射極接 $V_{CC}$、集極電阻接地；(c) PNP，訊號源串在 $V_{CC}$ 與基極之間。要求畫出三者的小訊號等效電路並比較。
 - **交流接地（AC ground，第 64 頁）**：直流電源在小訊號分析中是**定值**，變化量為零，所以 $V_{CC}$ 節點在小訊號圖裡就是地。把 $V_{CC}$ 換成地之後，三個電路都化成同一張圖：$v_{in}$ 跨在 $r_\pi$ 上、受控源 $g_m v_\pi$ 與 $r_o$、$R_C$ 全部並聯到地。結論：**接法的差異只影響偏壓，不影響小訊號增益** $-g_m (R_C \parallel r_o)$；而「$V_{CC}$ 接地」這一步是每一次畫小訊號圖都要先做的事。
