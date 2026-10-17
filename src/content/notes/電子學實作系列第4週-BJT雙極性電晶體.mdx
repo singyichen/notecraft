@@ -1077,3 +1077,380 @@ excerpt: Example 4-20: Draw the small-signal equivalent circuits for the topolog
 - 軟飽和條件：$V_{BC} \le 400\ \text{mV}$，即 $V_{CC} \ge I_C R_C + (V_{BE} - 400\ \text{mV})$。
 - 深飽和：$V_{CE,sat} \approx 200\ \text{mV}$。
 - PNP：$I_C = I_S \exp\!\left(\dfrac{V_{EB}}{V_T}\right)\left(1 + \dfrac{V_{EC}}{V_A}\right)$，小訊號模型同 NPN。
+
+## 考題
+
+### 選擇題
+
+#### 選擇題 1
+
+> 一個電壓控制電流源（控制係數 $K$）在輸出端並上負載電阻 $R_L$ 後能放大訊號。關於這個放大器的增益，下列敘述何者正確？
+> :en[A voltage-dependent current source (gain factor $K$) with a load resistor $R_L$ across its output can amplify a signal. Which statement about the gain of this amplifier is correct?]
+
+:::choices{answer="B"}
+- 增益由輸入端的內阻決定，內阻越大、增益越高 :en[The gain is set by the input resistance; a larger input resistance gives a higher gain]
+- 增益等於 $-K R_L$，與輸入端的內阻無關 :en[The gain equals $-K R_L$ and is independent of the input resistance]
+- 只要 $K$ 大於 1 就能放大，與 $R_L$ 無關 :en[Amplification occurs whenever $K$ exceeds 1, regardless of $R_L$]
+- 受控源本身就會放大電壓，負載電阻只是用來限流 :en[The controlled source itself amplifies voltage; the load resistor only limits current]
+:::
+
+:::tip{collapsible title="詳解"}
+受控源把輸入電壓翻譯成電流 $K V_{in}$，這股電流流過 $R_L$ 才變回電壓 $V_{out} = -K R_L V_{in}$，所以放大是「元件加負載」一起做到的，增益是 $-K R_L$（講義第 4 頁）。輸入端不吃電流，內阻怎麼變都不影響 $V_1 = V_{in}$，所以第一項錯；這也是理想放大器輸入阻抗要無限大的理由。第三項漏掉 $R_L$：$K$ 的單位是 A/V，單獨談「大於 1」沒有意義，要 $K R_L$ 這個無因次量大於 1 才放大。
+
+**考的觀念**：放大＝受控電流源＋負載電阻，增益與輸入電阻無關。
+:::
+
+#### 選擇題 2
+
+> NPN 電晶體的射極摻雜遠重於基極、基極又做得極薄。這種刻意的不對稱主要是為了什麼？
+> :en[In an NPN transistor the emitter is doped much more heavily than the base, and the base is made very thin. What is the main purpose of this deliberate asymmetry?]
+
+:::choices{answer="D"}
+- 讓集極能承受更高的逆向電壓而不崩潰 :en[To let the collector withstand a higher reverse voltage without breakdown]
+- 讓兩個接面的內建電位相等，方便對稱使用 :en[To make the built-in potentials of the two junctions equal for symmetric use]
+- 讓基極電流與集極電流大小相近，方便量測 :en[To make the base and collector currents comparable for easier measurement]
+- 讓載子流以射極注入基極為主，且能在復合前穿過基極 :en[To make carrier flow dominated by emitter injection, with carriers crossing the base before recombining]
+:::
+
+:::tip{collapsible title="詳解"}
+重摻雜射極讓順偏接面的注入以「射極電子進入基極」為主，反向注入的電洞很少；薄基極讓這些電子還來不及復合就擴散到集極接面被掃走（講義第 8–9 頁）。兩者合起來才有 $I_C \approx I_E$ 與很大的 $\beta$。第三項剛好相反：不對稱的目的正是讓基極電流遠小於集極電流。第二項錯在內建電位由摻雜決定，不對稱反而讓兩個接面不同；課程也因此不用反向主動區。
+
+**考的觀念**：射極重摻雜、基極薄，是「傳得過去」的結構條件。
+:::
+
+#### 選擇題 3
+
+> 講義第 8 頁說「電晶體不能視為兩顆背對背的二極體」。真正的差別在哪裡？
+> :en[Slide 8 states that a transistor cannot be modeled as two back-to-back diodes. What is the real difference?]
+
+:::choices{answer="A"}
+- 兩個接面共用極薄的基極，順偏接面注入的載子會被逆偏接面收走 :en[The two junctions share a very thin base, so carriers injected by the forward junction are collected by the reverse one]
+- 電晶體的接面是用不同材料做的，二極體方程式不適用 :en[Transistor junctions are made of different materials, so the diode equation does not apply]
+- 兩顆二極體串聯後總壓降是兩倍，電晶體只有一個壓降 :en[Two diodes in series double the voltage drop, whereas a transistor has only one]
+- 逆偏那顆二極體在電晶體裡其實是順偏的 :en[The reverse-biased diode is actually forward-biased inside a transistor]
+:::
+
+:::tip{collapsible title="詳解"}
+兩顆分離的二極體裡，逆偏那顆只會流很小的逆向飽和電流，跟順偏那顆的電流毫無關係。電晶體裡兩個接面緊貼著同一層薄基極，順偏接面注入的電子穿過基極、被逆偏接面的電場掃進集極，於是「一個接面的電流出現在另一個接面」（講義第 8–9 頁）。第四項是主動區的定義寫反了：主動區的 B–C 接面確實是逆偏，只是逆偏接面不再只流漏電流。
+
+**考的觀念**：電晶體的本質是兩個接面之間的「傳遞」，分離的二極體沒有這條路。
+:::
+
+#### 選擇題 4
+
+> 其他參數不變，把基極摻雜濃度 $N_B$ 提高為原來的 10 倍。固定 $V_{BE}$ 下的集極電流會怎麼變？
+> :en[With all other parameters fixed, the base doping $N_B$ is raised tenfold. How does the collector current at a fixed $V_{BE}$ change?]
+
+:::choices{answer="C"}
+- 增為 10 倍，因為可供注入的載子變多 :en[It increases tenfold because more carriers are available for injection]
+- 不變，因為集極電流只由射極摻雜決定 :en[It stays the same because the collector current depends only on emitter doping]
+- 減為十分之一，因為 $I_S$ 反比於 $N_B$ :en[It drops to one tenth because $I_S$ is inversely proportional to $N_B$]
+- 不變，但 $\beta$ 變為十分之一 :en[It stays the same, but $\beta$ drops to one tenth]
+:::
+
+:::tip{collapsible title="詳解"}
+由講義第 12 頁的推導，$I_S = \dfrac{A_E q D_n n_i^2}{N_B W_B}$：基極摻雜越重，邊界的少數載子濃度 $n_i^2 / N_B$ 越低，濃度斜線越平，擴散電流越小。射極摻雜 $N_E$ 在化簡時消掉了，所以第二項反了：$I_C$ 不看 $N_E$、反而看 $N_B$。第四項把影響對象搞錯：$N_B$ 提高確實也會讓 $\beta$ 下降（基極反向注入的電洞變多），但 $I_C$ 本身先就變小了，不是「不變」。
+
+**考的觀念**：$I_S$ 正比於射極面積、反比於基極寬度與基極摻雜。
+:::
+
+#### 選擇題 5
+
+> 一顆以固定 $V_{BE}$ 偏壓、工作在主動區的電晶體，因製程變異 $\beta$ 從 50 變成 200。下列何者正確？
+> :en[A transistor biased with a fixed $V_{BE}$ in the active region has its $\beta$ change from 50 to 200 due to process variation. Which statement is correct?]
+
+:::choices{answer="B"}
+- $I_C$ 增為 4 倍，$I_B$ 不變 :en[$I_C$ quadruples while $I_B$ stays the same]
+- $I_C$ 幾乎不變，$I_B$ 減為四分之一 :en[$I_C$ is almost unchanged while $I_B$ drops to one quarter]
+- $I_C$ 與 $I_B$ 都增為 4 倍 :en[Both $I_C$ and $I_B$ quadruple]
+- $I_C$ 減為四分之一，$I_B$ 不變 :en[$I_C$ drops to one quarter while $I_B$ stays the same]
+:::
+
+:::tip{collapsible title="詳解"}
+集極電流只由 $V_{BE}$ 決定：$I_C = I_S e^{V_{BE}/V_T}$ 裡沒有 $\beta$。$\beta$ 只決定「為了維持這股集極電流，基極要補多少電洞」，所以 $I_B = I_C / \beta$ 跟著 $\beta$ 變為四分之一（講義第 23 頁 Example 4-6：$I_C$ 固定 1.685 mA，$I_B$ 在 8.43 到 33.7 µA 之間）。第一項是把 $I_C = \beta I_B$ 讀成「$I_B$ 固定、$I_C$ 跟著 $\beta$ 跑」，那是用電流源驅動基極時才成立的情形，本題是用電壓偏壓。
+
+**考的觀念**：用 $V_{BE}$ 偏壓時，只有基極電流會跟著 $\beta$ 變。
+:::
+
+#### 選擇題 6
+
+> 轉導 $g_m$ 本質上是哪一個量的函數？
+> :en[Transconductance $g_m$ is fundamentally a function of which quantity?]
+
+:::choices{answer="D"}
+- 基極電流 $I_B$，因為 $g_m$ 衡量基極對集極的控制力 :en[The base current $I_B$, because $g_m$ measures the base's control over the collector]
+- 電流增益 $\beta$，因為 $\beta$ 越大、放大能力越強 :en[The current gain $\beta$, because a larger $\beta$ means stronger amplification]
+- 集極–射極電壓 $V_{CE}$，因為它決定工作點 :en[The collector-emitter voltage $V_{CE}$, because it sets the operating point]
+- 集極電流 $I_C$，因為 $g_m = I_C / V_T$ :en[The collector current $I_C$, because $g_m = I_C / V_T$]
+:::
+
+:::tip{collapsible title="詳解"}
+對 $I_C = I_S e^{V_{BE}/V_T}$ 微分，導數就是函數本身除以 $V_T$，所以 $g_m = I_C / V_T$（講義第 30 頁）。講義第 34 頁特別強調 $g_m$ 是集極電流的函數，不是基極電流的函數；$\beta$ 只影響 $I_B$ 與 $r_\pi$，不出現在 $g_m$ 裡。第二項是最常見的混淆：$\beta$ 叫「電流增益」，但電壓放大器的增益 $-g_m R_C$ 跟 $\beta$ 無關。
+
+**考的觀念**：$g_m$ 是 $I_C$–$V_{BE}$ 曲線的斜率，由偏壓電流決定。
+:::
+
+#### 選擇題 7
+
+> 同一顆電晶體，把集極偏壓電流從 1 mA 提高到 2 mA。小訊號輸入電阻 $r_\pi$ 怎麼變？
+> :en[For the same transistor, the collector bias current is raised from 1 mA to 2 mA. How does the small-signal input resistance $r_\pi$ change?]
+
+:::choices{answer="A"}
+- 減半，因為 $r_\pi = \beta V_T / I_C$ :en[It halves, because $r_\pi = \beta V_T / I_C$]
+- 加倍，因為 $r_\pi = \beta / g_m$ 而 $g_m$ 變大 :en[It doubles, because $r_\pi = \beta / g_m$ and $g_m$ increases]
+- 不變，因為 $r_\pi$ 只由 $\beta$ 決定 :en[It stays the same, because $r_\pi$ depends only on $\beta$]
+- 變為四分之一，因為 $g_m$ 與 $I_C$ 都加倍 :en[It drops to one quarter, because both $g_m$ and $I_C$ double]
+:::
+
+:::tip{collapsible title="詳解"}
+$r_\pi = \beta / g_m = \beta V_T / I_C$（講義第 36 頁）。$I_C$ 加倍、$g_m$ 加倍、$r_\pi$ 減半。第二項把分數讀反了：$g_m$ 變大是讓 $r_\pi$ 變小，不是變大。第三項忽略了 $g_m$ 本身隨 $I_C$ 變；$\beta$ 只是分子。
+
+**考的觀念**：偏壓電流越大，輸入端越「容易被推動」（$r_\pi$ 越小）。
+:::
+
+#### 選擇題 8
+
+> 畫小訊號等效電路時，直流電源 $V_{CC}$ 應該怎麼處理？
+> :en[When drawing the small-signal equivalent circuit, how should the DC supply $V_{CC}$ be treated?]
+
+:::choices{answer="C"}
+- 保留為電壓源，因為它提供集極電流 :en[Keep it as a voltage source, since it supplies the collector current]
+- 換成一顆電阻，代表電源的內阻 :en[Replace it with a resistor representing the supply's internal resistance]
+- 當成接地，因為直流電源的變化量為零 :en[Treat it as ground, because a DC supply has zero variation]
+- 換成開路，因為小訊號分析不考慮直流 :en[Replace it with an open circuit, since small-signal analysis ignores DC]
+:::
+
+:::tip{collapsible title="詳解"}
+小訊號模型只處理「變化量」，定值電壓源的變化量是零，零電壓差就是短路到地，所以 $V_{CC}$ 節點在小訊號圖裡是地（交流接地，講義第 64 頁 Example 4-20）。接在 $V_{CC}$ 上的 $R_C$ 因此變成接地的電阻，與 $r_o$ 並聯。第四項最常被誤選：「不考慮直流」的意思是直流分量被拿掉，節點仍存在且電位固定，是短路不是開路；若當成開路，$R_C$ 就懸空了。
+
+**考的觀念**：定值電源在小訊號下是地。
+:::
+
+#### 選擇題 9
+
+> 爾利效應讓集極電流隨 $V_{CE}$ 微幅上升。它的直接成因是什麼？
+> :en[The Early effect makes the collector current rise slightly with $V_{CE}$. What is its direct cause?]
+
+:::choices{answer="B"}
+- $V_{CE}$ 升高使射極注入的電子變多 :en[A higher $V_{CE}$ makes the emitter inject more electrons]
+- $V_{CE}$ 升高使 B–C 空乏區擴張、有效基極變薄 :en[A higher $V_{CE}$ widens the B–C depletion region and thins the effective base]
+- $V_{CE}$ 升高使 B–C 接面轉為順偏、多了一條電流路徑 :en[A higher $V_{CE}$ forward-biases the B–C junction, adding a current path]
+- $V_{CE}$ 升高使基極電流增加、經 $\beta$ 放大後集極電流跟著增加 :en[A higher $V_{CE}$ raises the base current, which $\beta$ amplifies into more collector current]
+:::
+
+:::tip{collapsible title="詳解"}
+逆偏越大、空乏區越寬，B–C 空乏區往基極吃進去，基極內濃度斜線的兩端高度不變、距離變短，斜率變陡，擴散電流變大（講義第 42 頁）。射極注入量由 $V_{BE}$ 決定，與 $V_{CE}$ 無關，第一項錯。第三項描述的是飽和區，$V_{CE}$ 是「降低」才會順偏 B–C 接面，方向相反。第四項錯在基極電流在爾利效應下不變（第 45 頁）。
+
+**考的觀念**：爾利效應＝基極寬度被空乏區調變。
+:::
+
+#### 選擇題 10
+
+> 考慮爾利效應後，電阻負載放大器的增益上限是 $g_m r_o$。把偏壓電流 $I_C$ 提高一倍，這個上限會怎麼變？
+> :en[With the Early effect included, the gain of a resistively loaded amplifier is bounded by $g_m r_o$. If the bias current $I_C$ is doubled, how does this bound change?]
+
+:::choices{answer="D"}
+- 加倍，因為 $g_m$ 正比於 $I_C$ :en[It doubles, because $g_m$ is proportional to $I_C$]
+- 減半，因為 $r_o$ 反比於 $I_C$ :en[It halves, because $r_o$ is inversely proportional to $I_C$]
+- 增為 4 倍，因為 $g_m$ 與 $r_o$ 都變大 :en[It quadruples, because both $g_m$ and $r_o$ increase]
+- 不變，因為 $g_m r_o = V_A / V_T$ 與 $I_C$ 無關 :en[It is unchanged, because $g_m r_o = V_A / V_T$ does not depend on $I_C$]
+:::
+
+:::tip{collapsible title="詳解"}
+$g_m = I_C / V_T$ 隨 $I_C$ 變大，$r_o = V_A / I_C$ 等比例變小，相乘後 $I_C$ 消掉，剩下由製程（$V_A$）與溫度（$V_T$）決定的常數（由講義第 43、46 頁相乘推得，Example 4-14 的數字約 577）。第一、二項各只看到一半；第三項錯在 $r_o$ 是變小不是變大。偏壓電流加大能提高 $g_m$，但同時壓低 $r_o$，本質增益不會跟著變。
+
+**考的觀念**：本質增益 $V_A / V_T$ 是製程天花板，偏壓改不了。
+:::
+
+#### 選擇題 11
+
+> 集極電壓降到比基極電壓低很多，電晶體進入飽和區。下列哪一項正確描述此時的電流？
+> :en[The collector voltage drops well below the base voltage and the transistor enters saturation. Which statement correctly describes the currents?]
+
+:::choices{answer="A"}
+- 基極電流增加、淨集極電流反而下降，$\beta_{forced} < \beta$ :en[The base current rises while the net collector current falls, so $\beta_{forced} < \beta$]
+- 集極電流繼續隨 $V_{BE}$ 指數增加，只是速度變慢 :en[The collector current keeps rising exponentially with $V_{BE}$, only more slowly]
+- 集極電流降為零，電晶體等於斷開的開關 :en[The collector current drops to zero and the transistor acts as an open switch]
+- 基極電流不變，集極電流被 $V_{CE}$ 鉗制在固定值 :en[The base current is unchanged while the collector current is clamped by $V_{CE}$]
+:::
+
+:::tip{collapsible title="詳解"}
+B–C 接面順偏後像第二顆二極體從基極抽電流 $I_{BC}$：$I_B$ 多了這一項，$I_C$ 被扣掉這一項，所以 $\beta_{forced} = I_C / I_B < \beta$（講義第 49–50 頁）。第三項描述的是截止區，飽和區的集極電流不是零而是「比主動區少一塊」，電晶體是閉合的開關。第四項錯在基極電流會明顯增加；「集極電流對基極電流不再敏感」才是「飽和」這個名字的由來（第 51 頁）。
+
+**考的觀念**：飽和區＝B–C 接面也順偏，基極電流暴增、$\beta$ 下降。
+:::
+
+#### 選擇題 12
+
+> PNP 電晶體的小訊號模型與 NPN 的小訊號模型關係為何？
+> :en[How is the small-signal model of a PNP transistor related to that of an NPN?]
+
+:::choices{answer="C"}
+- 受控源方向相反，其餘相同 :en[The controlled source points the other way; everything else is the same]
+- $r_\pi$ 與 $r_o$ 互換位置，受控源相同 :en[$r_\pi$ and $r_o$ swap places while the controlled source is the same]
+- 完全相同，電流方向已由 $v_\pi$ 的正負號處理 :en[They are identical; the current direction is handled by the sign of $v_\pi$]
+- 公式相同，但 $g_m$ 要改用 $I_E$ 計算 :en[The formulas are the same, but $g_m$ must be computed from $I_E$]
+:::
+
+:::tip{collapsible title="詳解"}
+講義第 58 頁特別強調 PNP 的小訊號模型與 NPN「完全相同，這不是筆誤」：小訊號只看變化量，極性藏在 $v_\pi = \Delta V_{BE}$ 的正負號裡，受控源 $g_m v_\pi$ 自然跟著反向，不需要另外翻轉。第一項是最誘人的錯誤，它把大訊號模型裡「電流箭頭反向」的直覺硬套到小訊號上。第四項錯在 $g_m = I_C / V_T$ 對兩種電晶體都一樣。
+
+**考的觀念**：小訊號模型不分 NPN／PNP。
+:::
+
+### 概念辨析題
+
+#### 複習題 1
+
+> 主動區為什麼需要「B–E 順偏、B–C 逆偏」這組看似矛盾的條件？兩個接面各自負責什麼？
+> :en[Why does the active region require the seemingly contradictory pair "B–E forward-biased, B–C reverse-biased"? What is each junction responsible for?]
+
+**考的觀念**：主動區的兩個接面分工。
+
+**詳解**：順偏的 B–E 接面負責「注入」：射極的電子濃度跨過降低後的障壁進入基極，邊界濃度被 Boltzmann 因子抬高為 $N_E e^{-(V_0 - V_{BE})/V_T}$。逆偏的 B–C 接面負責「收集」：它的空乏區電場把任何擴散到邊界的電子立刻掃進集極，使邊界濃度維持在接近零。兩端一高一低，基極裡才有一條濃度斜線、才有擴散電流。若 B–C 也順偏，集極端的濃度被抬高、斜線變平，而且 B–C 接面自己開始注入，這就是飽和區。
+
+#### 複習題 2
+
+> $\beta$ 叫「電流增益」，為什麼用 $V_{BE}$ 偏壓的電路設計上反而要「不依賴 $\beta$」？
+> :en[$\beta$ is called the current gain. Why should a circuit biased through $V_{BE}$ be designed so that it does not depend on $\beta$?]
+
+**考的觀念**：集極電流由 $V_{BE}$ 決定，$\beta$ 只決定基極電流。
+
+**詳解**：集極電流 $I_C = I_S e^{V_{BE}/V_T}$ 裡沒有 $\beta$；$\beta$ 只回答「維持這股集極電流要從基極補多少電洞」，即 $I_B = I_C / \beta$。製程讓同型號的 $\beta$ 在 50 到 200 之間變動（講義第 20、23 頁），若設計把 $\beta$ 當成已知常數（例如用電流源驅動基極、靠 $I_C = \beta I_B$ 決定集極電流），換一顆元件結果就差四倍。把偏壓點綁在 $V_{BE}$ 上，$\beta$ 的變動只會反映在基極電流與輸入電阻 $r_\pi$，集極電流與 $g_m$ 都不動。
+
+#### 複習題 3
+
+> $g_m$ 與 $\beta$ 都是「增益」。對電阻負載的電壓放大器而言，哪一個真正決定增益？另一個在模型裡扮演什麼角色？
+> :en[Both $g_m$ and $\beta$ are "gains." For a resistively loaded voltage amplifier, which one actually sets the gain? What role does the other play in the model?]
+
+**考的觀念**：轉導決定電壓增益，$\beta$ 決定輸入電阻。
+
+**詳解**：電壓增益 $A_V = -g_m R_C$（或含 $r_o$ 的 $-g_m (R_C \parallel r_o)$），只看 $g_m = I_C / V_T$ 與負載。$\beta$ 出現在 $r_\pi = \beta / g_m$：它決定同樣的 $v_\pi$ 要從訊號源抽多少電流，也就是放大器對前一級的負載效應。講義第 34 頁因此說 $g_m$ 「本質上是集極電流的函數而不是基極電流的函數」。直覺上「$\beta$ 越大放大越多」只在「基極被電流源驅動」時成立；麥克風這種電壓源驅動的情況（Example 4-10、4-11），$\beta$ 再大，$v_{out}$ 也只由 $g_m R_C$ 決定。
+
+#### 複習題 4
+
+> 爾利效應為什麼在計算直流偏壓點時幾乎可以忽略，卻決定了放大器增益的上限？
+> :en[Why can the Early effect almost be ignored when computing the DC bias point, yet it sets the upper bound on amplifier gain?]
+
+**考的觀念**：同一個修正因子，在大訊號與小訊號裡的影響量級不同。
+
+**詳解**：大訊號裡修正因子是 $(1 + V_{CE}/V_A)$，$V_{CE}$ 幾伏特、$V_A$ 幾十伏特，差個幾個百分點；反解 $V_{BE}$ 時進到對數裡，Example 4-13 算出只差 2 mV。小訊號看的是「$I_C$ 對 $V_{CE}$ 的斜率」，忽略爾利效應時斜率是零、$r_o$ 無限大，考慮之後 $r_o = V_A / I_C$ 是有限值。增益 $-g_m (R_C \parallel r_o)$ 隨 $R_C$ 增大最後被 $r_o$ 封頂在 $g_m r_o = V_A / V_T$。偏壓點問的是「值」，爾利效應改得很少；增益問的是「斜率」，從零變成有限就是質變。
+
+#### 複習題 5
+
+> 「飽和」這個名字從哪裡來？為什麼 $V_{BC} < 400\ \text{mV}$ 的軟飽和可以容忍，深飽和卻不行？
+> :en[Where does the name "saturation" come from? Why is soft saturation with $V_{BC} < 400\ \text{mV}$ tolerable while deep saturation is not?]
+
+**考的觀念**：軟飽和與深飽和的分界。
+
+**詳解**：進入飽和後，再增加基極電流，集極電流也幾乎不變——輸出「飽和」了，名字由此而來（講義第 51 頁）。B–C 接面剛順偏時（$V_{BC} < 400\ \text{mV}$），這顆接面的電流 $I_{S2} e^{V_{BC}/V_T}$ 與主電流相比仍可忽略，集極電流幾乎還是 $I_S e^{V_{BE}/V_T}$，所以經驗法則允許軟飽和，前提是元件誤差不能把工作點再推進去。深飽和時 B–C 接面完全導通，$V_{CE}$ 被鉗制在約 200 mV、電晶體失去電壓控制電流的能力，而且 $\beta$ 下降、速度變慢，放大功能消失，只剩閉合的開關。
+
+### 計算題
+
+#### 計算題 1
+
+> 兩顆相同的電晶體都在主動區，要讓 $I_{C1} = 4\, I_{C2}$，兩者的 $V_{BE}$ 要差多少？取 $V_T = 26\ \text{mV}$。
+> :en[Two identical transistors operate in the active region. What $V_{BE}$ difference makes $I_{C1} = 4\, I_{C2}$? Take $V_T = 26\ \text{mV}$.]
+
+**考的觀念**：集極電流比值只取決於 $V_{BE}$ 差。
+
+**詳解**：兩顆的 $I_S$ 相同，相除時消掉：
+
+$$
+\begin{aligned}
+\frac{I_{C1}}{I_{C2}} &= e^{\frac{V_{BE1} - V_{BE2}}{V_T}} = 4\\
+V_{BE1} - V_{BE2} &= V_T \ln 4 = 26\ \text{mV}\times1.386 \approx 36\ \text{mV}.
+\end{aligned}
+$$
+
+電流差四倍只需要 36 mV；差十倍是 60 mV（講義第 14 頁 Example 4-3）。本題沿用 Example 4-3 的結構，比值改為 4。
+
+#### 計算題 2
+
+> 電晶體 $I_S = 5\times10^{-17}\ \text{A}$、$\beta = 100$，基極接 $800\ \text{mV}$，集極經 $R_C = 800\ \Omega$ 接 $V_{CC} = 2.5\ \text{V}$。(a) 求 $I_C$、$I_B$ 與集極電壓，並驗證在主動區；(b) 求能維持主動區的最大 $R_C$。
+> :en[A transistor with $I_S = 5\times10^{-17}\ \text{A}$ and $\beta = 100$ has its base at $800\ \text{mV}$ and its collector connected through $R_C = 800\ \Omega$ to $V_{CC} = 2.5\ \text{V}$. (a) Find $I_C$, $I_B$ and the collector voltage, and verify active-mode operation; (b) find the maximum $R_C$ that keeps the device in the active region.]
+
+**考的觀念**：大訊號模型算偏壓點、集極電阻的上限。
+
+**詳解**：(a) 先算電流，再用 KVL 算集極電壓：
+
+$$
+\begin{aligned}
+I_C &= 5\times10^{-17}\ \text{A}\times e^{800/26} = 1.153\ \text{mA},\qquad I_B = \frac{I_C}{\beta} = 11.5\ \mu\text{A}\\
+V_X &= V_{CC} - I_C R_C = 2.5\ \text{V} - 1.153\ \text{mA}\times800\ \Omega = 1.578\ \text{V}\\
+V_{CB} &= V_X - V_B = 1.578 - 0.800 = 0.778\ \text{V} > 0 .
+\end{aligned}
+$$
+
+集極高於基極，B–C 逆偏，主動區成立。(b) 集極電壓降到 $V_{BE}$ 時到達主動區邊緣：
+
+$$
+R_{C,max} = \frac{V_{CC} - V_{BE}}{I_C} = \frac{2.5 - 0.8}{1.153\ \text{mA}} \approx 1.47\ \text{k}\Omega .
+$$
+
+本題沿用講義第 25–27 頁 Example 4-7 的結構，$R_C$ 與 $V_{CC}$ 改為自編數字。
+
+#### 計算題 3
+
+> 電晶體偏壓在 $I_C = 0.5\ \text{mA}$，$\beta = 120$、$V_A = 12\ \text{V}$、$V_T = 26\ \text{mV}$。求小訊號參數 $g_m$、$r_\pi$、$r_o$，以及本質增益 $g_m r_o$。
+> :en[A transistor is biased at $I_C = 0.5\ \text{mA}$ with $\beta = 120$, $V_A = 12\ \text{V}$ and $V_T = 26\ \text{mV}$. Find the small-signal parameters $g_m$, $r_\pi$, $r_o$ and the intrinsic gain $g_m r_o$.]
+
+**考的觀念**：三個小訊號參數都由偏壓電流決定。
+
+**詳解**：
+
+$$
+\begin{aligned}
+g_m &= \frac{I_C}{V_T} = \frac{0.5\ \text{mA}}{26\ \text{mV}} \approx 19.2\ \text{mS}\\
+r_\pi &= \frac{\beta}{g_m} = \frac{120}{19.2\ \text{mS}} \approx 6.24\ \text{k}\Omega\\
+r_o &= \frac{V_A}{I_C} = \frac{12\ \text{V}}{0.5\ \text{mA}} = 24\ \text{k}\Omega\\
+g_m r_o &= \frac{V_A}{V_T} = \frac{12\ \text{V}}{26\ \text{mV}} \approx 462 .
+\end{aligned}
+$$
+
+因次檢查：mA/mV 是 S；無因次的 $\beta$ 除以 S 得 $\Omega$；V/mA 得 k$\Omega$；S 乘 $\Omega$ 無因次。本題沿用講義第 47 頁 Example 4-14 的結構，數字自編。
+
+#### 計算題 4
+
+> 麥克風訊號 $v_1$ 串在 $780\ \text{mV}$ 的基極偏壓上，電晶體 $I_S = 3\times10^{-16}\ \text{A}$、$\beta = 100$，集極經 $R_C = 150\ \Omega$ 接 $V_{CC} = 2\ \text{V}$。(a) 驗證在主動區；(b) 求小訊號電壓增益。
+> :en[A microphone signal $v_1$ is in series with a $780\ \text{mV}$ base bias. The transistor has $I_S = 3\times10^{-16}\ \text{A}$ and $\beta = 100$, and the collector is connected through $R_C = 150\ \Omega$ to $V_{CC} = 2\ \text{V}$. (a) Verify active-mode operation; (b) find the small-signal voltage gain.]
+
+**考的觀念**：先驗證工作區，再套 $A_V = -g_m R_C$。
+
+**詳解**：(a) 偏壓點：
+
+$$
+\begin{aligned}
+I_C &= 3\times10^{-16}\ \text{A}\times e^{780/26} = 3\times10^{-16}\times e^{30} \approx 3.21\ \text{mA}\\
+V_{out} &= V_{CC} - I_C R_C = 2 - 3.21\ \text{mA}\times150\ \Omega = 1.52\ \text{V} > 0.78\ \text{V}.
+\end{aligned}
+$$
+
+集極高於基極，B–C 逆偏，主動區成立。(b) 增益：
+
+$$
+\begin{aligned}
+g_m &= \frac{3.21\ \text{mA}}{26\ \text{mV}} \approx 123\ \text{mS}\\
+A_V &= -g_m R_C = -123\ \text{mS}\times150\ \Omega \approx -18.5 .
+\end{aligned}
+$$
+
+本題沿用講義第 40–41 頁 Example 4-11 的結構，$V_{BE}$、$R_C$、$V_{CC}$ 改為自編數字。
+
+#### 計算題 5
+
+> 電晶體 $I_S = 5\times10^{-16}\ \text{A}$，基極固定在 $750\ \text{mV}$，集極經 $R_C = 1\ \text{k}\Omega$ 接電源。(a) 依軟飽和判準（$V_{BC} \le 400\ \text{mV}$），電源 $V_{CC}$ 至少要多少？(b) 若 $V_{CC} = 3\ \text{V}$，$R_C$ 最大可以到多少？
+> :en[A transistor with $I_S = 5\times10^{-16}\ \text{A}$ has its base fixed at $750\ \text{mV}$ and its collector connected through $R_C = 1\ \text{k}\Omega$ to the supply. (a) Using the soft-saturation criterion ($V_{BC} \le 400\ \text{mV}$), what is the minimum $V_{CC}$? (b) If $V_{CC} = 3\ \text{V}$, what is the largest allowable $R_C$?]
+
+**考的觀念**：軟飽和判準化成 $V_{CC}$ 與 $R_C$ 的直線關係。
+
+**詳解**：軟飽和時集極電流仍是 $I_S e^{V_{BE}/V_T} = 5\times10^{-16}\times e^{750/26} \approx 1.69\ \text{mA}$（講義第 17 頁 Example 4-5 的數字）。判準 $V_{CE} \ge V_{BE} - 400\ \text{mV} = 0.35\ \text{V}$：
+
+$$
+\begin{aligned}
+\text{(a)}\quad V_{CC} &\ge I_C R_C + (V_{BE} - 0.4\ \text{V}) = 1.69\ \text{mA}\times1\ \text{k}\Omega + 0.35\ \text{V} = 2.04\ \text{V}\\
+\text{(b)}\quad R_{C,max} &= \frac{V_{CC} - 0.35\ \text{V}}{I_C} = \frac{3 - 0.35}{1.69\ \text{mA}} \approx 1.57\ \text{k}\Omega .
+\end{aligned}
+$$
+
+本題沿用講義第 52–53 頁 Example 4-16 的結構，數字取自 Example 4-5 並自編電源與電阻值。
