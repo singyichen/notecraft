@@ -249,16 +249,22 @@ for i, vcc in enumerate(VCCS):
         cl = get_column_letter(base + 1)
         put(ws, r, base, None, fill=FILL_IN, fmt='0.000')
         put(ws, r, base + 1, None, fill=FILL_IN, fmt='0.000')
-        put(ws, r, base + 2, f'=IF({cl}{r}="","",{cl}{r}/$B$4*1000)', fmt='0.000')
+        cv = get_column_letter(base)        # 實測 V_CE
+        put(ws, r, base + 2,
+            f'=IF({cl}{r}<>"",{cl}{r}/$B$4*1000,'
+            f'IF({cv}{r}<>"",($A{r}-{cv}{r})/$B$4*1000,""))', fmt='0.000')
         put(ws, r, base + 3, round(EXP1[k]['vce'][i], 4), font=BLUE, fmt='0.000')
         put(ws, r, base + 4, round(EXP1[k]['ic'][i], 4), font=BLUE, fmt='0.000')
 RN = R0 + len(VCCS) - 1
 ws.cell(row=HROW - 1, column=2,
         value='↓ 各組標題列右邊兩個黃格：左邊填該組量到的 V_BE、右邊填 ON 或 OFF（對應講義 Table 1 的區塊標題）').font = NOTE
 ws.cell(row=RN + 2, column=1,
-        value='V_RC 是集極電阻兩端的壓降（量 V_CC 對集極），I_C 由它換算；'
-              'V_CE 是集極對射極（本電路射極接地，等於集極對地）。兩欄都量，結報才有互相驗證的資料。').font = NOTE
-nxt = checklist(ws, RN + 4, [
+        value='I_C 的分子必須是「集極電阻兩端的壓降」V_RC，不是集極對地電位。'
+              '本電路射極接地，所以 V_CE 就是集極對地電位，兩者的關係是 V_RC = V_CC − V_CE。').font = NOTE
+ws.cell(row=RN + 3, column=1,
+        value='因此兩欄只要量一欄就夠：I_C 欄會優先用 V_RC；沒填 V_RC 時自動改用 (V_CC − V_CE) / R_C。'
+              '兩欄都量的好處是可以當場對帳——V_CE + V_RC 應該等於 V_CC，對不起來就是有一次量錯了。').font = NOTE
+nxt = checklist(ws, RN + 5, [
     ('麵包板全景照 1 張', '看得出 R1／R2／RC 各插在第幾欄、電晶體三腳的 E／B／C 方向'),
     ('電表接線特寫 1 張', '左表跨 B-E、中表跨 C-E、右表串在 VCC 與 RC 之間'),
     ('兩台電源面板各 1 張', 'V_BB 與 V_CC 的設定值要和記錄表對得上'),
