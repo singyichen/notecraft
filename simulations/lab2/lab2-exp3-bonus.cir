@@ -1,0 +1,22 @@
+* Lab 2 第二部分 Bonus：設計 Av = 20。固定 RC1 100 Ω、RL1 10k、RE1 1k，掃旁路電容 C3（1 µF 在 10 kHz 的電抗 16 Ω 與 1/gm 同量級，是增益只有 5.5 的主因）
+.param C3=1u RC=100
+V1 vcc 0 DC 12
+Vs s 0 SIN(0 0.05 10k)
+RS1 s sin 100
+C1 sin b 1u
+R1 vcc b 10k
+R2 b 0 10k
+RC1 vcc c {RC}
+Q1 c b e 2N2222
+RE1 e 0 1k
+C3 e 0 {C3}
+C2 c out 1u
+RL1 out 0 10k
+.model 2N2222 NPN(IS=1E-14 VAF=100
++   BF=200 IKF=0.3 XTB=1.5 BR=3
++   CJC=8E-12 CJE=25E-12 TR=100E-9 TF=400E-12
++   ITF=1 VTF=2 XTF=3 RB=10 RC=.3 RE=.2 Vceo=30 Icrating=800m  mfg=NXP)
+.step param C3 list 1u 10u 47u 100u
+.step param RC list 100 120 150
+.tran 0 3m 2.5m 0.2u
+.end

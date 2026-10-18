@@ -1,0 +1,24 @@
+* Lab 2 第二部分：CE 放大器（講義未給電阻值，此組是把元件表 100Ω×2、1kΩ×1、10kΩ×3、1µF×3 剛好用完的唯一組合）
+* R1 10k、R2 10k、RC1 100Ω、RE1 1kΩ、RL1 10k、RS1 100Ω、C1=C2=C3 1µF、VCC 12 V、Vs 10 kHz 50 mV 峰值（增益約 20）
+* .step：RC 100Ω／1kΩ（講義問題 3）× C3 有／無（講義問題 1）
+.param RC=100 C3=1u
+V1 vcc 0 DC 12
+Vs s 0 SIN(0 0.05 10k)
+RS1 s sin 100
+C1 sin b 1u
+R1 vcc b 10k
+R2 b 0 10k
+RC1 vcc c {RC}
+Q1 c b e 2N2222
+RE1 e 0 1k
+C3 e 0 {C3}
+C2 c out 1u
+RL1 out 0 10k
+.model 2N2222 NPN(IS=1E-14 VAF=100
++   BF=200 IKF=0.3 XTB=1.5 BR=3
++   CJC=8E-12 CJE=25E-12 TR=100E-9 TF=400E-12
++   ITF=1 VTF=2 XTF=3 RB=10 RC=.3 RE=.2 Vceo=30 Icrating=800m  mfg=NXP)
+.step param RC list 100 1k
+.step param C3 list 1u 1p
+.tran 0 3m 2.5m 0.2u
+.end

@@ -1,0 +1,15 @@
+* Lab 2 實驗一：分壓偏壓 BJT 輸出特性曲線族（VBB 1.5/2/2.2/2.4 V、VCC 0→15 V、R1 10k、R2 4.7k、RC 1k、2N2222）
+.param VBB=2.4
+VBB bb 0 DC {VBB}
+VCC cc 0 DC 0
+R1 bb b 10k
+R2 b 0 4.7k
+RC cc c 1k
+Q1 c b 0 2N2222
+.model 2N2222 NPN(IS=1E-14 VAF=100
++   BF=200 IKF=0.3 XTB=1.5 BR=3
++   CJC=8E-12 CJE=25E-12 TR=100E-9 TF=400E-12
++   ITF=1 VTF=2 XTF=3 RB=10 RC=.3 RE=.2 Vceo=30 Icrating=800m  mfg=NXP)
+.step param VBB list 1.5 2 2.2 2.4
+.dc VCC 0 15 0.05
+.end

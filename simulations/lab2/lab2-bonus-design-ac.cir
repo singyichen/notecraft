@@ -1,0 +1,24 @@
+* Lab 2 第二部分 Bonus：A_v = 20 的設計驗證（C3 固定 100 µF，掃 RC1 找標準值）
+* 只有加大 C3 最多到 |Av| ≈ 16.6（受 RS1 100 Ω 與輸入阻抗分壓所限），所以 RC1 也要一起調
+.param RCX=100
+V1 vcc 0 DC 12
+Vs s 0 AC 1
+RS1 s sin 100
+C1 sin b 1u
+R1 vcc b 10k
+R2 b 0 10k
+RC1 vcc c {RCX}
+Q1 c b e 2N2222
+RE1 e 0 1k
+C3 e 0 100u
+C2 c out 1u
+RL1 out 0 10k
+.model 2N2222 NPN(IS=1E-14 VAF=100
++   BF=200 IKF=0.3 XTB=1.5 BR=3
++   CJC=8E-12 CJE=25E-12 TR=100E-9 TF=400E-12
++   ITF=1 VTF=2 XTF=3 RB=10 RC=.3 RE=.2 Vceo=30 Icrating=800m  mfg=NXP)
+.step param RCX list 100 110 120 130 150 180 220
+.ac dec 50 100 1Meg
+.meas AC avs FIND mag(V(out)) AT 10k
+.meas AC avb FIND mag(V(out)/V(b)) AT 10k
+.end

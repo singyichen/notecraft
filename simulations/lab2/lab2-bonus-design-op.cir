@@ -1,0 +1,18 @@
+* Lab 2 第二部分 Bonus 定案設計的直流工作點（RC1 120 Ω、RE1 1 kΩ、R1 = R2 = 10 kΩ、VCC 12 V）
+V1 vcc 0 DC 12
+RS1 s sin 100
+Vs s 0 DC 0
+C1 sin b 1u
+R1 vcc b 10k
+R2 b 0 10k
+RC1 vcc c 120
+Q1 c b e 2N2222
+RE1 e 0 1k
+C2 c out 1u
+RL1 out 0 10k
+.model 2N2222 NPN(IS=1E-14 VAF=100
++   BF=200 IKF=0.3 XTB=1.5 BR=3
++   CJC=8E-12 CJE=25E-12 TR=100E-9 TF=400E-12
++   ITF=1 VTF=2 XTF=3 RB=10 RC=.3 RE=.2 Vceo=30 Icrating=800m  mfg=NXP)
+.op
+.end

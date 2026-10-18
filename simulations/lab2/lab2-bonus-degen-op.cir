@@ -1,0 +1,21 @@
+* Lab 2 Bonus 定案（穩健版）：RC1 620 Ω、RE1a 22 Ω（未旁路）、RE1b 1 kΩ（被 C3 100 µF 旁路）
+* |Av| ≈ 20，且在講義的 100 mVpp 輸入下仍未失真；時域與工作點驗證
+V1 vcc 0 DC 12
+Vs s 0 DC 0
+RS1 s sin 100
+C1 sin b 1u
+R1 vcc b 10k
+R2 b 0 10k
+RC1 vcc c 620
+Q1 c b e 2N2222
+RE1a e ea 22
+RE1b ea 0 1k
+C3 ea 0 100u
+C2 c out 1u
+RL1 out 0 10k
+.model 2N2222 NPN(IS=1E-14 VAF=100
++   BF=200 IKF=0.3 XTB=1.5 BR=3
++   CJC=8E-12 CJE=25E-12 TR=100E-9 TF=400E-12
++   ITF=1 VTF=2 XTF=3 RB=10 RC=.3 RE=.2 Vceo=30 Icrating=800m  mfg=NXP)
+.op
+.end

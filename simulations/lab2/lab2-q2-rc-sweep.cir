@@ -1,0 +1,16 @@
+* Lab 2 講義問題 2：原電路（VBB = VCC = 15 V、R1 10k、R2 4.7k）要讓 VC ≈ VCC/2 = 7.5 V，RC 要換成多少
+* 基極驅動不變（IB 由 R1／R2 決定），只掃 RC，找 V(c) 最接近 7.5 V 的那一顆
+.param RCX=1k
+VBB bb 0 DC 15
+VCC cc 0 DC 15
+R1 bb b 10k
+R2 b 0 4.7k
+RC cc c {RCX}
+Q1 c b 0 2N2222
+.model 2N2222 NPN(IS=1E-14 VAF=100
++   BF=200 IKF=0.3 XTB=1.5 BR=3
++   CJC=8E-12 CJE=25E-12 TR=100E-9 TF=400E-12
++   ITF=1 VTF=2 XTF=3 RB=10 RC=.3 RE=.2 Vceo=30 Icrating=800m  mfg=NXP)
+.step param RCX list 20 30 39 47 50 56 60 68 75 82 100 120 150 200 300 470 680 1k
+.op
+.end

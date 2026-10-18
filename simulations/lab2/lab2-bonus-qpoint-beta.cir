@@ -1,0 +1,15 @@
+* Lab 2 第一部分 Bonus 定案（Re = 4.7 kΩ）對 β 的敏感度：BF 50／100／200
+.param BFX=100
+VCC cc 0 DC 15
+R1 cc b 10k
+R2 b 0 4.7k
+RC cc c 3.9k
+RE e 0 4.7k
+Q1 c b e 2N2222
+.model 2N2222 NPN(IS=1E-14 VAF=100
++   BF={BFX} IKF=0.3 XTB=1.5 BR=3
++   CJC=8E-12 CJE=25E-12 TR=100E-9 TF=400E-12
++   ITF=1 VTF=2 XTF=3 RB=10 RC=.3 RE=.2 Vceo=30 Icrating=800m  mfg=NXP)
+.step param BFX list 50 100 200
+.op
+.end

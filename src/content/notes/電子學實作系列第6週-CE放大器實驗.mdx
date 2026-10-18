@@ -1,10 +1,12 @@
 ---
 title: "電子學實作系列：第 6 週 - CE 放大器實驗"
-description: ""
+description: "Lab 2 BJT 實驗的講義詳解與執行手冊：第一部分（分壓偏壓的輸出特性曲線、電流增益 β）與第二部分（共射放大器的電壓增益）各附講義目標／理論／問題詳解、CircuitJS 一鍵模擬連結、Tinkercad 接線配方與電流分析圖、LTspice 真實 2N2222 預報值、實驗室記錄表與檢查點；並收錄六個講義問題與兩個 Bonus 的完整推導（$R_C$ 換算、理想 Q 點設計、$A_v = 20$ 的設計），以及 CE 放大器的小訊號模型與三顆電容的作用。"
 tags: ["電子學實作系列"]
 createdAt: "2026-10-17"
-updatedAt: "2026-10-17"
+updatedAt: "2026-10-18"
 ---
+
+import PdfRefChip from '@/components/islands/PdfRefChip.tsx'
 
 # 第 6 週：CE 放大器實驗
 
@@ -142,3 +144,968 @@ caption: 增益與擺幅不可兼得：集極電阻換來增益，也換走了�
 - 5.2 工作點分析與設計：為何必須偏壓、直流分析與小訊號分析的兩階段流程、幾種壞偏壓的失敗原因、基極電阻偏壓、電阻分壓偏壓、射極退化偏壓、自偏壓、PNP 的偏壓
 - 5.3 雙極性放大器組態：共射級（含退化、含旁路電容、電流源負載）、共基級、射極隨耦器，各自的增益與輸入輸出阻抗
 - 5.4 綜合例題
+
+## Lab 2 實驗總覽
+
+### 這次實驗在解什麼
+
+第 4 週把 BJT 當成一顆「基極電流控制集極電流」的元件來讀，這次要親手驗證那條控制關係，並且踩一次它失效的地方。整份講義分成兩個部分，問的其實是同一件事的兩面：
+
+1. **把電晶體推到哪裡，它才聽話？** —— 分壓偏壓（voltage divider bias）能不能產生一個穩定的靜態工作點（quiescent operating point，簡稱 Q 點）。
+2. **聽話之後能放大多少？** —— 共射組態（common emitter）的電壓增益由什麼決定，以及哪些元件一拿掉就垮。
+
+講義標題寫的是「檢查分壓偏壓能不能產生穩定的 Q 點」，語氣中性，但這次實驗真正的戲劇性在於：**講義給的那組電阻值，會把電晶體推進飽和區**。$V_{CE}$ 只剩幾十毫伏，量到的電流增益只有十幾，和規格書上的一百多差了一個數量級。這不是接錯線，是刻意安排的反例——四個講義問題有三個都在問這件事的後果。
+
+### 兩個部分、三張記錄表
+
+| 部分 | 講義頁 | 要量什麼 | 記在哪 |
+| --- | --- | --- | --- |
+| 第一部分之一 | 第 7–8 頁 | 四組 $V_{BB}$ 各掃一輪 $V_{CC}$，記 $V_{CE}$ 與 $I_C$，畫輸出特性曲線 | Table 1 |
+| 第一部分之二 | 第 9–10 頁 | $V_{BB} = V_{CC} = 15\text{ V}$ 下量 $I_B$ 與 $I_C$，算電流增益 $\beta$ | Table 2 |
+| 第二部分 | 第 16–22 頁 | 共射放大器的直流工作點與四種組合的電壓增益 | 自己開一張 |
+
+三張表都做成 Excel 記錄簿了（見本頁最後的附錄），黃底格子是當天要填的，其他欄位是公式或 LTspice 預報值，填一列就會自己算誤差。
+
+### 器材清單
+
+| 類別 | 規格 | 第一部分 | 第二部分 |
+| --- | --- | --- | --- |
+| 電晶體 | 2N2222A | 1 | 1 |
+| 電阻 | 100 Ω（1/4 W） | — | 2 |
+| 電阻 | 1 kΩ（1/4 W） | 1 | 1 |
+| 電阻 | 4.7 kΩ（1/4 W） | 1 | — |
+| 電阻 | 10 kΩ（1/4 W） | 1 | 3 |
+| 電容 | 1 µF | — | 3 |
+| 直流電源 | GW Instek GPE-3323（高雄）／UTP-3305-II（新竹） | 1（要兩路輸出） | 1 |
+| 訊號源 | GW Instek AFG-2225 或 Keysight EDUX1052G | — | 1 |
+| 示波器 | Keysight EDUX1052G（高雄）／OSD-1102（新竹） | — | 1 |
+| 三用電表 | GW Instek GDM-532（高雄）／DHA DMM-93B+（新竹） | 1 | 1 |
+
+第一部分要同時供應 $V_{BB}$ 與 $V_{CC}$ 兩組電壓，所以電源供應器要用雙路輸出，**兩路的負端必須共接**（共地），否則兩個迴路各自浮接，量到的電壓沒有共同參考點。
+
+### 當天怎麼記數據
+
+三個工具的分工沿用第 3 週的規矩（[第 3 週：四個工具怎麼分工](/notes/電子學實作系列第3週-整流電路實驗)）：CircuitJS 看電流方向與波形形狀、Tinkercad 預演接線與儀器接法、LTspice 出可以進報告的預報值。這次要特別強調一件事：
+
+> **Tinkercad 的數值這次特別不準。** 它用的是通用 NPN 模型，電流增益比真的 2N2222A 高很多。同一個條件（$V_{BB} = 2.4\text{ V}$、$V_{CC} = 10\text{ V}$）Tinkercad 讀到 $I_C = 7.67\text{ mA}$，LTspice 的 2N2222 模型只有 $4.65\text{ mA}$，差了 65%。Tinkercad 只拿來確認接線與電表接法，**預報值一律以 LTspice 為準**。
+
+$I_C$ 的取得方式也要先講清楚。講義第 8 頁的表頭寫 $I_C\ (\text{measure})\ (=V_C / R_C)$，助教在投影片上補了一句「可用 C 端電阻的 $V_C/V_R$ 求得 $I_C$」，意思是：**不必把電流表串進集極迴路，量集極電阻兩端的壓降再除以電阻值就好**。
+
+$$
+I_C = \frac{V_{R_C}}{R_C} = \frac{V_{CC} - V_C}{R_C}
+$$
+
+只有實驗二為了和 $I_B$ 對照，才需要認真量一次電流。記錄簿裡兩種方法的欄位都留著，差異本身就是結報要討論的誤差來源。
+
+## 實驗一：BJT 偏壓與輸出特性曲線 BJT Biasing & Characteristic Curve
+
+{/* @ai-reference
+id: w6-lab2-exp1
+file: _references/電子學實作系列/第六週/App_Lab2.pdf
+page: 7
+status: suggested
+excerpt: Procedure 1. Set up the circuits. 2. By adjusting different VBB, the value of VBE can be determined.
+*/}
+<PdfRefChip file="_references/電子學實作系列/第六週/App_Lab2.pdf" page={7} status="suggested" excerpt={"Procedure 1. Set up the circuits. 2. By adjusting different VBB, the value of VBE can be determined (measured with a multimeter). 3. After fixing VBE, increase VCC to determine VCE. 4. Measure the current IC. 5. Plot the BJT characteristic curves. (Table1.)"} client:visible />
+
+### 先讀懂這張圖：每個符號在說什麼
+
+![講義 Fig 4：雙電源分壓偏壓電路，VBB 經 R1、R2 分壓給基極，VCC 經 RC 供應集極](/note-images/ec-week6-lab2/01-divider-bias-circuit-vbb-vcc.png)
+
+*講義的 Fig 4：左邊 $V_{BB}$ 這一路只負責「餵基極」，右邊 $V_{CC}$ 這一路只負責「供應集極」，兩路共用射極接地。*
+
+| 符號 | 是什麼 | 這次的值 | 為什麼放它 |
+| --- | --- | --- | --- |
+| $V_{BB}$ | 基極側電源 | 1.5／2／2.2／2.4 V | 四個值掃一輪，看電晶體從截止到導通 |
+| $R_1$ | 分壓上臂 | 10 kΩ | 和 $R_2$ 一起把 $V_{BB}$ 降到基極要的電壓 |
+| $R_2$ | 分壓下臂 | 4.7 kΩ | 同時也是基極電流的分流路徑 |
+| $V_{CC}$ | 集極側電源 | 0 → 15 V | 掃描用；每個值對應特性曲線上的一個點 |
+| $R_C$ | 集極電阻 | 1 kΩ | 把集極電流轉成看得見的壓降，也決定負載線斜率 |
+| $Q_1$ | 電晶體 | 2N2222A | NPN，射極接地 |
+
+這個電路有一個關鍵特徵要先指出來：**射極直接接地，中間沒有電阻**。第 6 週摘要裡講的射極退化（emitter degeneration）在這裡完全沒有，所以工作點對電晶體參數毫無抵抗力——這正是實驗要讓你看見的事。
+
+### 講義詳解（第 4–8 頁）
+
+**目標**（第 4 頁）
+
+- 檢查電阻分壓偏壓（voltage divider bias）這個接法，能不能產生一個穩定的靜態工作點。
+
+**理論重點**（第 5–6 頁）
+
+| 項目 | 講義說法 | 補一句 |
+| --- | --- | --- |
+| 射極（emitter） | 重摻雜 $n^{++}$，負責注入大量多數載子 | 摻雜濃度最高，所以電子來源充足 |
+| 基極（base） | 輕摻雜 $p^{+}$ 且很薄，控制通過的載子數量，本身電流很小 | 薄是為了讓電子來不及復合就衝過去 |
+| 集極（collector） | 中等摻雜 $n$，收集射極注入的載子 | 面積最大，負責把熱散掉 |
+| 共基極電流增益 $\alpha$ | $\alpha = I_C / I_E$，範圍 0.98–0.998 | 剩下那一點點就是在基極復合掉的 $I_B$ |
+| 共射極電流增益 $\beta$ | $\beta = I_C / I_B$，範圍 50–200 | 實驗二要量的就是它 |
+
+兩者的關係可以直接從 $I_E = I_C + I_B$ 推出來：
+
+$$
+\begin{aligned}
+\alpha &= \frac{I_C}{I_E} = \frac{I_C}{I_C + I_B} = \frac{\beta I_B}{\beta I_B + I_B} = \frac{\beta}{\beta + 1} \\[4pt]
+\beta &= \frac{\alpha}{1 - \alpha}
+\end{aligned}
+$$
+
+代一個數字感受一下：$\alpha = 0.99$ 對應 $\beta = 99$；$\alpha$ 只要從 0.99 升到 0.995，$\beta$ 就從 99 跳到 199。**$\alpha$ 的一點點差異會被放大成 $\beta$ 的巨大差異**，這也是為什麼同一型號的電晶體 $\beta$ 可以差一倍以上，而好的電路設計不能依賴 $\beta$ 的準確值。
+
+**操作步驟**（第 7 頁）
+
+1. 照 Fig 4 接好電路。
+2. 調整不同的 $V_{BB}$，用三用電表量出對應的 $V_{BE}$。
+3. $V_{BE}$ 固定之後，把 $V_{CC}$ 一路往上加，量每一步的 $V_{CE}$。
+4. 量集極電流 $I_C$。
+5. 把四組資料畫成 BJT 的輸出特性曲線（Table 1）。
+
+**量測格點**（第 8 頁，助教補充）
+
+![助教投影片：Table 1 的量測格點與紅字補充，VCC 從 0 每 0.5 V 加到 15 V](/note-images/ec-week6-lab2/12-ta-measurement-items-p3.png)
+
+*助教在 Table 1 上補的紅字：每組 $V_{BB}$ 都要記 $V_{BE}$ 與 ON／OFF 判定，$V_{CC}$ 從 0 V 每次加 0.5 V 一路到 15 V。*
+
+| 項目 | 講義規格 |
+| --- | --- |
+| $V_{BB}$ | 1.5 V、2 V、2.2 V、2.4 V 四組 |
+| $V_{CC}$ | 0、0.5、1、…、15 V（每組 31 個點） |
+| 元件 | 2N2222A、$R_1$ 10 kΩ、$R_2$ 4.7 kΩ、$R_C$ 1 kΩ |
+| 每組要記 | $V_{BE}$（一次）、ON／OFF 判定、每個 $V_{CC}$ 的 $V_{CE}$ 與 $I_C$ |
+
+講義原始表格只畫了五列，助教的級距是 31 點。**時間不夠時先把 2.2 V 與 2.4 V 兩組量完**，這兩組才看得出主動區的平坦段；1.5 V 那組全程截止（$I_C$ 幾乎為零），量五個點確認就夠了。
+
+### 先看懂：CircuitJS
+
+[實驗一：分壓偏壓與特性曲線（兩支滑桿）](https://www.falstad.com/circuit/circuitjs.html?ctz=CQAgjCAMB0l3BWcMBMcUHYMGZIA4UA2ATmIxAUgpABZsKBTAWjDACgA3EQmkbNbrzCEqo2lRTQUUGTARsAToPAiQaPCrFh4kRWvyb9G-mJoY4bAC5HDmacK2z9VACYMAZgEMArgBtLbADuahj2GIQh0iZQenbgNLxxPDLaFlw0cHwCGVTJplTaTnJBkco5yrrBydHqWaIltTWhdTHBcdHl0boA5jY1BtgI0vXYGmJU9ABqAELTUNDso9xOYEiTAMLr8-IA9tR5tChgxIQIEEgwEFQASusAXACSALwP62x79Ac0RyeU1JfgEAARTAdw2AFE2EA)
+
+- 畫面右邊有兩支滑桿：上面那支是 $V_{BB}$、下面那支是 $V_{CC}$。先把 $V_{CC}$ 拉到 15 V，再慢慢拖 $V_{BB}$。
+- 看電晶體三隻腳上的電流點：$V_{BB}$ 低於約 1.8 V 時集極那條線幾乎不動（截止）；過了之後集極電流開始明顯增加。
+- 再反過來固定 $V_{BB}$、拖 $V_{CC}$，注意集極電流在 $V_{CC}$ 很低時跟著變，**過了某個轉折點之後就幾乎不再變**——左邊那段是飽和區、右邊平坦那段是主動區。這個轉折就是特性曲線的膝部。
+- **模型限制**：CircuitJS 用的是通用 NPN 模型，導通電壓與 $\beta$ 都不是 2N2222A 的值，只看形狀與方向，不要抄數字。
+
+### 預演：Tinkercad 接線配方
+
+Tinkercad 設計檔：[Lab 2 Exp 1: BJT Biasing & Characteristic Curve](https://www.tinkercad.com/things/f1i0PdS6UlX)
+
+| 步驟 | 從 | 到 | 備註 |
+| --- | --- | --- | --- |
+| 1 | 電源 A 正端 | 麵包板上方 + 軌 | 這一路是 $V_{BB}$，設 2.4 V |
+| 2 | 電源 A 負端 | 麵包板上方 − 軌 | 兩台電源的負端都接這一條，共地 |
+| 3 | 上方 + 軌 | i6 | $R_1$ 的一腳 |
+| 4 | $R_1$ 10 kΩ | i6 → i10 | 跨過中間溝槽前的第一段 |
+| 5 | $R_2$ 4.7 kΩ | j10 → j14 | 和 $R_1$ 串成分壓器 |
+| 6 | j14 | 上方 − 軌 | $R_2$ 下端接地 |
+| 7 | 2N2222A | f9（E）／f10（B）／f11（C） | 本體轉 180°、掛在中間溝槽上；平面朝自己時腳位由左至右是 E、B、C |
+| 8 | $R_C$ 1 kΩ | g11 → g15 | 一端接集極、一端接電流表 |
+| 9 | 電源 B 正端 | 電流表紅棒 | 這一路是 $V_{CC}$ |
+| 10 | 電流表黑棒 | g15 | 電流表**串**在 $V_{CC}$ 與 $R_C$ 之間 |
+| 11 | 電源 B 負端 | 上方 − 軌 | 共地 |
+
+儀器設定：
+
+| 儀器 | 設定 | 量什麼 |
+| --- | --- | --- |
+| 電源 A | 電壓 $V_{BB}$（1.5／2／2.2／2.4 V），電流限制 50 mA | 基極側 |
+| 電源 B | 電壓 $V_{CC}$（0 → 15 V 每次加 0.5 V），電流限制 100 mA | 集極側 |
+| 電表 1 | 直流電壓檔，**並聯**在 h10 與 − 軌之間 | $V_{BE}$ |
+| 電表 2 | 直流電壓檔，**並聯**在 h11 與 − 軌之間 | $V_{CE}$（射極接地，所以等於集極對地） |
+| 電表 3 | 直流電流檔，**串聯**在電源 B 與 $R_C$ 之間 | $I_C$ |
+
+![Tinkercad 麵包板接線：分壓偏壓電路與三台電表，VBB 2.40 V、VCC 10.0 V](/note-images/ec-week6-tinkercad/lab2-exp1-breadboard.png)
+
+*原始接線圖：$V_{BB} = 2.40\text{ V}$、$V_{CC} = 10.0\text{ V}$ 時，三台電表讀到 $V_{BE} = 684\text{ mV}$、$V_{CE} = 2.33\text{ V}$、$I_C = 7.67\text{ mA}$。*
+
+**同一張圖，標出電流實際流動路徑。** 綠色粗線是電流走的迴路、紅色三角形是方向、紅底白字編號對應下方逐步說明的列、藍色虛線是電壓表的量測線（只感測電位差，不分流）。
+
+![Tinkercad 電流分析圖：基極迴路 1–7 與集極迴路 8–11 兩圈共用射極](/note-images/ec-week6-tinkercad/lab2-exp1-breadboard-current.png)
+
+*兩個迴路共用射極：編號 1–7 是 $V_{BB}$ 那一圈，8–11 是 $V_{CC}$ 那一圈。兩圈在射極匯合，一起經由 − 軌回到各自的電源負端。*
+
+| 編號 | 電流走到哪 | 為什麼走這裡 |
+| --- | --- | --- |
+| 1 | 電源 A 正端 → 上方 + 軌 | 整條 + 軌是同一個節點，電位 2.40 V |
+| 2 | + 軌 → i6 → $R_1$ → i10 | $R_1$ 上端接 + 軌，電流只能往下走 |
+| 3 | i10 節點分流 | 這裡是分壓器的中點，也是基極節點 |
+| 4 | 一路：i10 → $R_2$ → j14 → − 軌 | 約 146 µA 直接走掉，沒進電晶體 |
+| 5 | 另一路：i10 → 基極 f10 | 只有約 26 µA 進基極，這才是 $I_B$ |
+| 6 | 基極 → 射極 f9 | 基極-射極接面順偏（forward bias），所以導通 |
+| 7 | 射極 → − 軌 → 電源 A 負端 | 迴路閉合 |
+| 8 | 電源 B 正端 → 電流表 → $R_C$ | 電流表串在這裡，讀到的就是 $I_C$ |
+| 9 | $R_C$ → 集極 f11 | 集極-基極接面逆偏（reverse bias），但載子照樣被收走 |
+| 10 | 集極 → 射極（電晶體內部） | 這就是被 $I_B$ 控制的那股電流 |
+| 11 | 射極 → − 軌 → 電源 B 負端 | 和基極迴路共用這一段 |
+
+**三台電表各量什麼。** 電表 1、2 是電壓檔、並聯在待測兩點之間，內阻極高所以幾乎不分流；電表 3 是電流檔、串在集極迴路裡，內阻極低所以不會壓低 $V_{CC}$。**接錯最常見的後果是把電流表並聯在電源兩端**，那等於把電源短路。
+
+**預期讀數怎麼估。** 基極節點的電流守恆（KCL）給出 $I_B$：
+
+$$
+\begin{aligned}
+I_{R_1} &= \frac{V_{BB} - V_{BE}}{R_1} = \frac{2.40 - 0.684}{10\text{ k}} = 171.6\ \mu\text{A} \\[4pt]
+I_{R_2} &= \frac{V_{BE}}{R_2} = \frac{0.684}{4.7\text{ k}} = 145.5\ \mu\text{A} \\[4pt]
+I_B &= I_{R_1} - I_{R_2} = 26.1\ \mu\text{A}
+\end{aligned}
+$$
+
+圖上電源 A 的面板讀到 172 µA，和算出來的 $I_{R_1}$ 對得起來。集極那邊 Tinkercad 讀到 7.67 mA，等於 $\beta \approx 294$——**這個數字不要抄進報告**，通用模型的 $\beta$ 比真的 2N2222A 高太多，同一條件下 LTspice 只給 4.65 mA。
+
+### LTspice 預報值：真實 2N2222 模型
+
+四組 $V_{BB}$ 各掃一次 $V_{CC}$，畫出來就是講義要的輸出特性曲線族，再疊上 $V_{CC} = 15\text{ V}$ 的直流負載線：
+
+![LTspice 輸出特性曲線族：四條 VBB 曲線與直流負載線](/note-images/ec-week6-ltspice/exp1-output-curves.png)
+
+*四條曲線各自在膝部之後變平（主動區），終點落在負載線上——那一點就是 $V_{CC} = 15\text{ V}$ 時的工作點。*
+
+| $V_{BB}$ | $V_{BE}$（模擬） | $I_C$ @ $V_{CC} = 15\text{ V}$ | ON／OFF |
+| --- | --- | --- | --- |
+| 1.5 V | 0.480 V | 0.001 mA | OFF |
+| 2.0 V | 0.633 V | 0.477 mA | 剛導通 |
+| 2.2 V | 0.673 V | 2.147 mA | ON |
+| 2.4 V | 0.695 V | 4.862 mA | ON |
+
+把 $V_{CC}$ 固定在 15 V、改掃 $V_{BB}$，導通門檻看得更清楚：
+
+![LTspice：VCC 固定 15 V 掃 VBB，左圖 IC 對 VBB、右圖 VBE 被鉗在 0.6–0.7 V](/note-images/ec-week6-ltspice/exp1-vbb-sweep.png)
+
+*右圖的虛線是「如果沒有電晶體、只有兩顆電阻」時的分壓值 $V_{TH} = 0.32\,V_{BB}$。$V_{BB}$ 小於約 1.8 V 時兩條線重合（電晶體等於不存在），之後實線被壓住不再跟著上升——**基極-射極接面把電位鉗住了**，這就是導通的判準。*
+
+負載線的兩個端點與講義第 12 頁的補充一致：
+
+$$
+I_{C(\text{sat})} = \frac{V_{CC}}{R_C} = \frac{15}{1\text{ k}} = 15\text{ mA}, \qquad V_{CE(\text{cutoff})} = V_{CC} = 15\text{ V}
+$$
+
+### 實驗室：記錄表
+
+| $V_{CC}$ | $V_{CE}$ 實測 | $V_{R_C}$ 實測 | $I_C = V_{R_C}/R_C$ | LTspice $I_C$ | 差異 |
+| --- | --- | --- | --- | --- | --- |
+| 0 V | | | | 0.000 mA | |
+| 0.5 V | | | | | |
+| … | | | | | |
+| 15 V | | | | | |
+
+完整的四組 × 31 列在 Excel 記錄簿的「實驗一 特性曲線」工作表，LTspice 預報值已經填好。另外每組 $V_{BB}$ 要記一次：
+
+| $V_{BB}$ | $V_{BE}$ 實測 | LTspice $V_{BE}$ | ON／OFF |
+| --- | --- | --- | --- |
+| 1.5 V | | 0.480 V | |
+| 2.0 V | | 0.633 V | |
+| 2.2 V | | 0.673 V | |
+| 2.4 V | | 0.695 V | |
+
+### 檢查點
+
+- **接對了沒有**：$V_{BB}$ 設 2.4 V 時，基極對地應該量到 0.6–0.7 V。如果量到 0.77 V（$= 2.4 \times 4.7/14.7$）附近，代表電晶體沒有導通或根本沒插好——那是純電阻分壓的值。
+- **$V_{CE}$ 一路跟著 $V_{CC}$ 走**：代表電晶體在截止區，檢查 $V_{BB}$ 是不是太低。
+- **$V_{CE}$ 幾乎不動、始終只有零點幾伏**：代表進了飽和區，這在 $V_{CC}$ 很低時是正常的；但如果 $V_{CC}$ 加到 15 V 還是這樣，就是基極驅動太強（實驗二就會看到這種情況）。
+- **曲線平坦段的高度隨 $V_{BB}$ 增加**：這就是「基極電流控制集極電流」的直接證據。
+
+## 實驗二：電流增益 β 的量測 Current Gain Measurement
+
+{/* @ai-reference
+id: w6-lab2-exp2
+file: _references/電子學實作系列/第六週/App_Lab2.pdf
+page: 9
+status: suggested
+excerpt: Measure the voltage difference across R1 and R2 respectively, and calculate the current values. According to KCL, the value of the base current IB can be obtained.
+*/}
+<PdfRefChip file="_references/電子學實作系列/第六週/App_Lab2.pdf" page={9} status="suggested" excerpt={"1. Set up the circuits. 2. Measure the voltage difference across R1 and R2 respectively, and calculate the current values. 3. According to Kirchhoff's Current Law (KCL), the value of the base current IB can be obtained. 4. Measure the voltage difference across RC to determine the collector current IC. 5. Calculate the beta obtained from IB and IC, and compare it with the beta measured using the multimeter. (Table2.)"} client:visible />
+
+### 和實驗一差在哪
+
+電路完全一樣，只改一件事：**兩台電源都轉到 15 V**（$V_{BB} = V_{CC} = 15\text{ V}$）。
+
+![講義：單電源 15 V 的分壓偏壓電路](/note-images/ec-week6-lab2/04-single-supply-divider-bias-15v.png)
+
+*實驗二的電路：$V_{BB}$ 與 $V_{CC}$ 都是 15 V，等效於單一電源供應整個電路。*
+
+為什麼要這樣做？因為量 $\beta$ 需要同時知道 $I_B$ 與 $I_C$，而 $I_B$ 小到不方便直接串電流表（幾十微安到一兩毫安），所以講義改用間接法：**量兩顆分壓電阻的壓降，各自換算成電流，再用克希荷夫電流定律（KCL）相減**。
+
+$$
+I_B = I_{R_1} - I_{R_2} = \frac{V_{R_1}}{R_1} - \frac{V_{R_2}}{R_2}
+$$
+
+這裡有個方便的地方：$R_2$ 和基極-射極接面是並聯的，所以 $V_{R_2}$ 就是 $V_{BE}$，量一次抵兩個用。
+
+### 講義詳解（第 9–10 頁）
+
+**操作步驟**
+
+1. 照電路接好（和實驗一同一塊板，兩台電源都轉 15 V）。
+2. 分別量 $R_1$ 與 $R_2$ 兩端的壓降，換算成電流。
+3. 用 KCL 求出基極電流 $I_B$。
+4. 量 $R_C$ 兩端的壓降，換算成集極電流 $I_C$。
+5. 由 $I_B$ 與 $I_C$ 算出 $\beta$，並和三用電表 hFE 檔直接量到的 $\beta$ 比較（Table 2）。
+
+| 項目 | 講義規格 |
+| --- | --- |
+| 輸入 | $V_{BB} = V_{CC} = 15\text{ V}$ |
+| 元件 | 2N2222A、$R_1$ 10 kΩ、$R_2$ 4.7 kΩ、$R_C$ 1 kΩ |
+| 量測 | $V_{R_1}$、$V_{R_2}$、$V_{R_C}$、$V_{CE}$、電表 hFE 讀值 |
+| 要填 | Table 2 的 $I_B$、$I_C$、$\beta_{\text{calculate}}$、$\beta_{\text{measure}}$ |
+
+### 先看懂：CircuitJS
+
+[實驗二：β 的量測（三個電流示波器）](https://www.falstad.com/circuit/circuitjs.html?ctz=CQAgjCAMB0l3BWcMBMcUHYMGZIA4UA2ATmIxAUhDRABZsKBTAWjDACgA3EQ2kbGr3CEqoulTBIxMBOwBOPPmBHV8wsWHiR5qvOt38aVWhjjsALgeVVMKfRKiO0VACaMAZgEMArgBtz7ADu1Bh2YBiEIXYCojq24LR88UIS8FziVDEZio7GElK50LLByXy0cDnawUJZaHpZVQa1oYaxJS1Z5ZlG7ADmTTR1-Ah2sdh60uBIAGoAQrNQRezjPLlTINMAwpuLsgD24JV0KGDEhAgQUtAQVABKYABcAJLsB3Ypx6fnl4sQELcoZ6vChHWgnM4XEEwCB2W6bZ4AXiem2BDA+YK+lCh134IAAio8tgBRdhAA)
+
+- 三個示波器分別量 $R_1$、$R_2$、$R_C$ 的電流，直接把 KCL 畫給你看：上面兩條線相減就是中間那條（基極電流）。
+- 注意集極電壓幾乎貼在零——**這就是飽和**。對照實驗一 $V_{BB} = 2.4\text{ V}$ 的情形（集極還有好幾伏），差別一目了然。
+- 模型限制同前：只看關係與方向，數值以 LTspice 為準。
+
+### 預演：Tinkercad
+
+接線和實驗一完全相同，只要把電源 A 從 2.4 V 轉到 15.0 V。
+
+![Tinkercad 麵包板電流分析圖：VBB = VCC = 15 V，電晶體深度飽和](/note-images/ec-week6-tinkercad/lab2-exp2-breadboard-current.png)
+
+*同一塊板、同一組電表，只是兩台電源都轉到 15 V：$V_{BE} = 714\text{ mV}$、$V_{CE}$ 只剩 $27\text{ mV}$、$I_C = 15.0\text{ mA}$。*
+
+電流路徑和實驗一的編號完全一樣（1–7 是基極迴路、8–11 是集極迴路），改變的只有量級：
+
+| 量 | 實驗一（$V_{BB}$ 2.4 V） | 實驗二（$V_{BB}$ 15 V） | 差別 |
+| --- | --- | --- | --- |
+| 電源 A 供應電流 | 172 µA | 1.43 mA | 基極驅動強了 8 倍 |
+| 走 $R_2$ 的分流 | 146 µA | 152 µA | 幾乎沒變（$V_{BE}$ 被鉗住） |
+| 進基極的 $I_B$ | 26 µA | 1.28 mA | 多出來的全進了基極 |
+| $V_{CE}$ | 2.33 V | 27 mV | 集極被拉到幾乎接地 |
+
+**為什麼走 $R_2$ 的電流幾乎不變，多出來的全進基極？** 因為 $V_{BE}$ 被接面鉗在 0.7 V 上下，$R_2$ 上的壓降就跟著固定，它分走的電流自然固定。$V_{BB}$ 從 2.4 V 加到 15 V，$R_1$ 上多出來的那 1.25 mA 無處可去，只能全部灌進基極。
+
+### LTspice 預報值：真實 2N2222 模型
+
+| 量 | 算式 | LTspice | 說明 |
+| --- | --- | --- | --- |
+| $V_{BE}$ | — | 0.749 V | 被接面鉗住 |
+| $I_{R_1}$ | $(15 - V_{BE})/R_1$ | 1.425 mA | 流進基極節點的總電流 |
+| $I_{R_2}$ | $V_{BE}/R_2$ | 0.159 mA | 被分走的那一份 |
+| $I_B$ | $I_{R_1} - I_{R_2}$ | 1.266 mA | KCL |
+| $I_C$ | $(15 - V_C)/R_C$ | 14.946 mA | 已經貼著 $I_{C(\text{sat})} = 15\text{ mA}$ |
+| $V_{CE}$ | — | 0.054 V | 深度飽和 |
+| $\beta_{\text{forced}}$ | $I_C/I_B$ | 11.81 | 遠小於規格書的 50–200 |
+
+Tinkercad 的通用模型在這裡反而和 LTspice 對得很準（$\beta_{\text{forced}}$ 11.7 對 11.81）。原因不是模型變好了，而是**飽和時 $I_C$ 由外部電阻決定、和電晶體本身的 $\beta$ 無關**——兩個模型算出來自然一樣。這點本身就是講義問題 1 與問題 3 的答案。
+
+### 實驗室：記錄表（Table 2）
+
+| 量測項目 | 實測 | 算式 | LTspice 預報 | 差異 |
+| --- | --- | --- | --- | --- |
+| $V_{R_1}$ | | 量 $V_{BB}$ 對基極 | 14.251 V | |
+| $V_{R_2}$（$= V_{BE}$） | | 量基極對地 | 0.749 V | |
+| $V_{R_C}$ | | 量 $V_{CC}$ 對集極 | 14.946 V | |
+| $V_{CE}$ | | 量集極對地 | 0.054 V | |
+| $I_{R_1}$ | | $V_{R_1}/R_1$ | 1.425 mA | |
+| $I_{R_2}$ | | $V_{R_2}/R_2$ | 0.159 mA | |
+| $I_B$ | | $I_{R_1} - I_{R_2}$ | 1.266 mA | |
+| $I_C$ | | $V_{R_C}/R_C$ | 14.946 mA | |
+| $\beta_{\text{calculate}}$ | | $I_C/I_B$ | 11.81 | |
+| $\beta_{\text{measure}}$ | | 電表 hFE 檔直接量 | 50–200（規格書） | |
+
+**$\beta_{\text{calculate}}$ 和 $\beta_{\text{measure}}$ 一定會差很多，這不是做錯。** 把電晶體拔下來插 hFE 座時，電表用的是自己的小測試電流，電晶體在主動區，量到的是真正的 $\beta$；留在板子上時它在飽和區，$I_C$ 被 $R_C$ 卡住，算出來的只是「強迫 $\beta$」。兩個數字的落差就是這次實驗要看見的東西。
+
+### 檢查點
+
+- **$V_{CE}$ 應該只有幾十毫伏**：量到的若是好幾伏，先確認兩台電源真的都是 15 V。
+- **$I_C$ 應該非常接近 $V_{CC}/R_C = 15\text{ mA}$**：這是負載線的上端點，飽和時就停在那裡。
+- **$I_B$ 要大於 $I_C/\beta_{\text{measure}}$**：若 $\beta_{\text{measure}}$ 量到 150，主動區只需要 $15/150 = 0.1\text{ mA}$ 的基極電流，實際卻灌了 1.27 mA——超額 12 倍，這就是飽和的定量判準。
+- **記得量 hFE**：忘了量就沒有東西可以和 $\beta_{\text{calculate}}$ 對照，講義問題 1 會答不完整。
+
+## 第一部分的講義問題與 Bonus
+
+{/* @ai-reference
+id: w6-lab2-q1
+file: _references/電子學實作系列/第六週/App_Lab2.pdf
+page: 14
+status: suggested
+excerpt: Based on the results of Table 2, is the transistor operating in saturation, breakdown or in the active region?
+*/}
+<PdfRefChip file="_references/電子學實作系列/第六週/App_Lab2.pdf" page={14} status="suggested" excerpt={"1. Based on the results of Table 2, is the transistor operating in saturation, breakdown or in the active region? 2. Using the original circuit, determine a new value for the collector resistance that will yield a collector voltage of approximately half of the power supply value. 3. If the transistor's beta value decreases from 100 to 50, will the Q-point change significantly?"} client:visible />
+
+### 問題 1：Table 2 的工作點在飽和區、崩潰區還是主動區
+
+**答案：飽和區（saturation）。** 三個獨立的證據都指向同一個結論：
+
+| 判準 | 主動區應該是 | 實際量到 |
+| --- | --- | --- |
+| $V_{CE}$ | 遠大於 $V_{CE(\text{sat})} \approx 0.2\text{ V}$ | 0.054 V（模擬）／27 mV（Tinkercad） |
+| $I_C$ 與 $\beta I_B$ | $I_C = \beta I_B$ | $\beta I_B$ 會是 100–200 mA，實際只有 15 mA |
+| 集極-基極接面 | 逆偏（$V_C > V_B$） | $V_C = 0.054\text{ V} < V_B = 0.749\text{ V}$，變成順偏 |
+
+第三條是飽和的定義本身：**兩個接面同時順偏**。集極電位被拉到比基極還低，集極接面也導通了，電晶體失去放大能力，變成一個接近短路的開關。
+
+為什麼會這樣？因為基極電流被灌得太多。主動區需要的基極電流只有
+
+$$
+I_{B(\text{needed})} = \frac{I_{C(\text{sat})}}{\beta} = \frac{15\text{ mA}}{150} = 0.1\text{ mA}
+$$
+
+而這組電阻實際送進去 1.27 mA，超額十幾倍。集極電流想跟著放大到 190 mA，但 $R_C$ 與 $V_{CC}$ 最多只能供應 15 mA，於是集極電位一路掉到地電位附近，停在那裡。
+
+**不是崩潰區**：崩潰（breakdown）發生在 $V_{CE}$ 超過 $V_{CEO}$（2N2222A 約 30 V）時，這裡 $V_{CE}$ 連 0.1 V 都不到，差得遠。
+
+### 問題 2：要讓集極電壓剩一半，$R_C$ 該換多少
+
+題目：維持原電路，換一顆新的集極電阻，使集極電壓約為電源電壓的一半（$V_C \approx 7.5\text{ V}$）。
+
+**關鍵是先想清楚：現在的 $V_C$ 之所以是 0.054 V，不是因為 $R_C$ 太小，而是因為 $R_C$ 太大。** $R_C$ 越大，同樣的電流造成的壓降越大，集極被拉得越低。要把集極抬到 7.5 V，必須把 $R_C$ 換小，讓電晶體離開飽和區、回到主動區工作。
+
+回到主動區之後 $I_C = \beta I_B$，而 $I_B$ 由分壓電阻決定、不隨 $R_C$ 改變：
+
+$$
+\begin{aligned}
+I_B &= \frac{V_{BB} - V_{BE}}{R_1} - \frac{V_{BE}}{R_2} = \frac{15 - 0.749}{10\text{ k}} - \frac{0.749}{4.7\text{ k}} = 1.266\text{ mA} \\[6pt]
+I_C &= \beta_{\text{measure}} \times I_B \\[6pt]
+R_{C(\text{new})} &= \frac{V_{CC} - V_C}{I_C} = \frac{15 - 7.5}{I_C} = \frac{7.5}{I_C}
+\end{aligned}
+$$
+
+數值取決於自己量到的 $\beta$：
+
+| $\beta_{\text{measure}}$ | $I_C = \beta I_B$ | $R_{C(\text{new})} = 7.5/I_C$ | 最接近的 E24 標準值 |
+| --- | --- | --- | --- |
+| 100 | 127 mA | 59 Ω | 56 Ω |
+| 139（LTspice 在該電流下的值） | 176 mA | 43 Ω | 43 Ω |
+| 200 | 253 mA | 30 Ω | 30 Ω |
+
+LTspice 掃一輪 $R_C$ 驗證，$V_C = 7.5\text{ V}$ 落在 39 Ω 與 47 Ω 之間，內插約 **43.7 Ω**：
+
+| $R_C$ | 20 Ω | 30 Ω | 39 Ω | **43.7 Ω** | 47 Ω | 56 Ω | 100 Ω | 1 kΩ |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| $V_C$ | 11.44 V | 9.75 V | 8.26 V | **7.5 V** | 6.98 V | 5.57 V | 0.24 V | 0.054 V |
+| $I_C$ | 178 mA | 175 mA | 173 mA | **172 mA** | 171 mA | 168 mA | 148 mA | 14.9 mA |
+
+**但這個答案在實驗室做不得，報告要寫出來。** 代進去看功率：
+
+$$
+\begin{aligned}
+P_{R_C} &= I_C^2 R_C = (0.172)^2 \times 43.7 = 1.29\text{ W} \\[4pt]
+P_{Q} &= V_{CE} \times I_C = 7.5 \times 0.172 = 1.29\text{ W}
+\end{aligned}
+$$
+
+器材表給的是 **1/4 W 電阻**，1.29 W 是它的五倍，接上去會燒；2N2222A 若是 TO-92 塑膠封裝，功率上限約 0.5 W，同樣超標。所以正確的完整答案是：**理論上 $R_C \approx 43\text{ Ω}$，但這個電路為了達到半電源電壓必須跑 170 mA，超出器材的功率額定，實務上應該同時把基極驅動降下來**（例如把 $R_1$ 加大，見下面的 Bonus），讓電流回到毫安等級再談集極電阻。
+
+### 問題 3：$\beta$ 從 100 掉到 50，Q 點會不會明顯改變
+
+**答案：不會。原電路的 Q 點幾乎不受 $\beta$ 影響——但這不是好事。**
+
+LTspice 把模型的 $\beta$ 從 50 掃到 200（四倍），工作點幾乎動都不動：
+
+| 模型 $\beta$ | 50 | 100 | 200 |
+| --- | --- | --- | --- |
+| $I_C$ | 14.94 mA | 14.94 mA | 14.95 mA |
+| $V_{CE}$ | 0.060 V | 0.056 V | 0.054 V |
+
+原因在於**電晶體已經飽和**。飽和區的集極電流由外部電路決定：
+
+$$
+I_C \approx \frac{V_{CC} - V_{CE(\text{sat})}}{R_C} \approx \frac{15 - 0.06}{1\text{ k}} = 14.94\text{ mA}
+$$
+
+式子裡根本沒有 $\beta$。只要基極驅動足夠把電晶體推進飽和，$\beta$ 再怎麼變，集極電流就是被 $R_C$ 卡在那個值。
+
+**為什麼說這不是好事：** 題目問的是「Q 點穩不穩定」，而這裡的穩定是靠「把電晶體壓死在牆角」換來的，不是靠負回授。代價是電晶體完全失去放大能力——當開關可以，當放大器完全不行。**真正要的穩定是在主動區裡對 $\beta$ 不敏感**，那需要射極電阻提供負回授，也就是下面 Bonus 的做法。
+
+**對照組：同一個電路工作在主動區時，$\beta$ 的影響有多大。** 把 $V_{BB}$ 降回 2.4 V（電晶體回到主動區、其餘完全不動），再掃一次 $\beta$：
+
+| 模型 $\beta$ | 50 | 100 | 200 |
+| --- | --- | --- | --- |
+| $I_C$ | 1.751 mA | 2.963 mA | 4.862 mA |
+| $V_{CE}$ | 13.25 V | 12.04 V | 10.14 V |
+| $I_B$ | 31.3 µA | 26.8 µA | 22.5 µA |
+
+同樣四倍的 $\beta$ 變化，主動區的 $I_C$ 差了 2.8 倍、$V_{CE}$ 移動超過 3 V；飽和區卻紋風不動。**兩邊的穩定度差異不是電路好壞的差異，而是「有沒有在工作」的差異**——飽和的那顆根本沒有在放大，自然也不會因為 $\beta$ 改變而有任何反應。
+
+### Bonus：把 Q 點搬到負載線中點
+
+{/* @ai-reference
+id: w6-lab2-bonus1
+file: _references/電子學實作系列/第六週/App_Lab2.pdf
+page: 15
+status: suggested
+excerpt: Bonus: Determine the ideal theoretical Q-point. Redesign the circuit to find a new operating point, and record the values of IC and VCE at this Q-point.
+*/}
+<PdfRefChip file="_references/電子學實作系列/第六週/App_Lab2.pdf" page={15} status="suggested" excerpt={"Bonus : Determine the ideal theoretical Q-point. 1. Redesign the circuit to find a new operating point, and record the values of IC (collector current) and VCE (collector-emitter voltage) at this Q-point."} client:visible />
+
+講義給的 Bonus 電路已經改了拓樸：單一電源 15 V，而且**多了一顆射極電阻 $R_e$**，集極電阻指定 3.9 kΩ，$R_e$ 的值留白要自己設計。
+
+![講義 Bonus 電路：單電源 15 V、R1 10k、R2 4.7k、Rc 3.9k，Re 待設計](/note-images/ec-week6-lab2/06-bonus-circuit-with-re-rc-3k9.jpeg)
+
+*多出來的 $R_e$ 就是射極退化電阻，它把「電流變大 → 射極電位上升 → 基極-射極電壓下降 → 電流回落」的負回授接了起來。*
+
+**理想 Q 點的定義**：讓輸出能上下對稱地擺到最大，也就是把工作點放在直流負載線的正中間。
+
+$$
+V_{CE(Q)} = \frac{V_{CC}}{2} = 7.5\text{ V}, \qquad I_{C(Q)} = \frac{V_{CC}}{2(R_C + R_E)}
+$$
+
+**設計過程**。先把分壓器化成戴維寧等效（Thévenin equivalent）：
+
+$$
+\begin{aligned}
+V_{TH} &= V_{CC}\,\frac{R_2}{R_1 + R_2} = 15 \times \frac{4.7}{14.7} = 4.80\text{ V} \\[4pt]
+R_{TH} &= R_1 \parallel R_2 = 10\text{ k} \parallel 4.7\text{ k} = 3.20\text{ k}\Omega
+\end{aligned}
+$$
+
+因為有射極電阻、$R_{TH}/(\beta+1)$ 可以忽略，射極電流幾乎只由 $R_e$ 決定：
+
+$$
+I_E \approx \frac{V_{TH} - V_{BE}}{R_e} = \frac{4.80 - 0.70}{R_e} = \frac{4.10}{R_e}
+$$
+
+要 $V_{CE} = 7.5\text{ V}$，代入 $V_{CE} = V_{CC} - I_C(R_C + R_e)$：
+
+$$
+\begin{aligned}
+7.5 &= 15 - \frac{4.10}{R_e}\,(3900 + R_e) \\[4pt]
+\frac{4.10 \times 3900}{R_e} + 4.10 &= 7.5 \\[4pt]
+R_e &= \frac{15974}{3.40} = 4.70\text{ k}\Omega
+\end{aligned}
+$$
+
+**答案剛好落在標準值 4.7 kΩ 上**（和 $R_2$ 同一顆值，實驗室一定拿得到）。LTspice 驗證：
+
+| $R_e$ | 3.3 kΩ | 3.9 kΩ | 4.3 kΩ | **4.7 kΩ** | 5.1 kΩ | 5.6 kΩ |
+| --- | --- | --- | --- | --- | --- | --- |
+| $V_{CE}$ | 6.04 V | 6.77 V | 7.14 V | **7.45 V** | 7.72 V | 7.99 V |
+| $I_C$ | 1.242 mA | 1.053 mA | 0.956 mA | **0.875 mA** | 0.807 mA | 0.736 mA |
+
+順帶一提，講義第 12 頁補充頁上那張範例負載線（$I_{C(\text{sat})} = 2.08\text{ mA}$、Q 點在 6.1 V／1.236 mA）對應的就是 $R_e = 3.3\text{ k}\Omega$ 那一欄——模擬給 6.04 V／1.242 mA，和講義的數字幾乎重合。這也順便驗證了模型沒問題。
+
+![講義第 12 頁範例負載線：IC(sat) 2.08 mA、Q 點 6.1 V／1.236 mA](/note-images/ec-week6-lab2/05-load-line-example-2p08ma.png)
+
+*講義自己的範例並沒有落在中點（6.1 V 而不是 7.5 V），Bonus 要的就是把它移到中點。*
+
+**Bonus 的 Q 點答案**
+
+$$
+I_{C(Q)} = 0.875\text{ mA}, \qquad V_{CE(Q)} = 7.45\text{ V} \approx \frac{V_{CC}}{2}
+$$
+
+**而且這次是真的穩定。** 同樣把模型 $\beta$ 從 50 掃到 200：
+
+| 模型 $\beta$ | 50 | 100 | 200 |
+| --- | --- | --- | --- |
+| $I_C$ | 0.855 mA | 0.868 mA | 0.875 mA |
+| $V_{CE}$ | 7.570 V | 7.493 V | 7.454 V |
+
+$\beta$ 變動四倍，$V_{CE}$ 只移動 1.5%，而且全程待在主動區。對照問題 3 裡「靠飽和換來的穩定」，這才是講義標題問的那個「穩定的 Q 點」真正的樣子。
+
+## 第二部分：共射放大器的電壓增益 Common Emitter Amplifier
+
+{/* @ai-reference
+id: w6-lab2-exp3
+file: _references/電子學實作系列/第六週/App_Lab2.pdf
+page: 17
+status: suggested
+excerpt: Understand the influence of transistor beta on the voltage gain, input biasing, and signal integrity of a common emitter amplifier.
+*/}
+<PdfRefChip file="_references/電子學實作系列/第六週/App_Lab2.pdf" page={17} status="suggested" excerpt={"Understand the influence of transistor beta on the voltage gain, input biasing, and signal integrity of a common emitter amplifier. Observe input/output phase inversion. Examine how circuit parameters (e.g., RC) affect amplifier behavior. Develop troubleshooting skills for distortion issues."} client:visible />
+
+### 先讀懂這張圖：每個元件在做什麼
+
+![講義的 CE 放大器電路：V1 12 V、訊號源 10 kHz，含 RS1、C1、R1、R2、RC1、RE1、C3、C2、RL1](/note-images/ec-week6-lab2/11-ce-amplifier-circuit-rc1-re1-c1-c2-c3.png)
+
+*講義第 19 頁的電路。和第一部分最大的差別是：電源只剩一個，基極的偏壓改由 $R_1$、$R_2$ 從同一顆 12 V 分壓產生，訊號則透過電容「疊」在這個直流電位上。*
+
+| 元件 | 角色 | 直流時 | 交流時 |
+| --- | --- | --- | --- |
+| $R_1$、$R_2$ | 基極分壓偏壓 | 決定基極直流電位 | 對訊號是負載（會分掉一點） |
+| $R_{C1}$ | 集極電阻 | 決定集極直流電位 | 把電流變化轉成電壓變化，決定增益 |
+| $R_{E1}$ | 射極電阻 | 提供負回授、穩定工作點 | 被 $C_3$ 短路掉，不參與 |
+| $C_1$ | 輸入耦合電容 | 開路，擋住訊號源干擾偏壓 | 短路，讓訊號進得來 |
+| $C_2$ | 輸出耦合電容 | 開路，擋住集極直流電位流到負載 | 短路，讓訊號出得去 |
+| $C_3$ | 射極旁路電容 | 開路，$R_{E1}$ 照常穩定工作點 | 短路，射極交流接地、增益拉滿 |
+| $R_{L1}$ | 負載 | 沒有直流電流流過（被 $C_2$ 擋住） | 與 $R_{C1}$ 並聯，一起決定增益 |
+| $R_{S1}$ | 訊號源內阻 | — | 和輸入阻抗分壓，會吃掉一部分訊號 |
+
+**同一顆電阻在直流與交流看起來不一樣**，這是整個電路最核心的設計技巧，也是三顆電容存在的唯一理由。
+
+### 講義詳解（第 17–22 頁）
+
+**目標**（第 17 頁）
+
+- 了解電晶體的電流增益（$\beta$）如何影響共射放大器的電壓增益、輸入偏壓與訊號完整性。
+- 觀察輸入與輸出的反相（phase inversion）。
+- 檢視電路參數（例如 $R_C$）怎麼改變放大器的行為。
+- 練習判斷失真（distortion）問題的排查方法。
+
+**理論重點**（第 18–19 頁）
+
+放大器必須工作在主動區。講義列的三條關係式是整個分析的起點：
+
+$$
+V_{CC} = I_C R_C + V_{CE}, \qquad I_C = I_S\,e^{V_{BE}/V_T}, \qquad I_E = I_C + I_B
+$$
+
+第一條是輸出迴路的 KVL（也就是負載線）；第二條說集極電流對 $V_{BE}$ 是指數關係；第三條是三隻腳的電流守恆。
+
+三個模式的判準（第 18 頁的表）：
+
+| 模式 | 基極-射極接面 | 集極-基極接面 | 判準 |
+| --- | --- | --- | --- |
+| 截止 | 逆偏或未達導通 | 逆偏 | $V_{BE} < 0.7\text{ V}$ |
+| 主動 | 順偏 | 逆偏 | $V_{BE} \geq 0.7\text{ V}$ 且 $V_{CE} > V_{CE(\text{sat})}$ |
+| 飽和 | 順偏 | 順偏 | $V_{CE} < V_{CE(\text{sat})}$ |
+
+![講義：BJT 三個端點電壓的極性定義](/note-images/ec-week6-lab2/07-bjt-vbe-vbc-vce-polarity.png)
+
+*$V_{BE}$、$V_{BC}$、$V_{CE}$ 的極性定義——判斷工作模式前要先確定量的方向對不對。*
+
+**把基極推過頭會產生削波失真（clipping distortion）**，這是講義特別標紅的一句，也是第二部分最容易在實驗室看到的現象。
+
+小訊號模型（第 19 頁）：
+
+![講義：CE 放大器的概念圖](/note-images/ec-week6-lab2/08-ce-amplifier-concept.png)
+
+![講義：混合 π 模型](/note-images/ec-week6-lab2/09-pi-model.png)
+
+![講義：CE 級的小訊號電流流向](/note-images/ec-week6-lab2/10-ce-stage-small-signal-currents.png)
+
+*混合 π 模型（hybrid-π model）把電晶體換成「輸入電阻 $r_\pi$ ＋ 受控電流源 $g_m v_{be}$」，分析就變成純電路問題。*
+
+增益的來源可以一句話講完：**輸入電壓在 $r_\pi$ 上產生 $v_{be}$，受控源把它變成 $g_m v_{be}$ 的電流，這股電流流過集極端的電阻產生輸出電壓**。
+
+$$
+A_v = -g_m\,(R_{C1} \parallel R_{L1}), \qquad g_m = \frac{I_C}{V_T}, \qquad V_T \approx 25.9\text{ mV（室溫）}
+$$
+
+負號就是反相。
+
+**器材清單**（第 20 頁）
+
+| 元件 | 規格 | 數量 |
+| --- | --- | --- |
+| BJT | 2N2222A | 1 |
+| 電阻 | 100 Ω（1/4 W） | 2 |
+| 電阻 | 1 kΩ（1/4 W） | 1 |
+| 電阻 | 10 kΩ（1/4 W） | 3 |
+| 電容 | 1 µF | 3 |
+
+### 元件值怎麼定（講義沒給）
+
+講義的電路圖只標了元件代號，沒有標任何電阻值；器材表則列出 100 Ω×2、1 kΩ×1、10 kΩ×3、1 µF×3。把這些**剛好用完**，而且讓三個講義問題都有意義，只有一種組合：
+
+| 元件 | 值 | 理由 |
+| --- | --- | --- |
+| $R_1$、$R_2$ | 各 10 kΩ | 分壓成 $V_{CC}/2 = 6\text{ V}$，基極電位居中 |
+| $R_{L1}$ | 10 kΩ | 第三顆 10 kΩ |
+| $R_{E1}$ | 1 kΩ | 唯一的 1 kΩ；射極電流約 5.3 mA |
+| $R_{C1}$ | 100 Ω | 問題 3 要把它換成 1 kΩ 來對照 |
+| $R_{S1}$ | 100 Ω | 第二顆 100 Ω，當訊號源內阻 |
+| $C_1$、$C_2$、$C_3$ | 各 1 µF | 三顆電容 |
+| $V_{CC}$ | 12 V | 電路圖上標的 V1 |
+| 訊號 | 10 kHz、50 mV 峰值（100 mVpp） | 電路圖標 `ampl: 0.05` |
+
+> `ampl: 0.05` 到底是峰值還是峰對峰值，講義沒有說。這裡一律當作**峰值 50 mV**（也就是 100 mVpp）處理；實驗當天以示波器實際讀到的 Vpp 為準，和助教確認後再回頭調整預報值。**實驗當天的元件值以助教公布為準**，這一節只是為了讓模擬與預報有個明確的基準。
+
+### 先看懂：CircuitJS
+
+[CE 放大器：完整電路（有旁路電容）](https://www.falstad.com/circuit/circuitjs.html?ctz=CQAgjCCsCmC0Ds4AMA6ATEpb7wMxIA40A2ATlMUiWRABZco4wwAoANxFzU8m65DRpaIahDCZMIlEkgi5qSCwBOnboOHM1QueKQsAxuDBaN8YgO3VUEzBFiQUpZeDN0CL8+p03nYV179zXF5vCRYAFw8LYSFqL1F5AUkAE2gAMwBDAFcAG3DnWLcBWjjCUIKS4rjK4O5RMMN8GJqkYVr5aRsIBzQWAHcqwabBvQHh9sL2vUNCjHdcYnc5jpskMTAURRUFpbKdnjrkMI5aWnmQ0-czxMrjRIV+qOvC69HB68uit-52wIORR5-CY1ELfVr-fZTR6Qi7XKEAcyiv1cuAIwisLAA9jo5LQ0GBSMQqFApBBqAA1ADOWLo4Fx+MJxNkqDEIHJACMABQAJTQAEoaXcyXQGUTqMyUBBuOTMVlwjyADICoA)
+
+[CE 放大器：拿掉旁路電容 $C_3$（講義問題 1）](https://www.falstad.com/circuit/circuitjs.html?ctz=CQAgjCCsCmC0Ds4AMA6ATEpb7wMxIA40A2ATlMUiWRABZco4wwAoANxFzU8m65DRpaIahDCZMIlEkgi5qSCwBOnboOHM1QueKQsAxuDBaN8YgO3VUEzBFiQUpZeDN0CL8+p03nYV179zXF5vCRYAFw8LYSFqL1F5AUkAE2gAMwBDAFcAG3DnWLcBWjjCUIKS4rjK4O5RMMNCjHdcYnc5jpskMTAURRUFpbKdnjrkMI5aWhaQqfdpxMrjRIUWAHcohcKFvQ3t+YWd9dVRqNqRY8DTwvPdqtOR2+PH2YWngHMzkKvcAmErFgAex0cloaDApGIVCgUgg1AAagBnIF0cCg8GQ6GyVBiEDwgBGAAoAEpoACUKNIaOoYIhUOo2JQEG48MBWXCJIAMhSgA)
+
+- 兩個示波器：一個看輸入 $V_s$、一個看輸出 $V_{out}$。先確認**兩條波形上下顛倒**——這是 CE 組態最快的驗證。
+- 比較兩個連結：有旁路電容時輸出明顯放大，拿掉之後輸出幾乎和輸入一樣小。這就是問題 1 的答案，先用眼睛看一次。
+- 三顆電容都給了初始電壓，避免開頭那段充電暫態擋住波形。
+- **模型限制**：通用模型的 $\beta$ 與導通電壓都不是 2N2222A 的值，增益數字會差，只看形狀與相位。
+
+### 預演：Tinkercad 接線配方
+
+Tinkercad 設計檔：[Lab 2 Exp 3: CE Amplifier](https://www.tinkercad.com/things/eKNcZ9VKvAu)
+
+元件一律橫插在上半區（f–j 列），訊號源那一段放下半區（a–e 列），兩者用一條跳線跨過中央溝槽接到基極。
+
+| 元件 | 插在哪 | 值 | 接到哪個節點 |
+| --- | --- | --- | --- |
+| 2N2222A | f9（E）／f10（B）／f11（C） | — | 本體轉 180° 掛進溝槽 |
+| $R_1$ | j6 → j10 | 10 kΩ | 第 6 欄（$V_{CC}$）→ 第 10 欄（基極） |
+| $R_2$ | h10 → h14 | 10 kΩ | 基極 → 第 14 欄（地） |
+| $R_{C1}$ | i11 → i15 | 100 Ω | 集極 → 第 15 欄（$V_{CC}$） |
+| $R_{E1}$ | g5 → g9 | 1 kΩ | 第 5 欄（地）→ 射極 |
+| $R_{L1}$ | j12 → j16 | 10 kΩ | 輸出 → 第 16 欄（地） |
+| $R_{S1}$ | c2 → c6（下半區） | 100 Ω | 訊號源 → 第 6 欄（下） |
+| $C_1$ | b6 → b7（下半區） | 1 µF | 第 6 欄（下）→ 第 7 欄（下） |
+| $C_2$ | g11 → g12 | 1 µF | 集極 → 輸出 |
+| $C_3$ | h8 → h9 | 1 µF | 第 8 欄（地）→ 射極 |
+
+跳線（六條接電源軌、一條跨溝槽）：
+
+| 從 | 到 | 顏色 | 作用 |
+| --- | --- | --- | --- |
+| i6 | + 軌第 6 欄 | 紅 | $R_1$ 接 $V_{CC}$ |
+| h15 | + 軌第 15 欄 | 紅 | $R_{C1}$ 接 $V_{CC}$ |
+| j5 | − 軌第 5 欄 | 黑 | $R_{E1}$ 接地 |
+| f8 | − 軌第 4 欄 | 黑 | $C_3$ 接地 |
+| g14 | − 軌第 14 欄 | 黑 | $R_2$ 接地 |
+| i16 | − 軌第 16 欄 | 黑 | $R_{L1}$ 接地 |
+| e7（下半區） | i10（上半區） | 黃 | $C_1$ 的輸出跨過溝槽接到基極 |
+
+儀器設定：
+
+| 儀器 | 設定 | 接在哪 |
+| --- | --- | --- |
+| 電源供應器 | 12 V、電流上限 0.5 A | + 到 + 軌、− 到 − 軌 |
+| 函數波產生器 | 正弦、10 kHz、Amplitude **0.1**、直流偏置 0 | + 到 a2（下半區第 2 欄）、− 到 − 軌 |
+| 示波器 1 | 20 µs/div | 紅棒 b2（$V_s$）、黑棒 − 軌 |
+| 示波器 2 | 20 µs/div | 紅棒 f12（$V_{out}$）、黑棒 − 軌 |
+
+> **Tinkercad 的 Amplitude 是峰對峰值**，所以講義的 50 mV 峰值要填 0.1。
+
+![Tinkercad 麵包板接線：CE 放大器，含電源、函數波產生器與兩台示波器](/note-images/ec-week6-tinkercad/lab2-exp3-breadboard.png)
+
+*原始接線圖：左邊是電源供應器與函數波產生器，上方兩台示波器分別量 $V_s$ 與 $V_{out}$。*
+
+**同一張圖，標出電流實際流動路徑。** 綠色粗線是直流偏壓電流（三用電表量得到的那些）、紅色三角形是方向、紅底白字編號對應下方說明、藍色虛線是訊號路徑（只有交流走得通）。
+
+![Tinkercad 電流分析圖：綠色直流偏壓迴路與藍色虛線訊號路徑](/note-images/ec-week6-tinkercad/lab2-exp3-breadboard-current.png)
+
+*直流與交流在同一塊板子上走的是不同的路——這張圖的重點就是把兩者分開看。*
+
+| 編號 | 電流走到哪 | 為什麼走這裡 |
+| --- | --- | --- |
+| 1 | + 軌 → 跳線 → $R_{C1}$ | 12 V 從這裡進集極支路 |
+| 2 | $R_{C1}$（100 Ω） | 只有 0.5 V 壓降，因為電流才 5 mA |
+| 3 | 第 11 欄（集極）≈ 11.5 V | 集極電位；交流訊號就疊在這個直流上 |
+| 4 | 電晶體內部 C → E | 這股電流的大小由基極電位決定 |
+| 5 | 第 9 欄（射極）≈ 5.2 V | 比基極低約 0.7 V |
+| 6 | $R_{E1}$（1 kΩ） | 它把射極電位換算成電流：$I_E = 5.2/1\text{k}$ |
+| 7 | 回 − 軌 | 迴路閉合 |
+| 8 | $R_1$／$R_2$ 分壓 | 兩顆都是 10 kΩ，基極定在 $V_{CC}/2$ 附近 |
+| 9 | 分壓器自己的電流 | 約 0.6 mA，不經過電晶體 |
+| 10 | 訊號源 → $R_{S1}$ → $C_1$ → 基極 | $C_1$ 擋住直流，只讓訊號疊上去 |
+| 11 | $C_3$ 把射極對交流接地 | 拿掉它增益從 5.5 掉到 0.1 |
+| 12 | 集極 → $C_2$ → $R_{L1}$ → 地 | $C_2$ 擋住集極的 11.5 V 直流 |
+
+**三顆電容在這張圖上的位置就是它們的功能。** $C_1$ 與 $C_2$ 卡在訊號進出的路上（直流過不去、交流過得去），$C_3$ 則是從射極拉一條只有交流走得通的捷徑到地。綠線和藍虛線在板子上幾乎不重疊，這就是「直流偏壓」與「交流訊號」兩套分析可以分開做的物理原因。
+
+> **這個電路 Tinkercad 跑不動，只能拿來確認接線。** 接上函數波產生器之後電源會被拉到電流上限、軌電壓從 12 V 塌到 2–3 V。這不是接線錯誤——把函數波產生器的振幅設成 0 V（等於一個 0 V 的源）之後症狀完全一樣，而一個 0 V 的源經過 1 µF 耦合電容不可能吃掉 2 A。把儀器全部移除、只留電源與被動網路時，Tinkercad 給的是正確的 **12.0 V／5.83 mA**，和理論工作點（$I_E \approx 5.2\text{ mA}$ 加上分壓器 0.6 mA）吻合。這和第 3 週記過的「橋式整流加濾波電容解不出來」是同一類求解器失效。**所以這一段的所有讀值一律以 LTspice 為準**，Tinkercad 只回答「線該怎麼接、電表該怎麼夾」。
+
+### LTspice 預報值：真實 2N2222 模型
+
+**直流工作點**（訊號關掉時用三用電表量得到的值）
+
+| 節點 | $R_{C1} = 100\ \Omega$ | $R_{C1} = 1\ \text{k}\Omega$ |
+| --- | --- | --- |
+| $V_B$ | 5.876 V | 5.870 V |
+| $V_E$ | 5.178 V | 5.171 V |
+| $V_C$ | 11.485 V | 6.854 V |
+| $V_{CE}$ | 6.306 V | **1.683 V** |
+| $I_C$ | 5.153 mA | 5.146 mA |
+| $I_B$ | 24.8 µA | 25.9 µA |
+
+$R_{C1}$ 換成 1 kΩ 之後集極直流電位掉了 4.6 V，$V_{CE}$ 只剩 1.68 V——**輸出要往下擺超過 1.5 V 就會撞到飽和**。這就是問題 3 的伏筆。
+
+**四種組合的增益**
+
+![LTspice：CE 放大器四種組合的輸入輸出波形](/note-images/ec-week6-ltspice/exp3-ce-amp-waveforms.png)
+
+*左上是標準組態；右上增益最高但輸出底部被削平；下排兩張是拿掉旁路電容後，增益掉到 1 以下。*
+
+| 組合 | $\lvert A_v\rvert$（LTspice） | 波形 |
+| --- | --- | --- |
+| $R_{C1}$ 100 Ω、有 $C_3$ | 5.54 | 正常反相正弦波 |
+| $R_{C1}$ 1 kΩ、有 $C_3$ | 41.13 | 負半週被削平（正峰 2420 mV、負峰 −1693 mV） |
+| $R_{C1}$ 100 Ω、無 $C_3$ | 0.10 | 幾乎沒放大 |
+| $R_{C1}$ 1 kΩ、無 $C_3$ | 0.88 | 幾乎沒放大，但仍反相 |
+
+拿掉 $C_3$ 之後的增益可以用一行估出來，和模擬對得很準：
+
+$$
+A_v \approx -\frac{R_{C1} \parallel R_{L1}}{R_{E1}} = -\frac{100 \parallel 10\text{k}}{1\text{k}} = -0.099
+$$
+
+### 實驗室：記錄表
+
+**直流工作點**（訊號源先關掉）
+
+| 節點 | 實測 | LTspice（$R_{C1}$ 100 Ω） | 差異 |
+| --- | --- | --- | --- |
+| $V_B$ | | 5.876 V | |
+| $V_E$ | | 5.178 V | |
+| $V_C$ | | 11.485 V | |
+| $V_{CE} = V_C - V_E$ | | 6.306 V | |
+
+**電壓增益**（示波器 CH1 接 $V_s$、CH2 接 $V_{out}$）
+
+| 組合 | $V_s$ (mVpp) | $V_{out}$ (mVpp) | $\lvert A_v\rvert$ | LTspice | 有無削平／反相 |
+| --- | --- | --- | --- | --- | --- |
+| $R_{C1}$ 100 Ω、有 $C_3$ | | | | 5.54 | |
+| $R_{C1}$ 1 kΩ、有 $C_3$ | | | | 41.13 | |
+| $R_{C1}$ 100 Ω、無 $C_3$ | | | | 0.10 | |
+| $R_{C1}$ 1 kΩ、無 $C_3$ | | | | 0.88 | |
+
+四種組合都量完，講義問題 1 與問題 3 的答案就直接讀得出來。完整表格在 Excel 記錄簿的「第二部分 CE 放大器」工作表。
+
+### 檢查點
+
+- **先確認反相**：輸入往上時輸出一定往下。沒有反相就不是在做 CE 放大，先檢查探棒接錯沒有。
+- **先量直流再量交流**：$V_B$ 應該約 5.9 V、$V_E$ 約 5.2 V、兩者差約 0.7 V。$V_{BE}$ 不在 0.6–0.7 V 之間就不用往下量了。
+- **輸出一邊被削平**：幾乎都是工作點沒留夠餘裕，不是訊號太大。把 $V_{CE}$ 量出來對照上面的表就知道。
+- **增益遠小於預期**：先檢查 $C_3$ 有沒有確實接上、有沒有接反（電解電容有極性）。
+
+## 第二部分的講義問題與 Bonus
+
+{/* @ai-reference
+id: w6-lab2-q2
+file: _references/電子學實作系列/第六週/App_Lab2.pdf
+page: 21
+status: suggested
+excerpt: What change did you observe in the output waveform after removing the bypass capacitor C3?
+*/}
+<PdfRefChip file="_references/電子學實作系列/第六週/App_Lab2.pdf" page={21} status="suggested" excerpt={"1. What change did you observe in the output waveform after removing the bypass capacitor C3? 2. What are the functions of C1, C2, and C3? 3. How would changing RC1 to a 1k ohm resistor affect the circuit, and why does this happen?"} client:visible />
+
+### 問題 1：拿掉旁路電容 $C_3$ 之後，輸出波形怎麼變
+
+**答案：振幅大幅縮小（增益從 5.5 掉到 0.1，等於完全沒放大），但反相關係與波形形狀不變，失真反而變少。**
+
+| 量 | 有 $C_3$ | 無 $C_3$ |
+| --- | --- | --- |
+| $\lvert A_v\rvert$ | 5.54 | 0.10 |
+| 輸出振幅（100 mVpp 輸入） | 554 mVpp | 10 mVpp |
+| 反相 | 有 | 有 |
+| 直流工作點 | 不變 | 不變 |
+
+**原因**：有 $C_3$ 時射極對訊號而言是接地的，增益由 $g_m$ 決定；拿掉之後射極電阻 $R_{E1}$ 整顆留在訊號路徑上，形成負回授（射極退化）：
+
+$$
+A_v = -\frac{R_{C1} \parallel R_{L1}}{\dfrac{1}{g_m} + R_{E1}}
+$$
+
+把數字代進去看清楚誰佔主導：$I_C = 5.15\text{ mA}$ 時 $1/g_m = V_T/I_C = 25.9\text{ mV}/5.15\text{ mA} = 5.0\ \Omega$，而 $R_{E1} = 1000\ \Omega$ 是它的 200 倍。分母從 5 Ω 變成 1005 Ω，增益就掉了 200 倍。
+
+**直流工作點完全不受影響**，因為電容對直流是開路，$R_{E1}$ 本來就全額參與偏壓。這也是旁路電容設計的全部用意：**直流時留著它穩定工作點、交流時把它short 掉換回增益**。
+
+### 問題 2：$C_1$、$C_2$、$C_3$ 各自的功能
+
+| 電容 | 名稱 | 功能 | 拿掉會怎樣 |
+| --- | --- | --- | --- |
+| $C_1$ | 輸入耦合電容（input coupling capacitor） | 讓訊號進得來，同時擋住訊號源的直流電位去干擾基極偏壓 | 函數產生器的輸出阻抗與直流準位會把分壓偏壓拉歪，基極電位不再是 5.9 V，工作點整個跑掉 |
+| $C_2$ | 輸出耦合電容（output coupling capacitor） | 讓訊號出得去，同時擋住集極的直流電位（11.5 V）灌進負載 | 負載會分走集極的直流電流，$V_C$ 下降、工作點改變，負載上還會出現不該有的直流電壓 |
+| $C_3$ | 射極旁路電容（bypass capacitor） | 對交流把射極電阻短路掉，把增益從 0.1 拉回 5.5；對直流開路，不影響偏壓 | 增益掉 200 倍（見問題 1） |
+
+三顆的共同邏輯是同一句話：**讓同一顆元件在直流與交流呈現不同的樣子**。$C_1$、$C_2$ 是「直流開路、交流短路」用來隔離；$C_3$ 是「直流開路、交流短路」用來旁路。
+
+選值的判準也一樣——電容在工作頻率下的容抗要遠小於它所在位置的等效電阻：
+
+$$
+X_C = \frac{1}{2\pi f C}
+$$
+
+10 kHz、1 µF 時 $X_C = 15.9\ \Omega$。對 $C_1$（面對幾百歐姆的輸入阻抗）與 $C_2$（面對 10 kΩ 的負載）來說綽綽有餘；但對 $C_3$ 來說，它要壓過的是 $1/g_m = 5\ \Omega$，**15.9 Ω 比 5 Ω 還大，根本沒旁路乾淨**。這就是為什麼模擬出來的增益只有 5.54，而不是理論上限的 20——下面的 Bonus 會把這件事算清楚。
+
+### 問題 3：$R_{C1}$ 換成 1 kΩ 會怎樣，為什麼
+
+**答案：小訊號增益從 5.5 升到 41（約 10 倍），但輸出負半週被削平，實際上不能用。**
+
+兩件事同時發生：
+
+**增益上升**，因為增益正比於集極端的總電阻：
+
+$$
+\frac{A_v(1\text{k})}{A_v(100)} = \frac{1000 \parallel 10000}{100 \parallel 10000} = \frac{909}{99} = 9.2
+$$
+
+**餘裕消失**，因為同樣的 5.15 mA 流過 10 倍大的電阻，集極直流壓降從 0.5 V 變成 5.1 V：
+
+$$
+\begin{aligned}
+V_C &= V_{CC} - I_C R_{C1} = 12 - 5.146\text{ mA} \times 1\text{ k}\Omega = 6.85\text{ V} \\[4pt]
+V_{CE} &= V_C - V_E = 6.85 - 5.17 = 1.68\text{ V}
+\end{aligned}
+$$
+
+輸出要往下擺 1.68 V 就會讓 $V_{CE}$ 歸零進入飽和，但 41 倍的增益配上 100 mVpp 輸入，想擺的幅度是 4.1 Vpp——遠遠超過。模擬的波形正峰到 2420 mV、負峰只到 −1693 mV 就被切平，正是這個原因。
+
+**這題示範的是第 6 週摘要裡那個取捨**：增益與輸出擺幅不可兼得。集極電阻換來增益，也換走了不失真的空間。真要同時要增益與擺幅，得連偏壓一起重新設計（降低 $I_C$ 把集極電位拉高），不是改一顆電阻就好。
+
+### Bonus：把電壓增益設計成 20
+
+{/* @ai-reference
+id: w6-lab2-bonus2
+file: _references/電子學實作系列/第六週/App_Lab2.pdf
+page: 22
+status: suggested
+excerpt: Bonus: Design the values of the capacitors and resistors so that the voltage gain AV equals 20.
+*/}
+<PdfRefChip file="_references/電子學實作系列/第六週/App_Lab2.pdf" page={22} status="suggested" excerpt={"Bonus Design the values of the capacitors and resistors so that the voltage gain A V equals 20."} client:visible />
+
+**第一個直覺是錯的。** 看到增益只有 5.5、而問題 2 已經算出 $C_3$ 的容抗（15.9 Ω）比 $1/g_m$（5 Ω）還大，很自然會想：把 $C_3$ 加大就好了。
+
+把 $C_3$ 從 1 µF 一路掃到 1000 µF，增益確實上升，但**在 16.6 就停住，到不了 20**：
+
+![LTspice：左圖增益對 C3 的曲線在 16.6 碰到天花板，右圖兩種設計的時域比較](/note-images/ec-week6-ltspice/bonus-av20-design.png)
+
+*左圖：$C_3$ 加到 22 µF 以上增益就不再上升。右圖：兩種補救設計在同樣 100 mVpp 輸入下的輸出波形。*
+
+| $C_3$ | 1 µF | 4.7 µF | 10 µF | 22 µF | 47 µF | 100 µF | 1000 µF |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| $\lvert A_v\rvert$ @ 10 kHz | 5.65 | 14.23 | 15.93 | 16.42 | 16.53 | 16.56 | 16.57 |
+
+**天花板從哪裡來。** 把 $C_3$ 當成完全短路，增益的上限是
+
+$$
+\lvert A_v\rvert_{\max} = g_m\,(R_{C1} \parallel R_{L1}) \times \underbrace{\frac{R_{in}}{R_{in} + R_{S1}}}_{\text{訊號源分壓}}
+$$
+
+第一項 $= 0.199 \times 99 = 19.7$，看起來剛好夠；但第二項把它打了折——輸入阻抗 $R_{in} = R_1 \parallel R_2 \parallel r_\pi$ 只有幾百歐姆，和 $R_{S1}$ 的 100 Ω 分壓之後，實際只剩 16.6。**$R_{C1} = 100\ \Omega$ 這個值本身就擋住了 20。**
+
+**定案設計。** 要同時達到 $A_v = 20$ 並且在講義給的 100 mVpp 輸入下不失真，兩件事要一起改：
+
+| 元件 | 原值 | 定案 | 為什麼 |
+| --- | --- | --- | --- |
+| $R_{C1}$ | 100 Ω | **620 Ω** | 增益正比於集極端總電阻，拉到 20 需要這個量級 |
+| $R_{E1}$ | 1 kΩ（全被旁路） | **22 Ω 不旁路 ＋ 1 kΩ 被旁路** | 留一小段在訊號路徑上，增益改由電阻比決定 |
+| $C_3$ | 1 µF | **100 µF** | 10 kHz 時容抗 0.16 Ω，遠小於 22 Ω，才算真的旁路 |
+| $C_1$、$C_2$ | 1 µF | 不變 | 截止頻率遠低於 10 kHz，夠用 |
+
+$$
+\lvert A_v\rvert \approx \frac{R_{C1} \parallel R_{L1}}{\dfrac{1}{g_m} + R_{E1a}} \times \frac{R_{in}}{R_{in} + R_{S1}} = \frac{584}{5.1 + 22} \times 0.96 \approx 20
+$$
+
+LTspice 驗證：
+
+| 設計 | $\lvert A_v\rvert$ | 輸出正峰／負峰 | 上下不對稱 |
+| --- | --- | --- | --- |
+| 只放大 $R_{C1}$ 到 120 Ω、射極全旁路 | 16.1（小訊號 19.8） | +553 mV／−1057 mV | **31.3%** |
+| $R_{C1}$ 620 Ω ＋ 射極留 22 Ω 不旁路 | **20.13** | +990 mV／−1023 mV | **1.6%** |
+
+兩者的小訊號增益都接近 20，差別在**大訊號**。射極全旁路時，整個輸入訊號都落在基極-射極接面上，$v_{be}$ 的峰值約 43 mV，遠超過 $V_T = 25.9\text{ mV}$——指數關係的非線性整個跑出來，波形上下不對稱 31%。留 22 Ω 不旁路之後，大部分訊號落在這顆線性電阻上，接面只分到幾毫伏，波形就回到對稱。
+
+**定案設計的工作點**：$V_B = 5.88\text{ V}$、$V_E = 5.18\text{ V}$、$V_C = 8.87\text{ V}$、$V_{CE} = 3.70\text{ V}$、$I_C = 5.04\text{ mA}$。輸出擺 ±1 V 時 $V_{CE}$ 最低還有 2.7 V，餘裕充足。
+
+> 這個設計順便回答了「為什麼教科書總是把射極電阻拆成兩段」：**被旁路的那段管直流穩定，不被旁路的那段管交流線性**。一顆電阻拆成兩顆，兩個互相衝突的需求就各自滿足了。
+
+## 附錄：模擬檔與記錄簿
+
+**模擬工作區**：`simulations/lab2/`（說明見該目錄的 `README.md`）
+
+| 檔案 | 內容 |
+| --- | --- |
+| `circuitjs/*.txt` | 四個 CircuitJS 電路檔，用 `circuitjs-link.mjs` 產生連結 |
+| `lab2-exp1-curves.cir` | 輸出特性曲線族（四組 $V_{BB}$） |
+| `lab2-exp1-vbb-sweep.cir` | $V_{CC}$ 固定掃 $V_{BB}$，看導通門檻 |
+| `lab2-exp1-beta-sens.cir` | 主動區工作點對 $\beta$ 的敏感度（問題 3 的對照組） |
+| `lab2-exp2-op.cir`、`lab2-exp2-op-vbb.cir` | 實驗二的工作點 |
+| `lab2-q2-rc-sweep.cir` | 問題 2：掃 $R_C$ 找 $V_C = V_{CC}/2$ |
+| `lab2-q3-beta.cir` | 問題 3：飽和時掃 $\beta$ |
+| `lab2-bonus-qpoint.cir`、`lab2-bonus-qpoint-beta.cir` | 第一部分 Bonus：設計 $R_e$ 與其 $\beta$ 敏感度 |
+| `lab2-exp3-ce-amp.cir`、`lab2-exp3-ce-amp-op.cir` | CE 放大器的四組波形與直流工作點 |
+| `lab2-bonus-c3-ac.cir` | 第二部分 Bonus：$C_3$ 的增益天花板 |
+| `lab2-bonus-degen.cir`、`lab2-bonus-degen-ac.cir` | 第二部分 Bonus 的定案設計驗證 |
+| `plot.py` | 讀 `.raw` 出四張圖到 `public/note-images/ec-week6-ltspice/` |
+| `annotate_current_path.py` | Tinkercad 截圖的電流路徑疊圖 |
+| `build_record_xlsx.py` | 產生當天用的 Excel 記錄簿 |
+
+**跑法**
+
+```bash
+cd simulations/lab2
+../tools/run-lt.sh lab2-*.cir                 # 產生 .raw / .log
+../lab1/.venv/bin/python plot.py              # 出圖並印出工作點與增益
+../lab1/.venv/bin/python build_record_xlsx.py # 產生 measured/Lab2-數據記錄.xlsx
+```
+
+**記錄簿**：`simulations/lab2/measured/Lab2-數據記錄.xlsx`，四張工作表——說明、實驗一 特性曲線（四組 × 31 列，LTspice 預報已填好）、實驗二 beta（Table 2 與公式）、第二部分 CE 放大器（直流工作點、四種組合、Bonus）。黃底格子是當天要填的，填一列就會自己算誤差。
