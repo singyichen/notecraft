@@ -11,7 +11,7 @@ import sys
 
 import numpy as np
 from openpyxl import Workbook
-from openpyxl.chart import Reference, ScatterChart, Series
+from openpyxl.chart import BarChart, Reference, ScatterChart, Series
 from openpyxl.chart.marker import Marker
 from openpyxl.styles import Alignment, Border, Font, PatternFill, Side
 from openpyxl.utils import get_column_letter
@@ -225,28 +225,30 @@ for k, vbb in enumerate(VBBS):
 
 HROW = 11
 for k, vbb in enumerate(VBBS):
-    base = 2 + 4 * k
+    base = 2 + 5 * k
     c = ws.cell(row=HROW, column=base, value=f'V_BB = {vbb} V')
     c.font = BOLD
     c.fill = FILL_GP
     c.alignment = Alignment(horizontal='center')
-    ws.merge_cells(start_row=HROW, start_column=base, end_row=HROW, end_column=base + 3)
-    for j in range(4):
+    ws.merge_cells(start_row=HROW, start_column=base, end_row=HROW, end_column=base + 4)
+    for j in range(5):
         ws.cell(row=HROW, column=base + j).border = BOX
 head(ws, HROW + 1,
-     ['V_CC (V)'] + ['實測 V_CE (V)', '實測 V_RC (V)', 'I_C = V_RC/R_C (mA)', 'LTspice I_C (mA)'] * 4,
-     widths=[10] + [13, 13, 15, 15] * 4, height=34)
+     ['V_CC (V)'] + ['實測 V_CE (V)', '實測 V_RC (V)', 'I_C = V_RC/R_C (mA)',
+                     'LTspice V_CE (V)', 'LTspice I_C (mA)'] * 4,
+     widths=[10] + [13, 13, 15, 15, 15] * 4, height=34)
 R0 = HROW + 2
 for i, vcc in enumerate(VCCS):
     r = R0 + i
     put(ws, r, 1, vcc, font=BLUE, fmt='0.0')
     for k in range(4):
-        base = 2 + 4 * k
+        base = 2 + 5 * k
         cl = get_column_letter(base + 1)
         put(ws, r, base, None, fill=FILL_IN, fmt='0.000')
         put(ws, r, base + 1, None, fill=FILL_IN, fmt='0.000')
         put(ws, r, base + 2, f'=IF({cl}{r}="","",{cl}{r}/$B$4*1000)', fmt='0.000')
-        put(ws, r, base + 3, round(EXP1[k]['ic'][i], 4), font=BLUE, fmt='0.000')
+        put(ws, r, base + 3, round(EXP1[k]['vce'][i], 4), font=BLUE, fmt='0.000')
+        put(ws, r, base + 4, round(EXP1[k]['ic'][i], 4), font=BLUE, fmt='0.000')
 RN = R0 + len(VCCS) - 1
 ws.cell(row=RN + 2, column=1,
         value='V_RC 是集極電阻兩端的壓降（量 V_CC 對集極），I_C 由它換算；'
@@ -266,10 +268,15 @@ ch.x_axis.title = 'V_CE (V)'
 ch.y_axis.title = 'I_C (mA)'
 ch.height, ch.width = 11, 20
 for k, vbb in enumerate(VBBS):
-    base = 2 + 4 * k
+    base = 2 + 5 * k
     ch.series.append(dot_series(Reference(ws, min_col=base + 2, min_row=R0, max_row=RN),
-                                Reference(ws, min_col=base, min_row=R0, max_row=RN), f'實測 V_BB = {vbb} V'))
-ws.add_chart(ch, f'{get_column_letter(19)}{HROW}')
+                                Reference(ws, min_col=base, min_row=R0, max_row=RN), f'實測 {vbb} V'))
+for k, vbb in enumerate(VBBS):
+    base = 2 + 5 * k
+    ch.series.append(line_series(Reference(ws, min_col=base + 4, min_row=R0, max_row=RN),
+                                 Reference(ws, min_col=base + 3, min_row=R0, max_row=RN),
+                                 f'LTspice {vbb} V'))
+ws.add_chart(ch, f'{get_column_letter(23)}{HROW}')
 
 # ── 實驗二：電流增益 β ──────────────────────────────────────────────────────
 ws = wb.create_sheet('實驗二 beta')
@@ -312,6 +319,27 @@ for label, unit, formula, lt, memo in items:
 ws.cell(row=r + 1, column=1,
         value='β_calculate 與 β_measure 差很多是正常的，原因就是講義問題 1 的答案：'
               '這個偏壓把電晶體推進飽和區，I_C 被 R_C 限制住，不再等於 β × I_B。').font = NOTE
+ROW_IR1, ROW_BETA = 11, 15          # items 由 r=7 起算：11–14 是四個電流、15 是 β_calculate
+ch = BarChart()
+ch.type, ch.style = 'col', 10
+ch.title = '實驗二：四個電流的實測 vs LTspice 預報'
+ch.y_axis.title = '電流 (mA)'
+ch.height, ch.width = 9, 17
+ch.add_data(Reference(ws, min_col=2, min_row=ROW_IR1, max_row=ROW_IR1 + 3), titles_from_data=False)
+ch.add_data(Reference(ws, min_col=5, min_row=ROW_IR1, max_row=ROW_IR1 + 3), titles_from_data=False)
+ch.set_categories(Reference(ws, min_col=1, min_row=ROW_IR1, max_row=ROW_IR1 + 3))
+ch.series[0].tx = None
+ws.add_chart(ch, 'I6')
+
+ch = BarChart()
+ch.type, ch.style = 'col', 10
+ch.title = 'β：板子上算出來的 vs 電表 hFE 檔量到的'
+ch.y_axis.title = 'β'
+ch.height, ch.width = 9, 17
+ch.add_data(Reference(ws, min_col=2, min_row=ROW_BETA, max_row=ROW_BETA + 1), titles_from_data=False)
+ch.set_categories(Reference(ws, min_col=1, min_row=ROW_BETA, max_row=ROW_BETA + 1))
+ws.add_chart(ch, 'I25')
+
 checklist(ws, r + 3, [
     ('Table 2 五個量都填完', 'V_R1、V_R2、V_RC、V_CE、β_measure'),
     ('電晶體 hFE 讀值照片 1 張', '拔下來插 hFE 座量到的 β，結報要對照'),
@@ -364,6 +392,17 @@ for k, lab in enumerate(CE_LABELS):
     put(ws, r, 6, f'=IF(OR(D{r}="",E{r}=0),"",(D{r}-E{r})/E{r})', fmt='0.0%')
     put(ws, r, 7, None, fill=FILL_IN)
     r += 1
+gain_first, gain_last = first, r - 1
+ch = BarChart()
+ch.type, ch.style = 'col', 10
+ch.title = '第二部分：四種組合的電壓增益（實測 vs LTspice）'
+ch.y_axis.title = '|A_v|'
+ch.height, ch.width = 9, 19
+ch.add_data(Reference(ws, min_col=4, min_row=gain_first, max_row=gain_last), titles_from_data=False)
+ch.add_data(Reference(ws, min_col=5, min_row=gain_first, max_row=gain_last), titles_from_data=False)
+ch.set_categories(Reference(ws, min_col=1, min_row=gain_first, max_row=gain_last))
+ws.add_chart(ch, 'I12')
+
 ws.cell(row=r, column=1,
         value='四種組合都量，講義問題 1（拿掉 C3）與問題 3（R_C1 換 1 kΩ）的答案就直接讀得出來。'
               'R_C1 = 1 kΩ 那兩列特別注意輸出有沒有一邊被削平。').font = NOTE
