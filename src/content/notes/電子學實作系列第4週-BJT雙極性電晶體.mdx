@@ -282,6 +282,8 @@ excerpt: There are 2^2 possibilities for the terminal voltages; three combinatio
 - **第四種組合為什麼不用**：B–E 逆偏、B–C 順偏（反向主動區）在數學上存在，但因為射極與集極的摻雜濃度刻意不對稱（見第 8 頁），反過來用的電流增益很差，課程直接略過。
 - **符號提醒**：第 7 頁對「B–C 逆偏」寫成 $V_{CB} < 0$，但第 6 頁符號圖上的 $V_{CB}$ 是「集極相對基極」，依第 8 頁的數字（$V_{BE} = 0.8\ \text{V}$、$V_{CE} = 1\ \text{V}$）算出來是 $V_C - V_B = +0.2\ \text{V}$，第 26 頁 Example 4-7 也用 $V_{CB} = V_X - V_B = 0.624 > 0$ 判定逆偏。所以第 7、8 頁的 $V_{CB} < 0$ 要讀成「基極相對集極為負」（即 $V_{BC} < 0$，第 8 頁圖上的 $-0.2\ \text{V}$ 就是這個量）。判斷模式時直接看**接面是順偏還是逆偏**，不要只看符號的正負。
 
+- **分情況驗證（casework）**：解電路時先假設工作區，使用該區的大訊號模型求出電壓與電流，再回代檢查 B–E、B–C 接面偏壓與 $V_{CE}$。若結果與假設矛盾，就改用另一工作區重解；不可先套主動區的 $I_C = I_S e^{V_{BE}/V_T}$，卻不驗證算出的集極電壓是否仍讓 B–C 逆偏。
+
 ### 主動區的運作與錯誤模型：Active Mode（第 8–10 頁）
 
 {/* @ai-reference
@@ -418,7 +420,18 @@ V_{BE,IC} - V_{BE,dis} &= V_T \ln\frac{I_C}{I_{S2}} - V_T \ln\frac{I_C}{I_{S1}} 
 \end{aligned}
 $$
 
-- **實務修正（第 16 頁）**：實際上因為基極寬度等其他參數也不同，差距落在 $100$ 到 $150\ \text{mV}$。**重點是數字**：積體電路電晶體取 $V_{BE,IC} \approx 800\ \text{mV}$，分立元件降到 $V_{BE,dis} \approx 700\ \text{mV}$。本課程實驗用的是分立電晶體，手算與模擬都應該用 700 mV 這一側。
+- **課堂的實務估算（第 16 頁）**：積體電路內的 BJT 尺寸通常比分立元件小，若把製程差異濃縮為 $I_{S,IC}$ 約小 $100$ 到 $150$ 倍，則同一 $I_C$ 下
+
+$$
+\begin{aligned}
+V_{BE,IC}-V_{BE,dis}
+&=V_T\ln\frac{I_{S,dis}}{I_{S,IC}}\\
+&\approx 26\ \text{mV}\times\ln(100\text{--}150)
+\approx 0.12\text{--}0.13\ \text{V}.
+\end{aligned}
+$$
+
+這與「分立元件約 $0.7\ \text{V}$、積體電路內元件約 $0.8\ \text{V}$」的課堂估計同階。它們都不是定律：$V_{BE}$ 仍由工作電流、溫度與元件參數決定；$0.6\ \text{V}$ 只適合更粗略的導通判斷。本課實驗使用分立電晶體，手算時可以 $0.7\ \text{V}$ 作零階近似，精確預測則應回到指數式或元件模型。
 
 ### 簡單偏壓級與定電流源：Example 4-5（第 17–18 頁）
 
@@ -587,6 +600,20 @@ excerpt: If the device remains in the active mode (VCE > VBE), IC is independent
 
 *同一組 IS、β，四張圖都算得出來：指數決定高度，VCE 不改變高度。*
 
+#### 實驗視角：從單一曲線到一族曲線
+
+| 元件 | 控制量 | 預期的 I–V 圖形 |
+| --- | --- | --- |
+| 電阻 | 兩端電壓 | 近似單一直線，斜率由電阻值決定 |
+| 二極體 | 接面電壓 | 單一非線性曲線 |
+| BJT | 第三端的 $V_{BE}$ 或 $I_B$ | 每一個偏壓對應一條輸出曲線，合起來是一族 $I_C$–$V_{CE}$ 曲線 |
+
+下週實驗應依「**預測 → 模擬 → 實測 → 解釋差異**」建立證據鏈：先改變偏壓，用公式、手算、程式或 SPICE 產生預測曲線，再量測各組電流。
+
+實測點因元件差異與量測誤差而稍微偏離理論曲線是合理的；若不同偏壓的曲線完全沒有預期的分離或趨勢，應先檢查接線與量測方法，不要先把差異全部歸因於元件誤差。
+
+> 課務提醒：第二個實驗會實作放大器；實驗講義連結會重新上傳到課程群組或平台。
+
 ### 轉導：Transconductance（第 30–34 頁）
 
 {/* @ai-reference
@@ -618,6 +645,8 @@ g_m = \frac{1\ \text{mA}}{26\ \text{mV}} = 0.0385\ \Omega^{-1} = 0.0385\ \text{S
 $$
 
 因次檢查：A/V 就是 S，正確。
+- **不要把轉導與其倒數混在一起**：同一工作點的 $1/g_m = V_T/I_C$ 單位是電阻，常記為小訊號射極電阻 $r_e$；它不是轉導本身。$I_C=1\ \text{mA}$ 時 $g_m\approx38.5\ \text{mS}$，而 $r_e=1/g_m\approx26\ \Omega$。
+- **小訊號變化量**：$\Delta i_C\approx g_m\Delta v_{BE}$。例如 $I_C=1\ \text{mA}$、$\Delta v_{BE}=10\ \text{mV}$ 時，$\Delta i_C\approx38.5\ \text{mS}\times10\ \text{mV}=0.385\ \text{mA}$。在溫度固定時，$I_C$ 乘上 10，$g_m$ 也乘上 10，$r_e$ 則降為十分之一。
 - **轉導的視覺化（visualization of transconductance，第 32 頁）**：$g_m$ 就是 $I_C$–$V_{BE}$ 曲線在偏壓點的**斜率**。輸入在 $V_{BE0}$ 附近擺動 $\Delta V$，輸出就在 $I_{C0}$ 附近擺動 $g_m \Delta V$。「偏壓在 $I_{C0}$」（biased at $I_{C0}$）指的是沒有訊號時元件就流著這麼多**靜態電流（quiescent current）**，而 $I_{C0}$ 要依需要的 $g_m$、也就是最終需要的增益來選。上方「本週摘要」的互動元件讓你拖動 $I_{C0}$ 親手看斜率怎麼變。
 
 ![轉導的視覺化：IC–VBE 指數曲線上，偏壓點 (VBE0, IC0) 處輸入擺動 ΔV，輸出擺動 gm·ΔV，電流越大切線越陡](/note-images/ec-week4-ch4/17-gm-visualization-slope.png)
@@ -661,6 +690,20 @@ excerpt: Small signal model is derived by perturbing voltage difference (ΔV), e
 *一次擾動一對端點、固定第三隻腳：每個偏導數變成一個線性元件。*
 
 - **$V_{BE}$ 變動（第 36 頁）**：集極電流的變化由轉導給出，是一個 C–E 之間的電壓控制電流源；基極電流的變化是它的 $1/\beta$，而「電壓變化除以電流變化」就是電阻，於是 B–E 之間變成一顆電阻 $r_\pi$：
+
+把工作點寫成 $V_{BE}=V_{BEQ}+v_{be}$、$I_C=I_{CQ}+i_c$，一階泰勒展開為
+
+$$
+\begin{aligned}
+I_C(V_{BEQ}+v_{be})
+&= I_C(V_{BEQ})+\left.\frac{\partial I_C}{\partial V_{BE}}\right|_Q v_{be}+O(v_{be}^2)\\
+I_{CQ}+i_c
+&\approx I_{CQ}+g_m v_{be}
+\quad\Rightarrow\quad i_c\approx g_m v_{be}.
+\end{aligned}
+$$
+
+這是局部切線近似：只有 $|v_{be}|\ll V_T$ 時高階項才小；變動大時要回到完整指數式。令 $v_\pi\equiv v_{be}$，再由基極電流得到
 
 $$
 \begin{aligned}
@@ -745,6 +788,27 @@ $$
 <details>
   <summary>答案</summary>
   $V_{out} = 1.8 - 200\times6.92\times10^{-3} = 0.416\ \text{V}$，低於基極的 $0.8\ \text{V}$，B–C 接面順偏，電晶體進入飽和區（第 49 頁），小訊號公式失效。增益不是想加就能加，偏壓點要先撐得住。
+</details>
+
+#### 共射極放大器與靜態工作點
+
+這個電路稱為**共射極（common-emitter）**，因為射極在小訊號分析中是輸入與輸出共用的參考點（交流地），輸出通常從集極取出。若不計爾利效應，$A_v\approx-g_mR_C$；納入爾利效應與外接負載 $R_L$ 後，
+
+$$
+A_v\approx-g_m\left(R_C\parallel r_o\parallel R_L\right).
+$$
+
+負號代表反相：$v_{be}$ 上升使 $i_c$ 上升，集極電阻壓降增加，因而輸出電壓下降。因次檢查為 $(\text{A}/\text{V})\cdot(\text{V}/\text{A})=1$，電壓增益為無因次。
+
+**靜態工作點（quiescent point，Q 點）** 是沒有輸入訊號時的 $(V_{CEQ},I_{CQ})$。Q 點不應靠近截止或飽和：輸出沿負載線擺動時，兩側都要留空間；碰到截止或飽和邊界就會削波。
+
+共基極（common-base）與共集極（common-collector，亦稱射極跟隨器 emitter follower）是其他接法；本次課堂只作名稱對照，後續章節再分析。
+
+**一題自測**：若共射極級的 Q 點已非常靠近飽和邊界，輸入正弦波繼續增大時，集極輸出會先在哪一側被削平？
+
+<details>
+  <summary>答案</summary>
+  會先在低電壓側被削平。輸入上升時 $I_C$ 增加、集極電壓下降，最先撞上飽和邊界。
 </details>
 
 ### 爾利效應：Early Effect（第 42–47 頁）
@@ -1054,7 +1118,10 @@ excerpt: Example 4-20: Draw the small-signal equivalent circuits for the topolog
 | 大訊號模型（large-signal model） | B–E 之間一顆二極體、C–E 之間一個受控電流源，指數關係不線性化；用於算直流偏壓點與判斷工作區。 |
 | 小訊號模型（small-signal model） | 在偏壓點做一階泰勒展開：B–E 之間 $r_\pi$、C–E 之間受控源 $g_m v_\pi$ 與輸出電阻 $r_o$；適用於擺幅遠小於 $V_T$ 的訊號。 |
 | 轉導（transconductance，$g_m$） | $g_m = dI_C/dV_{BE} = I_C/V_T$；$I_C$–$V_{BE}$ 曲線在偏壓點的斜率，衡量電壓轉電流的效率；與集極電流成正比、與面積成正比、與基極電流無關。 |
+| 小訊號射極電阻（$r_e$） | $r_e = 1/g_m = V_T/I_C$；是轉導的倒數，單位為歐姆，不是轉導本身。 |
 | 靜態電流／偏壓電流（quiescent / bias current，$I_{C0}$） | 沒有訊號時流過集極的直流電流；決定 $g_m$，也決定靜態耗電。 |
+| 靜態工作點（quiescent point，Q 點） | 無輸入訊號時的 $(V_{CEQ},I_{CQ})$；應在截止與飽和之間保留輸出擺幅。 |
+| 共射極放大器（common-emitter amplifier） | 射極是輸入與輸出共用的小訊號參考點，輸出取自集極；基本增益為 $-g_mR_C$，負號表示反相。 |
 | 爾利效應（Early effect） | $V_{CE}$ 升高使 B–C 空乏區擴張、有效基極變薄、集極電流微升；以修正因子 $(1 + V_{CE}/V_A)$ 表示。 |
 | 爾利電壓（Early voltage，$V_A$） | 輸出特性曲線斜線延長線與橫軸的交點 $-V_A$；由製程決定，典型數十伏特。 |
 | 輸出電阻（output resistance，$r_o$） | $r_o = \Delta V_{CE}/\Delta I_C \approx V_A / I_C$；與負載並聯，把增益封頂在 $g_m r_o = V_A / V_T$。 |
@@ -1069,10 +1136,11 @@ excerpt: Example 4-20: Draw the small-signal equivalent circuits for the topolog
 - 面積比對應的電壓差（同電流）：$\Delta V_{BE} = V_T \ln\dfrac{A_{E1}}{A_{E2}}$。
 - 集極電壓與主動區邊緣：$V_X = V_{CC} - I_C R_C$；需 $V_X > V_{BE}$（NPN）才在主動區，$R_{C,max} = \dfrac{V_{CC} - V_{BE}}{I_C}$。
 - 轉導：$g_m = \dfrac{I_C}{V_T}$（單位 S）。
+- 小訊號電流與射極電阻：$i_c \approx g_m v_{be}$、$r_e = \dfrac{1}{g_m} = \dfrac{V_T}{I_C}$。
 - 小訊號輸入電阻：$r_\pi = \dfrac{\beta}{g_m} = \dfrac{V_T}{I_B}$。
 - 含爾利效應的集極電流：$I_C \approx I_S \exp\!\left(\dfrac{V_{BE}}{V_T}\right)\left(1 + \dfrac{V_{CE}}{V_A}\right)$。
 - 輸出電阻：$r_o = \dfrac{\Delta V_{CE}}{\Delta I_C} \approx \dfrac{V_A}{I_C}$；本質增益上限 $g_m r_o = \dfrac{V_A}{V_T}$。
-- 電阻負載放大級的小訊號增益：$A_V = -g_m (R_C \parallel r_o)$；忽略 $r_o$ 時 $A_V = -g_m R_C$。
+- 電阻負載放大級的小訊號增益：$A_V = -g_m (R_C \parallel r_o \parallel R_L)$；無外接負載且忽略 $r_o$ 時 $A_V = -g_m R_C$。
 - 飽和區的電流：$I_C = I_{S1}\exp\dfrac{V_{BE}}{V_T} - I_{S2}\exp\dfrac{V_{BC}}{V_T}$，$\beta_{forced} = \dfrac{I_C}{I_B} < \beta$。
 - 軟飽和條件：$V_{BC} \le 400\ \text{mV}$，即 $V_{CC} \ge I_C R_C + (V_{BE} - 400\ \text{mV})$。
 - 深飽和：$V_{CE,sat} \approx 200\ \text{mV}$。
