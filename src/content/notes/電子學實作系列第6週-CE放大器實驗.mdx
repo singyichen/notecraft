@@ -1108,4 +1108,6 @@ cd simulations/lab2
 ../lab1/.venv/bin/python build_record_xlsx.py # 產生 measured/Lab2-數據記錄.xlsx
 ```
 
-**記錄簿**：`simulations/lab2/measured/Lab2-數據記錄.xlsx`，四張工作表——說明、實驗一 特性曲線（四組 × 31 列，LTspice 預報已填好）、實驗二 beta（Table 2 與公式）、第二部分 CE 放大器（直流工作點、四種組合、Bonus）。黃底格子是當天要填的，填一列就會自己算誤差。
+**記錄簿**：`simulations/lab2/measured/Lab2-數據記錄.xlsx`，五張工作表——說明、實驗一 特性曲線（四組 × 31 列，LTspice 預報已填好）、**交報告用 Table 1**、實驗二 beta（Table 2 與公式）、第二部分 CE 放大器（直流工作點、四種組合、Bonus）。黃底格子是當天要填的，填一列就會自己算誤差，四張對照圖（實測點疊在 LTspice 預報曲線上）也跟著更新。
+
+> 主表用的是助教投影片的級距（設 $V_{CC}$ 每次加 0.5 V、量各自的 $V_{CE}$），講義 Table 1 的欄位則寫成「$V_{CE}$ 是設定值、每組五列」。這個電路沒辦法直接設定 $V_{CE}$（它由 $V_{CE} = V_{CC} - I_C R_C$ 決定），所以量測照助教的做法，另外用「交報告用 Table 1」那張把資料縮成講義要的五列版面——改取樣點那五格，整張表會自己重算。

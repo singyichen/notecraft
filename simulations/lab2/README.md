@@ -45,8 +45,12 @@ node ../../.claude/skills/lab-workflow/scripts/circuitjs-link.mjs circuitjs/*.tx
 
 ## 記錄簿
 
-`build_record_xlsx.py` 產生實驗當天用的 `measured/Lab2-數據記錄.xlsx`：四張工作表（說明／實驗一 特性曲線
-四組 × 31 列／實驗二 beta／第二部分 CE 放大器），預報欄直接讀 `.raw`，黃底格子是當天要填的。
+`build_record_xlsx.py` 產生實驗當天用的 `measured/Lab2-數據記錄.xlsx`：五張工作表（說明／實驗一 特性曲線
+四組 × 31 列／交報告用 Table 1／實驗二 beta／第二部分 CE 放大器），預報欄直接讀 `.raw`，
+黃底格子是當天要填的，四張對照圖（實測 vs LTspice）會跟著更新。
+
+量測級距照助教投影片（設 `V_CC`、量 `V_CE`），講義 Table 1 則把 `V_CE` 寫成設定值、每組五列——
+`交報告用 Table 1` 那張用 INDEX/MATCH 從主表抓出五個取樣點，排成講義的版面，改取樣點整張就重算。
 檔案已存在時不覆蓋，要重產範本加 `--force`。
 
 ```bash

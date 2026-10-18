@@ -213,24 +213,27 @@ ws['C4'] = '← 講義指定 1 kΩ；改這一格，所有 I_C 計算欄會跟�
 ws['C4'].font = NOTE
 
 # 每組 VBB 先記一次 V_BE 與 ON/OFF
-ws['E4'] = '各組的 V_BE（導通後幾乎不變，量一次即可）與 ON/OFF 判定'
+ws['E4'] = '各組的預報值（實測 V_BE 與 ON/OFF 填在下面各組的標題列，比照講義 Table 1）'
 ws['E4'].font = BOLD
-head(ws, 5, [''] * 4 + ['V_BB (V)', '實測 V_BE (V)', 'LTspice V_BE (V)', 'ON / OFF'], height=20)
+head(ws, 5, [''] * 4 + ['V_BB (V)', 'LTspice V_BE (V)', 'LTspice I_C @ 15 V (mA)', 'ON/OFF（預期）'], height=20)
 for k, vbb in enumerate(VBBS):
     r = 6 + k
     put(ws, r, 5, vbb, font=BLUE, fmt='0.0')
-    put(ws, r, 6, None, fill=FILL_IN, fmt='0.000')
-    put(ws, r, 7, round(EXP1[k]['vbe'], 3), font=BLUE, fmt='0.000')
-    put(ws, r, 8, None, fill=FILL_IN)
+    put(ws, r, 6, round(EXP1[k]['vbe'], 3), font=BLUE, fmt='0.000')
+    put(ws, r, 7, round(EXP1[k]['ic'][-1], 3), font=BLUE, fmt='0.000')
+    put(ws, r, 8, 'OFF' if EXP1[k]['ic'][-1] < 0.01 else 'ON', font=BLUE)
 
 HROW = 11
 for k, vbb in enumerate(VBBS):
     base = 2 + 5 * k
-    c = ws.cell(row=HROW, column=base, value=f'V_BB = {vbb} V')
+    c = ws.cell(row=HROW, column=base, value=f'V_BB = {vbb} V　V_BE =')
     c.font = BOLD
     c.fill = FILL_GP
     c.alignment = Alignment(horizontal='center')
-    ws.merge_cells(start_row=HROW, start_column=base, end_row=HROW, end_column=base + 4)
+    ws.merge_cells(start_row=HROW, start_column=base, end_row=HROW, end_column=base + 2)
+    put(ws, HROW, base + 3, None, fill=FILL_IN, fmt='0.000')          # 實測 V_BE
+    put(ws, HROW, base + 4, None, fill=FILL_IN)                       # ON / OFF
+    ws.cell(row=HROW, column=base + 4).alignment = Alignment(horizontal='center')
     for j in range(5):
         ws.cell(row=HROW, column=base + j).border = BOX
 head(ws, HROW + 1,
@@ -250,6 +253,8 @@ for i, vcc in enumerate(VCCS):
         put(ws, r, base + 3, round(EXP1[k]['vce'][i], 4), font=BLUE, fmt='0.000')
         put(ws, r, base + 4, round(EXP1[k]['ic'][i], 4), font=BLUE, fmt='0.000')
 RN = R0 + len(VCCS) - 1
+ws.cell(row=HROW - 1, column=2,
+        value='↓ 各組標題列右邊兩個黃格：左邊填該組量到的 V_BE、右邊填 ON 或 OFF（對應講義 Table 1 的區塊標題）').font = NOTE
 ws.cell(row=RN + 2, column=1,
         value='V_RC 是集極電阻兩端的壓降（量 V_CC 對集極），I_C 由它換算；'
               'V_CE 是集極對射極（本電路射極接地，等於集極對地）。兩欄都量，結報才有互相驗證的資料。').font = NOTE
@@ -440,6 +445,67 @@ checklist(ws, r + 2, [
     ('直流工作點電表照片 1 張', 'V_B、V_E、V_C 三個讀值'),
     ('Bonus 電路的接線照與波形各 1 張', '元件值改了要拍，結報要對照'),
 ])
+
+# ── 交報告用：完全照講義 Table 1 的版面 ─────────────────────────────────────
+# 講義只要 5 列，主表是助教級距的 31 列。這張用 INDEX/MATCH 從主表抓，
+# 改 H 欄的取樣點就整張跟著變，抄進報告時不必再挑數字。
+ws = wb.create_sheet('交報告用 Table 1')
+title_block(ws, 'Table 1（交報告用版面）',
+            '欄位與版面照 App_Lab2.pdf 第 8 頁；數值自動從「實驗一 特性曲線」工作表抓，不要直接在這裡填', 6)
+SRC = "'實驗一 特性曲線'"
+MAIN_R0, MAIN_RN = R0, RN
+SAMPLES = [1, 2, 5, 10, 15]
+
+ws['H5'] = '取樣的 V_CC (V)'
+ws['H5'].font = BOLD
+ws['H5'].fill = FILL_HD
+ws['H5'].border = BOX
+ws.column_dimensions['H'].width = 16
+for i, v in enumerate(SAMPLES):
+    put(ws, 6 + i, 8, v, font=BLUE, fmt='0.0')
+ws.cell(row=11, column=8, value='↑ 想換成別的 V_CC 就改這五格').font = NOTE
+
+for k, vbb in enumerate(VBBS):
+    col = 1 + 3 * (k % 2)                      # 左區塊 A–B、右區塊 D–E
+    top = 5 + 9 * (k // 2)
+    base = 2 + 5 * k                           # 主表該組的第一欄
+    vce_col = get_column_letter(base)
+    ic_col = get_column_letter(base + 2)
+    vbe_cell = f'{get_column_letter(base + 3)}${HROW}'
+    onoff_cell = f'{get_column_letter(base + 4)}${HROW}'
+    c = ws.cell(row=top, column=col,
+                value=f'="V_BB = {vbb} V 、 V_BE = "&IF({SRC}!{vbe_cell}="","____",'
+                      f'TEXT({SRC}!{vbe_cell},"0.000"))&" V 、 "&IF({SRC}!{onoff_cell}="","ON/OFF",'
+                      f'{SRC}!{onoff_cell})')
+    c.font = Font(name=FONT, bold=True, color='FFFFFF')
+    c.fill = PatternFill('solid', fgColor='3C7FB1')
+    c.alignment = Alignment(horizontal='center', vertical='center')
+    c.border = BOX
+    ws.merge_cells(start_row=top, start_column=col, end_row=top, end_column=col + 1)
+    ws.cell(row=top, column=col + 1).border = BOX
+    head_cells = ['V_CE (experimental setting)', 'I_C (measure)  ( = V_C / R_C )']
+    for j, t in enumerate(head_cells):
+        h = ws.cell(row=top + 1, column=col + j, value=t)
+        h.font = BOLD
+        h.fill = FILL_HD
+        h.border = BOX
+        h.alignment = Alignment(horizontal='center', vertical='center', wrap_text=True)
+        ws.column_dimensions[get_column_letter(col + j)].width = 30
+    ws.row_dimensions[top + 1].height = 30
+    for i in range(len(SAMPLES)):
+        r = top + 2 + i
+        m = f'MATCH($H${6 + i},{SRC}!$A${MAIN_R0}:$A${MAIN_RN},0)'
+        put(ws, r, col,
+            f'=IFERROR(INDEX({SRC}!${vce_col}${MAIN_R0}:${vce_col}${MAIN_RN},{m}),"")', fmt='0.000')
+        put(ws, r, col + 1,
+            f'=IFERROR(INDEX({SRC}!${ic_col}${MAIN_R0}:${ic_col}${MAIN_RN},{m}),"")', fmt='0.000')
+
+ws.cell(row=23, column=1,
+        value='I_C 的單位是 mA（講義表頭寫 A，抄進報告時記得換算或標註單位）。').font = NOTE
+ws.cell(row=24, column=1,
+        value='區塊標題的 V_BE 與 ON/OFF 會跟著「實驗一 特性曲線」各組標題列的黃格自動帶過來。').font = NOTE
+ws.sheet_view.showGridLines = False
+wb.move_sheet('交報告用 Table 1', offset=-2)
 
 os.makedirs(os.path.dirname(OUT), exist_ok=True)
 if os.path.exists(OUT) and '--force' not in sys.argv:
