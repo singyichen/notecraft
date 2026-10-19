@@ -13,8 +13,10 @@ import numpy as np
 from openpyxl import Workbook
 from openpyxl.chart import BarChart, Reference, ScatterChart, Series
 from openpyxl.chart.marker import Marker
+from openpyxl.chart.series import SeriesLabel
 from openpyxl.styles import Alignment, Border, Font, PatternFill, Side
 from openpyxl.utils import get_column_letter
+from openpyxl.worksheet.datavalidation import DataValidation
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.abspath(os.path.join(HERE, '..', 'tools')))
@@ -169,7 +171,7 @@ title_block(ws, 'Lab 2 BJT 實驗　數據記錄簿',
             '電子學實作系列第 6 週．App_Lab2.pdf．兩個部分三張記錄表．當天用筆電直接填', 6)
 rows = [
     ('怎麼用', ''),
-    ('1', '每個實驗一張工作表，只要填**黃底**的格子，其他欄位都是公式或預報值，不要覆蓋。'),
+    ('1', '每個實驗一張工作表，只要填黃底的格子，其他欄位都是公式或預報值，不要覆蓋。'),
     ('2', '填一列，右邊的計算欄與下面的圖就會跟著更新；不必等全部填完才看得到對照。'),
     ('3', '藍色字是寫死的輸入：講義規格或 LTspice 模擬結果。黑色字是公式。'),
     ('4', '實驗一要量四組 VBB × 31 個 VCC；時間不夠時先把 2.2 V 與 2.4 V 兩組量完，'),
@@ -185,7 +187,7 @@ for a, b in rows:
     ws.cell(row=r, column=1, value=a).font = BOLD if a.startswith(('怎麼用', '填寫範例')) else BLACK
     ws.cell(row=r, column=2, value=b).font = BLACK
     r += 1
-head(ws, r, ['V_CC (V)', '實測 V_CE (V)', '實測 V_RC (V)', '→ I_C (mA)', 'LTspice I_C (mA)', '→ 差異 (%)'],
+head(ws, r, ['V_CC (V)', '實測 V_CE (V)', '實測 V_RC (V)', '→ I_C (mA)', 'LTspice I_C (mA)', '→ 相對偏差 (%)'],
      widths=[14, 16, 16, 14, 18, 14])
 put(ws, r + 1, 1, 10.0, font=BLUE, fmt='0.0')
 put(ws, r + 1, 2, 2.33, fill=FILL_IN, fmt='0.000')
@@ -266,7 +268,7 @@ ws.cell(row=RN + 3, column=1,
               '兩欄都量的好處是可以當場對帳——V_CE + V_RC 應該等於 V_CC，對不起來就是有一次量錯了。').font = NOTE
 nxt = checklist(ws, RN + 5, [
     ('麵包板全景照 1 張', '看得出 R1／R2／RC 各插在第幾欄、電晶體三腳的 E／B／C 方向'),
-    ('電表接線特寫 1 張', '左表跨 B-E、中表跨 C-E、右表串在 VCC 與 RC 之間'),
+    ('電表接線特寫 1 張', '左表跨 B-E、中表跨 C-E、右表設 DC 電壓檔並跨 RC 兩端量 V_RC'),
     ('兩台電源面板各 1 張', 'V_BB 與 V_CC 的設定值要和記錄表對得上'),
     ('四組 V_BB 的 V_BE 都記到', '導通後 V_BE 幾乎不動，沒記到就無法回答「ON/OFF 怎麼判定」'),
     ('特性曲線當場畫一次', '四條線要看得出平坦的主動區；不平坦代表還沒離開飽和區'),
@@ -277,6 +279,8 @@ ch.title = '實驗一：輸出特性曲線 I_C–V_CE（實測 vs LTspice）'
 ch.style = 2
 ch.x_axis.title = 'V_CE (V)'
 ch.y_axis.title = 'I_C (mA)'
+ch.x_axis.axPos = 'b'
+ch.y_axis.axPos = 'l'
 ch.height, ch.width = 11, 20
 for k, vbb in enumerate(VBBS):
     base = 2 + 5 * k
@@ -288,6 +292,11 @@ for k, vbb in enumerate(VBBS):
                                  Reference(ws, min_col=base + 3, min_row=R0, max_row=RN),
                                  f'LTspice {vbb} V'))
 ws.add_chart(ch, f'{get_column_letter(23)}{HROW}')
+ws.freeze_panes = 'B13'
+onoff_validation = DataValidation(type='list', formula1='"ON,OFF"', allow_blank=True)
+ws.add_data_validation(onoff_validation)
+for cell in ('F11', 'K11', 'P11', 'U11'):
+    onoff_validation.add(ws[cell])
 
 # ── 實驗二：電流增益 β ──────────────────────────────────────────────────────
 ws = wb.create_sheet('實驗二 beta')
@@ -308,32 +317,32 @@ ws.cell(row=5, column=1,
               '電阻先填的是標稱值，開工前用三用電表各量一次改成實測值——±5% 的色環電阻常差到幾百歐姆，'
               '下面所有電流與 β 都是用這三格算的。').font = NOTE
 
-head(ws, 6, ['量測項目', '實測', '單位', '算式', 'LTspice 預報', '差異 (%)', '備註'],
+head(ws, 6, ['量測項目', '實測', '單位', '算式', 'LTspice 預報', '相對偏差 (%)', '備註'],
      widths=[26, 14, 10, 30, 16, 12, 34])
 items = [
-    ('R1 兩端壓降 V_R1', 'V', None, round(15 - E2['vbe'], 3), '量 V_BB 對基極'),
-    ('R2 兩端壓降 V_R2', 'V', None, round(E2['vbe'], 3), '等於 V_BE（R2 與 B-E 並聯）'),
-    ('R_C 兩端壓降 V_RC', 'V', None, round(15 - E2['vce'], 3), '量 V_CC 對集極'),
-    ('V_CE', 'V', None, round(E2['vce'], 3),
+    ('R1 兩端壓降 V_R1', 'V', None, '', round(15 - E2['vbe'], 3), '量 V_BB 對基極'),
+    ('R2 兩端壓降 V_R2', 'V', None, '', round(E2['vbe'], 3), '等於 V_BE（R2 與 B-E 並聯）'),
+    ('R_C 兩端壓降 V_RC', 'V', None, '', round(15 - E2['vce'], 3), '量 V_CC 對集極'),
+    ('V_CE', 'V', None, '', round(E2['vce'], 3),
      '直接量集極對地，不要用 V_CC − V_RC 相減（兩個 15 V 量級的數相減，誤差會和待測值同級）'),
-    ('I_R1 = V_R1 / R1', 'mA', '=IF(B7="","",B7/$C$4*1000)', round(E2['i_r1'], 3), '流進基極節點的總電流'),
-    ('I_R2 = V_R2 / R2', 'mA', '=IF(B8="","",B8/$E$4*1000)', round(E2['i_r2'], 3), '被 R2 分掉、沒進基極的那一份'),
-    ('I_B = I_R1 − I_R2', 'mA', '=IF(OR(B7="",B8=""),"",B11-B12)', round(E2['ib'], 3), 'KCL：講義第 9 頁第 3 步'),
-    ('I_C = V_RC / R_C', 'mA', '=IF(B9="","",B9/$G$4*1000)', round(E2['ic'], 3), '不必串電流表就能得到'),
-    ('β_calculate = I_C / I_B', '—', '=IF(OR(B13="",B13=0,B14=""),"",B14/B13)', round(E2['beta'], 2),
+    ('I_R1 = V_R1 / R1', 'mA', '=IF(B7="","",B7/$C$4*1000)', 'V_R1 ÷ R1 × 1000', round(E2['i_r1'], 3), '流進基極節點的總電流'),
+    ('I_R2 = V_R2 / R2', 'mA', '=IF(B8="","",B8/$E$4*1000)', 'V_R2 ÷ R2 × 1000', round(E2['i_r2'], 3), '被 R2 分掉、沒進基極的那一份'),
+    ('I_B = I_R1 − I_R2', 'mA', '=IF(OR(B7="",B8=""),"",B11-B12)', 'I_R1 − I_R2', round(E2['ib'], 3), 'KCL：講義第 9 頁第 3 步'),
+    ('I_C = V_RC / R_C', 'mA', '=IF(B9="","",B9/$G$4*1000)', 'V_RC ÷ R_C × 1000', round(E2['ic'], 3), '不必串電流表就能得到'),
+    ('β_calculate = I_C / I_B', '—', '=IF(OR(B13="",B13=0,B14=""),"",B14/B13)', 'I_C ÷ I_B', round(E2['beta'], 2),
      '這是「強迫 β」，飽和時遠小於真正的 β'),
-    ('β_measure（三用電表 hFE 檔）', '—', None, None,
+    ('β_measure（三用電表 hFE 檔）', '—', None, '', None,
      '助教把 Table 2 的 β_Meas 欄劃掉了，這格不抄進 Table 2，但仍要量——它是問題 1 的證據'),
 ]
 r = 7
-for label, unit, formula, lt, memo in items:
+for label, unit, formula, formula_desc, lt, memo in items:
     put(ws, r, 1, label)
     if formula:
         put(ws, r, 2, formula, fmt='0.000')
     else:
         put(ws, r, 2, None, fill=FILL_IN, fmt='0.000')
     put(ws, r, 3, unit)
-    put(ws, r, 4, formula if formula else '', font=NOTE)
+    put(ws, r, 4, formula_desc, font=NOTE)
     put(ws, r, 5, lt, font=BLUE, fmt='0.000')
     put(ws, r, 6, f'=IF(OR(B{r}="",E{r}="",E{r}=0),"",(B{r}-E{r})/E{r})', fmt='0.0%')
     put(ws, r, 7, memo, font=NOTE)
@@ -350,7 +359,8 @@ ch.height, ch.width = 9, 17
 ch.add_data(Reference(ws, min_col=2, min_row=ROW_IR1, max_row=ROW_IR1 + 3), titles_from_data=False)
 ch.add_data(Reference(ws, min_col=5, min_row=ROW_IR1, max_row=ROW_IR1 + 3), titles_from_data=False)
 ch.set_categories(Reference(ws, min_col=1, min_row=ROW_IR1, max_row=ROW_IR1 + 3))
-ch.series[0].tx = None
+ch.series[0].tx = SeriesLabel(v='實測')
+ch.series[1].tx = SeriesLabel(v='LTspice')
 ws.add_chart(ch, 'I6')
 
 ch = BarChart()
@@ -360,6 +370,8 @@ ch.y_axis.title = 'β'
 ch.height, ch.width = 9, 17
 ch.add_data(Reference(ws, min_col=2, min_row=ROW_BETA, max_row=ROW_BETA + 1), titles_from_data=False)
 ch.set_categories(Reference(ws, min_col=1, min_row=ROW_BETA, max_row=ROW_BETA + 1))
+ch.series[0].tx = SeriesLabel(v='β')
+ch.legend = None
 ws.add_chart(ch, 'I25')
 
 checklist(ws, r + 3, [
@@ -373,37 +385,52 @@ checklist(ws, r + 3, [
 # ── 第二部分：CE 放大器 ─────────────────────────────────────────────────────
 ws = wb.create_sheet('第二部分 CE 放大器')
 title_block(ws, '第二部分：共射放大器的電壓增益（Common Emitter Amplifier）',
-            '講義第 16–22 頁：V_CC 12 V、輸入 10 kHz／100 mVpp，量直流工作點與四種組合的增益', 7)
+            '講義第 16–22 頁：V_CC 12 V、輸入 10 kHz／100 mVpp，量直流工作點與四種組合的增益', 8)
+
+ws['A3'] = '直流計算設定'
+ws['A3'].font = BOLD
+for col, label, value in ((2, 'V_CC (V)', 12), (4, 'R_C1 100 Ω 實測 (Ω)', 100), (6, 'R_C1 1 kΩ 實測 (Ω)', 1000)):
+    put(ws, 3, col, label)
+    put(ws, 3, col + 1, value, fill=FILL_IN, fmt='0.00' if col == 2 else '0')
 
 ws['A4'] = '一、直流工作點（訊號源先關掉，用三用電表量）'
 ws['A4'].font = BOLD
-head(ws, 5, ['節點', '實測 (V)', 'LTspice R_C1 = 100 Ω', 'LTspice R_C1 = 1 kΩ', '差異 (%)', '備註', ''],
-     widths=[22, 14, 22, 22, 12, 40, 10])
+head(ws, 5, ['節點', '實測 R_C1 = 100 Ω', 'LTspice R_C1 = 100 Ω', '相對偏差 (%)',
+             '實測 R_C1 = 1 kΩ', 'LTspice R_C1 = 1 kΩ', '相對偏差 (%)', '備註'],
+     widths=[22, 18, 22, 16, 18, 22, 16, 40])
 dc_rows = [('V_B（基極對地）', 'vb', '分壓器給的 6 V 附近'),
            ('V_E（射極對地）', 've', '約 V_B − 0.7'),
            ('V_C（集極對地）', 'vc', 'R_C1 越大這裡越低'),
-           ('V_CE = V_C − V_E', 'vce', '小於 1 V 就代表快飽和，訊號會削波')]
+           ('V_CE = V_C − V_E', 'vce', '由 V_C − V_E 自動計算；小於 1 V 就代表快飽和，訊號會削波')]
 r = 6
 for label, key, memo in dc_rows:
     put(ws, r, 1, label)
-    put(ws, r, 2, None, fill=FILL_IN, fmt='0.000')
+    if key == 'vce':
+        put(ws, r, 2, '=IF(OR(B7="",B8=""),"",B8-B7)', fmt='0.000')
+        put(ws, r, 5, '=IF(OR(E7="",E8=""),"",E8-E7)', fmt='0.000')
+    else:
+        put(ws, r, 2, None, fill=FILL_IN, fmt='0.000')
+        put(ws, r, 5, None, fill=FILL_IN, fmt='0.000')
     put(ws, r, 3, round(CEOP[0][key], 3), font=BLUE, fmt='0.000')
-    put(ws, r, 4, round(CEOP[1][key], 3), font=BLUE, fmt='0.000')
-    put(ws, r, 5, f'=IF(OR(B{r}="",C{r}=0),"",(B{r}-C{r})/C{r})', fmt='0.0%')
-    put(ws, r, 6, memo, font=NOTE)
+    put(ws, r, 4, f'=IF(OR(B{r}="",C{r}=0),"",(B{r}-C{r})/C{r})', fmt='0.0%')
+    put(ws, r, 6, round(CEOP[1][key], 3), font=BLUE, fmt='0.000')
+    put(ws, r, 7, f'=IF(OR(E{r}="",F{r}=0),"",(E{r}-F{r})/F{r})', fmt='0.0%')
+    put(ws, r, 8, memo, font=NOTE)
     r += 1
 put(ws, r, 1, 'I_C = (V_CC − V_C) / R_C1')
-put(ws, r, 2, '=IF(B8="","",(12-B8)/100*1000)', fmt='0.000')
+put(ws, r, 2, '=IF(OR(B8="",$C$3="",$E$3="",$E$3=0),"",($C$3-B8)/$E$3*1000)', fmt='0.000')
 put(ws, r, 3, round(CEOP[0]['ic'], 3), font=BLUE, fmt='0.000')
-put(ws, r, 4, round(CEOP[1]['ic'], 3), font=BLUE, fmt='0.000')
-put(ws, r, 5, None)
-put(ws, r, 6, '單位 mA；式子裡的 100 要跟著實際用的 R_C1 改', font=NOTE)
+put(ws, r, 4, f'=IF(OR(B{r}="",C{r}=0),"",(B{r}-C{r})/C{r})', fmt='0.0%')
+put(ws, r, 5, '=IF(OR(E8="",$C$3="",$G$3="",$G$3=0),"",($C$3-E8)/$G$3*1000)', fmt='0.000')
+put(ws, r, 6, round(CEOP[1]['ic'], 3), font=BLUE, fmt='0.000')
+put(ws, r, 7, f'=IF(OR(E{r}="",F{r}=0),"",(E{r}-F{r})/F{r})', fmt='0.0%')
+put(ws, r, 8, '單位 mA；使用上方輸入的 V_CC 與兩顆 R_C1 實測阻值計算', font=NOTE)
 
 r += 2
 ws.cell(row=r, column=1, value='二、電壓增益（示波器雙通道：CH1 接 V_s、CH2 接 V_out）').font = BOLD
 r += 1
-head(ws, r, ['組合', '實測 V_s (mVpp)', '實測 V_out (mVpp)', '|A_v| = V_out / V_s', 'LTspice |A_v|',
-             '差異 (%)', '波形有沒有削平／反相？'],
+head(ws, r, ['組合', '實測 V_s (mVpp)', '實測 V_out (mVpp)', '實測 |A_v| (= V_out/V_s)', 'LTspice |A_v|',
+             '相對偏差 (%)', '波形有沒有削平／反相？'],
      widths=[22, 18, 18, 18, 16, 12, 30])
 r += 1
 first = r
@@ -425,7 +452,9 @@ ch.height, ch.width = 9, 19
 ch.add_data(Reference(ws, min_col=4, min_row=gain_first, max_row=gain_last), titles_from_data=False)
 ch.add_data(Reference(ws, min_col=5, min_row=gain_first, max_row=gain_last), titles_from_data=False)
 ch.set_categories(Reference(ws, min_col=1, min_row=gain_first, max_row=gain_last))
-ws.add_chart(ch, 'I12')
+ch.series[0].tx = SeriesLabel(v='實測')
+ch.series[1].tx = SeriesLabel(v='LTspice')
+ws.add_chart(ch, 'J12')
 
 ws.cell(row=r, column=1,
         value='四種組合都量，講義問題 1（拿掉 C3）與問題 3（R_C1 換 1 kΩ）的答案就直接讀得出來。'
@@ -470,7 +499,7 @@ checklist(ws, r + 2, [
 # 改 H 欄的取樣點就整張跟著變，抄進報告時不必再挑數字。
 ws = wb.create_sheet('交報告用 Table 1')
 title_block(ws, 'Table 1（交報告用版面）',
-            '欄位與版面照 App_Lab2.pdf 第 8 頁；數值自動從「實驗一 特性曲線」工作表抓，不要直接在這裡填', 6)
+            '版面參照 App_Lab2.pdf 第 8 頁；電流統一標示為 mA，數值自動從「實驗一 特性曲線」抓取', 6)
 SRC = "'實驗一 特性曲線'"
 MAIN_R0, MAIN_RN = R0, RN
 SAMPLES = [1, 2, 5, 10, 15]
@@ -502,7 +531,7 @@ for k, vbb in enumerate(VBBS):
     c.border = BOX
     ws.merge_cells(start_row=top, start_column=col, end_row=top, end_column=col + 1)
     ws.cell(row=top, column=col + 1).border = BOX
-    head_cells = ['V_CE (experimental setting)', 'I_C (measure)  ( = V_C / R_C )']
+    head_cells = ['V_CE (experimental setting)', 'I_C (mA)  ( = V_RC / R_C )']
     for j, t in enumerate(head_cells):
         h = ws.cell(row=top + 1, column=col + j, value=t)
         h.font = BOLD
@@ -520,11 +549,16 @@ for k, vbb in enumerate(VBBS):
             f'=IFERROR(INDEX({SRC}!${ic_col}${MAIN_R0}:${ic_col}${MAIN_RN},{m}),"")', fmt='0.000')
 
 ws.cell(row=23, column=1,
-        value='I_C 的單位是 mA（講義表頭寫 A，抄進報告時記得換算或標註單位）。').font = NOTE
+        value='I_C 已統一使用 mA；若指定報告格式要求 A，請將數值除以 1000 並同步標註單位。').font = NOTE
 ws.cell(row=24, column=1,
         value='區塊標題的 V_BE 與 ON/OFF 會跟著「實驗一 特性曲線」各組標題列的黃格自動帶過來。').font = NOTE
 ws.sheet_view.showGridLines = False
 wb.move_sheet('交報告用 Table 1', offset=-2)
+
+# 公式格由 Excel / LibreOffice 開啟時重新計算，避免預覽器沿用舊快取值。
+wb.calculation.calcMode = 'auto'
+wb.calculation.fullCalcOnLoad = True
+wb.calculation.forceFullCalc = True
 
 os.makedirs(os.path.dirname(OUT), exist_ok=True)
 if os.path.exists(OUT) and '--force' not in sys.argv:
