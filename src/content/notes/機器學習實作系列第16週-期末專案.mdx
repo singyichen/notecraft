@@ -61,12 +61,12 @@ updatedAt: "2026-12-21"
 | 規範必做項目 | 規範要求 | 課堂版對應規劃 | 目前進度 |
 | --- | --- | --- | --- |
 | 1 問題描述 | 交代任務屬於分類、回歸、降維或集群 | 二元分類：完整標註是否出現分歧（$z_i$），模型機率再用來排序複核優先順序 | 已定案。研究問題、target 與登記用的任務類別都已寫定 |
-| 2 資料收集 | 說明資料從哪裡來（講義紅字特別標出） | TID-8 的 md-agreement 子資料集，取 `md-agreement-atr` config | 已定案。2026-10-19 實測比較後選定 md-agreement，授權已追到 Leonardelli et al. 2021 的申請條款，見「子資料集定案」一節；登記表單的資料集來源欄位可以填了 |
+| 2 資料收集 | 說明資料從哪裡來（講義紅字特別標出） | TID-8 的 goemotions 子資料集（`-atr` config），只取恰好 3 份標註的 31,766 個 item | 已定案。2026-10-19 實測比較四個候選後選定 GoEmotions，上游授權是 Apache-2.0、可直接下載，見「子資料集定案」一節；登記表單的資料集來源欄位可以填了 |
 | 3 資料分析與前處理 | 探索性分析、清理、特徵處理 | 統計 item、annotator、annotation 數與分歧比例；以 `item_id` 分組切分 70／15／15；每題隨機揭露 2 份標註；文字轉 TF-IDF | 部分完成。EDA 已跑完（item、annotator、每題標註數、分歧率、圖連通性、揭露 2 份後的難度都已量過）；split、reveal manifest 與 TF-IDF 特徵尚未建立。已實測確認不能沿用 TID-8 自帶的 split——test item 幾乎 100% 也出現在 train，對本題的 target 構成洩漏 |
 | 4 模型訓練 | 超參數調整與模型比較 | 隨機排序 → entropy 規則 → Logistic Regression → Random Forest 或 Gradient Boosting；`GridSearchCV` 搭配 `GroupKFold`，group 為 `item_id` | 只有規劃。調參格線與調參評分指標已定，尚未執行 |
 | 5 模型評估 | 用什麼指標、在什麼資料上評估 | PR-AUC、`Recall@10%`、混淆矩陣；5 個 reveal seeds 報平均 ± 標準差 | 只有規劃，尚未執行 |
 | 6 結論 | 無額外規定 | 機器學習是否勝過 entropy 規則，並挑出模型判斷錯誤的案例分析原因 | 只有規劃。判讀方式沿用「階段 8」的決策規則表 |
-| 主題與組員登記 | 至多二人一組，最遲 2026/11/30 以表單登記 | 獨立完成，不找組員（規範允許一人），表單的組員 2 留空；主題名稱填「部分標註下的標註分歧預測與複核排序」，任務類別填「分類」，資料集來源填 TID-8 的 md-agreement 子資料集 | 未完成。表單尚未送出；子資料集一定案就可以先登記 |
+| 主題與組員登記 | 至多二人一組，最遲 2026/11/30 以表單登記 | 獨立完成，不找組員（規範允許一人），表單的組員 2 留空；主題名稱填「部分標註下的標註分歧預測與複核排序」，任務類別填「分類」，資料集來源填 GoEmotions（Google Research，Apache-2.0） | 未完成。表單尚未送出；子資料集一定案就可以先登記 |
 | 發表簡報 | 12 分鐘加 Q&A 3 分鐘，12/14 或 12/21 依學號順序排定 | 六段對應上表；12/07–12/13 排練與緩衝，以防排在第 15 週 | 未開始 |
 | 專題程式 | 規範未要求交付程式 | 離線原型放在獨立實驗目錄，暫不拆出新 repo | 未開始。`singyichen/splitsense` 已建立，但目前只有規格文件，沒有實驗程式與資料檔 |
 
@@ -90,9 +90,9 @@ updatedAt: "2026-12-21"
 
 ### 問題的場景
 
-想像標註平台上的場景。一則推文發給 5 個人標「這句算不算攻擊性言論」。有些推文 5 個人答案一模一樣，那就沒事；有些推文 3 票說是、2 票說不是——這種題目才需要人工進去確認，是標註規範沒寫清楚，還是這題本身就有爭議。
+想像標註平台上的場景。一則 Reddit 留言發給 3 個人標它的情緒是正面、負面、模糊還是中立。有些留言 3 個人答案一模一樣，那就沒事；有些留言兩人說中立、一人說正面——這種題目才需要人工進去確認，是標註規範沒寫清楚，還是這題本身就有爭議。
 
-問題在於：要等 5 個人全標完，才知道哪些題會吵。但標註是陸續進來的，能複核的人力又有限。所以要做的是一個提早預警：只看前 2 個人的答案加上推文本身的文字，先算出「這題會吵的機率」，再照機率排序，複核的人從最上面開始看。
+問題在於：要等 3 個人全標完，才知道哪些題會吵。但標註是陸續進來的，能複核的人力又有限。所以要做的是一個提早預警：只看前 2 個人的答案加上留言本身的文字，先算出「這題會吵的機率」，再照機率排序，複核的人從最上面開始看。
 
 這與論文和正在做的標註平台（Label Suite）直接相關：平台之後要處理「標註進來後哪些該送複核」，需要先知道這件事用機器學習值不值得、以及要先記下哪些欄位。期末專案是把這個問題縮到一學期能跑完的版本。
 
@@ -100,7 +100,7 @@ updatedAt: "2026-12-21"
 
 那是最直覺的做法，也正是本專案的對照組之一。但它只抓得到已經明顯的那種分歧，真正有價值的是另一種題目：**前兩個人剛好意見一致，但其實是爭議題**——這種題用規則會被判成安全，直接漏掉。
 
-實測資料（見「子資料集定案」一節）的數字是：隨機揭露 2 份標註後，66.4% 的題目「前兩人一致」，而這些題裡有 59.0% 最後仍出現分歧。只看前兩人一不一致，會漏掉接近六成的爭議題。
+實測資料（見「子資料集定案」一節）的數字是：隨機揭露 2 份標註後，66.6% 的題目「前兩人一致」，而這些題裡有 24.4% 的第三位標註者最後給了不同答案。只看前兩人一不一致，這四分之一的爭議題全部會被判成安全。
 
 ### 任務形式
 
@@ -108,20 +108,20 @@ updatedAt: "2026-12-21"
 
 | 元素 | 內容 |
 | --- | --- |
-| 一筆資料 | 一則推文 |
-| 特徵 | 推文文字（TF-IDF）＋前 2 份標註的資訊（兩人是否一致、標了什麼） |
+| 一筆資料 | 一則 Reddit 留言 |
+| 特徵 | 留言文字（TF-IDF）＋前 2 份標註的資訊（兩人是否一致、標了什麼） |
 | 要預測的答案 | 完整標註最後有沒有出現分歧（$z_i$） |
 | 輸出怎麼用 | 機率由高到低排序，當成人工複核的優先順序 |
 
-資料是 TID-8 的 md-agreement 子資料集：英文推文的攻擊性言論標註，主題涵蓋 BLM、2020 美國大選與 Covid-19，每則至少 5 個人標過，而且**完整保留了「哪一位標註者標了哪一題、標了什麼」**。這點是關鍵——多數公開資料集只給投票後的最終答案，那就無法研究分歧如何形成。定案理由與完整統計見「子資料集定案」一節。
+資料是 TID-8 的 goemotions 子資料集：英文 Reddit 留言的情緒標註，標籤是 positive、negative、ambiguous、neutral 四類，每則恰好 3 個人標過，而且**完整保留了「哪一位標註者標了哪一題、標了什麼」**。這點是關鍵——多數公開資料集只給投票後的最終答案，那就無法研究分歧如何形成。上游授權是 Apache-2.0，定案理由與完整統計見「子資料集定案」一節。
 
 ### 對應簡報六段
 
 | 簡報段落 | 課堂版內容 |
 | --- | --- |
 | 問題描述 | 二元分類：完整標註是否出現分歧（$z_i$），模型輸出的機率再用來排序複核優先順序 |
-| 資料收集 | TID-8 的 md-agreement 子資料集（`-atr` config，原始出處為 Leonardelli et al. 2021）；說明原始出處、標註方式與授權 |
-| 資料分析與前處理 | 統計 item 數、annotator 數、每題標註數、分歧比例、類別分布；以 `item_id` 分組切分 70／15／15；每題隨機揭露 2 份標註；文字轉 TF-IDF |
+| 資料收集 | TID-8 的 goemotions 子資料集（`-atr` config，原始出處為 Demszky et al. 2020，Apache-2.0）；說明原始出處、4 類分組的由來、標註方式與授權 |
+| 資料分析與前處理 | 篩出恰好 3 份標註的 item、丟掉 `author`、文字去重；統計 item 數、annotator 數、分歧比例、類別分布；以 `item_id` 分組切分 70／15／15；每題隨機揭露 2 份標註；文字轉 TF-IDF |
 | 模型訓練 | 照下方「模型階梯」四層由笨到聰明比下去，以 `GridSearchCV` 搭配 `GroupKFold` 調參 |
 | 模型評估 | PR-AUC、`Recall@10%`、混淆矩陣；5 個 reveal seeds 報平均 ± 標準差 |
 | 結論 | 機器學習是否勝過 entropy 規則，並挑出模型判斷錯誤的案例分析原因 |
@@ -170,12 +170,12 @@ updatedAt: "2026-12-21"
 
 | 日期 | 工作 |
 | --- | --- |
-| 10/19–10/25 | 下載 TID-8、EDA、選定子資料集、確認授權 |
+| 10/19–10/25 | 下載 TID-8、EDA、選定子資料集、確認授權（已完成，定案 GoEmotions） |
 | 10/26–11/01 | Item split、reveal 2 份標註、TF-IDF；完成隨機與 entropy 兩個基準 |
 | 11/02–11/15 | Logistic Regression、Random Forest 或 Gradient Boosting，加上超參數調整 |
 | 11/16–11/22 | BGE-M3 + PCA 比較（選做，來不及整週刪除） |
 | 11/23–11/29 | 5 個 seeds 評估、錯誤分析 |
-| 11/30 前 | 填表單登記主題：任務類別選「分類」，資料集來源填 TID-8 的 md-agreement 子資料集 |
+| 11/30 前 | 填表單登記主題：任務類別選「分類」，資料集來源填 GoEmotions |
 | 11/30–12/06 | 製作簡報 |
 | 12/07–12/13 | 排練與緩衝，以防排在第 15 週（12/14）發表 |
 
@@ -186,75 +186,101 @@ updatedAt: "2026-12-21"
 3. 不可刪除：隨機排序、entropy 規則、Logistic Regression 加超參數調整。少了它們就無法滿足規範的「超參數調整與模型比較」。
 
 
-## 子資料集定案：md-agreement
+## 子資料集定案：GoEmotions
 
-2026-10-19 把 sentiment 與 md-agreement 兩個候選實際下載下來跑過統計後定案：**課堂版採用 md-agreement，並以 `md-agreement-atr` 這個 config 當原始素材**。這與「階段 2」調研階段的初步優先度（sentiment 高、md-agreement 中）相反，理由全部來自實測數字。
+2026-10-19 定案。同一天先依實測數字選過 md-agreement，後來因為授權問題改定：**課堂版採用 TID-8 的 goemotions 子資料集，並只取「恰好 3 份標註」的 item**。
+
+改定的理由是取得方式與授權：md-agreement 的上游沒有開源授權、限非商業研究、必須填表單向作者申請，而 TID-8 的轉散佈版授權欄標示 `unknown`，這條鍊在論文公開階段站不住。GoEmotions 的上游是 Apache-2.0、可直接下載。實測之後還發現它的目標分布比 md-agreement 更平衡，所以這個改動不是退讓。
 
 以下統計以 TID-8 在 Hugging Face 上的 parquet 檔為來源，train 與 test 合併計算（因為本專題要自己重切），腳本與資料不進 repo。
 
-### 原始出處與授權
+### 候選的授權與取得方式
 
-| 項目 | sentiment（SNT） | md-agreement（MDA） |
+| 項目 | GoEmotions（GOE，定案） | md-agreement（MDA） | sentiment（SNT） |
+| --- | --- | --- | --- |
+| 原始論文 | Demszky et al. 2020,《GoEmotions》（[ACL 2020](https://aclanthology.org/2020.acl-main.372/)） | Leonardelli et al. 2021,《Agreeing to Disagree》（[EMNLP 2021](https://aclanthology.org/2021.emnlp-main.822/)） | Díaz et al. 2018,《Addressing Age-Related Bias in Sentiment Analysis》（CHI 2018；[IJCAI 轉載](https://www.ijcai.org/proceedings/2019/852)） |
+| 原始資料位置 | [google-research-datasets/go_emotions](https://huggingface.co/datasets/google-research-datasets/go_emotions)（`raw` config 保留 `rater_id`） | [dhfbk/annotators-agreement-dataset](https://github.com/dhfbk/annotators-agreement-dataset/) | [Harvard Dataverse DOI:10.7910/DVN/F6EMTS](https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/F6EMTS) |
+| 取得方式 | 直接下載 | 不可直接下載，須填表單向作者申請 | 直接下載 |
+| 授權 | **Apache-2.0** | 無開源授權；限非商業研究、不得用於側寫或針對個人、受 Twitter 開發者政策約束 | CC0 1.0（公眾領域） |
+| 內容 | Reddit 留言的情緒標註。原始為 27 類多標籤，TID-8 依原作者的分組壓成 4 類單標籤：positive、negative、ambiguous、neutral | 英文推文的攻擊性言論標註，三領域（BLM、Elections2020、Covid-19） | Sentiment140 推文子集，由不同年齡層標註者重新標 5 級情緒 |
+
+TID-8 的 Dataset Card 授權欄是 `unknown`，其論文也沒有授權聲明，只有 Ethics Statement 說明八個子資料集都是既有的公開資料。所以授權一律要追到原始出處；追完才看得出三者差距很大。
+
+GoEmotions 的 4 類分組是 TID-8 依 Demszky 等人的做法做的（論文附錄 B.3），不是本專題自己合併的，Dataset Card 要寫明這一點。
+
+### 定案資料的實測統計
+
+| 項目 | 數值 |
+| --- | --- |
+| item 數（恰好 3 份標註） | 31,766 |
+| annotation 數 | 95,298 |
+| annotator 數 | 79 |
+| 每位 annotator 的題數 | 最少 8、Q1 83、中位數 822、平均 1,206、Q3 2,224、最多 5,782 |
+| 每題標註數 | 固定 3 份 |
+| 類別分布（標註層級） | positive 39.6%、neutral 32.2%、negative 18.8%、ambiguous 9.3% |
+| 有任何分歧的 item | **49.7%** |
+| 三人三種標籤 | 1.3% |
+| 二分圖連通分量 | 1 個，涵蓋 100% |
+| 文字長度（字元） | Q1 34、中位數 60、Q3 91、P95 130、最長 703 |
+| 重複文字 | 163 筆（31,766 個 item 對應 31,603 段不同文字） |
+| 其他可用欄位 | `subreddit`（483 個）、`author`、原始 27 個情緒欄位 |
+
+整個 goemotions config 有 57,703 個 item、193,633 筆標註，但每題標註數從 1 到 5 不等。只取恰好 3 份的 31,766 題，是為了讓分母固定——這樣就沒有「標註數本身洩漏答案」的問題，entropy 的分母也一致。
+
+### 分歧的型態
+
+| 三人的標籤組合 | item 數 | 佔比 |
 | --- | --- | --- |
-| 原始論文 | Díaz et al. 2018,《Addressing Age-Related Bias in Sentiment Analysis》（CHI 2018）；[IJCAI 轉載版](https://www.ijcai.org/proceedings/2019/852) | Leonardelli et al. 2021,《Agreeing to Disagree》（[EMNLP 2021](https://aclanthology.org/2021.emnlp-main.822/)） |
-| 原始資料位置 | [Harvard Dataverse DOI:10.7910/DVN/F6EMTS](https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/F6EMTS) | [dhfbk/annotators-agreement-dataset](https://github.com/dhfbk/annotators-agreement-dataset/) |
-| 取得方式 | 直接下載 | 不可直接下載，須填表單向作者申請 |
-| 授權 | CC0 1.0（公眾領域） | 無開源授權；限非商業研究、不得用於側寫或針對個人、受 Twitter 開發者政策約束 |
-| 內容來源 | Sentiment140 推文子集，由不同年齡層標註者重新標 5 級情緒（原研究在量測年齡偏誤） | 英文推文，三領域（BLM、Elections2020、Covid-19），每則至少 5 位 MTurk 標註者，刻意挑選容易分歧的推文 |
+| positive（全一致） | 8,691 | 27.4% |
+| neutral＋positive | 5,756 | 18.1% |
+| negative＋neutral | 4,199 | 13.2% |
+| neutral（全一致） | 3,320 | 10.5% |
+| negative（全一致） | 2,981 | 9.4% |
+| ambiguous＋neutral | 2,613 | 8.2% |
+| negative＋positive | 1,322 | 4.2% |
+| ambiguous（全一致） | 1,002 | 3.2% |
 
-TID-8 的 Dataset Card 授權欄是 `unknown`，其論文也沒有授權聲明，只有 Ethics Statement 說明八個子資料集都是既有的公開資料。追到原始出處後才看得出兩邊差距很大：sentiment 是 CC0，md-agreement 要申請。
+分歧集中在語意相鄰的類別——neutral 與 positive、neutral 與 negative、ambiguous 與 neutral——而真正相反的 negative 與 positive 只佔 4.2%。這是錯誤分析那一段的現成材料：模型抓不到的應該多半是相鄰類別的邊界題，而不是極性顛倒。
 
-### 實測統計
+### 揭露 2 份之後的難度
 
-| 項目 | sentiment | md-agreement（`-atr`） |
+真正要預測的是「可見的 2 份標註一致，但第三位會偏離」這個子集——可見已經不一致的題目必然分歧，規則不用學就全對，沒有研究價值。5 個 seed 的實測：
+
+| seed | 可見一致的 item | 其中第三位偏離 |
 | --- | --- | --- |
-| item 數 | 14,071 | 6,592 |
-| annotator 數 | 1,481 | 819 |
-| annotation 數 | 60,654 | 53,765 |
-| 每題標註數 | 中位數 4（最少 4、最多 12） | 中位數 5；只有三種值——5 份 3,535 題、10 份 1,953 題、15 份 1,104 題 |
-| 每人標註題數 | 幾乎固定 40 題（最少 39、最多 40） | 中位數 18、平均 65、最多 1,896 |
-| 只標 1 題的標註者 | 0% | 0.5% |
-| 標籤 | 5 類（Neutral 41.6%、Somewhat positive 23.7%、Somewhat negative 19.8%、Very positive 9.9%、Very negative 5.1%） | 2 類（not_offensive_speech 65.9%、offensive_speech 34.1%） |
-| 有任何分歧的 item | 93.7% | 72.8% |
-| 平均正規化 entropy | 0.487 | 0.608 |
-| 二分圖連通分量 | 305 個，最大只涵蓋 1.9% 的 item | 1 個，涵蓋 100% |
-| 文字長度中位數 | 100 字元 | 111 字元 |
-| 額外欄位 | 無 | `domain`、`original_id` |
+| 0 | 21,165（66.6%） | 5,171（24.4%） |
+| 1 | 21,083（66.4%） | 5,089（24.1%） |
+| 2 | 21,157（66.6%） | 5,163（24.4%） |
+| 3 | 21,195（66.7%） | 5,201（24.5%） |
+| 4 | 21,169（66.6%） | 5,175（24.4%） |
 
-「階段 2」的四個合格門檻（至少 1,000 個 item、每題至少 3 份標註、至少 10% item 有分歧、多數 annotator 不只標一筆）兩邊都通過。差別出現在門檻沒寫到的地方。
+難題子集的陽性率 24.4%，是四個候選裡最適合排序任務的：預算 10% 而地雷佔 24%，排得好不好差別明顯。對照其他候選的同一個數字——md-agreement 59.0%、sentiment 82.2%、CommitmentBank 93.6%——越接近 100% 就越是「不管怎麼排都會撞到」，`Recall@10%` 讀不出模型能力。
 
-### 決定性的一項：揭露 2 份之後還剩多少題目可預測
+### 為什麼不是另外三個
 
-真正要預測的是「可見的 2 份標註一致，但完整標註其實會分歧」這個子集——可見已經不一致的題目 100% 必然分歧，entropy 規則不用學就全對，沒有研究價值。以 3 個 seed 隨機揭露 2 份標註的實測結果：
+| 候選 | 排除原因 |
+| --- | --- |
+| md-agreement | 授權：上游限非商業研究且要填表單，TID-8 轉散佈版標 unknown。數字本身是合格的（6,592 item、819 annotator、單一連通分量、難題陽性率 59.0%），所以保留為論文階段的第二資料集候選——跨資料集穩健性那一章用得上，屆時照流程申請原始檔 |
+| sentiment | 目標退化：93.7% 的 item 有分歧，難題子集陽性率 82.2%，壓成三類仍有 87.3%。而且每位標註者固定標 40 題，圖被切成 305 個互不相連的批次、最大一塊只涵蓋 1.9% 的 item，annotator 歷史與 GraphSAGE 都不成立。TID-8 論文自己的結果也印證這點：annotator split 下 SNT 的 annotation embedding 效能大幅衰退 |
+| CommitmentBank | 只有 1,200 個 item（剛好卡在門檻）、7 類序數標籤讓分歧率高到 97.9%（壓成三類才降到 79.4%）、文本是 326 字元的長段落，授權也查不到明確聲明 |
 
-| 指標 | sentiment | md-agreement |
-| --- | --- | --- |
-| 揭露 2 份後「可見一致」的比例 | 35.6% | 66.4% |
-| 其中最終仍分歧（難題子集的陽性率） | 82.2%（三個 seed：82.2%、82.2%、81.9%） | 59.0%（三個 seed：59.0%、59.1%、58.7%） |
-| 少數票比例 $m$ 的分布 | 全一致 6.3%、$m \le 0.2$ 為 3.6%、$0.2 < m \le 0.35$ 為 25.7%、$m > 0.35$ 為 64.4% | 全一致 27.2%、$m \le 0.2$ 為 29.4%、$0.2 < m \le 0.35$ 為 10.8%、$m > 0.35$ 為 32.6% |
-
-### 排除 sentiment 的兩個理由
-
-**目標退化**。sentiment 整體 93.7% 的 item 有分歧，連難題子集的陽性率都有 82.2%。這種基準率下 `Recall@10%` 幾乎必然很高，模型與隨機排序的差距被壓縮，PR-AUC 也讀不出意義。把 5 類壓成三類（負、中立、正）後仍有 87.3%，救不回來。結果會被迫改用 $H_i \ge \tau$ 門檻，而這在 12 分鐘簡報裡要額外花力氣解釋「為什麼目標不是有沒有分歧」。
-
-**圖結構碎裂**。sentiment 每位標註者固定標 40 題，整個資料集被切成 305 個互不相連的批次，最大一塊只涵蓋 1.9% 的 item。課堂版雖然不做 annotator 歷史特徵，但這代表「同一位標註者在別題的行為」幾乎無法跨題傳遞資訊；論文延伸的 GraphSAGE 在 sentiment 上根本不成立，「階段 6」的停損條件會立刻觸發。TID-8 論文自己的結果也印證這點：在 annotator split 下 SNT 的 annotation embedding 效能大幅衰退，而 MDA 幾乎沒有損失。
-
-### 選 md-agreement 要付的代價
+### 選 GoEmotions 要付的代價
 
 | 代價 | 處理方式 |
 | --- | --- |
-| 原始資料要申請，且限非商業研究 | 課堂版用 TID-8 在 Hugging Face 的版本；論文階段照表單向作者申請一份原始檔，簡報「資料收集」段落說明取得途徑 |
-| 內容是攻擊性與仇恨言論推文 | 簡報加內容警示，倫理一節要寫明 |
-| 每題標註數不等長（5、10、15） | 只有三種值，當分層變數處理；entropy 分母與 reveal 後的隱藏份數都要按題計算 |
-| 標註數本身是洩漏特徵 | 10 份或 15 份代表這題當初被判定需要加標，等於洩漏答案。必須把標註數排除在特徵之外，或固定只用前 5 份 |
-| 原論文稱 10,753 則推文，TID-8 只收 6,592 個 unique item | 在 Dataset Card 註明這個差異 |
-| `domain` 可能成為混雜因素 | 反過來當穩健性軸使用：三領域的分歧率分別是 BLM 54.8%、Covid-19 66.6%、Elections2020 67.7% |
+| 只有 79 位 annotator | 無法像 md-agreement（819 位）那樣研究「對沒見過的新 annotator 泛化」，論文的冷啟動實驗要降級為探索性結果。但每位標了平均 1,206 題，annotator 歷史特徵反而比 md-agreement 更充足 |
+| 隱藏只剩 1 份標註 | target 的語意是「第三位會不會偏離前兩位」，比隱藏 3 份更噪；也算不出有意義的完整 entropy $H_i$（只有 3 個標籤），所以主要 target 固定用「任何分歧」，不使用 $H_i \ge \tau$ 的門檻版本 |
+| 4 類是 TID-8 的分組 | 原始是 27 標籤多標籤，Dataset Card 要寫明分組依據與來源 |
+| 含 Reddit 使用者名稱 | `author` 欄位是個資，載入後立刻丟棄；`subreddit` 保留當穩健性軸（前五大 subreddit 的分歧率在 42.1% 到 54.2% 之間） |
+| 標註數 1 到 5 份不等 | 只用恰好 3 份的子集。**不要把 5 份的 12,424 題混進來**——那是「不清楚的例子被加標」造成的，分歧率衝到 85.5%，標註數本身就洩漏答案 |
+| 163 筆重複文字 | 切 split 前先以文字去重或合併，避免同一段文字同時落在 train 與 test |
 
 ### 順帶驗證到的兩件事
 
-**自帶 split 真的不能用**。`sentiment-ann` 的 test item 有 338 個（100%）同時出現在 train；`md-agreement-atr` 是 6,105 個（99.7%）。原本只是推論的洩漏風險，現在是實測結果。`-atr` 的 annotator 則完全不重疊（246 位 test annotator 全不在 train），符合 annotator split 的定義。
+**自帶 split 不能用**。`goemotions-atr` 的 test item 有 96.0% 同時出現在 train（`sentiment-ann` 是 100%、`md-agreement-atr` 是 99.7%）。TID-8 的兩種切法都是為了研究「從分歧中學習」設計的，不是為本專題的排序任務設計的，所以一律自己以 `item_id` 重切。
 
-**要用 `-atr` 而不是 `-ann`**。TID-8 論文附錄 B.3 說明，為了做 annotation split，MDA 的 `-ann` 版砍掉約 12% 的標註（剩 43,513 筆、670 位標註者），`-atr` 版才是完整資料（53,765 筆、819 位標註者）。兩者的 item 數相同，所以直接取 `-atr` 當素材、自己重切，資訊量最大。
+**goemotions 的兩個 config 資料量相同**。`goemotions-ann` 與 `goemotions-atr` 都是 193,633 筆，差別只在切法（`-atr` 的 25 位 test annotator 與 train 完全不重疊）。因為我們自己重切，取哪一個都可以；為與上面的統計一致，固定取 `-atr`。這與 md-agreement 不同——那個資料集的 `-ann` 版砍掉了約 12% 的標註。
+
 
 ## 論文延伸：預測標註者分歧，協助安排複核
 
@@ -286,7 +312,7 @@ Label Suite 尚未正式累積真實使用紀錄，因此期末階段先以公�
 
 ### 相關工作：Le-Wi-Di 與本專題的差異
 
-md-agreement 是 [SemEval-2023 Task 11（Le-Wi-Di，Learning With Disagreements）](https://arxiv.org/pdf/2304.14803) 四個資料集之一，該 shared task 本身就在處理「不要聚合成單一真值、直接從分歧中學習」，有數十支隊伍的系統論文。因此「機器學習能不能預測標註分歧」不能當成本專題的新發現，必須明確引用並指出差異：
+「不要聚合成單一真值、直接從分歧中學習」已經是一個成熟的研究方向：[SemEval-2023 Task 11（Le-Wi-Di，Learning With Disagreements）](https://arxiv.org/pdf/2304.14803) 以四個保留逐人標註的資料集辦過 shared task（其中的 md-agreement 正是本專題一度選定的候選），有數十支隊伍的系統論文；GoEmotions 雖然不在那四個之中，但同樣是 TID-8 與 soft label 文獻反覆使用的資料集。因此「機器學習能不能預測標註分歧」不能當成本專題的新發現，必須明確引用並指出差異：
 
 | 面向 | Le-Wi-Di 與多數既有文獻 | 本專題 |
 | --- | --- | --- |
@@ -304,11 +330,11 @@ md-agreement 是 [SemEval-2023 Task 11（Le-Wi-Di，Learning With Disagreements�
 
 | 項目 | 設定 |
 | --- | --- |
-| 做法 | 給 LLM 推文文字與已可見的 2 份標註，要它輸出 0 到 1 的分歧機率 |
+| 做法 | 給 LLM 留言文字與已可見的 2 份標註，要它輸出 0 到 1 的分歧機率 |
 | 報告內容 | 與其他階梯同一條 `Recall@10%`，另加校準（ECE 或 reliability diagram） |
 | 定位 | 課堂版選做、論文階段必做；當成階梯最上面一層，不是主線模型 |
-| 必寫的限制 | md-agreement 公開且當過 shared task 資料，LLM 可能在預訓練時見過文字甚至標籤，因此其分數不可檢驗，要寫明資料污染風險 |
-| 資料治理 | md-agreement 限非商業研究並受 Twitter 開發者政策約束，推文送外部 API 前要確認；必要時只送測試子樣本或改用可本機執行的開源模型 |
+| 必寫的限制 | GoEmotions 公開且被大量使用，LLM 幾乎確定在預訓練時見過這些留言甚至標籤，因此其分數不可檢驗，要寫明資料污染風險 |
+| 資料治理 | GoEmotions 是 Apache-2.0，送外部 API 沒有授權障礙，但必須先丟掉 `author`（Reddit 使用者名稱）；成本考量下可只送測試子樣本，或改用可本機執行的開源模型 |
 
 ### 英文與繁體中文能否一起處理
 
@@ -513,7 +539,7 @@ import AnnotationDisagreementResearchRoadmap from '@/components/generated/annota
 
 TID-8 的總 Dataset Card 授權欄目前未完整標示，且每個子資料集有自己的授權與引用。不能因為 Hugging Face 可以下載就假設可以任意使用；必須追到原始來源逐一記錄。
 
-> 上表的優先度是調研階段的判斷。2026-10-19 的實測把 sentiment 與 md-agreement 的優劣對調，定案與數字見「子資料集定案」一節。
+> 上表的優先度是調研階段的判斷，已被實測推翻。GoEmotions 當初評為「低」的理由是多標籤且類別多，但 TID-8 收錄的版本已依原作者做法壓成 4 類單標籤，這個理由不成立；sentiment 則因目標退化與圖結構碎裂被排除。定案是 GoEmotions，數字與理由見「子資料集定案」一節。
 
 ### 繁體中文資料策略
 
@@ -641,7 +667,7 @@ TID-8 已提供 annotation split 與 annotator split，但本專題的預測單�
 - 完整圖預訓練後再切 train/test。
 - 將 target edge 放入 GNN message passing。
 - 用完整資料調整 $\tau$ 或決定特徵。
-- md-agreement 的「每題標註數」（5、10、15）當特徵：標註數變多代表這題當初被判定需要加標，等於洩漏答案。
+- 「每題標註數」當特徵：GoEmotions 標註數從 1 到 5 不等，標註數變多代表這題當初被判定需要加標，等於洩漏答案。本專題只取恰好 3 份的子集，分母固定，不得混入其他標註數的 item。
 
 ### 階段產出
 
