@@ -4,11 +4,14 @@
 用法（專案根目錄）：
     python3 simulations/lab2/annotate_current_path.py
 
-輸入：public/note-images/ec-week6-tinkercad/lab2-exp1-breadboard.png（VBB 2.4 V、VCC 10 V，主動區）
-      public/note-images/ec-week6-tinkercad/lab2-exp2-breadboard.png（VBB = VCC = 15 V，飽和區）
+輸入：public/note-images/ec-week6-tinkercad/lab2-exp1-breadboard.png（VBB 2.4 V、VCC 10 V，主動區，
+      電表 1／2 量 V_BE／V_CE、電表 3 是串在集極的電流表）
+      public/note-images/ec-week6-tinkercad/lab2-exp2-breadboard.png（VBB = VCC = 15 V，飽和區，
+      三台都是電壓檔，照講義第 9 頁量 V_R1／V_R2／V_RC，集極迴路沒有電流表）
 輸出：同資料夾的 *-current.png（原圖保留不覆蓋）
 
-兩張圖接線完全相同、只有電源設定與讀值不同，所以共用一組座標、各自換標題與讀值說明。
+兩張圖的麵包板座標系統相同（欄距、列高一樣），但量測接法不同，所以各有一個 painter：
+exp1 用 paint_exp1()、exp2 用 paint_exp2()。
 畫法原語在 ../tools/current_overlay.py，規範見
 `.claude/skills/lab-workflow/references/current-path-overlay.md`。
 座標全部以「原圖 1 倍尺寸」（880×500）為單位：欄距 13 px、第 1 欄 x = 241、j 列 y = 273。
@@ -81,20 +84,45 @@ BADGES = [
     ("5", (318, 352)), ("6", (330, 252)), ("7", (191, 264)),
     ("8", (753, 332)), ("9", (714, 150)), ("10", (397, 338)), ("11", (670, 264)),
 ]
+# 實驗二拿掉電流表之後，9 號落在新的 VCC 走線上（y 從 150 改成 154）
+BADGES_E2 = [(t, (714, 154) if t == "9" else pt) for t, pt in BADGES]
+
+# ---- 實驗二：集極迴路不經電流表，電源 B 正端直接接 j15 ----
+LOOP_B_E2 = [
+    VCC_P, (755, 347), (849, 347), (849, 154), (427, 154),
+    (colx(15), ROW["j"]), (colx(15), ROW["g"]),
+    (colx(11), ROW["g"]),                                  # RC：g15 → g11（集極節點）
+    (colx(11), ROW["f"]),                                  # 集極腳 f11
+    (colx(9), ROW["f"]),                                   # 電晶體內部：集極 → 射極 f9
+    (colx(9), ROW["j"]), (colx(9), RAIL_MINUS),
+    (colx(30), RAIL_MINUS), (618, 191), (670, 191), (670, 337), (768, 337), VCC_N,
+]
+# 實驗二的三台電壓表：V_R1（+ 軌 ↔ h10）、V_R2 ＝ V_BE（g10 ↔ − 軌）、V_RC（i15 ↔ h11）
+E2_M1_R = [V1_RED, (287, 183), (colx(3), 183), (colx(3), RAIL_PLUS)]
+E2_M1_B = [V1_BLK, (279, 197), (363, 197), (colx(10), ROW["h"])]
+E2_M2_R = [V2_RED, (426, 174), (352, 174), (colx(10), ROW["g"])]
+E2_M2_B = [V2_BLK, (419, 139), (433, 145), (colx(16), RAIL_MINUS)]
+E2_M3_R = [A_RED, (576, 166), (430, 166), (colx(15), ROW["i"])]
+E2_M3_B = [A_BLK, (555, 183), (colx(11), 183), (colx(11), ROW["h"])]
 
 
-def painter_factory(title, left_note, right_note, mid_note, bottom_note):
+def painter_factory(title, left_note, right_note, mid_note, bottom_note, exp2=False):
     def paint(canvas, d, T):
         big, small, num = f(36), f(28), f(28)
         W = canvas.size[0]
         path(d, [T(p) for p in LOOP_A])
         path(d, [T(p) for p in BRANCH_R2], w=10)
-        path(d, [T(p) for p in LOOP_B1])
-        path(d, [T(p) for p in LOOP_B2])
-        path(d, [T(A_RED), T(A_BLK)], dash=True, w=10, period=14, arrows=False)    # 電流表內部
-        for pts in (V1_PATH_R, V1_PATH_B, V2_PATH_R, V2_PATH_B):
+        if exp2:
+            path(d, [T(p) for p in LOOP_B_E2])
+            probes = (E2_M1_R, E2_M1_B, E2_M2_R, E2_M2_B, E2_M3_R, E2_M3_B)
+        else:
+            path(d, [T(p) for p in LOOP_B1])
+            path(d, [T(p) for p in LOOP_B2])
+            path(d, [T(A_RED), T(A_BLK)], dash=True, w=10, period=14, arrows=False)  # 電流表內部
+            probes = (V1_PATH_R, V1_PATH_B, V2_PATH_R, V2_PATH_B)
+        for pts in probes:
             path(d, [T(p) for p in pts], col=BLUE, w=6, dash=True, period=22, arrows=False)
-        for t, p in BADGES:
+        for t, p in (BADGES_E2 if exp2 else BADGES):
             badge(d, T(p), t, num)
         label(d, (W // 2, 26), title, big, GREEN_TXT, align="center")
         label(d, T((6, 128)), left_note, small, BLUE_TXT)
@@ -121,11 +149,12 @@ def main():
         os.path.join(IMG_DIR, "lab2-exp2-breadboard.png"),
         os.path.join(IMG_DIR, "lab2-exp2-breadboard-current.png"),
         painter_factory(
-            "實驗二：VBB = VCC = 15 V，電晶體深度飽和（V_CE 只剩 27 mV）",
-            "左表 V_BE：714 mV\n中表 V_CE：27 mV\n集極幾乎被拉到地電位",
-            "右表 I_C：15.0 mA\n≈ (15 V − 0.027 V) / 1 kΩ\n電流由 RC 決定，不再由基極決定",
-            "基極電流 I_B ＝ I_VBB − V_BE / R2\n＝ 1.43 mA − 0.152 mA ≈ 1.28 mA",
+            "實驗二：VBB = VCC = 15 V，三台電表都用電壓檔量壓降（講義第 9 頁的做法）",
+            "左表 V_R1：14.3 V（+ 軌 ↔ h10）\n中表 V_R2 ＝ V_BE：714 mV（g10 ↔ − 軌）\n藍虛線只量電位差，不分流",
+            "右表 V_RC：15.0 V（i15 ↔ h11）\nI_C ＝ V_RC / R_C ＝ 15.0 mA\n集極迴路沒有電流表",
+            "I_B ＝ V_R1/R1 − V_R2/R2\n＝ 1.43 mA − 0.152 mA ≈ 1.28 mA",
             "β_forced ＝ I_C / I_B ＝ 15.0 / 1.28 ≈ 11.7，遠小於正常 β\n→ 這就是講義問題 1 的答案：Table 2 的工作點在飽和區",
+            exp2=True,
         ),
         scale=SCALE, pad=PAD,
     )

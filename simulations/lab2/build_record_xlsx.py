@@ -174,8 +174,8 @@ rows = [
     ('3', '藍色字是寫死的輸入：講義規格或 LTspice 模擬結果。黑色字是公式。'),
     ('4', '實驗一要量四組 VBB × 31 個 VCC；時間不夠時先把 2.2 V 與 2.4 V 兩組量完，'),
     ('', '　　這兩組才看得出主動區的平坦段，1.5 V 那組全程截止、量五點確認就好。'),
-    ('5', 'I_C 一律由集極電阻的壓降換算（I_C = V_RC / R_C），電流表只在實驗二串一次；'),
-    ('', '　　兩種方法的差異就是誤差來源，結報要寫。'),
+    ('5', 'I_C 一律由集極電阻的壓降換算（I_C = V_RC / R_C）——講義第 8 頁與第 9 頁都是這樣要求的，'),
+    ('', '　　兩個實驗都不必把電流表串進集極迴路，三用電表全程留在電壓檔。'),
     ('6', '離開實驗室前跑一次每張工作表下方的「當天拍照檢查表」。'),
     ('', ''),
     ('填寫範例（實驗一，VBB = 2.4 V）', ''),
@@ -293,11 +293,20 @@ ws.add_chart(ch, f'{get_column_letter(23)}{HROW}')
 ws = wb.create_sheet('實驗二 beta')
 title_block(ws, '實驗二：電流增益 β 的量測（Table 2）',
             '講義第 9–10 頁：V_BB = V_CC = 15 V，量 R1／R2 壓降求 I_B（KCL），量 R_C 壓降求 I_C', 7)
-ws['A4'] = '電阻值 (Ω)'
+ws['A3'] = '電源設定值'
+ws['A3'].font = BOLD
+for j, (lab, v) in enumerate((('V_BB (V)', 15), ('V_CC (V)', 15))):
+    put(ws, 3, 2 + j * 2, lab)
+    put(ws, 3, 3 + j * 2, v, fill=FILL_IN, fmt='0.00')
+ws['A4'] = '電阻實測值 (Ω)'
 ws['A4'].font = BOLD
 for j, (lab, v) in enumerate((('R1', R1), ('R2', R2), ('R_C', RC))):
     put(ws, 4, 2 + j * 2, lab)
-    put(ws, 4, 3 + j * 2, v, font=BLUE, fmt='0')
+    put(ws, 4, 3 + j * 2, v, fill=FILL_IN, fmt='0')
+ws.cell(row=5, column=1,
+        value='↑ 這五格是助教在 Table 2 旁邊特別要求記錄的（V_BB、V_CC、R_C、R1、R2）。'
+              '電阻先填的是標稱值，開工前用三用電表各量一次改成實測值——±5% 的色環電阻常差到幾百歐姆，'
+              '下面所有電流與 β 都是用這三格算的。').font = NOTE
 
 head(ws, 6, ['量測項目', '實測', '單位', '算式', 'LTspice 預報', '差異 (%)', '備註'],
      widths=[26, 14, 10, 30, 16, 12, 34])
@@ -305,14 +314,16 @@ items = [
     ('R1 兩端壓降 V_R1', 'V', None, round(15 - E2['vbe'], 3), '量 V_BB 對基極'),
     ('R2 兩端壓降 V_R2', 'V', None, round(E2['vbe'], 3), '等於 V_BE（R2 與 B-E 並聯）'),
     ('R_C 兩端壓降 V_RC', 'V', None, round(15 - E2['vce'], 3), '量 V_CC 對集極'),
-    ('V_CE', 'V', None, round(E2['vce'], 3), '集極對射極；深度飽和時只剩幾十 mV'),
+    ('V_CE', 'V', None, round(E2['vce'], 3),
+     '直接量集極對地，不要用 V_CC − V_RC 相減（兩個 15 V 量級的數相減，誤差會和待測值同級）'),
     ('I_R1 = V_R1 / R1', 'mA', '=IF(B7="","",B7/$C$4*1000)', round(E2['i_r1'], 3), '流進基極節點的總電流'),
     ('I_R2 = V_R2 / R2', 'mA', '=IF(B8="","",B8/$E$4*1000)', round(E2['i_r2'], 3), '被 R2 分掉、沒進基極的那一份'),
     ('I_B = I_R1 − I_R2', 'mA', '=IF(OR(B7="",B8=""),"",B11-B12)', round(E2['ib'], 3), 'KCL：講義第 9 頁第 3 步'),
     ('I_C = V_RC / R_C', 'mA', '=IF(B9="","",B9/$G$4*1000)', round(E2['ic'], 3), '不必串電流表就能得到'),
     ('β_calculate = I_C / I_B', '—', '=IF(OR(B13="",B13=0,B14=""),"",B14/B13)', round(E2['beta'], 2),
      '這是「強迫 β」，飽和時遠小於真正的 β'),
-    ('β_measure（三用電表 hFE 檔）', '—', None, None, '把電晶體拔下來插 hFE 座；這才是主動區的 β'),
+    ('β_measure（三用電表 hFE 檔）', '—', None, None,
+     '助教把 Table 2 的 β_Meas 欄劃掉了，這格不抄進 Table 2，但仍要量——它是問題 1 的證據'),
 ]
 r = 7
 for label, unit, formula, lt, memo in items:
@@ -352,8 +363,10 @@ ch.set_categories(Reference(ws, min_col=1, min_row=ROW_BETA, max_row=ROW_BETA + 
 ws.add_chart(ch, 'I25')
 
 checklist(ws, r + 3, [
-    ('Table 2 五個量都填完', 'V_R1、V_R2、V_RC、V_CE、β_measure'),
-    ('電晶體 hFE 讀值照片 1 張', '拔下來插 hFE 座量到的 β，結報要對照'),
+    ('四個壓降都量到', 'V_R1、V_R2、V_RC、V_CE（V_CE 要直接量，不要相減）'),
+    ('五個設定值都記下', 'V_BB、V_CC 與 R1／R2／R_C 的實測值，助教要求'),
+    ('Table 2 三欄填完', '講義 Table 2 只要 I_B、I_C、β_calculate（β_Meas 已被助教劃掉）'),
+    ('電晶體 hFE 讀值照片 1 張', '拔下來插 hFE 座量到的 β，寫自己的記錄表、不抄進 Table 2'),
     ('飽和的證據 1 張', 'V_CE 只剩幾十 mV 的電表畫面'),
 ])
 
