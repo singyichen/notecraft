@@ -7,6 +7,10 @@ updatedAt: "2026-10-20"
 ---
 
 import PdfRefChip from '@/components/islands/PdfRefChip.tsx'
+import GeneratedFrame from '@/components/GeneratedFrame.astro'
+import EcWeek6ImpedanceRules from '@/components/generated/ec-week6-impedance-rules'
+import EcWeek6BiasingEvolution from '@/components/generated/ec-week6-biasing-evolution'
+import EcWeek6GainHeadroom from '@/components/generated/ec-week6-gain-headroom'
 
 # 第 6 週：CE 放大器實驗
 
@@ -94,9 +98,13 @@ prompt: |
   算流入電流。
   視覺要求：用 Tailwind 的 table，不要做成 SVG；高阻抗與低阻抗用兩種
   對比色的 badge；表格在窄畫面要可橫向捲動。
-status: pending
+status: generated
 caption: 三條阻抗規則：基極高、集極高、射極低——分析任何 BJT 電路都只反覆用到這三條。
 */}
+
+<GeneratedFrame id="ec-week6-impedance-rules" type="table" prompt={"用一張比較表整理 BJT 的三條阻抗規則。\n三個橫列（三隻腳）：從基極看進去、從集極看進去、從射極看進去。\n四個直欄：\n1. 前提條件（哪一隻腳交流接地、是否忽略爾利效應）\n2. 阻抗大小（用文字描述，例如「基極-射極小訊號電阻」「電晶體輸出電阻」\n   「轉導的倒數」）\n3. 高阻抗還是低阻抗（用色塊標示）\n4. 典型用途（例如共射的輸入端、共射的輸出端、射極隨耦器的低阻抗輸出）\n表格下方放一行提示：量測方法一律是在該端點加測試電壓源、另一端接地，\n算流入電流。\n視覺要求：用 Tailwind 的 table，不要做成 SVG；高阻抗與低阻抗用兩種\n對比色的 badge；表格在窄畫面要可橫向捲動。"} caption="三條阻抗規則：基極高、集極高、射極低——分析任何 BJT 電路都只反覆用到這三條。">
+  <EcWeek6ImpedanceRules />
+</GeneratedFrame>
 
 {/* @ai-visualize
 id: ec-week6-biasing-evolution
@@ -113,9 +121,13 @@ prompt: |
   （用可／不可的色塊）。
   視覺要求：用 DOM 卡片與色塊呈現，不要畫電路 SVG；不可用的四態灰／橘，
   可用的第五態綠；切換 200-400ms ease-out；尊重 prefers-reduced-motion。
-status: pending
+status: generated
 caption: 偏壓電路的演進：好的偏壓不是「算得出來」，而是「參數飄了也不會偏太多」。
 */}
+
+<GeneratedFrame id="ec-week6-biasing-evolution" type="motion" prompt={"用可切換的五態，呈現偏壓電路一路改良的過程。\n五個狀態（五顆切換鈕，一次顯示一態）：\n1. 訊號源直接接基極：沒有直流路徑，偏壓電流為零\n2. 基極直接接電源：有偏壓，但訊號被電源交流短路掉\n3. 單一基極電阻：工作點可算，但集極電流正比於電流增益 beta\n4. 電阻分壓：對 beta 不敏感，但指數地依賴分壓誤差\n5. 射極退化：射極電阻形成負回授，對 beta 與電阻誤差都不敏感\n每個狀態顯示三個欄位：這個做法解決了什麼、還剩什麼問題、能不能實用\n（用可／不可的色塊）。\n視覺要求：用 DOM 卡片與色塊呈現，不要畫電路 SVG；不可用的四態灰／橘，\n可用的第五態綠；切換 200-400ms ease-out；尊重 prefers-reduced-motion。"} caption="偏壓電路的演進：好的偏壓不是「算得出來」，而是「參數飄了也不會偏太多」。">
+  <EcWeek6BiasingEvolution client:visible />
+</GeneratedFrame>
 
 {/* @ai-visualize
 id: ec-week6-gain-headroom
@@ -132,9 +144,13 @@ prompt: |
      越早進入飽和而削波
   視覺要求：波形用 SVG（viewBox 寬度不超過 640）；輸入與輸出用兩種顏色；
   削平區域用警示色填滿；讀數用 DOM 卡片橫排；拖動時即時更新。
-status: pending
+status: generated
 caption: 增益與擺幅不可兼得：集極電阻換來增益，也換走了輸出不失真的空間。
 */}
+
+<GeneratedFrame id="ec-week6-gain-headroom" type="chart" prompt={"互動示範 CE 放大器「增益 vs 輸出擺幅」的取捨。\n互動元素（只有一個旋鈕）：\n- 一條水平滑桿，控制集極電阻的大小\n即時顯示的內容：\n1. 一張輸出波形圖：輸入為正弦波，輸出為反相且放大的正弦波；\n   當集極直流電位太低時，波形負半週（對應集極電位最低處）出現削平\n2. 三個讀數卡片：小訊號增益、集極直流電位、距離飽和還剩多少餘裕\n3. 一行結論文字，隨滑桿更新：集極電阻越大增益越高，但直流壓降越大、\n   越早進入飽和而削波\n視覺要求：波形用 SVG（viewBox 寬度不超過 640）；輸入與輸出用兩種顏色；\n削平區域用警示色填滿；讀數用 DOM 卡片橫排；拖動時即時更新。"} caption="增益與擺幅不可兼得：集極電阻換來增益，也換走了輸出不失真的空間。">
+  <EcWeek6GainHeadroom client:visible />
+</GeneratedFrame>
 
 ## 教材預習重點
 
@@ -511,7 +527,9 @@ $R_2$ 與基極-射極接面並聯，所以表 2 同時就是 $V_{BE}$，量一�
 
 > **$V_{CE}$ 要直接量集極對地，不要用 $V_{CC} - V_{R_C}$ 相減。** 圖上表 3 顯示 15.0 V、電源顯示 15.0 V，相減得到 0 —— 真正的 $V_{CE}$ 只有 27 mV，被三位數顯示吃掉了。兩個 15 V 量級的數相減，誤差會放大到和待測值同一個數量級。$I_C$ 用 $V_{R_C}/R_C$ 沒問題（$15.0/1\text{k} = 15.0\text{ mA}$），但 $V_{CE}$ 一定要直接跨在集極與地之間量。
 >
-> **這張圖上沒有第四台表**（Tinkercad 的新放置元件拉不出探棒線，試過八種做法都失敗，不是電路問題）。要確認飽和壓降時：把**表 3 的紅棒暫時從 i15 移到集極**（i11 或 j11）、黑棒留在 − 軌，讀完 $V_{CE}$ 再接回 i15。實驗室用實體電表時沒有這個限制，直接拿第三支表跨 C–E 即可。LTspice 的參考值是 $V_{CE} = 0.054\text{ V}$。
+> **這張圖上沒有第四台表。** 這塊板子已經有三台電表，再加第四台之後它的探棒拉不出線——點擊式連線、兩點直連、從板子端反向起線、滑鼠拖曳、偏移落點、每步重讀座標、重新載入頁面、複製既有的表、開全新分頁，十種做法都失敗；而同一時間在兩個空孔之間畫線完全正常，所以不是畫線功能壞掉，也不是電路問題。（DC Check 那個設計從零加兩台表都接得上，所以也不是「新元件不能接線」。）
+>
+> 要確認飽和壓降時：把**表 3 的紅棒暫時從 i15 移到集極**（i11 或 j11）、黑棒留在 − 軌，讀完 $V_{CE}$ 再接回 i15。實驗室用實體電表時沒有這個限制，直接拿第三支表跨 C–E 即可。LTspice 的參考值是 $V_{CE} = 0.054\text{ V}$。
 
 ![Tinkercad 電流分析圖：VBB = VCC = 15 V，三台電壓表分別跨在 R1、R2、RC 兩端](/note-images/ec-week6-tinkercad/lab2-exp2-breadboard-current.png)
 
