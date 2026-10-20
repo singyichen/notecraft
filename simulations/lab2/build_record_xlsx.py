@@ -73,6 +73,10 @@ def head(ws, row, labels, widths=None, height=30):
 
 
 def put(ws, row, col, value, *, font=BLACK, fill=None, fmt=None):
+    # 黃底輸入格若尚未量測，明確存成空字串型儲存格。
+    # 某些 Excel 相容預覽器會把「數值型但沒有值」的儲存格誤顯示成 0。
+    if value is None and fill is FILL_IN:
+        value = ''
     c = ws.cell(row=row, column=col, value=value)
     c.font = font
     c.border = BOX

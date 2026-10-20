@@ -71,6 +71,32 @@ class Lab2RecordWorkbookTests(unittest.TestCase):
         self.assertTrue(self.wb.calculation.fullCalcOnLoad)
         self.assertTrue(self.wb.calculation.forceFullCalc)
 
+    def test_measurement_input_cells_are_explicitly_blank_text_not_numeric_zero(self):
+        measurement_cells = {
+            "實驗一 特性曲線": [
+                "E11", "F11", "J11", "K11", "O11", "P11", "T11", "U11",
+                *[
+                    f"{column}{row}"
+                    for row in range(13, 44)
+                    for column in ("B", "C", "G", "H", "L", "M", "Q", "R")
+                ],
+            ],
+            "實驗二 beta": ["B7", "B8", "B9", "B10", "B16"],
+            "第二部分 CE 放大器": [
+                "B6", "B7", "B8", "E6", "E7", "E8",
+                "B14", "C14", "G14", "B15", "C15", "G15",
+                "B16", "C16", "G16", "B17", "C17", "G17",
+                "D22", "D23", "D24", "D25", "D26", "D27", "D28",
+            ],
+        }
+
+        for sheet_name, addresses in measurement_cells.items():
+            sheet = self.wb[sheet_name]
+            for address in addresses:
+                with self.subTest(sheet=sheet_name, cell=address):
+                    self.assertIsNone(sheet[address].value)
+                    self.assertEqual(sheet[address].data_type, "inlineStr")
+
 
 if __name__ == "__main__":
     unittest.main()
