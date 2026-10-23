@@ -43,6 +43,42 @@ node ../../.claude/skills/lab-workflow/scripts/circuitjs-link.mjs circuitjs/*.tx
 
 實驗一的設計：`Lab 2 Exp 1: BJT Biasing & Characteristic Curve`（<https://www.tinkercad.com/things/f1i0PdS6UlX>）。版面：R1 i6–i10、R2 j10–j14、RC g11–g15、2N2222 在 f9（E）／f10（B）／f11（C）、本體轉 180° 掛進溝槽；VBB 走上方 + 軌、兩台電源的 − 共接上方 − 軌；左表量 V_BE（h10 對 − 軌）、中表量 V_CE（h11 對 − 軌）、右表串在 VCC 與 RC 之間量 I_C。截圖在 `public/note-images/ec-week6-tinkercad/`，電流分析圖由 `annotate_current_path.py` 疊在原圖上產生（原名加 `-current`）。
 
+## 實體麵包板接線圖
+
+`draw_real_breadboard.py` 從零畫一塊和實驗室同規格的**全尺寸麵包板**（60 欄、上下各一組
+電源軌、上排 j–f／下排 e–a），輸出三張圖到 `public/note-images/ec-week6-breadboard/`：
+
+| 圖 | 內容 |
+| --- | --- |
+| `lab2-part1-breadboard.png` | 接線圖：元件插在哪、跳線走哪、兩台電源怎麼夾，附十步驟接線順序 |
+| `lab2-part1-measure-exp1.png` | 實驗一：V_CE 與 V_BE 的電表夾點（整組掃描不用移表） |
+| `lab2-part1-measure-exp2.png` | 實驗二：四筆壓降的紅黑線插孔與 LTspice 預報值 |
+
+不是在 Tinkercad 截圖上疊圖——Tinkercad 用的是 30 欄小板，孔位對不上當天手上那塊。
+幾何與配色照 Lab 1 當天的照片：藍色本體的 1% 金屬皮膜電阻、黃色單芯跳線、
+電源與電表都是鱷魚夾夾住插在孔裡的線（那天沒有探針）。
+
+板上的配置（實驗一與實驗二共用，接線完全不動，只移電表那兩條線）：
+
+```
++軌 →(黃跳線)→ j18 ─ R1 10k (i18→i31) ─┬─ 基極 31 欄
+                                        └─ R2 4.7k (h31→h42) →(黃跳線 j42)→ −軌
+2N2222A f30/f31/f32 = E/B/C，本體朝溝槽掛（g–j 四列才空得出來給電表）
+射極 j30 →(黃跳線)→ −軌
+集極 32 欄 ─ RC 1k (g32→g45) ─ j45 ← CH2+（V_CC 不走電源軌）
+```
+
+量測孔位：`i32` 量 V_CE、`j31` 量 V_BE／V_R2、`h18`–`g31` 量 V_R1、`h45`–`h32` 量 V_RC，
+黑線固定夾在上方「−」軌。I_B 一律用 KCL 算（I_R1 − I_R2），不把電流表串進迴路。
+實驗二那四個預報值直接對過 `lab2-exp2-op.raw`（14.25／0.750／14.95／0.054 V）。
+
+腳本自己會檢查用到的字在 STHeiti 裡畫不畫得出來，缺字就非零結束——上一版的
+unicode 下標與 `⚠` 全部變成空心方框，就是這樣漏掉的。
+
+```bash
+../lab1/.venv/bin/python draw_real_breadboard.py
+```
+
 ## 記錄簿
 
 `build_record_xlsx.py` 產生實驗當天用的 `measured/Lab2-數據記錄.xlsx`：五張工作表（說明／實驗一 特性曲線
