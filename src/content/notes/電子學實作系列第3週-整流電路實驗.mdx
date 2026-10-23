@@ -3,7 +3,7 @@ title: "電子學實作系列：第 3 週 - 整流電路實驗"
 description: "Lab 1 二極體實驗的講義詳解與執行手冊：四個實驗（順偏導通電壓、逆偏、半波整流、全波橋式整流與齊納穩壓）各附講義目標／理論／問題詳解、CircuitJS 一鍵模擬連結看波形、Tinkercad 接線配方預演、LTspice 真實型號預報值、實驗室量測記錄表與檢查點；並收錄課前實驗教學、助教影片、Tinkercad 入門與自學路線，整理整流效率、漣波公式與橋式電路的示波器接地陷阱。"
 tags: ["電子學實作系列"]
 createdAt: "2026-09-26"
-updatedAt: "2026-10-04"
+updatedAt: "2026-10-23"
 ---
 
 import PdfRefChip from '@/components/islands/PdfRefChip.tsx'
@@ -2520,6 +2520,32 @@ cd simulations/lab1
 產出 `report/<學號>_<姓名>_Lab1.docx`，六個章節齊全、三個實驗的 KiCad 電路圖與 Tinkercad／LTspice 圖都已嵌入。裡面只有兩種標記：**黃底＝待填**（當天的照片、數據、你自己的分析），**綠底＝草稿**（由本篇整理的要點，一定要用自己的話改寫後移除底色——照貼會踩到「過度依賴 AI 工具 8 折」）。在 Word 裡搜尋「【」可以逐一跳到還沒處理的地方。
 
 先把 `measured/` 底下三份 CSV 的實測欄填好再跑，實測表、疊圖與逐項誤差都會自動帶入；空著跑也能用，只是那些格子維持黃底。重跑會覆蓋你在 Word 裡的手改，所以 `--force` 只在還沒動過那份檔時用。
+
+### 交出去的兩份檔
+
+10/3 下課前上傳 E3 的數據表與隔天完成的結報，`.docx` 原稿與 `.pdf` 成品都收在 `<notesDir>/_outputs/lab1/`，同一個資料夾還有當天的四張麵包板照片。這個資料夾帶學號姓名，`.gitignore` 排除、`astro build` 也不複製進 `dist/`，所以**只有本機 `astro dev` 開得起來**——下面的連結同理，正式站不顯示。
+
+| 檔 | 內容 | 涵蓋的實驗 |
+| --- | --- | --- |
+| 實驗數據結果（5 頁） | 當天上傳的版本：量測條件與器材、量測現場與接線照片、順偏 20 列與逆偏 20 列的完整數據表（含電表讀值 vs $V_R / R$ 換算的差異欄、LTspice 對照欄）、$I$–$V$ 疊圖 | 一、二 |
+| 結報（21 頁） | 實驗目的、實驗原理（PN 接面與順偏、逆偏漏電流與崩潰、限流電阻與 KVL）、Tinkercad 模擬、實驗數據與結果、結果分析、講義問題六題、心得 | 一、二 |
+
+兩份都只寫基礎實驗（順偏、逆偏）；上表「結報各項目對照本篇」假設的是「基礎＋進階 I（半波）」，和實際交出去的範圍不一致，之後要補進階 I 時記得連帶更新那一節。
+
+{import.meta.env.DEV && (
+  <ul>
+    <li>
+      <a class="nc-datafile-link" data-nc-datafile="_outputs/lab1/515661055_陳欣怡_Lab 1 實驗數據結果.pdf" href="/notes-assets/_outputs/lab1/515661055_%E9%99%B3%E6%AC%A3%E6%80%A1_Lab%201%20%E5%AF%A6%E9%A9%97%E6%95%B8%E6%93%9A%E7%B5%90%E6%9E%9C.pdf" title="在側邊抽屜開啟 Lab 1 實驗數據結果.pdf">Lab 1 實驗數據結果（PDF，5 頁）</a>
+      {" ／ "}
+      <a class="nc-datafile-link" data-nc-datafile="_outputs/lab1/515661055_陳欣怡_Lab 1 實驗數據結果.docx" href="/notes-assets/_outputs/lab1/515661055_%E9%99%B3%E6%AC%A3%E6%80%A1_Lab%201%20%E5%AF%A6%E9%A9%97%E6%95%B8%E6%93%9A%E7%B5%90%E6%9E%9C.docx" title="在側邊抽屜開啟 Lab 1 實驗數據結果.docx">.docx 原稿</a>
+    </li>
+    <li>
+      <a class="nc-datafile-link" data-nc-datafile="_outputs/lab1/515661055_陳欣怡_Lab 1 結報.pdf" href="/notes-assets/_outputs/lab1/515661055_%E9%99%B3%E6%AC%A3%E6%80%A1_Lab%201%20%E7%B5%90%E5%A0%B1.pdf" title="在側邊抽屜開啟 Lab 1 結報.pdf">Lab 1 結報（PDF，21 頁）</a>
+      {" ／ "}
+      <a class="nc-datafile-link" data-nc-datafile="_outputs/lab1/515661055_陳欣怡_Lab 1 結報.docx" href="/notes-assets/_outputs/lab1/515661055_%E9%99%B3%E6%AC%A3%E6%80%A1_Lab%201%20%E7%B5%90%E5%A0%B1.docx" title="在側邊抽屜開啟 Lab 1 結報.docx">.docx 原稿</a>
+    </li>
+  </ul>
+)}
 
 ## 附錄：CircuitJS 電路文字檔
 
