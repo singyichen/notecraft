@@ -21,13 +21,27 @@ import { getWorkbenchIndex, noteRelPath, promptPathOf } from "@/lib/workbench";
 import { notesFolderHref } from "@/lib/wb-routes";
 import { ROOT_GROUP } from "@/lib/wb-types";
 import NoteSlugRedirect from "@/components/NoteSlugRedirect.astro";
-import { legacyNoteSlugRedirectsFor } from "@/lib/legacy-note-slugs";
+import { isCaseOnlyAlias, legacyNoteSlugRedirectsFor } from "@/lib/legacy-note-slugs";
+import { isCaseInsensitiveFs } from "@/lib/case-insensitive-fs";
 
 export async function getStaticPaths() {
   const notes = await getAllNotes();
   const notesBySlug = new Map(notes.map((note) => [note.id, note]));
   const canonicalPaths = notes.map((note) => ({ params: { slug: note.id }, props: { note } }));
-  const legacyPaths = legacyNoteSlugRedirectsFor(new Set(notesBySlug.keys())).flatMap(({ slug, canonicalSlug }) => {
+  // 大小寫不敏感的檔案系統（macOS、Windows）上，只差大小寫的別名會和正式頁輸出到
+  // 同一個目錄而互相覆蓋，所以本機 build 時略過它們；Netlify 跑 Linux，照常輸出。
+  const allowCaseOnlyAliases = !isCaseInsensitiveFs();
+  const noteSlugs = new Set(notesBySlug.keys());
+  if (!allowCaseOnlyAliases) {
+    for (const { slug, canonicalSlug } of legacyNoteSlugRedirectsFor(noteSlugs)) {
+      if (isCaseOnlyAlias(slug, canonicalSlug)) {
+        console.warn(
+          `[legacy-note-slugs] 檔案系統大小寫不敏感，略過只差大小寫的別名 /notes/${slug}（正式站 build 於 Linux，仍會輸出）`,
+        );
+      }
+    }
+  }
+  const legacyPaths = legacyNoteSlugRedirectsFor(noteSlugs, { allowCaseOnlyAliases }).flatMap(({ slug, canonicalSlug }) => {
     const note = notesBySlug.get(canonicalSlug);
     return note ? [{ params: { slug }, props: { note, redirectTo: canonicalSlug } }] : [];
   });
