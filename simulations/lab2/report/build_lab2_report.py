@@ -3,7 +3,7 @@
 數據來源是已上傳 E3 的「實驗數據結果」PDF，抄成 measured/lab2-exp1-e3.csv，數字原樣不動。
 
 用法（在 simulations/lab2/）：
-  .venv/Scripts/python report/build_lab2_report.py --id 515661055 --name 陳欣怡 [--force]
+  .venv/Scripts/python report/build_lab2_report.py --id <學號> --name <姓名> [--force]
   → src/content/notes/_outputs/lab2/<學號>_<姓名>_Lab 2 結報.docx
 照片先從數據 PDF 抽到 report/build/photo1.png、photo2.png（見 README）。
 """
