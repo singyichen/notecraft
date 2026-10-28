@@ -1,0 +1,281 @@
+<!doctype html>
+<html lang="zh-Hant"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>機器學習選擇題練習</title>
+<link rel="stylesheet" href="{{KATEX_CSS}}">
+<style>
+:root {
+  --bg: #f6f7f9; --card: #fff; --ink: #1a1a1a; --muted: #666; --line: #dde1e7;
+  --brand: #1f4e9c; --accent: #e8862a; --sel: #e7eefb; --sel-line: #1f4e9c;
+  --ok: #1d7a3a; --ok-bg: #e5f4ea; --bad: #b3261e; --bad-bg: #fbe9e7; --code-bg: #f2f3f6;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #15171b; --card: #1e2127; --ink: #e6e6e6; --muted: #9aa0a8; --line: #333842;
+    --brand: #7fa8ec; --accent: #f0a35a; --sel: #23324d; --sel-line: #7fa8ec;
+    --ok: #6fcf8e; --ok-bg: #1d3326; --bad: #f28b82; --bad-bg: #3a2220; --code-bg: #262a31;
+  }
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.6 "PingFang TC", "Noto Sans TC", sans-serif; }
+.bar { position: sticky; top: 0; z-index: 5; background: var(--card); border-bottom: 1px solid var(--line); padding: 10px 16px; }
+.bar-in { max-width: 860px; margin: 0 auto; display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; }
+.back { font-size: 13px; color: var(--brand); text-decoration: none; }
+.bar h1 { font-size: 17px; margin: 0; color: var(--brand); flex: 1 1 auto; }
+.stat { font-size: 13px; color: var(--muted); }
+.chips { flex-basis: 100%; display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { border: 1px solid var(--line); background: transparent; color: var(--ink); border-radius: 999px; padding: 3px 11px; font: inherit; font-size: 13px; cursor: pointer; }
+.chip[aria-pressed="true"] { background: var(--brand); border-color: var(--brand); color: var(--card); }
+.chip .done { color: var(--ok); margin-left: 4px; }
+.chip[aria-pressed="true"] .done { color: inherit; }
+.btn { border: 1px solid var(--brand); background: var(--brand); color: var(--card); border-radius: 6px; padding: 5px 12px; font: inherit; font-size: 14px; cursor: pointer; }
+.btn.ghost { background: transparent; color: var(--brand); }
+.btn.warn { border-color: var(--bad); background: var(--bad); color: var(--card); }
+.btn:disabled { opacity: .45; cursor: default; }
+.toggle { font-size: 13px; color: var(--muted); display: flex; gap: 4px; align-items: center; }
+main { max-width: 860px; margin: 0 auto; padding: 12px 16px 80px; }
+.result { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 12px 16px; margin: 8px 0 16px; }
+.result h2 { margin: 0 0 6px; font-size: 16px; }
+.result .big { font-size: 28px; font-weight: 700; color: var(--brand); }
+.result table { border-collapse: collapse; width: 100%; font-size: 14px; margin-top: 8px; }
+.result th, .result td { border-bottom: 1px solid var(--line); padding: 4px 6px; text-align: right; }
+.result th:first-child, .result td:first-child { text-align: left; }
+.week > h2 { font-size: 18px; color: var(--brand); border-left: 4px solid var(--accent); padding-left: 8px; margin: 24px 0 10px; }
+.tag { font-size: 12px; color: var(--bad); border: 1px solid currentColor; border-radius: 4px; padding: 0 5px; margin-left: 8px; vertical-align: middle; font-weight: 400; }
+.q { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 12px 16px; margin: 10px 0; }
+.q.is-right { border-color: var(--ok); }
+.q.is-wrong, .q.is-blank { border-color: var(--bad); }
+.qn { font-weight: 700; color: var(--brand); font-size: 13px; display: flex; gap: 8px; align-items: center; }
+.verdict { font-size: 12px; border-radius: 4px; padding: 0 6px; }
+.is-right .verdict { background: var(--ok-bg); color: var(--ok); }
+.is-wrong .verdict, .is-blank .verdict { background: var(--bad-bg); color: var(--bad); }
+blockquote { margin: 4px 0 8px; padding: 0; }
+blockquote p, .sol p { margin: 4px 0; }
+.nc-en { display: block; color: var(--muted); font-size: .9em; }
+.nc-choices { list-style: none; margin: 6px 0 0; padding: 0; display: grid; gap: 6px; }
+.nc-choice { display: flex; gap: 10px; align-items: flex-start; border: 1px solid var(--line); border-radius: 8px; padding: 7px 10px; cursor: pointer; }
+.nc-choice:hover { border-color: var(--sel-line); }
+.nc-choice:focus-visible { outline: 2px solid var(--sel-line); outline-offset: 1px; }
+.nc-choice.is-sel { background: var(--sel); border-color: var(--sel-line); }
+.nc-choice.is-correct { background: var(--ok-bg); border-color: var(--ok); }
+.nc-choice.is-miss { background: var(--bad-bg); border-color: var(--bad); }
+.locked .nc-choice { cursor: default; }
+.locked .nc-choice:hover { border-color: var(--line); }
+.locked .nc-choice.is-correct:hover { border-color: var(--ok); }
+.locked .nc-choice.is-miss:hover { border-color: var(--bad); }
+.nc-choice__key { flex: none; width: 24px; height: 24px; border: 1px solid var(--muted); border-radius: 50%; text-align: center; line-height: 22px; font-size: 13px; font-weight: 600; }
+.is-sel .nc-choice__key { background: var(--sel-line); border-color: var(--sel-line); color: var(--card); }
+.is-correct .nc-choice__key { background: var(--ok); border-color: var(--ok); color: var(--card); }
+.is-miss .nc-choice__key { background: var(--bad); border-color: var(--bad); color: var(--card); }
+.nc-choice__text { flex: 1; min-width: 0; }
+.sol { margin-top: 10px; border-top: 1px dashed var(--line); padding-top: 8px; font-size: 14px; }
+.sol > .lbl { font-weight: 700; color: var(--accent); }
+.nc-cb { margin: 6px 0; background: var(--code-bg); border: 1px solid var(--line); border-radius: 6px; padding: 6px 10px; overflow-x: auto; }
+.nc-cb pre { margin: 0; font-size: 13px; line-height: 1.45; }
+code { font-family: "SF Mono", Menlo, monospace; font-size: .92em; }
+:not(pre) > code { background: var(--code-bg); padding: 0 4px; border-radius: 3px; }
+.nc-cb__t--keyword { color: #8a3ab9; } .nc-cb__t--string { color: #2a7a2a; }
+.nc-cb__t--number { color: #b35c00; } .nc-cb__t--comment { color: var(--muted); font-style: italic; }
+.nc-cb__t--func { color: var(--brand); }
+@media (prefers-color-scheme: dark) {
+  .nc-cb__t--keyword { color: #c792ea; } .nc-cb__t--string { color: #9ccc65; } .nc-cb__t--number { color: #ffb86c; }
+}
+.sol table { border-collapse: collapse; margin: 6px 0; font-size: 13px; }
+.sol th, .sol td { border: 1px solid var(--line); padding: 3px 6px; }
+.katex-display { overflow-x: auto; overflow-y: hidden; }
+[hidden] { display: none !important; }
+</style></head><body>
+<div class="bar"><div class="bar-in">
+  <a class="back" href="/notes/機器學習實作系列第9週-期中考">← 第 9 週筆記</a>
+  <h1>機器學習選擇題練習</h1>
+  <span class="stat" id="progress"></span>
+  <button class="btn" id="grade" type="button">對答案</button>
+  <button class="btn ghost" id="reset" type="button">重新答題</button>
+  <div class="chips" id="chips"></div>
+  <label class="toggle" id="onlyWrongWrap" hidden><input type="checkbox" id="onlyWrong">只看答錯／未答</label>
+</div></div>
+<main>
+  <div class="result" id="result" hidden></div>
+  {{QUESTIONS}}
+</main>
+<script>
+(() => {
+  // 作答紀錄只存在這台電腦的瀏覽器；按「重新答題」才會清掉目前範圍的紀錄
+  const KEY = "nc-ml-mcq-quiz-v1";
+  const VIEW_KEY = "nc-ml-mcq-quiz-view";
+  const qs = [...document.querySelectorAll(".q")];
+  const weeks = [...new Set(qs.map((q) => q.dataset.week))];
+  const $ = (id) => document.getElementById(id);
+
+  function load() {
+    try {
+      const s = JSON.parse(localStorage.getItem(KEY));
+      if (s && typeof s.answers === "object" && typeof s.graded === "object") return s;
+    } catch {}
+    return { answers: {}, graded: {} };
+  }
+  function save() { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch {} }
+  let state = load();
+  let scope = "all";
+  try { scope = localStorage.getItem(VIEW_KEY) || "all"; } catch {}
+  if (!["all", "mid", ...weeks].includes(scope)) scope = "all";
+
+  const scopeWeeks = () =>
+    scope === "all" ? weeks : scope === "mid" ? weeks.filter((w) => +w <= 7) : [scope];
+  const scopeLabel = () =>
+    scope === "all" ? "全部" : scope === "mid" ? "期中範圍" : `第 ${scope} 週`;
+  const correctOf = (q) => q.dataset.answer.split(",");
+  const sameSet = (a, b) => a.length === b.length && a.every((x) => b.includes(x));
+
+  function verdict(q) {
+    const sel = state.answers[q.dataset.id] || [];
+    if (!sel.length) return "blank";
+    return sameSet(sel, correctOf(q)) ? "right" : "wrong";
+  }
+
+  // 範圍切換鈕
+  const chipDefs = [["all", "全部"], ["mid", "期中 1–7 週"], ...weeks.map((w) => [w, `第 ${w} 週`])];
+  $("chips").innerHTML = chipDefs
+    .map(([v, t]) => `<button type="button" class="chip" data-scope="${v}">${t}<span class="done"></span></button>`)
+    .join("");
+  $("chips").addEventListener("click", (e) => {
+    const b = e.target.closest(".chip");
+    if (!b) return;
+    scope = b.dataset.scope;
+    try { localStorage.setItem(VIEW_KEY, scope); } catch {}
+    disarmReset();
+    render();
+    window.scrollTo({ top: 0 });
+  });
+
+  // 選項
+  for (const q of qs) {
+    const multi = q.dataset.answer.includes(",");
+    for (const li of q.querySelectorAll(".nc-choice")) {
+      li.tabIndex = 0;
+      li.setAttribute("role", multi ? "checkbox" : "radio");
+      const pick = () => {
+        if (state.graded[q.dataset.week]) return;
+        const k = li.querySelector(".nc-choice__key").textContent.trim();
+        const sel = state.answers[q.dataset.id] || [];
+        let next;
+        if (multi) next = sel.includes(k) ? sel.filter((x) => x !== k) : [...sel, k].sort();
+        else next = sel[0] === k ? [] : [k];
+        if (next.length) state.answers[q.dataset.id] = next;
+        else delete state.answers[q.dataset.id];
+        save();
+        render();
+      };
+      li.addEventListener("click", pick);
+      li.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" || e.key === " ") { e.preventDefault(); pick(); }
+      });
+    }
+  }
+
+  $("grade").addEventListener("click", () => {
+    for (const w of scopeWeeks()) state.graded[w] = true;
+    save();
+    render();
+    // 頂部列是 sticky，捲到成績區時要扣掉它的高度
+    const barH = document.querySelector(".bar").offsetHeight;
+    window.scrollTo({ top: $("result").getBoundingClientRect().top + window.scrollY - barH - 8 });
+  });
+
+  // 重新答題要按兩次，避免誤觸把紀錄清掉
+  let armTimer = 0;
+  function disarmReset() {
+    clearTimeout(armTimer);
+    $("reset").classList.remove("warn");
+    $("reset").classList.add("ghost");
+    $("reset").dataset.armed = "";
+    $("reset").textContent = `重新答題（${scopeLabel()}）`;
+  }
+  $("reset").addEventListener("click", () => {
+    const btn = $("reset");
+    if (!btn.dataset.armed) {
+      btn.dataset.armed = "1";
+      btn.classList.remove("ghost");
+      btn.classList.add("warn");
+      btn.textContent = "確定清除？再按一次";
+      armTimer = setTimeout(disarmReset, 4000);
+      return;
+    }
+    const ws = scopeWeeks();
+    for (const q of qs) if (ws.includes(q.dataset.week)) delete state.answers[q.dataset.id];
+    for (const w of ws) delete state.graded[w];
+    save();
+    disarmReset();
+    render();
+    window.scrollTo({ top: 0 });
+  });
+  $("onlyWrong").addEventListener("change", render);
+
+  function render() {
+    const ws = scopeWeeks();
+    const onlyWrong = $("onlyWrong").checked;
+    for (const b of document.querySelectorAll(".chip")) {
+      b.setAttribute("aria-pressed", String(b.dataset.scope === scope));
+      const w = b.dataset.scope;
+      b.querySelector(".done").textContent = weeks.includes(w) && state.graded[w] ? "✓" : "";
+    }
+    for (const sec of document.querySelectorAll(".week")) sec.hidden = !ws.includes(sec.dataset.week);
+
+    for (const q of qs) {
+      const graded = !!state.graded[q.dataset.week];
+      const sel = state.answers[q.dataset.id] || [];
+      const correct = correctOf(q);
+      const v = verdict(q);
+      q.classList.toggle("locked", graded);
+      q.classList.toggle("is-right", graded && v === "right");
+      q.classList.toggle("is-wrong", graded && v === "wrong");
+      q.classList.toggle("is-blank", graded && v === "blank");
+      q.querySelector(".verdict").textContent = graded ? { right: "答對", wrong: "答錯", blank: "未作答" }[v] : "";
+      q.querySelector(".verdict").hidden = !graded;
+      q.querySelector(".sol").hidden = !graded;
+      q.hidden = !ws.includes(q.dataset.week) || (onlyWrong && graded && v === "right");
+      for (const li of q.querySelectorAll(".nc-choice")) {
+        const k = li.querySelector(".nc-choice__key").textContent.trim();
+        const isSel = sel.includes(k);
+        li.setAttribute("aria-checked", String(isSel));
+        li.tabIndex = graded ? -1 : 0;
+        li.classList.toggle("is-sel", isSel && !graded);
+        li.classList.toggle("is-correct", graded && correct.includes(k));
+        li.classList.toggle("is-miss", graded && isSel && !correct.includes(k));
+      }
+    }
+
+    const inScope = qs.filter((q) => ws.includes(q.dataset.week));
+    const answered = inScope.filter((q) => (state.answers[q.dataset.id] || []).length).length;
+    $("progress").textContent = `${scopeLabel()}：已作答 ${answered} / ${inScope.length}`;
+    const allGraded = ws.every((w) => state.graded[w]);
+    $("grade").disabled = allGraded;
+    $("grade").textContent = allGraded ? "已對答案" : `對答案（${scopeLabel()}）`;
+    if (!$("reset").dataset.armed) $("reset").textContent = `重新答題（${scopeLabel()}）`;
+
+    const gradedWeeks = ws.filter((w) => state.graded[w]);
+    $("onlyWrongWrap").hidden = !gradedWeeks.length;
+    if (!gradedWeeks.length) { $("result").hidden = true; return; }
+    let tr = 0, tw = 0, tb = 0, rows = "";
+    for (const w of gradedWeeks) {
+      const list = qs.filter((q) => q.dataset.week === w);
+      const c = { right: 0, wrong: 0, blank: 0 };
+      for (const q of list) c[verdict(q)]++;
+      tr += c.right; tw += c.wrong; tb += c.blank;
+      rows += `<tr><td>第 ${w} 週</td><td>${c.right}</td><td>${c.wrong}</td><td>${c.blank}</td><td>${Math.round((c.right / list.length) * 100)}</td></tr>`;
+    }
+    const n = tr + tw + tb;
+    const pending = ws.length - gradedWeeks.length;
+    $("result").hidden = false;
+    $("result").innerHTML =
+      `<h2>成績（${scopeLabel()}${pending ? `，另有 ${pending} 週尚未對答案` : ""}）</h2>` +
+      `<div><span class="big">${Math.round((tr / n) * 100)}</span> 分　答對 ${tr} / ${n} 題` +
+      (tw + tb ? `（答錯 ${tw}、未作答 ${tb}）` : "") + `</div>` +
+      `<table><thead><tr><th>週次</th><th>答對</th><th>答錯</th><th>未作答</th><th>分數</th></tr></thead><tbody>${rows}</tbody></table>`;
+  }
+
+  disarmReset();
+  render();
+})();
+</script>
+</body></html>

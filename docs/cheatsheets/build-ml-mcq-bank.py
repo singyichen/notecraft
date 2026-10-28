@@ -1,7 +1,9 @@
-"""機器學習實作系列的選擇題題庫（可列印）。
+"""機器學習實作系列的選擇題題庫：可列印版與互動練習版。
 
-從 astro build 的產物抽出各週 `#### 選擇題 N`（公式、程式碼已渲染好），
-組成 docs/cheatsheets/ml-mcq-bank.html：前半是題目（不標正解），後半是答案表與詳解。
+從 astro build 的產物抽出各週 `#### 選擇題 N`（公式、程式碼已渲染好），產生兩份：
+- docs/cheatsheets/ml-mcq-bank.html：前半是題目（不標正解），後半是答案表與詳解，印成 PDF
+- public/quiz/ml-mcq.html：作答頁，網址 /quiz/ml-mcq.html（樣式與互動在 ml-mcq-quiz.template.html），
+  作答紀錄存在 localStorage，按「重新答題」才清除
 
 用法（先跑過 astro build）：
   python3 docs/cheatsheets/build-ml-mcq-bank.py
@@ -139,3 +141,30 @@ img, svg {{ max-width: 100%; }}
 </body></html>
 """)
 print(f"{OUT.relative_to(ROOT)}：{total} 題")
+
+# 互動練習版：同一批題目，選項可點、對答案算分，作答紀錄存在瀏覽器 localStorage
+QUIZ_TPL = ROOT / "docs/cheatsheets/ml-mcq-quiz.template.html"
+# 放在 public/ 才會被 dev 與正式站提供（網址 /quiz/ml-mcq.html），第 9 週筆記連過來；
+# KaTeX 的 CSS 與 woff2 字型複製到旁邊，不依賴 node_modules
+QUIZ_DIR = ROOT / "public/quiz"
+QUIZ_OUT = QUIZ_DIR / "ml-mcq.html"
+KATEX_DIST = ROOT / "node_modules/katex/dist"
+(QUIZ_DIR / "katex/fonts").mkdir(parents=True, exist_ok=True)
+(QUIZ_DIR / "katex/katex.min.css").write_bytes((KATEX_DIST / "katex.min.css").read_bytes())
+for font in (KATEX_DIST / "fonts").glob("*.woff2"):
+    (QUIZ_DIR / "katex/fonts" / font.name).write_bytes(font.read_bytes())
+quiz = []
+for w, title, qs in weeks:
+    tag = "" if w <= 7 else '<span class="tag">期中範圍外</span>'
+    quiz.append(f'<section class="week" data-week="{w}"><h2>{html.escape(title)}{tag}</h2>')
+    for n, q, a, body in qs:
+        quiz.append(
+            f'<article class="q" data-id="W{w}-{n}" data-week="{w}" data-answer="{a}">'
+            f'<div class="qn">W{w}-{n}<span class="verdict" hidden></span></div>{q}'
+            f'<div class="sol" hidden><span class="lbl">正解 {a}</span>{body}</div></article>'
+        )
+    quiz.append("</section>")
+QUIZ_OUT.write_text(
+    QUIZ_TPL.read_text().replace("{{KATEX_CSS}}", "katex/katex.min.css").replace("{{QUESTIONS}}", "".join(quiz))
+)
+print(f"{QUIZ_OUT.relative_to(ROOT)}：{total} 題（互動練習）")
