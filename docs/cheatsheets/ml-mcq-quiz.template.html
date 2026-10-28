@@ -41,7 +41,6 @@ main { max-width: 860px; margin: 0 auto; padding: 12px 16px 80px; }
 .result th, .result td { border-bottom: 1px solid var(--line); padding: 4px 6px; text-align: right; }
 .result th:first-child, .result td:first-child { text-align: left; }
 .week > h2 { font-size: 18px; color: var(--brand); border-left: 4px solid var(--accent); padding-left: 8px; margin: 24px 0 10px; }
-.tag { font-size: 12px; color: var(--bad); border: 1px solid currentColor; border-radius: 4px; padding: 0 5px; margin-left: 8px; vertical-align: middle; font-weight: 400; }
 .q { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 12px 16px; margin: 10px 0; }
 .q.is-right { border-color: var(--ok); }
 .q.is-wrong, .q.is-blank { border-color: var(--bad); }
@@ -118,12 +117,12 @@ code { font-family: "SF Mono", Menlo, monospace; font-size: .92em; }
   let state = load();
   let scope = "all";
   try { scope = localStorage.getItem(VIEW_KEY) || "all"; } catch {}
-  if (!["all", "mid", ...weeks].includes(scope)) scope = "all";
+  if (!["all", ...weeks].includes(scope)) scope = "all";
 
   const scopeWeeks = () =>
-    scope === "all" ? weeks : scope === "mid" ? weeks.filter((w) => +w <= 7) : [scope];
+    scope === "all" ? weeks : [scope];
   const scopeLabel = () =>
-    scope === "all" ? "全部" : scope === "mid" ? "期中範圍" : `第 ${scope} 週`;
+    scope === "all" ? "全部" : `第 ${scope} 週`;
   const correctOf = (q) => q.dataset.answer.split(",");
   const sameSet = (a, b) => a.length === b.length && a.every((x) => b.includes(x));
 
@@ -134,7 +133,7 @@ code { font-family: "SF Mono", Menlo, monospace; font-size: .92em; }
   }
 
   // 範圍切換鈕
-  const chipDefs = [["all", "全部"], ["mid", "期中 1–7 週"], ...weeks.map((w) => [w, `第 ${w} 週`])];
+  const chipDefs = [["all", "全部（期中 1–7 週）"], ...weeks.map((w) => [w, `第 ${w} 週`])];
   $("chips").innerHTML = chipDefs
     .map(([v, t]) => `<button type="button" class="chip" data-scope="${v}">${t}<span class="done"></span></button>`)
     .join("");

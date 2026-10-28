@@ -20,6 +20,7 @@ ROOT = pathlib.Path(__file__).resolve().parents[2]
 NOTES = ROOT / "src/content/notes"
 DIST = ROOT / "dist/notes"
 OUT = ROOT / "docs/cheatsheets/ml-mcq-bank.html"
+MIDTERM_LAST_WEEK = 7  # 期中考範圍：第 1–7 週
 KATEX_CSS = "../../node_modules/katex/dist/katex.min.css"  # 相對於 OUT，避免寫進本機絕對路徑
 
 HEAD_RE = re.compile(r'<h4 id="選擇題-(\d+)">')
@@ -59,6 +60,8 @@ weeks = []
 for mdx in sorted(NOTES.glob("機器學習實作系列第*週-*.mdx"), key=week_of):
     if "#### 選擇題" not in mdx.read_text():
         continue
+    if week_of(mdx) > MIDTERM_LAST_WEEK:  # 期中範圍外的週次不收
+        continue
     dist = [d for d in DIST.iterdir() if d.name.lower() == mdx.stem.lower()]
     assert dist, f"dist 裡沒有 {mdx.stem}，先跑 astro build"
     page = (dist[0] / "index.html").read_bytes().decode("utf-8", "replace")
@@ -71,8 +74,7 @@ total = sum(len(q) for _, _, q in weeks)
 
 parts = []
 for w, title, qs in weeks:
-    tag = "" if w <= 7 else '<span class="tag">期中範圍外</span>'
-    parts.append(f'<section class="week"><h2>{html.escape(title)}{tag}</h2>')
+    parts.append(f'<section class="week"><h2>{html.escape(title)}</h2>')
     for n, q, _, _ in qs:
         parts.append(f'<article class="q"><div class="qn">W{w}-{n}</div>{q}</article>')
     parts.append("</section>")
@@ -103,7 +105,6 @@ body {{ font-family: "PingFang TC", "Noto Sans TC", sans-serif; font-size: 9.6pt
 .cover p {{ margin: 0; color: #555; font-size: 9pt; }}
 h1 {{ font-size: 15pt; color: #1f4e9c; margin: 0 0 8px; }}
 h2 {{ font-size: 12pt; color: #1f4e9c; border-left: 4px solid #e8862a; padding-left: 7px; margin: 12px 0 6px; break-after: avoid; }}
-.tag {{ font-size: 8pt; color: #a55; border: 1px solid #a55; border-radius: 3px; padding: 0 4px; margin-left: 8px; vertical-align: middle; }}
 .week {{ break-before: page; }}
 .week:first-of-type {{ break-before: auto; }}
 .q {{ break-inside: avoid; border-bottom: 1px dashed #ccc; padding: 4px 0 6px; }}
@@ -136,7 +137,7 @@ th, td {{ border: 1px solid #bbb; padding: 2px 6px; vertical-align: top; }}
 img, svg {{ max-width: 100%; }}
 </style></head><body>
 <div class="cover"><h1>機器學習實作系列｜選擇題題庫</h1>
-<p>共 {total} 題（{"、".join(f"第 {w} 週 {len(q)} 題" for w, _, q in weeks)}）。前半為題目，答案表與詳解在最後。期中考範圍為第 1–7 週。</p></div>
+<p>共 {total} 題（{"、".join(f"第 {w} 週 {len(q)} 題" for w, _, q in weeks)}）。期中考範圍第 1–7 週。前半為題目，答案表與詳解在最後。</p></div>
 {"".join(parts)}
 </body></html>
 """)
@@ -155,8 +156,7 @@ for font in (KATEX_DIST / "fonts").glob("*.woff2"):
     (QUIZ_DIR / "katex/fonts" / font.name).write_bytes(font.read_bytes())
 quiz = []
 for w, title, qs in weeks:
-    tag = "" if w <= 7 else '<span class="tag">期中範圍外</span>'
-    quiz.append(f'<section class="week" data-week="{w}"><h2>{html.escape(title)}{tag}</h2>')
+    quiz.append(f'<section class="week" data-week="{w}"><h2>{html.escape(title)}</h2>')
     for n, q, a, body in qs:
         quiz.append(
             f'<article class="q" data-id="W{w}-{n}" data-week="{w}" data-answer="{a}">'
