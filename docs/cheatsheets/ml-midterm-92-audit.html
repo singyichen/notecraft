@@ -1,0 +1,99 @@
+<!doctype html><html lang="zh-Hant"><meta charset="utf-8"><title>92 題與期中 A4 小抄逐題核對</title><style>body{max-width:1240px;margin:32px auto;padding:0 24px;color:#202938;font:15px/1.65 system-ui,sans-serif}h1,h2{color:#1d4ed8}table{border-collapse:collapse;width:100%;font-size:13px}th,td{border:1px solid #ccd5e2;padding:8px;vertical-align:top}th{background:#edf2ff;position:sticky;top:0}tr.gap{background:#fff5e9}tr.risk{background:#fff0f0}code{background:#eef2f7}a{color:#1d4ed8}.summary{background:#eef5ff;padding:16px;border-radius:8px}.filters{margin:18px 0}button{padding:8px;margin-right:8px;cursor:pointer}@media print{button,.filters{display:none}th{position:static}body{max-width:none;font-size:11px}tr{break-inside:avoid}}</style>
+<h1>92 題與期中 A4 小抄逐題核對</h1><p>核對日期：2026-10-28。比較基準：上一版小抄（新增 §19／§20 之後）→ 本次補強版。逐題檢查題幹、四選項、正解與詳解，不以題目關鍵字出現就算涵蓋。</p>
+<div class="summary"><b>補強前：</b>已涵蓋 72 題、可推得／提示不足 8 題、重要遺漏 10 題、題庫簡化需辨明 2 題。<br><b>補強後：</b>有直接判讀依據 81 題、已補課堂判讀與條件 2 題、可依規則推得 9 題；重要遺漏 0 題。<br>這是對現有 92 題的考點覆蓋檢查，不是實際考試命中率，也不是說不需讀懂程式就能直接抄答案。</div>
+<h2>本次補充的重點</h2><p>OvR 決策、partial_fit 接續學習、transAxes、Seaborn／Matplotlib 分工、分類標籤與特徵編碼、one-hot 縮放條件、KNN／核 SVM 成本、訓練最佳化診斷、k 值取捨、完整訓練集重訓與 Pipeline 雙底線語法。另補標準化保留分布形狀、向量化底層常式、Adaline 分對仍有平方誤差等提示。</p>
+<h2>題庫範圍與表述需留意的地方</h2><ul><li>W5-11（transAxes）、W5-12（Seaborn／Matplotlib 分工）出自第5週筆記的延伸預習；筆記明說該堂課未講標註與 Seaborn。本次為了補齊92題而加入，不代表老師已講過或一定會考。</li><li>W7-10：固定機率分數降低門檻時 recall 不減，但 precision 不保證下降。題庫預期 B 是常見趨勢，並非無條件定理。</li><li>W1-11／W6-8：依課堂比較可選標準化，但 z-score 的平均與標準差也會受離群值影響，不能視為真正穩健縮放。</li><li>W2-7 詳解稱 dict 無序：現代 Python 的 dict 保留插入順序；這不影響該題正解 B。W2-11 詳解稱 tuple 都可雜湊也不夠精確，需元素皆可雜湊。</li><li>W5-15：平方誤差 16 正確；但「把邊界往錯方向拉」不是所有資料下都成立。小抄保留可以驗算的「z 被拉回標籤 1」，不把它寫成通用幾何結論。</li><li>W5-16：「多標籤只能 OvR」太絕對；題目選項中 A 合理，但其他多標籤方法也存在。</li><li>W6-2：核 SVM 預測成本也受支援向量數影響，並非永遠便宜。W6-7：0/1 欄通常不必再縮放是課堂慣例，是否標準化仍依模型與需求。</li><li>W6-10：較大模型理論訓練 loss 不高於較小模型，需要可表達函式集合包含、目標可比等條件；該題用於提醒先排查最佳化。</li></ul><p>本次沒有改動原題庫或答案，以免讓既有練習紀錄與題號不一致。</p>
+<h2>逐題核對表</h2><p>「直接」代表小抄有足以排除選項的規則；「推得」代表需自行追蹤程式或數 TP／FP／FN。§ 編號對應兩頁小抄的藍色區塊。</p><div class="filters"><button onclick="filterRows(false)">全部 92 題</button><button onclick="filterRows(true)">只看原先需補強的題目</button></div><table><thead><tr><th>題號／正解</th><th>題目</th><th>補強前</th><th>補強後</th><th>位置</th><th>依據／調整</th></tr></thead><tbody>
+<tr class="" data-before="D"><td>W1-1<br>A</td><td>代理人透過與環境互動、依獎勵訊號試錯學習，屬於哪一類學習？</td><td>已涵蓋</td><td>有直接判讀依據</td><td>§1、11</td><td>強化式依環境獎勵試錯</td></tr>
+<tr class="" data-before="D"><td>W1-2<br>C</td><td>分類與迴歸的差別是什麼？</td><td>已涵蓋</td><td>有直接判讀依據</td><td>§1</td><td>看標籤的離散／連續判斷分類／迴歸</td></tr>
+<tr class="" data-before="D"><td>W1-3<br>B</td><td>可訓練參數與超參數的差別是什麼？</td><td>已涵蓋</td><td>有直接判讀依據</td><td>§1、14</td><td>參數由訓練學得，超參數先設定</td></tr>
+<tr class="" data-before="D"><td>W1-4<br>D</td><td>特徵選取與特徵提取的差別是什麼？</td><td>已涵蓋</td><td>有直接判讀依據</td><td>§1、7</td><td>選取保留欄位；提取產生新表示</td></tr>
+<tr class="" data-before="D"><td>W1-5<br>A</td><td>一個 epoch 指的是什麼？</td><td>已涵蓋</td><td>有直接判讀依據</td><td>§1、19</td><td>epoch 與每輪更新次數分清楚</td></tr>
+<tr class="" data-before="D"><td>W1-6<br>C</td><td>過擬合與欠擬合分別對應什麼？</td><td>已涵蓋</td><td>有直接判讀依據</td><td>§6、9</td><td>高變異／高偏差與訓練驗證落差</td></tr>
+<tr class="" data-before="D"><td>W1-7<br>B</td><td>No Free Lunch 定理告訴我們什麼？</td><td>已涵蓋</td><td>有直接判讀依據</td><td>§1</td><td>No Free Lunch 無通用最佳模型</td></tr>
+<tr class="" data-before="D"><td>W1-8<br>D</td><td>梯度下降與隨機梯度下降的主要差別是什麼？</td><td>已涵蓋</td><td>有直接判讀依據</td><td>§4、19</td><td>全批次對比單筆梯度</td></tr>
+<tr class="" data-before="D"><td>W1-9<br>A</td><td>反向傳播（backpropagation）做的是什麼事？</td><td>已涵蓋</td><td>有直接判讀依據</td><td>§1</td><td>補明反向傳播算梯度，更新由最佳化器負責</td></tr>
+<tr class="" data-before="D"><td>W1-10<br>C</td><td>神經網路裡激活函數的作用是什麼？</td><td>已涵蓋</td><td>有直接判讀依據</td><td>§10</td><td>激活引入非線性</td></tr>
+<tr class="risk" data-before="R"><td>W1-11<br>B</td><td>資料含有明顯離群值時，正規化與標準化該怎麼選？</td><td>題庫簡化需辨明</td><td>已補課堂判讀與條件</td><td>§5、11</td><td>補課堂比較的預期選項，同時保留 z-score 也受離群值影響</td></tr>
+<tr class="" data-before="D"><td>W1-12<br>D</td><td>從函式的觀點看，機器學習的「模型」必須滿足什麼條件？</td><td>已涵蓋</td><td>有直接判讀依據</td><td>§11</td><td>函式同一輸入唯一輸出</td></tr>
+<tr class="" data-before="D"><td>W2-1<br>A</td><td>PLA 在某一筆樣本上分類正確時，會對權重做什麼？</td><td>已涵蓋</td><td>有直接判讀依據</td><td>§2、19</td><td>PLA 分對不更新</td></tr>
+<tr class="" data-before="D"><td>W2-2<br>C</td><td>Novikoff 收斂定理保證 PLA 在有限步內收斂，前提是什麼？</td><td>已涵蓋</td><td>有直接判讀依據</td><td>§2</td><td>收斂保證的前提是線性可分</td></tr>
+<tr class="" data-before="D"><td>W2-3<br>B</td><td>Adaline 把感知器的階梯函數換成連續線性輸出，最關鍵的好處是什麼？</td><td>已涵蓋</td><td>有直接判讀依據</td><td>§2</td><td>Adaline 用連續誤差，可微分才可梯度下降</td></tr>
+<tr class="" data-before="D"><td>W2-4<br>D</td><td>在  $\boldsymbol{w}^T\boldsymbol{x} + b = 0$  這個超平面中， $\boldsymbol{w}$  與  $b$  各決定什麼？</td><td>已涵蓋</td><td>有直接判讀依據</td><td>§10</td><td>w 為法向量，固定 w 改 b 平移</td></tr>
+<tr class="gap" data-before="G"><td>W2-5<br>A</td><td>One-versus-All（OvA）怎麼把二元分類器推廣到多元分類？</td><td>重要遺漏</td><td>有直接判讀依據</td><td>§2</td><td>新增互斥多類取最高分；多標籤獨立切門檻</td></tr>
+<tr class="" data-before="D"><td>W2-6<br>C</td><td>自適應學習率  $\eta_t = \dfrac{\eta_0}{1 + \alpha t}$  的用意是什麼？</td><td>已涵蓋</td><td>有直接判讀依據</td><td>§4</td><td>隨時間衰減，前大後小</td></tr>
+<tr class="" data-before="P"><td>W2-7<br>B</td><td>選用 Python 的 list、tuple、dict、set 時，主要看哪三個問題？</td><td>可推得／提示不足</td><td>有直接判讀依據</td><td>§15</td><td>補容器選擇三準則與 dict／set 雜湊查詢</td></tr>
+<tr class="" data-before="D"><td>W2-8<br>D</td><td>Python 類別方法中的 self 代表什麼？</td><td>已涵蓋</td><td>有直接判讀依據</td><td>§15</td><td>self 代表物件實例</td></tr>
+<tr class="" data-before="D"><td>W2-9<br>A</td><td>PLA 遇到非線性可分的資料會發生什麼？</td><td>已涵蓋</td><td>有直接判讀依據</td><td>§2、9</td><td>不可分不會零誤差收斂；有限輪未歸零不能反推不可分</td></tr>
+<tr class="" data-before="D"><td>W2-10<br>C</td><td>梯度下降的學習率設得太大，會發生什麼？</td><td>已涵蓋</td><td>有直接判讀依據</td><td>§4、9</td><td>學習率過大可能發散</td></tr>
+<tr class="" data-before="D"><td>W2-11<br>B</td><td>tuple 與 list 最主要的差別是什麼？</td><td>已涵蓋</td><td>有直接判讀依據</td><td>§15</td><td>tuple 不可變；當鍵需元素皆可雜湊</td></tr>
+<tr class="" data-before="D"><td>W2-12<br>D</td><td>Adaline 訓練時用連續的線性輸出算損失，那實際要輸出類別時怎麼辦？</td><td>已涵蓋</td><td>有直接判讀依據</td><td>§2、10</td><td>Adaline 訓練用連續輸出，分類才切閾值</td></tr>
+<tr class="" data-before="D"><td>W2-13<br>C</td><td>下列程式會印出什麼？</td><td>已涵蓋</td><td>可依規則推得</td><td>§15</td><td>依切片不含 stop、負索引、反轉推得 [20,30] 50 50</td></tr>
+<tr class="" data-before="D"><td>W2-14<br>A</td><td>下列程式會印出什麼？</td><td>已涵蓋</td><td>可依規則推得</td><td>§15</td><td>依 /、//、%、** 推得 3.5 3 1 8</td></tr>
+<tr class="" data-before="D"><td>W2-15<br>D</td><td>下列程式會印出什麼？</td><td>已涵蓋</td><td>可依規則推得</td><td>§15</td><td>依 get 預設值、累加與 set 去重推得 3 3</td></tr>
+<tr class="" data-before="D"><td>W2-16<br>B</td><td>下列程式會印出什麼？</td><td>已涵蓋</td><td>可依規則推得</td><td>§15</td><td>依推導式條件與次方推得 [4,16,36]</td></tr>
+<tr class="" data-before="D"><td>W3-1<br>A</td><td>NumPy 判斷兩個陣列能否廣播，規則是什麼？</td><td>已涵蓋</td><td>有直接判讀依據</td><td>§16</td><td>廣播從右比，維度相等或一方為 1</td></tr>
+<tr class="" data-before="D"><td>W3-2<br>C</td><td>聚合運算中的 axis 參數，指的是什麼？</td><td>已涵蓋</td><td>有直接判讀依據</td><td>§16</td><td>axis 是被聚合消去的維度</td></tr>
+<tr class="" data-before="D"><td>W3-3<br>B</td><td>.loc 與 .iloc 在切片行為上的差別是什麼？</td><td>已涵蓋</td><td>有直接判讀依據</td><td>§17</td><td>loc 含尾端；iloc 不含</td></tr>
+<tr class="" data-before="P"><td>W3-4<br>D</td><td>對特徵做標準化之後，該特徵的分布會變成什麼？</td><td>可推得／提示不足</td><td>有直接判讀依據</td><td>§4、5</td><td>補明標準化保留分布形狀，只平移縮放</td></tr>
+<tr class="" data-before="D"><td>W3-5<br>A</td><td>Mini-batch 梯度下降在全批次梯度下降與隨機梯度下降之間，扮演什麼角色？</td><td>已涵蓋</td><td>有直接判讀依據</td><td>§4</td><td>mini-batch 兼顧向量化與穩定性</td></tr>
+<tr class="gap" data-before="G"><td>W3-6<br>C</td><td>AdalineSGD.partial_fit() 這類線上學習的做法，關鍵是什麼？</td><td>重要遺漏</td><td>有直接判讀依據</td><td>§16</td><td>新增 partial_fit 保留權重接續學習</td></tr>
+<tr class="" data-before="P"><td>W3-7<br>B</td><td>向量化為什麼比 Python 迴圈快？</td><td>可推得／提示不足</td><td>有直接判讀依據</td><td>§16</td><td>補明向量化使用預編譯底層常式</td></tr>
+<tr class="" data-before="D"><td>W3-8<br>D</td><td>concat 與 merge 的差別是什麼？</td><td>已涵蓋</td><td>有直接判讀依據</td><td>§17</td><td>concat 沿軸疊；merge 依鍵配對</td></tr>
+<tr class="" data-before="D"><td>W3-9<br>A</td><td>布林遮罩與花式索引的差別是什麼？</td><td>已涵蓋</td><td>有直接判讀依據</td><td>§16</td><td>布林條件選取對比指定索引位置</td></tr>
+<tr class="" data-before="P"><td>W3-10<br>C</td><td>np.newaxis 的用途是什麼？</td><td>可推得／提示不足</td><td>有直接判讀依據</td><td>§16</td><td>現有 newaxis 範例可見新軸長度為 1</td></tr>
+<tr class="" data-before="D"><td>W3-11<br>B</td><td>Adaline 訓練時用的線性激活  $\sigma(z) = z$ ，與最後分類用的閾值函數，關係是什麼？</td><td>已涵蓋</td><td>有直接判讀依據</td><td>§2、10</td><td>線性激活訓練；閾值只用於分類</td></tr>
+<tr class="" data-before="D"><td>W3-12<br>D</td><td>隨機梯度下降的損失曲線比全批次梯度下降毛躁，這件事的意義是什麼？</td><td>已涵蓋</td><td>有直接判讀依據</td><td>§4、9</td><td>單筆梯度造成抖動，重點看整體趨勢</td></tr>
+<tr class="" data-before="D"><td>W3-13<br>B</td><td>下列程式印出的兩個形狀分別是什麼？</td><td>已涵蓋</td><td>可依規則推得</td><td>§16</td><td>由 axis 規則推得 (4,) (3,)</td></tr>
+<tr class="" data-before="D"><td>W3-14<br>D</td><td>下列程式的兩行輸出分別是什麼？</td><td>已涵蓋</td><td>可依規則推得</td><td>§16、20</td><td>逐元素對比矩陣乘法；單位矩陣乘後不變</td></tr>
+<tr class="" data-before="D"><td>W3-15<br>A</td><td>依照廣播規則，下列兩個運算的結果分別是什麼？</td><td>已涵蓋</td><td>可依規則推得</td><td>§16</td><td>由廣播推得 (3,4)；另一個形狀不相容報錯</td></tr>
+<tr class="" data-before="D"><td>W3-16<br>C</td><td>下列程式會印出什麼？</td><td>已涵蓋</td><td>可依規則推得</td><td>§17</td><td>由 loc／iloc 規則推得列數 3 2</td></tr>
+<tr class="" data-before="D"><td>W5-1<br>A</td><td>某事件發生的機率是  $0.8$ ，它的勝算（odds）是多少？</td><td>已涵蓋</td><td>有直接判讀依據</td><td>§3</td><td>odds=.8/.2=4</td></tr>
+<tr class="" data-before="D"><td>W5-2<br>C</td><td>邏輯迴歸用線性模型建模的對象是什麼？</td><td>已涵蓋</td><td>有直接判讀依據</td><td>§3</td><td>線性建模 logit</td></tr>
+<tr class="" data-before="D"><td>W5-3<br>B</td><td>加上 sigmoid 之後，邏輯迴歸的決策邊界會變成什麼？</td><td>已涵蓋</td><td>有直接判讀依據</td><td>§3</td><td>sigmoid 不會自動改變線性決策邊界</td></tr>
+<tr class="" data-before="D"><td>W5-4<br>D</td><td>「概似（likelihood）」是什麼的函數？</td><td>已涵蓋</td><td>有直接判讀依據</td><td>§10</td><td>概似固定資料，視為參數函數</td></tr>
+<tr class="" data-before="D"><td>W5-5<br>A</td><td>二元交叉熵損失對哪一種預測懲罰最重？</td><td>已涵蓋</td><td>有直接判讀依據</td><td>§3</td><td>BCE 對自信答錯懲罰最大</td></tr>
+<tr class="" data-before="P"><td>W5-6<br>C</td><td>把特徵  $x_1$  改成  $\lvert x_1 \rvert$  送進線性模型，是為了表達什麼？</td><td>可推得／提示不足</td><td>有直接判讀依據</td><td>§3</td><td>補明絕對值特徵表達離 0 多遠</td></tr>
+<tr class="" data-before="D"><td>W5-7<br>B</td><td>Matplotlib 裡的 Figure 與 Axes 分別是什麼？</td><td>已涵蓋</td><td>有直接判讀依據</td><td>§18</td><td>Figure／Axes／Axis 層級</td></tr>
+<tr class="" data-before="D"><td>W5-8<br>D</td><td>plt.plot 與 plt.scatter 的關鍵差別是什麼？</td><td>已涵蓋</td><td>有直接判讀依據</td><td>§18</td><td>scatter 可逐點設大小、顏色、透明度</td></tr>
+<tr class="" data-before="D"><td>W5-9<br>A</td><td>直方圖的箱寬（bin width）設得太寬，會發生什麼？</td><td>已涵蓋</td><td>有直接判讀依據</td><td>§18</td><td>箱太寬可掩蓋雙峰</td></tr>
+<tr class="" data-before="D"><td>W5-10<br>C</td><td>要用顏色編碼「溫度距平」這種有意義中點的量，該選哪一類色盤？</td><td>已涵蓋</td><td>有直接判讀依據</td><td>§18</td><td>有中點選 diverging</td></tr>
+<tr class="gap" data-before="G"><td>W5-11<br>B</td><td>用 plt.text 標註時，把座標系指定為 transAxes 代表什麼？</td><td>重要遺漏</td><td>有直接判讀依據</td><td>§18</td><td>新增 transAxes 子圖內 0–1 相對定位與其他座標系</td></tr>
+<tr class="gap" data-before="G"><td>W5-12<br>D</td><td>什麼時候該用 Seaborn、什麼時候該回到 Matplotlib？</td><td>重要遺漏</td><td>有直接判讀依據</td><td>§18</td><td>新增探索用 Seaborn，精細溝通用 Matplotlib</td></tr>
+<tr class="" data-before="D"><td>W5-13<br>D</td><td>邏輯迴歸訓練時最小化的損失函數是哪一個？</td><td>已涵蓋</td><td>有直接判讀依據</td><td>§2、3、19</td><td>Logistic 對應 BCE／負對數概似</td></tr>
+<tr class="" data-before="D"><td>W5-14<br>B</td><td>下列「模型—激活函數—輸出」的配對，哪一項正確？</td><td>已涵蓋</td><td>有直接判讀依據</td><td>§2</td><td>模型、激活與輸出配對</td></tr>
+<tr class="" data-before="P"><td>W5-15<br>C</td><td>用 Adaline 的 MSE 做分類時，某個正類樣本（ $y=1$ ）的線性輸出是  $z=5$ ，已經分得非常正確。接下來會發生什麼？</td><td>可推得／提示不足</td><td>有直接判讀依據</td><td>§3</td><td>補 Adaline y=1,z=5 平方誤差仍16；不混同 sigmoid 機率</td></tr>
+<tr class="" data-before="D"><td>W5-16<br>A</td><td>一張眼底攝影可能同時有白內障與高血壓病變。這種問題該用哪一種多類別做法？</td><td>已涵蓋</td><td>有直接判讀依據</td><td>§2、10</td><td>多標籤可用獨立二元分類；softmax 互斥</td></tr>
+<tr class="" data-before="D"><td>W6-1<br>C</td><td>Adaline 與感知器的關鍵差別在哪裡？</td><td>已涵蓋</td><td>有直接判讀依據</td><td>§2、19</td><td>Adaline 依線性誤差更新，PLA 依誤分類</td></tr>
+<tr class="gap" data-before="G"><td>W6-2<br>B</td><td>關於 k 近鄰與 RBF 核支援向量機的計算成本，下列哪一項正確？</td><td>重要遺漏</td><td>有直接判讀依據</td><td>§8</td><td>補 RBF-SVM 訓練貴、預測依支援向量；KNN 預測成本高</td></tr>
+<tr class="" data-before="D"><td>W6-3<br>D</td><td>下列哪一個流程符合講義的黃金法則「先切分，再處理」？</td><td>已涵蓋</td><td>有直接判讀依據</td><td>§5、14</td><td>先切分，只 fit 訓練集</td></tr>
+<tr class="" data-before="D"><td>W6-4<br>A</td><td>關於訓練集與測試集的切分比例，下列哪一項正確？</td><td>已涵蓋</td><td>有直接判讀依據</td><td>§6</td><td>測試集小，泛化估計不穩</td></tr>
+<tr class="" data-before="D"><td>W6-5<br>C</td><td>用 isnull() 偵測缺值時，下列哪一項正確？</td><td>已涵蓋</td><td>有直接判讀依據</td><td>§5、17</td><td>NaN／None／NaT 對比有效空字串</td></tr>
+<tr class="gap" data-before="G"><td>W6-6<br>B</td><td>關於類別標籤（class label）的編碼，下列哪一項正確？</td><td>重要遺漏</td><td>有直接判讀依據</td><td>§5</td><td>新增輸入 X 編碼與分類目標 y 編碼的區分</td></tr>
+<tr class="gap" data-before="G"><td>W6-7<br>A</td><td>獨熱編碼產生的 0／1 虛擬欄位，接下來要怎麼處理？</td><td>重要遺漏</td><td>有直接判讀依據</td><td>§5</td><td>新增課堂 one-hot 0/1 通常不必另縮放，保留應用條件</td></tr>
+<tr class="" data-before="D"><td>W6-8<br>D</td><td>資料含有極端離群值時，標準化與正規化的差別是什麼？</td><td>已涵蓋</td><td>有直接判讀依據</td><td>§5、11</td><td>min-max 極值使其餘值擠扁；兩者都不會刪除離群值</td></tr>
+<tr class="" data-before="D"><td>W6-9<br>C</td><td>關於序列特徵選取（SFS 與 SBS）這類貪婪搜尋，下列哪一項正確？</td><td>已涵蓋</td><td>有直接判讀依據</td><td>§7</td><td>SFS／SBS 為局部貪婪，不保證全域最優</td></tr>
+<tr class="gap" data-before="G"><td>W6-10<br>B</td><td>一個參數較多的模型，訓練損失比參數較少的模型還高。這最可能是什麼問題？</td><td>重要遺漏</td><td>有直接判讀依據</td><td>§6</td><td>補較大模型訓練 loss 高先查最佳化，而非直接判過擬合</td></tr>
+<tr class="" data-before="D"><td>W6-11<br>D</td><td>為什麼  $L_1$  正則化常產生稀疏解，而  $L_2$  不會？</td><td>已涵蓋</td><td>有直接判讀依據</td><td>§6</td><td>L1 菱形角落在座標軸，易產生稀疏</td></tr>
+<tr class="" data-before="D"><td>W6-12<br>A</td><td>一個已經 fit 好的 Pipeline，呼叫 predict() 時內部會做什麼？</td><td>已涵蓋</td><td>有直接判讀依據</td><td>§14</td><td>Pipeline predict 只 transform 再 predict</td></tr>
+<tr class="" data-before="D"><td>W6-13<br>A</td><td>下列程式哪裡有問題？</td><td>已涵蓋</td><td>有直接判讀依據</td><td>§5、14</td><td>測試集不得另 fit_transform</td></tr>
+<tr class="" data-before="D"><td>W6-14<br>C</td><td>下列程式最後印出的 coef_ 與 intercept_ 分別是什麼？</td><td>已涵蓋</td><td>有直接判讀依據</td><td>§14</td><td>coef_ 是權重，intercept_ 是偏置</td></tr>
+<tr class="" data-before="D"><td>W6-15<br>B</td><td>下列關於「哪些模型需要特徵縮放」的敘述，哪一項正確？</td><td>已涵蓋</td><td>有直接判讀依據</td><td>§5、8</td><td>距離／梯度模型常需縮放，樹不必</td></tr>
+<tr class="" data-before="D"><td>W6-16<br>D</td><td>下列程式中 stratify=y 的作用是什麼？</td><td>已涵蓋</td><td>有直接判讀依據</td><td>§5、20</td><td>stratify 對類別比例；random_state 對隨機性</td></tr>
+<tr class="" data-before="D"><td>W7-1<br>B</td><td>「模型選擇」在講義裡有寬窄兩義，下列哪一項正確？</td><td>已涵蓋</td><td>有直接判讀依據</td><td>§12</td><td>狹義調參、廣義選演算法</td></tr>
+<tr class="" data-before="D"><td>W7-2<br>C</td><td>保留法交叉驗證（holdout）最主要的弱點是什麼？</td><td>已涵蓋</td><td>有直接判讀依據</td><td>§12</td><td>holdout 對切法敏感</td></tr>
+<tr class="gap" data-before="G"><td>W7-3<br>A</td><td>資料量與  $k$  折交叉驗證的  $k$  值，兩者的關係是什麼？</td><td>重要遺漏</td><td>有直接判讀依據</td><td>§12</td><td>補資料少可取較大 k；資料多用較小 k 省成本</td></tr>
+<tr class="" data-before="P"><td>W7-4<br>D</td><td>用  $k$  折交叉驗證找到滿意的超參數之後，下一步該做什麼？</td><td>可推得／提示不足</td><td>有直接判讀依據</td><td>§12、14</td><td>補選好參數，用完整訓練集重訓</td></tr>
+<tr class="" data-before="D"><td>W7-5<br>B</td><td>學習曲線上訓練與驗證兩條線都低、而且已經貼合，下一步該做什麼？</td><td>已涵蓋</td><td>有直接判讀依據</td><td>§6、12</td><td>高偏差需加複雜度／減正則化</td></tr>
+<tr class="" data-before="D"><td>W7-6<br>C</td><td>看驗證曲線挑超參數時，應該選哪一個值？</td><td>已涵蓋</td><td>有直接判讀依據</td><td>§12</td><td>以驗證峰值選超參數，不看訓練最高分</td></tr>
+<tr class="" data-before="P"><td>W7-7<br>D</td><td>同樣的評估預算下，隨機搜尋通常比格狀搜尋划算，原因是什麼？</td><td>可推得／提示不足</td><td>有直接判讀依據</td><td>§12</td><td>補重要參數常只占少數，隨機搜尋少浪費維度</td></tr>
+<tr class="" data-before="D"><td>W7-8<br>A</td><td>巢狀交叉驗證的兩層迴圈各自負責什麼？</td><td>已涵蓋</td><td>有直接判讀依據</td><td>§12</td><td>外層評估、內層選超參數</td></tr>
+<tr class="" data-before="D"><td>W7-9<br>C</td><td>F1 分數取精確率與召回率的調和平均而非算術平均，為什麼？</td><td>已涵蓋</td><td>有直接判讀依據</td><td>§13</td><td>調和平均對較小一方敏感</td></tr>
+<tr class="risk" data-before="R"><td>W7-10<br>B</td><td>把決策門檻調鬆（更容易判為陽性），精確率與召回率會怎麼變化？</td><td>題庫簡化需辨明</td><td>已補課堂判讀與條件</td><td>§13</td><td>補題庫預期 B 的常見取捨，同時說明 precision 無必降保證</td></tr>
+<tr class="" data-before="D"><td>W7-11<br>D</td><td>類別不平衡時，為什麼 MCC 比 F1 更不容易被誤導？</td><td>已涵蓋</td><td>有直接判讀依據</td><td>§13</td><td>MCC 含四格，F1 未含 TN</td></tr>
+<tr class="gap" data-before="G"><td>W7-12<br>A</td><td>在 Pipeline 裡指定某個估計器的超參數（例如邏輯斯迴歸的 C），語法是什麼？</td><td>重要遺漏</td><td>有直接判讀依據</td><td>§14</td><td>新增步驟名__參數名，例 clf__C／svc__gamma</td></tr>
+<tr class="" data-before="D"><td>W7-13<br>D</td><td>下列程式最後印出的數字是多少？</td><td>已涵蓋</td><td>有直接判讀依據</td><td>§14</td><td>cv=10 回傳10個分數，尚未自動平均</td></tr>
+<tr class="" data-before="D"><td>W7-14<br>A</td><td>執行下列 gs.fit(...) 時，交叉驗證階段總共會訓練幾個模型（不含最後用最佳參數重新訓練的那一次）？</td><td>已涵蓋</td><td>有直接判讀依據</td><td>§12、14</td><td>4×3×5=60 次 CV fit，不含最終重訓</td></tr>
+<tr class="" data-before="D"><td>W7-15<br>C</td><td>接續上一題，下列程式在做什麼？</td><td>已涵蓋</td><td>有直接判讀依據</td><td>§12、14</td><td>best_estimator_ 與最後測試集 score</td></tr>
+<tr class="" data-before="D"><td>W7-16<br>B</td><td>下列程式會印出什麼（四捨五入到小數第二位）？</td><td>已涵蓋</td><td>可依規則推得</td><td>§13、20</td><td>先數 TP=1 FP=1 FN=2，推出 precision=.5 recall=1/3</td></tr>
+</tbody></table><h2>來源與驗證</h2><p>題庫 PDF 與互動題庫皆有相同 92 個題號：W1 12 題，W2／W3／W5／W6／W7 各 16 題。題目、選項、正解與詳解取自互動題庫，並核對題庫 PDF 題號集合。小抄正文依 HTML 來源核對，產出 PDF 後再檢查兩頁尺寸、文字與版面。另實際執行題庫中8段純 Python／NumPy／Pandas程式，結果與答案一致；小抄既有53項輸出／shape／錯誤檢查亦通過。環境沒有 scikit-learn，相關API未在本機實跑，採課程來源與前次已核對的官方規格確認。</p><ul><li><a href="../../public/quiz/ml-mcq.html">互動題庫</a></li><li><a href="../../src/content/notes/_references/機器學習實作系列/機器學習選擇題題庫.pdf">原題庫 PDF</a></li><li><a href="ml-midterm-a4.html">修訂後小抄來源</a></li><li><a href="../../src/content/notes/_references/機器學習實作系列/第9週-期中考A4小抄.pdf">修訂後小抄 PDF</a></li></ul><script>function filterRows(only){document.querySelectorAll("tbody tr").forEach(r=>r.hidden=only&&r.dataset.before==="D")}</script></html>

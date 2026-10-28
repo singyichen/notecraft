@@ -101,7 +101,7 @@
       <li>樣本＝一列、特徵＝一欄、標籤／ground truth＝答案</li>
       <li><b>可訓練參數</b>（$\boldsymbol w,b$，從資料學）vs <b>超參數</b>（$\eta$、epoch、$C$、$k$，人先設）</li>
       <li><b>特徵選取</b>挑子集（欄位意義不變）vs <b>特徵提取</b>算出新特徵（如 PCA）</li>
-      <li>Epoch＝全部訓練資料跑完一輪；<b>反向傳播</b>＝用連鎖律從輸出層往回算 loss 對各參數的梯度</li>
+      <li>Epoch＝全部訓練資料跑完一輪；<b>反向傳播</b>＝用連鎖律往回算 loss 對參數的梯度；更新由最佳化器負責</li>
       <li><b>No Free Lunch</b>：沒有在所有問題都最好的模型 → 要比較多個演算法</li>
       <li>流程：先切分 → 前處理只 fit 訓練集 → 訓練／選模型（CV）→ 測試集評估一次</li>
     </ul>
@@ -122,7 +122,7 @@
       <li>PLA（0/1 標籤）：$\Delta w=\eta(y-\hat y)x$、$\Delta b=\eta(y-\hat y)$；分對不更新。<b>Novikoff</b>：線性可分保證有限步收斂；不可分需設 epoch 上限</li>
       <li>Adaline 從「對或錯」改成「差多少」→ 可微分 → 能用梯度下降</li>
       <li>邏輯迴歸更新式和 Adaline 形式相同：$\boldsymbol w\leftarrow\boldsymbol w+\eta\frac1n\boldsymbol X^T(\boldsymbol y-\boldsymbol a)$，差在 $a$ 是 sigmoid 輸出</li>
-      <li>多元分類：<b>OvR／OvA</b>（$K$ 個二元分類器；多標籤可獨立判斷，各類機率不必加總為 1）vs <b>softmax</b>（類別互斥，機率和＝1）</li>
+      <li>多元分類：<b>OvR／OvA</b>（$K$ 個二元分類器；互斥多類取最高分，多標籤各自切門檻，機率不必加總為 1）vs <b>softmax</b>（類別互斥，機率和＝1）</li>
     </ul>
   </section>
 
@@ -133,8 +133,8 @@
       <li>勝算 $\frac{p}{1-p}$（$p{=}0.8$ → 4）；logit $=\ln\frac{p}{1-p}$ 把 $(0,1)$ 映到全實數；sigmoid 是 logit 的反函數，$\sigma(0)=0.5$</li>
       <li>sigmoid 輸出是<b>條件機率</b> $p(y{=}1|\boldsymbol x)$＝「已知特徵時屬於正類」的機率，<span class="k">不是預測正確的機率</span></li>
       <li>BCE：$L=-\frac1n\sum[y\ln a+(1-y)\ln(1-a)]$；單筆 $y{=}1$ 時 $-\ln a$，<b>自信地答錯</b>（$a\to0$）損失 $\to\infty$</li>
-      <li>損失辨識：Adaline 的 MSE 比較 $y$ 與線性輸出 $z$；邏輯迴歸的 BCE 比較 $y$ 與機率 $a=\sigma(z)$，<b>不要把 $z$ 當機率</b></li>
-      <li>決策邊界 $z=0$ 仍是<b>線性</b>（sigmoid 不會讓邊界變彎）；要非線性得做特徵工程（如 $|x_1|$、$x^2$）</li>
+      <li>損失辨識：Adaline 的 MSE 比較 $y$ 與線性輸出 $z$；邏輯迴歸的 BCE 比較 $y$ 與機率 $a=\sigma(z)$，<b>不要把 $z$ 當機率</b>。Adaline：$y=1,z=5$ 已分對，平方誤差仍為 16，會把 $z$ 拉回 1</li>
+      <li>決策邊界 $z=0$ 仍是<b>線性</b>（sigmoid 不會讓邊界變彎）；要非線性得做特徵工程（如 $|x_1|$ 表達離 0 多遠、$x^2$）</li>
       <li>sklearn：<code>predict_proba</code> 給機率、<code>C</code> 越小正則化越強</li>
     </ul>
   </section>
@@ -151,7 +151,7 @@
       <li>更新：$\boldsymbol w\leftarrow\boldsymbol w-\eta\nabla L$（沿<b>負梯度</b>，梯度指向上升最快）</li>
       <li>學習率太大 → 跨過谷底、loss 上升<b>發散</b>；太小 → 收斂很慢</li>
       <li>自適應學習率 $\eta_t=\frac{\eta_0}{1+\alpha t}$：前期大步、後期小步</li>
-      <li><b>特徵縮放</b>讓等高線接近圓、GD 收斂快很多；標準化≠變成常態分布</li>
+      <li><b>特徵縮放</b>讓等高線接近圓、GD 收斂快很多；標準化只平移縮放，分布形狀不變≠變成常態分布</li>
     </ul>
   </section>
 
@@ -166,7 +166,9 @@
       <li>缺值：<code>isnull().sum()</code> 數每欄；刪 <code>dropna()</code> 或補（平均、最頻繁值＝類別型、KNN）；<span class="k">空字串 "" 不算缺值</span></li>
       <li><b>順序型</b>（XL&gt;L&gt;M）→ 手動映射整數；<b>名義型</b>（顏色）→ 獨熱編碼，編 0/1/2 會造出假的大小關係</li>
       <li>獨熱 $k$ 類：含截距的線性模型可丟一欄剩 $k-1$ 欄，避免完全共線（全 $k$ 欄和為 1，與截距相依）；不是所有模型都必須丟欄</li>
-      <li>切分比例：資料少多留訓練、資料多測試比例可小；分類用 <code>stratify=y</code></li>
+      <li><b>特徵 X 與標籤 y 分清楚</b>：名義特徵可 one-hot；一般分類標籤只要一致對應，整數編號無大小意義。</li>
+      <li>課堂：one-hot 的 0/1 欄通常不必另縮放；不是所有應用都禁止縮放。</li>
+      <li>切分比例依資料量；分類用 <code>stratify=y</code></li>
     </ul>
     <table>
       <tr><th></th><th>正規化 min-max</th><th>標準化 z-score</th></tr>
@@ -194,6 +196,7 @@
     <ul>
       <li>$\lambda$ 越大越趨向欠擬合；sklearn 的 $C\propto 1/\lambda$：<span class="k">C 越小 = 正則化越強</span></li>
       <li>正則化前通常先標準化（各特徵尺度一致，懲罰才公平）</li>
+      <li>較大模型訓練 loss 反而更高：先查最佳化（初始化、學習率），不能只判過擬合。</li>
       <li><b>泛化誤差</b>＝在沒見過的資料上的誤差，用測試集估計；測試集越小估得越不準</li>
     </ul>
   </section>
@@ -213,7 +216,7 @@
     <table>
       <tr><th>模型</th><th>核心</th><th>旋鈕／注意</th></tr>
       <tr><td>邏輯迴歸</td><td>sigmoid 機率、BCE</td><td><code>C</code>；權重可解釋</td></tr>
-      <tr><td>SVM</td><td>最大化<b>間隔 margin</b>；只靠支援向量決定</td><td><code>C</code>；<b>核技巧</b>（RBF）處理非線性；<code>gamma</code> 太大 → 過擬合</td></tr>
+      <tr><td>SVM</td><td>最大化<b>間隔 margin</b>；只靠支援向量決定</td><td><code>C</code>；RBF 核處理非線性；<code>gamma</code> 太大易過擬合；訓練貴，預測靠支援向量</td></tr>
       <tr><td>決策樹</td><td>是非題切分，選<b>資訊增益</b>最大（entropy／Gini 不純度下降）</td><td>樹深；不需縮放、可視化</td></tr>
       <tr><td>隨機森林</td><td>多棵樹（隨機樣本＋隨機特徵）投票</td><td>樹數；省事的預設、不需縮放</td></tr>
       <tr><td>KNN</td><td><b>懶惰學習</b>：訓練只記資料，預測找 $k$ 鄰居投票</td><td>通常需縮放；$k$ 小 → 易受雜訊、$k$ 大 → 邊界過平；預測慢</td></tr>
@@ -275,6 +278,8 @@
       <li>按類別排序（1–50／51–100／101–150）→ 訓練前要 <b>shuffle</b></li>
       <li>非監督示範：遮掉標籤後分群；群數相同不代表分群一定正確</li>
     </ul>
+    <h3>題庫判讀提醒</h3>
+    <p>W1-11／W6-8 課堂比較：min-max 易把其餘值擠扁，題庫選標準化較適合；但 z-score 也受離群值影響，真正要抗極值可用 RobustScaler。</p>
     <h3>工作流程（5 步迴圈）</h3>
     <p>選特徵＋收集樣本 → 選指標 → 選演算法訓練 → 驗證集評估 → 調超參數／換演算法（回到前面）。<b>測試集一開始就切開、全程不碰</b>；縮放／降維只用訓練集 fit。</p>
   </section>
@@ -294,10 +299,10 @@
     <ul>
       <li>狹義：<b>超參數調整</b>；廣義：<b>演算法選擇</b>（用巢狀 CV）</li>
       <li><b>Holdout</b>：訓練／驗證／測試三份；缺點是結果對切法敏感</li>
-      <li><b>k 折</b>：輪流 1 折驗證、$k-1$ 折訓練，取 $k$ 次平均（看平均＋標準差）；常用 $k{=}10$</li>
+      <li><b>k 折</b>：輪流 1 折驗證、$k-1$ 折訓練，取 $k$ 次平均（看平均＋標準差）；常用 $k{=}10$；資料少可取較大 k，多則較小以省計算</li>
       <li><b>分層 k 折</b>：每折保持類別比例 → 分類優先；<b>LOOCV</b>：$k=n$（資料很少時）</li>
       <li><b>巢狀 CV</b>：外層評估、內層挑超參數；例 $5\times2$</li>
-      <li>測試集<b>只在最後用一次</b>，用來確認，不用來挑選</li>
+      <li>選好超參數後，用<b>完整訓練集重訓</b>；測試集最後評估一次，不用來挑選</li>
     </ul>
     <table>
       <tr><th>曲線</th><th>橫軸</th><th>回答</th></tr>
@@ -312,7 +317,7 @@
     <table>
       <tr><th>搜尋</th><th>做法</th><th>取捨</th></tr>
       <tr><td>Grid</td><td>窮舉組合</td><td>網格內保證找到；次數 $k\times\prod n_j$</td></tr>
-      <tr><td>Random</td><td>從分布抽固定次數</td><td>同預算探索更廣</td></tr>
+      <tr><td>Random</td><td>從分布抽固定次數</td><td>重要參數常只有少數；同預算探索更廣</td></tr>
       <tr><td>Halving</td><td>少資源全評估、逐輪淘汰</td><td>節省資源；可能早淘汰好候選</td></tr>
     </table>
   </section>
@@ -331,7 +336,7 @@
       <li>$\text{FPR}=\frac{FP}{FP+TN}$；$\text{F1}=\frac{2\,PRE\cdot REC}{PRE+REC}$（調和平均，兩者都高才高）</li>
       <li><b>MCC</b> 用四格，$[-1,1]$，不平衡時比 F1 穩</li>
       <li><b>ROC</b>：掃門檻畫 FPR(x)–TPR(y)；<b>AUC</b> 1 完美、0.5 瞎猜；量排序能力</li>
-      <li>固定預測機率，門檻調低 → recall 不減；precision 不保證下降；癌症篩檢重 <b>recall</b>，垃圾信過濾重 <b>precision</b></li>
+      <li>題庫 W7-10 的常見取捨：門檻低 → recall↑、precision↓；嚴格說 recall 不減，precision 不保證下降；癌症篩檢重 <b>recall</b>，垃圾信過濾重 <b>precision</b></li>
       <li><b>微平均</b>每樣本等權（大類主導）；<b>宏平均</b>每類別等權（不平衡適用）</li>
       <li><b>類別不平衡</b>：1% 陽性全猜陰也有 99% ACC → 改指標、過採樣、加權 <code>class_weight</code></li>
     </ul>
@@ -354,7 +359,7 @@ sc.fit_transform(X_test)          <span class="o"># ✘ 重估測試統計量</s
       <li><code>transform</code> 的特徵數須與 <code>fit</code> 時相同</li>
       <li><b>Pipeline</b>：訓練時各轉換器 <code>fit_transform</code>、最後估計器 <code>fit</code>；預測時只 <code>transform</code> 再 <code>predict</code> → 將原始資料與整條管線交給 CV，逐折 fit</li>
       <li><code>make_pipeline(StandardScaler(), LogisticRegression())</code> 免命名；<code>Pipeline([('sc',…),('clf',…)])</code></li>
-      <li>模組：<code>model_selection</code>（<code>train_test_split</code>、<code>cross_val_score</code>、<code>GridSearchCV</code>）、<code>preprocessing</code>、<code>impute</code>、<code>compose.ColumnTransformer</code>、<code>metrics</code></li>
+      <li>Pipeline 調參用<b>步驟名＋雙底線＋參數名</b>：<code>clf__C</code>、<code>svc__gamma</code>；不是單底線。<code>make_pipeline</code> 自動用類別名小寫命名。</li>
       <li><code>cross_val_score(pipe,X,y,cv=10)</code> 回傳 <b>10 個分數的陣列</b>；GridSearch 3×4 組 × cv=5 = 60 次 CV fit（預設重訓再 +1）；<code>gs.best_estimator_</code> 取最佳模型，最後只在測試集 score 一次</li>
       <li><code>train_test_split(…, test_size=0.3, stratify=y, random_state=1)</code></li>
     </ul>
@@ -390,6 +395,7 @@ f(1); print(f(2)) <span class="o">→ [1, 2]（預設值只建一次）</span></
     <ul>
       <li><code>if/elif</code> 只執行第一個成立分支（FizzBuzz 要先判 15）；縮排是語法</li>
       <li><code>__init__</code> 建構子；<code>self</code>＝物件本身；<code>self.x=x</code> 才存成屬性</li>
+      <li>選容器看可變性、順序、查詢成本；dict／set 用雜湊，平均查詢快。</li>
       <li><code>input()</code> 回傳字串；<code>random.randint(1,100)</code> 兩端都含</li>
       <li><code>try/except ValueError</code> 捕捉轉型錯誤；<code>PermissionError</code> 是 <code>OSError</code> 子類</li>
     </ul>
@@ -423,7 +429,8 @@ x[:,np.newaxis].shape <span class="o">→ (4,1)</span></pre>
     </table>
     <ul>
       <li><code>axis=k</code> 表示<b>被壓掉</b>的那一維；<code>.T</code> 對一維陣列無效</li>
-      <li>ndarray 元素同型別；切片可能不連續；向量化減少 Python 迴圈；矩陣乘法用 <code>@</code></li>
+      <li>ndarray 元素同型別；切片可能不連續；向量化由預編譯底層常式處理，減少 Python 迴圈；矩陣乘法用 <code>@</code></li>
+      <li><b>線上學習</b>：課堂 <code>AdalineSGD.partial_fit</code> 保留原權重，用新資料接續更新；<code>fit</code> 重新初始化訓練。</li>
     </ul>
   </section>
 
@@ -446,13 +453,14 @@ s.iloc[0:1].tolist() <span class="o">→ [10]（不含尾端）</span></pre>
     <h2><span class="n">18</span>Matplotlib／Seaborn</h2>
     <ul>
       <li>狀態式 <code>plt.plot/plt.title</code>（作用在「目前的圖」）vs 物件導向 <code>fig, ax = plt.subplots()</code>、<code>ax.set_title</code>（多出 <code>set_</code>）</li>
-      <li><b>Figure</b>＝整張畫布；<b>Axes</b>＝一個子圖（不是一條軸）</li>
+      <li><b>Figure</b>＝整張畫布；<b>Axes</b>＝子圖；Axis＝單條軸。</li>
+      <li><code>ax.transAxes</code>：子圖相對座標，(0,0) 左下、(1,1) 右上；<code>transData</code> 用資料值；<code>fig.transFigure</code> 相對整張畫布。</li>
       <li><code>axes[0,2]</code> 從 0 起算 ＝ <code>plt.subplot(2,3,3)</code> 從 1 起算、逐列編號</li>
       <li><code>plot</code> 全點同樣式、快；<code>scatter</code> 可逐點設 <code>s</code>／<code>c</code>／<code>alpha</code>、慢</li>
       <li>成對資料：plot／scatter／bar；分布：<code>hist</code>（bins 太寬可能隱藏雙峰）；<code>pie</code> 看占比</li>
       <li><code>errorbar</code>、<code>fill_between</code> 畫不確定性；<code>contour/contourf/imshow</code> 配 <code>meshgrid</code></li>
       <li>色盤：有序→sequential、有中點→diverging、類別→qualitative；jet 灰階會崩</li>
-      <li>Seaborn 架在 Matplotlib 上、直吃 DataFrame：<code>histplot</code>、<code>kdeplot</code>、<code>pairplot</code>、<code>jointplot</code></li>
+      <li>探索分布／關聯用 Seaborn（架在 Matplotlib 上、直吃 DataFrame）；報告精細標註回 Matplotlib：<code>histplot</code>、<code>kdeplot</code>、<code>pairplot</code>、<code>jointplot</code></li>
     </ul>
   </section>
 
@@ -509,7 +517,7 @@ sc.transform([[3.]]) <span class="o">→ [[2.]]</span></pre>
       <li><code>stratify=y</code> 保持類別比例；<code>random_state</code> 固定切分的隨機性，不保證分數更高。</li>
       <li><code>confusion_matrix</code> 的列＝真實、欄＝預測；labels=[0,1] 時為 <code>[[TN,FP],[FN,TP]]</code>，與 §13 排列不同。</li>
       <li>NumPy 的 <code>*</code> 是逐元素；Python list 的 <code>*2</code> 是重複。兩個 list 做 <code>*</code> 或 <code>@</code> 都會 TypeError。</li>
-      <li>程式題先看<b>型別 → shape → 索引 → 運算 → 回傳值</b>；分清「定義函式」與「呼叫才執行」。</li>
+      <li>判讀順序：<b>型別 → shape → 索引 → 運算 → 回傳值</b>。</li>
     </ul>
   </section>
   </div>
