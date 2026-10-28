@@ -1516,6 +1516,113 @@ excerpt: Assignment #1 目的：使用 Adaline SGD 分類模型，透過測試�
 **考的觀念**：看趨勢，不看單點的抖動。
 :::
 
+#### 選擇題 13
+
+> 下列程式印出的兩個形狀分別是什麼？
+> :en[What are the two shapes printed by the following code?]
+
+```python
+import numpy as np
+X = np.ones((3, 4))
+print(X.sum(axis=0).shape, X.mean(axis=1).shape)
+```
+
+:::choices{answer="B"}
+- `(3,) (4,)` :en[Prints `(3,) (4,)`]
+- `(4,) (3,)` :en[Prints `(4,) (3,)`]
+- `(1, 4) (3, 1)` :en[Prints `(1, 4) (3, 1)`]
+- `(4,) (4,)` :en[Prints `(4,) (4,)`]
+:::
+
+:::tip{collapsible title="詳解"}
+`axis` 指的是**被壓扁**的那一軸。`sum(axis=0)` 壓掉長度 3 的第 0 軸，剩下 `(4,)`，也就是每一欄的總和；`mean(axis=1)` 壓掉長度 4 的第 1 軸，剩下 `(3,)`，是每一列的平均。
+
+選 (A) 的人把 `axis` 理解成「保留的那一軸」，剛好顛倒；選 (C) 的人以為聚合後維度數不變，但預設會直接拿掉被壓扁的軸（要保留得另外加 `keepdims=True`）。
+
+**考的觀念**：`axis` 是被壓扁的維度，聚合後該軸消失。
+:::
+
+#### 選擇題 14
+
+> 下列程式的兩行輸出分別是什麼？
+> :en[What are the two lines of output from the following code?]
+
+```python
+A = np.array([[1, 2], [3, 4]])
+B = np.array([[1, 0], [0, 1]])
+print(A * B)
+print(A @ B)
+```
+
+:::choices{answer="D"}
+- 兩行相同，都是 `[[1 2] [3 4]]` :en[Both lines are the same: `[[1 2] [3 4]]`]
+- 兩行相同，都是 `[[1 0] [0 4]]` :en[Both lines are the same: `[[1 0] [0 4]]`]
+- 第一行 `[[1 2] [3 4]]`，第二行 `[[1 0] [0 4]]` :en[First line `[[1 2] [3 4]]`, second line `[[1 0] [0 4]]`]
+- 第一行 `[[1 0] [0 4]]`，第二行 `[[1 2] [3 4]]` :en[First line `[[1 0] [0 4]]`, second line `[[1 2] [3 4]]`]
+:::
+
+:::tip{collapsible title="詳解"}
+NumPy 的 `*` 是**逐元素**相乘：對應位置各自相乘，`B` 的非對角線是 0，所以結果是 `[[1 0] [0 4]]`。`@` 才是線性代數的矩陣乘法，`B` 是單位矩陣，$AB = A$，結果是 `[[1 2] [3 4]]`。
+
+選 (C) 的人把兩個運算子的意義對調了，這正是最常見的混淆；選 (A)、(B) 的人以為 `*` 與 `@` 是同一件事。
+
+**考的觀念**：`*` 逐元素、`@` 矩陣乘法。
+:::
+
+#### 選擇題 15
+
+> 依照廣播規則，下列兩個運算的結果分別是什麼？
+> :en[According to the broadcasting rules, what are the results of the two operations below?]
+
+```python
+X = np.zeros((3, 4))
+v = np.array([1, 2, 3, 4])
+w = np.array([1, 2, 3])
+X + v
+X + w
+```
+
+:::choices{answer="A"}
+- `X + v` 得到形狀 `(3, 4)`，`X + w` 報錯 :en[`X + v` gives shape `(3, 4)`; `X + w` raises an error]
+- 兩者都得到形狀 `(3, 4)` :en[Both give shape `(3, 4)`]
+- `X + v` 報錯，`X + w` 得到形狀 `(3, 4)` :en[`X + v` raises an error; `X + w` gives shape `(3, 4)`]
+- 兩者都報錯，形狀必須完全相同 :en[Both raise errors; the shapes must match exactly]
+:::
+
+:::tip{collapsible title="詳解"}
+廣播先把較小者的形狀**從左邊補 1**，再由右往左逐維比對：相等或其中一邊是 1 才行。`v` 是 `(4,)`，補成 `(1, 4)`，與 `(3, 4)` 對齊，可以運算。`w` 是 `(3,)`，補成 `(1, 3)`，最後一維 3 對 4、兩邊都不是 1，報錯。
+
+選 (C) 的人以為補 1 是補在右邊、讓 `(3,)` 對上列數 3；要讓 `w` 對到每一列，得先把它變成 `(3, 1)`（例如 `w[:, np.newaxis]`）。選 (D) 忽略了廣播的存在。
+
+**考的觀念**：廣播從右邊對齊、從左邊補 1。
+:::
+
+#### 選擇題 16
+
+> 下列程式會印出什麼？
+> :en[What does the following code print?]
+
+```python
+import pandas as pd
+df = pd.DataFrame({"x": [10, 20, 30, 40]})
+print(len(df.loc[0:2]), len(df.iloc[0:2]))
+```
+
+:::choices{answer="C"}
+- `2 2` :en[Prints `2 2`]
+- `2 3` :en[Prints `2 3`]
+- `3 2` :en[Prints `3 2`]
+- `3 3` :en[Prints `3 3`]
+:::
+
+:::tip{collapsible title="詳解"}
+`.loc` 依**標籤**選取，切片**包含**尾端，`0:2` 取到標籤 0、1、2 共 3 列；`.iloc` 依**整數位置**選取，行為和 Python 切片一樣**不含**尾端，`0:2` 只取位置 0、1 共 2 列。
+
+選 (B) 的人把兩者的規則對調；選 (A) 的人以為兩者都照 Python 切片規則。這裡索引剛好是 0、1、2、3，標籤和位置數值相同，更容易誤以為兩者等價。
+
+**考的觀念**：`.loc` 含尾端、`.iloc` 不含尾端。
+:::
+
 ### 概念辨析題
 
 #### 複習題 1

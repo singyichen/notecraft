@@ -1484,6 +1484,120 @@ F1 由精確率與召回率合成，而這兩者都不看真陰性 $TN$；MCC �
 **考的觀念**：`__` 是 scikit-learn 用來定位巢狀物件參數的通用語法。
 :::
 
+#### 選擇題 13
+
+> 下列程式最後印出的數字是多少？
+> :en[What number does the following code print at the end?]
+
+```python
+from sklearn.model_selection import cross_val_score
+scores = cross_val_score(estimator=pipe_lr, X=X_train, y=y_train,
+                         cv=10, n_jobs=1)
+print(len(scores))
+```
+
+:::choices{answer="D"}
+- 1，因為回傳的是平均分數 :en[1, because it returns the mean score]
+- 9，因為每次用 9 折訓練 :en[9, because each round trains on 9 folds]
+- 與訓練樣本數相同 :en[The same as the number of training samples]
+- 10，每一折各一個驗證分數 :en[10, one validation score per fold]
+:::
+
+:::tip{collapsible title="詳解"}
+`cv=10` 是 10 折交叉驗證：資料分成 10 份，輪流拿其中 1 份當驗證、其餘 9 份訓練，共跑 10 輪，每輪得到一個驗證分數，所以回傳長度 10 的陣列。要得到平均，得自己再呼叫 `np.mean(scores)`。
+
+選 (A) 的人以為函式會幫你平均；選 (B) 的人把「每輪用幾折訓練」和「共跑幾輪」搞混；(C) 是留一法交叉驗證（LOOCV）的情況。
+
+**考的觀念**：`cross_val_score` 回傳每一折的分數，個數等於 $k$。
+:::
+
+#### 選擇題 14
+
+> 執行下列 `gs.fit(...)` 時，交叉驗證階段總共會訓練幾個模型（不含最後用最佳參數重新訓練的那一次）？
+> :en[When `gs.fit(...)` below runs, how many models are trained during cross-validation (excluding the final refit with the best parameters)?]
+
+```python
+param_grid = {"svc__C": [0.1, 1, 10, 100],
+              "svc__gamma": [0.01, 0.1, 1]}
+gs = GridSearchCV(pipe_svc, param_grid, cv=5)
+gs.fit(X_train, y_train)
+```
+
+:::choices{answer="A"}
+- 60 個 :en[60 models]
+- 12 個 :en[12 models]
+- 35 個 :en[35 models]
+- 20 個 :en[20 models]
+:::
+
+:::tip{collapsible title="詳解"}
+格狀搜尋是**窮舉**所有參數組合：`C` 有 4 個值、`gamma` 有 3 個值，共 $4 \times 3 = 12$ 組；每一組都要做 5 折交叉驗證，所以是 $12 \times 5 = 60$ 次訓練。
+
+選 (B) 的人只算了組合數，忘了每組要跑 5 折；選 (C) 的人把兩個參數的值數相加（$4+3=7$）再乘 5；選 (D) 的人只拿 `C` 的 4 個值乘 5。這也說明格狀搜尋的成本隨參數個數乘法成長，參數一多就改用隨機搜尋。
+
+**考的觀念**：格狀搜尋的訓練次數 = 參數組合數 × 折數。
+:::
+
+#### 選擇題 15
+
+> 接續上一題，下列程式在做什麼？
+> :en[Continuing from the previous question, what does the following code do?]
+
+```python
+clf = gs.best_estimator_
+clf.fit(X_train, y_train)
+print(clf.score(X_test, y_test))
+```
+
+:::choices{answer="C"}
+- 在測試集上再做一次格狀搜尋，挑出更好的參數 :en[Runs another grid search on the test set to find better parameters]
+- 印出最佳參數組合在交叉驗證中的平均分數 :en[Prints the mean cross-validation score of the best parameter combination]
+- 取出最佳參數的模型，在測試集上做最後一次評估 :en[Takes the model with the best parameters and evaluates it once on the test set]
+- 用測試集繼續訓練模型，讓分數再往上提升 :en[Keeps training the model on the test set to push the score higher]
+:::
+
+:::tip{collapsible title="詳解"}
+`best_estimator_` 是格狀搜尋挑出的最佳參數組合所對應的模型。這段程式用訓練集訓練它，再用 `score` 在**測試集**上評估一次。這正是工作流程的最後一步：超參數全部決定後，測試集才拿出來用一次。
+
+選 (B) 的人把測試分數和交叉驗證分數搞混，這裡 `score` 吃的是 `X_test`。(A)、(D) 都是拿測試集來調模型，違反「測試集全程不碰」，測出來的分數會過度樂觀。
+
+**考的觀念**：最佳模型只在測試集上評估一次。
+:::
+
+#### 選擇題 16
+
+> 下列程式會印出什麼（四捨五入到小數第二位）？
+> :en[What does the following code print (rounded to two decimal places)?]
+
+```python
+from sklearn.metrics import precision_score, recall_score
+y_true = [1, 1, 1, 0, 0, 0]
+y_pred = [1, 0, 0, 1, 0, 0]
+print(precision_score(y_true, y_pred), recall_score(y_true, y_pred))
+```
+
+:::choices{answer="B"}
+- `0.33 0.50` :en[Prints `0.33 0.50`]
+- `0.50 0.33` :en[Prints `0.50 0.33`]
+- `0.50 0.50` :en[Prints `0.50 0.50`]
+- `0.33 0.33` :en[Prints `0.33 0.33`]
+:::
+
+:::tip{collapsible title="詳解"}
+逐筆對照：第 1 筆真 1 預 1 是 TP；第 2、3 筆真 1 預 0 是 FN；第 4 筆真 0 預 1 是 FP；第 5、6 筆是 TN。所以 TP=1、FN=2、FP=1。
+
+$$
+\begin{aligned}
+\text{PRE} &= \frac{TP}{TP+FP} = \frac{1}{2} = 0.50 \\
+\text{REC} &= \frac{TP}{TP+FN} = \frac{1}{3} \approx 0.33
+\end{aligned}
+$$
+
+選 (A) 的人把精確率和召回率的分母對調了：精確率問「預測為陽性的裡面有多少是真的」，召回率問「真的陽性裡面抓到多少」。
+
+**考的觀念**：從預測結果數出 TP／FP／FN，再套精確率與召回率。
+:::
+
 ### 概念辨析題
 
 #### 複習題 1

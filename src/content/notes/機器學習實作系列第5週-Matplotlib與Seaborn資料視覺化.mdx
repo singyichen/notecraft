@@ -1127,6 +1127,86 @@ Seaborn 架在 Matplotlib 之上，API 更高階、原生吃 DataFrame、還把�
 **考的觀念**：判準是「這張圖畫給誰看」。
 :::
 
+#### 選擇題 13
+
+> 邏輯迴歸訓練時最小化的損失函數是哪一個？
+> :en[Which loss function does logistic regression minimize during training?]
+
+:::choices{answer="D"}
+- 均方誤差（MSE），與 Adaline 相同 :en[Mean squared error (MSE), the same as Adaline]
+- 分錯的樣本數，與感知器相同 :en[The number of misclassified samples, the same as the perceptron]
+- 線性輸出 $z$ 與標籤差值的絕對值 :en[The absolute difference between the linear output $z$ and the label]
+- 二元交叉熵，也就是負對數概似 :en[Binary cross-entropy, i.e. the negative log-likelihood]
+:::
+
+:::tip{collapsible title="詳解"}
+邏輯迴歸保留 Adaline 的淨輸入與梯度下降骨架，只換兩個零件：激活函數換成 sigmoid，損失換成**二元交叉熵**。二元交叉熵就是把概似函數取對數、加負號後的結果，所以也叫負對數概似。
+
+選 (A) 最誘人：MSE 是 Adaline 的損失，邏輯迴歸正是因為 MSE 不適合分類才換掉它。選 (B) 是感知器的想法，它根本沒有可微分的損失，只看分錯才更新。
+
+**考的觀念**：模型與損失函數的配對——感知器無損失、Adaline 用 MSE、邏輯迴歸用二元交叉熵。
+:::
+
+#### 選擇題 14
+
+> 下列「模型—激活函數—輸出」的配對，哪一項正確？
+> :en[Which of the following "model – activation function – output" pairings is correct?]
+
+:::choices{answer="B"}
+- 感知器—sigmoid—正類的機率 :en[Perceptron – sigmoid – probability of the positive class]
+- Adaline—恆等函數 $\sigma(z)=z$—任意實數，分類時再切門檻 :en[Adaline – identity $\sigma(z)=z$ – any real number, thresholded for classification]
+- 邏輯迴歸—階梯函數—直接輸出 0 或 1 :en[Logistic regression – step function – outputs 0 or 1 directly]
+- 邏輯迴歸—恆等函數 $\sigma(z)=z$—任意實數 :en[Logistic regression – identity $\sigma(z)=z$ – any real number]
+:::
+
+:::tip{collapsible title="詳解"}
+三個模型的淨輸入都是 $z=\boldsymbol{w}^T\boldsymbol{x}+b$，差在激活函數：感知器用階梯函數，直接輸出類別；Adaline 用恆等函數，輸出任意實數，訓練時拿它算 MSE，分類時才切門檻；邏輯迴歸用 sigmoid，輸出正類的條件機率，通常以 0.5 切分。
+
+(A) 把邏輯迴歸的激活函數安到感知器上；(C) 把感知器的階梯函數安到邏輯迴歸上；(D) 描述的其實是 Adaline。
+
+**考的觀念**：三個線性分類器的激活函數與輸出意義。
+:::
+
+#### 選擇題 15
+
+> 用 Adaline 的 MSE 做分類時，某個正類樣本（$y=1$）的線性輸出是 $z=5$，已經分得非常正確。接下來會發生什麼？
+> :en[When Adaline's MSE is used for classification, a positive sample ($y=1$) has linear output $z=5$ and is already classified very confidently. What happens next?]
+
+:::choices{answer="C"}
+- 損失為 0，參數不再因它而更新 :en[The loss is 0, so it no longer updates the parameters]
+- 損失很小，只會讓參數微調 :en[The loss is tiny and only nudges the parameters]
+- 損失仍有 $(1-5)^2=16$，決策邊界被拉向這個已分對的樣本 :en[The loss is still $(1-5)^2=16$, pulling the boundary toward this correctly classified sample]
+- 它會被當成分錯，觸發感知器式的更新 :en[It is treated as misclassified and triggers a perceptron-style update]
+:::
+
+:::tip{collapsible title="詳解"}
+MSE 只看 $z$ 與標籤差多少，不管方向對不對。$z=5$ 離標籤 1 差 4，平方後損失是 16，優化器會想把 $z$ 拉回 1，結果把決策邊界往錯的方向拉。這就是講義說明 Adaline 不適合分類、要改成邏輯迴歸的理由：sigmoid 把輸出壓在 0 到 1 之間，分得越正確，交叉熵損失越接近 0。
+
+選 (A)、(B) 的人把「分類正確」直接等同於「損失很小」，那是交叉熵的性質，不是 MSE 的。選 (D) 混淆了感知器的更新規則。
+
+**考的觀念**：為什麼邏輯迴歸不用 MSE。
+:::
+
+#### 選擇題 16
+
+> 一張眼底攝影可能同時有白內障與高血壓病變。這種問題該用哪一種多類別做法？
+> :en[A single fundus image may show both cataract and hypertensive changes at once. Which multi-class approach fits this problem?]
+
+:::choices{answer="A"}
+- 一對其餘（OvR），每個類別各自輸出機率 :en[One-vs-Rest (OvR), each class outputs its own probability]
+- Softmax，所有類別的機率總和固定為 1 :en[Softmax, where all class probabilities sum to 1]
+- 只訓練一個二元邏輯迴歸，挑機率較高的一類 :en[Train a single binary logistic regression and pick the more likely class]
+- 先用 softmax，再只輸出機率最大的那一類 :en[Use softmax, then output only the most probable class]
+:::
+
+:::tip{collapsible title="詳解"}
+這是**多標籤**問題：同一筆資料可以同時屬於好幾類。OvR 為每個類別各自訓練「這一類 vs 其他」的分類器，各自輸出機率、互不牽制，所以可以同時判定兩種病變都有。
+
+選 (B) 最誘人：softmax 把所有類別的機率綁成總和 1，最大的那一類必然壓低其他類，適合「多選一」的互斥類別，不適合「可能同時有好幾種」。(C)、(D) 都只能輸出一類。
+
+**考的觀念**：多類別（多選一）用 softmax，多標籤只能用 OvR。
+:::
+
 ### 概念辨析題
 
 #### 複習題 1

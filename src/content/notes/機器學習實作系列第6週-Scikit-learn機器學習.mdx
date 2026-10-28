@@ -1156,6 +1156,106 @@ k 近鄰是懶惰學習者，訓練時只把資料記住，預測時才要跟每
 **考的觀念**：預測路徑上只有 `transform`，沒有 `fit`。
 :::
 
+#### 選擇題 13
+
+> 下列程式哪裡有問題？
+> :en[What is wrong with the following code?]
+
+```python
+from sklearn.preprocessing import StandardScaler
+sc = StandardScaler()
+X_train_std = sc.fit_transform(X_train)
+X_test_std = sc.fit_transform(X_test)
+```
+
+:::choices{answer="A"}
+- 第 4 行對測試集重新 fit，用了測試集自己的統計量，造成資料洩漏 :en[Line 4 re-fits on the test set, using its own statistics and causing data leakage]
+- 應該先對整份資料標準化，再切成訓練集與測試集 :en[The whole dataset should be standardized first, then split into training and test sets]
+- `fit_transform` 只能用在估計器上，轉換器要分開呼叫 :en[`fit_transform` only works on estimators; transformers must call the steps separately]
+- 沒有問題，兩份資料各自標準化才公平 :en[Nothing is wrong; standardizing each set separately is fairer]
+:::
+
+:::tip{collapsible title="詳解"}
+標準化要用的平均與標準差只能從訓練集算。正確寫法是第 4 行改成 `sc.transform(X_test)`，沿用訓練集 fit 出來的參數。講義的原則是：絕對不要在測試資料上呼叫 `fit()` 或 `fit_transform()`，否則測試集的統計量混進流程，分數虛高、上線就掉。
+
+選 (D) 最誘人：「各自標準化」聽起來公平，但兩份資料被放到不同的座標系，同一個原始數值在兩邊會變成不同的值。選 (B) 是另一種洩漏，違反「先切分、再處理」。(C) 弄反了：`fit_transform` 正是轉換器的方法。
+
+**考的觀念**：轉換器只對訓練集 fit，測試集只 transform。
+:::
+
+#### 選擇題 14
+
+> 下列程式最後印出的 `coef_` 與 `intercept_` 分別是什麼？
+> :en[What are the `coef_` and `intercept_` printed at the end of the following code?]
+
+```python
+from sklearn.linear_model import Perceptron
+ppn = Perceptron(eta0=0.1, random_state=1)
+ppn.fit(X_train_std, y_train)
+print(ppn.coef_, ppn.intercept_)
+```
+
+:::choices{answer="C"}
+- 兩者都是建構子傳進去的超參數 :en[Both are hyperparameters passed to the constructor]
+- `coef_` 是學習率，`intercept_` 是迭代次數 :en[`coef_` is the learning rate; `intercept_` is the number of iterations]
+- `coef_` 是學到的權重，`intercept_` 是偏置項 :en[`coef_` is the learned weights; `intercept_` is the bias]
+- `coef_` 是各特徵的平均，`intercept_` 是標準差 :en[`coef_` is each feature's mean; `intercept_` is the standard deviation]
+:::
+
+:::tip{collapsible title="詳解"}
+scikit-learn 的慣例是：`fit()` 學到的結果一律放在**結尾帶底線**的屬性。`coef_` 是權重 $\boldsymbol w$，`intercept_` 是偏置項 $b$。建構子裡的 `eta0`（學習率）、`random_state` 是超參數，名字不帶底線。
+
+選 (A)、(B) 的人分不清「人先設的超參數」與「從資料學到的參數」；(D) 描述的是 `StandardScaler` 學到的 `mean_` 與 `scale_`。
+
+**考的觀念**：結尾底線的屬性是 fit 之後學到的參數。
+:::
+
+#### 選擇題 15
+
+> 下列關於「哪些模型需要特徵縮放」的敘述，哪一項正確？
+> :en[Which statement about which models need feature scaling is correct?]
+
+:::choices{answer="B"}
+- 決策樹與隨機森林都必須先標準化，否則切分點會錯 :en[Decision trees and random forests must be standardized first or their split points go wrong]
+- KNN 與 SVM 依賴距離或間隔，應該先縮放 :en[KNN and SVM rely on distances or margins, so features should be scaled first]
+- 邏輯迴歸不受特徵尺度影響，不必縮放 :en[Logistic regression is unaffected by feature scale, so no scaling is needed]
+- 所有模型都一樣，縮放只是為了讓訓練跑快一點 :en[All models are the same; scaling only makes training faster]
+:::
+
+:::tip{collapsible title="詳解"}
+凡是靠距離或靠梯度的模型都怕尺度不一：KNN 算距離時，數值大的特徵會主導結果；SVM 的間隔同樣以距離衡量；邏輯迴歸靠梯度下降，尺度差太多會收斂很慢，加上正則化時也會不公平地懲罰權重。
+
+選 (A) 最誘人但弄反了：樹模型每次只拿一個特徵比大小決定切在哪，縮放不會改變排序，所以不需要。(C) 忽略了梯度下降與正則化。(D) 低估了縮放的影響：對 KNN 而言，縮放會改變預測結果本身，不只是速度。
+
+**考的觀念**：距離與梯度類模型要縮放，樹模型不需要。
+:::
+
+#### 選擇題 16
+
+> 下列程式中 `stratify=y` 的作用是什麼？
+> :en[What does `stratify=y` do in the following code?]
+
+```python
+from sklearn.model_selection import train_test_split
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.3, random_state=1, stratify=y)
+```
+
+:::choices{answer="D"}
+- 固定亂數種子，讓每次切分的結果都相同 :en[Fixes the random seed so every split comes out the same]
+- 讓測試集佔全部資料的 30% :en[Makes the test set 30% of all the data]
+- 先依標籤 y 排序，再切出前後兩段 :en[Sorts by the label y first, then cuts off the front and back parts]
+- 讓訓練集與測試集的類別比例與原始資料相同 :en[Keeps the class proportions in both sets the same as in the original data]
+:::
+
+:::tip{collapsible title="詳解"}
+`stratify=y` 是**分層**切分：依標籤 `y` 的類別比例抽樣，讓訓練集與測試集裡各類別所佔的比例都和原始資料一樣，避免某一類在測試集裡偏多或偏少。
+
+(A) 是 `random_state=1` 的作用；(B) 是 `test_size=0.3` 的作用。這兩個參數就在同一行，最容易張冠李戴。(C) 剛好相反：依類別排序後切段，正是 Iris 那種「按類別排好」的資料最怕的事。
+
+**考的觀念**：`train_test_split` 各參數的功能。
+:::
+
 ### 概念辨析題
 
 #### 複習題 1

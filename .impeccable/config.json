@@ -1,0 +1,17 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "tight-leading",
+        "value": "*",
+        "files": [
+          "docs/cheatsheets/ml-midterm-a4.html"
+        ],
+        "createdAt": "2026-10-28T01:16:04.379Z",
+        "reason": "Claude decided: exam cheat sheet must fit A4 double-sided; dense leading is intentional and verified by 2-page render with no overflow"
+      }
+    ]
+  }
+}
