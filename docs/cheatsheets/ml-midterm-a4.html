@@ -96,7 +96,7 @@
       <li>樣本＝一列、特徵＝一欄、標籤／ground truth＝答案</li>
       <li><b>可訓練參數</b>（$\boldsymbol w,b$，從資料學）vs <b>超參數</b>（$\eta$、epoch、$C$、$k$，人先設）</li>
       <li><b>特徵選取</b>挑子集（欄位意義不變）vs <b>特徵提取</b>算出新特徵（如 PCA）</li>
-      <li>Epoch＝全部訓練資料跑完一輪</li>
+      <li>Epoch＝全部訓練資料跑完一輪；<b>反向傳播</b>＝用連鎖律從輸出層往回算 loss 對各參數的梯度</li>
       <li><b>No Free Lunch</b>：沒有在所有問題都最好的模型 → 要比較多個演算法</li>
       <li>流程：前處理 → 切分 → 訓練／選模型（CV）→ 測試集評估一次 → 預測新資料</li>
     </ul>
@@ -113,6 +113,7 @@
       <tr><td>輸出</td><td>0／1</td><td>連續值，門檻 0.5</td><td>機率 $p(y{=}1|\boldsymbol x)$</td></tr>
     </table>
     <ul>
+      <li>決策邊界是<b>超平面</b> $\boldsymbol w^T\boldsymbol x+b=0$（2 維特徵時是直線）</li>
       <li>PLA 更新：$w\leftarrow w+\eta\,y\,x$；<b>Novikoff</b>：線性可分才保證有限步收斂，不可分永遠不停（要設 epoch 上限）</li>
       <li>權重不建議初始化為 0：用小亂數，否則 $\eta$ 只縮放 $\boldsymbol w$、不改方向</li>
       <li>Adaline 從「對或錯」改成「差多少」→ 可微分 → 能用梯度下降</li>
@@ -126,6 +127,7 @@
     <ul>
       <li>名字有 regression，做的是<b>分類</b>；線性建模的是 logit，不是 $p$</li>
       <li>勝算 $\frac{p}{1-p}$（$p{=}0.8$ → 4）；logit $=\ln\frac{p}{1-p}$ 把 $(0,1)$ 映到全實數；sigmoid 是 logit 的反函數，$\sigma(0)=0.5$</li>
+      <li>sigmoid 輸出是<b>條件機率</b> $p(y{=}1|\boldsymbol x)$＝「已知特徵時屬於正類」的機率，<span class="k">不是預測正確的機率</span></li>
       <li>BCE：$L=-\frac1n\sum[y\ln a+(1-y)\ln(1-a)]$；單筆 $y{=}1$ 時 $-\ln a$，<b>自信地答錯</b>（$a\to0$）損失 $\to\infty$</li>
       <li>為何不用 MSE：分對且很有把握（$y{=}1,z{=}5$）仍罰 $(1{-}5)^2{=}16$，把邊界往錯的方向拉；BCE 分得越對損失越趨近 0（非凸、梯度飽和是補充）</li>
       <li>決策邊界 $z=0$ 仍是<b>線性</b>（sigmoid 不會讓邊界變彎）；要非線性得做特徵工程（如 $|x_1|$、$x^2$）</li>
@@ -186,6 +188,7 @@
     <ul>
       <li>$\lambda$ 越大越趨向欠擬合；sklearn 的 $C\propto 1/\lambda$：<span class="k">C 越小 = 正則化越強</span></li>
       <li>正則化前必須先標準化（各特徵尺度一致，懲罰才公平）</li>
+      <li><b>泛化誤差</b>＝在沒見過的資料上的誤差，用測試集估計；測試集越小估得越不準</li>
     </ul>
   </section>
 
