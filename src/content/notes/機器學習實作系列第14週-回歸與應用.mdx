@@ -3,7 +3,7 @@ title: "機器學習實作系列：第 14 週 - 回歸與應用"
 description: ""
 tags: ["機器學習實作系列"]
 createdAt: "2026-12-07"
-updatedAt: "2026-12-07"
+updatedAt: "2026-10-29"
 ---
 
 import GeneratedFrame from '@/components/GeneratedFrame.astro'
@@ -141,6 +141,342 @@ status: generated
 <GeneratedFrame id="ml-week14-regularization" type="motion" prompt={"L1 與 L2 的差別：L2 全部係數等比縮小，L1 把小係數直接壓成零做特徵選擇。"} caption={"拉大正則化強度會發生什麼：L2 把所有係數一起壓矮，L1 則是把小的一個個壓成零。"}>
   <MlWeek14Regularization client:visible />
 </GeneratedFrame>
+
+## 講義精讀：回歸問題怎麼定義
+
+> 原始講義：[Lecture 10 - Regression and Applications（PDF）](/notes-assets/_references/機器學習實作系列/第14週-回歸與應用.pdf)，教師陳慶永。以下節次標註的頁碼即該 PDF 的頁次。
+
+### 從帶雜訊的資料反推模型參數（第 4 頁）
+
+在理工科的課堂上，我們通常是「已知系統參數，去預測系統在連續尺度上的狀態」。但實務正好相反：參數事先並不知道，手上只有這個系統過去行為的資料點，而且因為感測器精度不足、量測誤差等原因，資料一定帶著雜訊。於是問題變成——給定一組有雜訊的資料，要怎麼找出「最有可能」的模型參數？
+
+講義給回歸分析（regression analysis）的目標下的定義是：建立一個或多個特徵與一個連續目標變數之間關係的模型。
+
+### 回歸與線性回歸（第 5 頁）
+
+給定自變數（特徵）資料點 $x_j$ 與應變數（目標）資料點 $y_j$，$j = 1, 2, \ldots, m$，我們想找一個估計函數（estimation function）$\hat{y}(x)$，把資料描述得越好越好。
+
+線性回歸（linear regression）要求這個估計函數必須是一組基函數（basis function）$f_i(x)$ 的線性組合：
+
+$$
+\hat{y}(x) = \sum_{i=0}^{n-1}\alpha_i f_i(x)
+$$
+
+其中 $\alpha_i$（$i = 0, 1, \ldots, n-1$）就是估計函數的參數。這裡的 $\hat{y}$ 也可以是多個變數（$x, t, z, \ldots$）的函數，$\hat{y}(x)$ 只是單變數的例子。
+
+請注意這個定義的措辭：「線性」是對參數 $\alpha_i$ 而言，不是對 $x$ 而言——這正是後面多項式回歸仍然算線性回歸的原因。
+
+### 最小平方法（第 6 頁）
+
+最小平方法回歸（least squares regression）要找的是讓總平方誤差 $E$ 最小的那組參數：
+
+$$
+E = \sum_{j=1}^{m}\left|y_j - \hat{y}(x_j)\right|^2 = \|\mathbf{e}\|^2
+$$
+
+其中 $e_j = y_j - \hat{y}(x_j)$ 是個別誤差（也稱 offset 或殘差 residual），$\mathbf{e} = [e_1, e_2, \ldots, e_m]^T$ 是誤差向量。這個 $E$ 就是損失函數（loss function），而 $\min_{\alpha_i} E$ 本質上是一個最佳化問題（optimization problem）。
+
+### 回歸不是內插（第 7 頁）
+
+這張對照表值得記住——兩者的數學形式看起來很像，目標卻完全相反：
+
+| 特性 | 回歸（regression） | 內插（interpolation） |
+| --- | --- | --- |
+| 與資料點的關係 | 不通過所有點 | 必須精確通過所有點 |
+| 主要目標 | 抓住整體趨勢與關係 | 估計已知範圍內的缺漏值 |
+| 處理雜訊 | 優秀；能平滑掉誤差與離群值 | 很差；容易過擬合與扭曲 |
+| 數學目標 | 最小化整體殘差 | 解出局部參數的精確方程 |
+| 典型用途 | 找出模式、物理定律或機器學習 | 提高取樣解析度、填補空隙 |
+
+![四張小散點圖：左側兩張示範回歸，一條直線穿過點群但不通過任何一點；右側兩張示範內插，一條彎曲的曲線精確通過每一個點](/note-images/ml-week14/01-regression-vs-interpolation.png)
+
+*第 7 頁：同一組點，回歸畫出的是趨勢線，內插畫出的是穿過每個點的曲線——後者把雜訊也一併忠實重現了。*
+
+## 線性回歸的三種形式
+
+### 簡單線性回歸（第 9 頁）
+
+最熟悉的那一種：用一條直線去配資料。
+
+$$
+\hat{y}(x) = \alpha_1 x + \alpha_0
+$$
+
+$\alpha_1$ 是斜率（slope）、$\alpha_0$ 是截距（intercept），目標是找出穿過訓練樣本的最佳擬合直線。
+
+![簡單線性回歸示意圖：座標平面上五個藍色資料點與一條紅色直線，直線標註斜率 α₁，每個點到直線的垂直虛線標註為 Error，點本身標註為 Data](/note-images/ml-week14/02-simple-linear-regression.png)
+
+*第 9 頁：標註成 Error 的垂直虛線就是殘差 $e_j$，最小平方法要最小化的是這些線段長度的平方和。*
+
+### 多元線性回歸（第 10 頁）
+
+處理多維線性模型，改用超平面（hyperplane）去配多變數資料：
+
+$$
+\hat{y}(x, t, z, \ldots) = \alpha_0 + \alpha_1 x + \alpha_2 t + \alpha_3 z + \cdots
+$$
+
+兩個自變數時，$\hat{y}(x, t) = \alpha_0 + \alpha_1 x + \alpha_2 t$ 描述的就是一個平面。
+
+![三維散點與擬合平面圖：紅色資料點分布在空間中，一張彩色平面穿過點群，每個點以垂直線段連到平面上，座標軸標為 x、t、y](/note-images/ml-week14/03-multiple-linear-hyperplane.png)
+
+*第 10 頁：垂直線段仍然是殘差，只是「點到線」換成了「點到平面」。*
+
+### 基函數回歸與多項式回歸（第 11 頁）
+
+基函數回歸（basis function regression）用一組基函數 $f_i(x)$ 去建模 $y$ 與 $x$ 之間複雜的（非線性的）關係：
+
+$$
+\hat{y}(x) = \sum_{i=0}^{n-1}\alpha_i f_i(x) = \alpha_0 f_0(x) + \alpha_1 f_1(x) + \cdots + \alpha_{n-1}f_{n-1}(x)
+$$
+
+這裡的 $f_i(x)$ 可以是 $x$ 的非線性函數（也就是非線性轉換），實際效果是把一維的 $x$ 投影到更高的維度；但 $\hat{y}(x)$ 對參數而言仍然是線性模型。取 $f_i(x) = x^i$ 就得到多項式回歸（polynomial regression）：
+
+$$
+\hat{y}(x) = \sum_{i=0}^{n-1}\alpha_i x^i = \alpha_0 + \alpha_1 x + \cdots + \alpha_{n-1}x^{n-1}
+$$
+
+## 最小平方解的推導
+
+### 寫成矩陣形式（第 12 頁）
+
+把每個資料點 $x_j$ 上的估計值逐一列出，就能整理成矩陣乘法：
+
+$$
+\begin{bmatrix} \hat{y}(x_1) \\ \hat{y}(x_2) \\ \vdots \\ \hat{y}(x_m) \end{bmatrix}
+=
+\begin{bmatrix}
+f_0(x_1) & f_1(x_1) & \cdots & f_{n-1}(x_1) \\
+f_0(x_2) & f_1(x_2) & \cdots & f_{n-1}(x_2) \\
+\vdots & \vdots & \ddots & \vdots \\
+f_0(x_m) & f_1(x_m) & \cdots & f_{n-1}(x_m)
+\end{bmatrix}
+\begin{bmatrix} \alpha_0 \\ \alpha_1 \\ \vdots \\ \alpha_{n-1} \end{bmatrix}
+$$
+
+也就是 $\hat{\mathbf{Y}} = \mathbf{A}\boldsymbol{\theta}$，三者的形狀分別是 $m \times 1$、$m \times n$、$n \times 1$。矩陣 $\mathbf{A}$ 的每一欄是一個基函數在所有資料點上的取值，常稱為設計矩陣。
+
+### 正交條件導出虛反矩陣（第 13 頁）
+
+令 $\mathbf{Y} = [y_1, y_2, \ldots, y_m]^T$，誤差向量就是 $\mathbf{e} = \mathbf{Y} - \hat{\mathbf{Y}}$，總平方誤差為
+
+$$
+E = \sum_{j=1}^{m}\left|y_j - \hat{y}(x_j)\right|^2 = \|\mathbf{e}\|^2 = \|\mathbf{Y} - \hat{\mathbf{Y}}\|^2
+$$
+
+關鍵的幾何洞察在這裡：$\hat{\mathbf{Y}} = \mathbf{A}\boldsymbol{\theta}$ 只能落在 $\mathbf{A}$ 的行空間（column space）裡，而 $\|\mathbf{e}\|$ 取到最小值的充要條件是誤差向量垂直於這個行空間。把正交條件寫出來就直接解出參數：
+
+$$
+\begin{aligned}
+\hat{\mathbf{Y}}^T\mathbf{e} &= 0 = \hat{\mathbf{Y}}^T(\mathbf{Y} - \hat{\mathbf{Y}}) = (\mathbf{A}\boldsymbol{\theta})^T(\mathbf{Y} - \mathbf{A}\boldsymbol{\theta}) = \boldsymbol{\theta}^T(\mathbf{A}^T\mathbf{Y} - \mathbf{A}^T\mathbf{A}\boldsymbol{\theta}) \\
+\Rightarrow \quad \mathbf{A}^T\mathbf{A}\boldsymbol{\theta} &= \mathbf{A}^T\mathbf{Y} \\
+\Rightarrow \quad \boldsymbol{\theta} &= (\mathbf{A}^T\mathbf{A})^{-1}\mathbf{A}^T\mathbf{Y}
+\end{aligned}
+$$
+
+$(\mathbf{A}^T\mathbf{A})^{-1}\mathbf{A}^T$ 稱為 $\mathbf{A}$ 的虛反矩陣（pseudo-inverse）。可逆的條件是 $\mathbf{A}$ 的各欄線性獨立——換句話說，基函數之間不能重複、特徵之間不能完全共線。
+
+![最小平方解的幾何圖：一個標為 Range (or column space) of A 的平面，黃色向量 Y 指向平面外，藍色向量 Ŷ 躺在平面上，紅色虛線 e = Y − Ŷ 垂直於平面並標出直角記號](/note-images/ml-week14/04-least-squares-orthogonality.png)
+
+*第 13 頁：$\hat{\mathbf{Y}}$ 是 $\mathbf{Y}$ 在 $\mathbf{A}$ 行空間上的正交投影，誤差向量就是那段垂直落差——這是整個最小平方法唯一需要的幾何直覺。*
+
+## 在 Python 裡解線性最小平方
+
+### 人造資料與理論答案（第 15 頁）
+
+講義用一組 $m = 100$ 的人造資料示範，真值是 $y = 1 + x + x\,U(0,1)$：
+
+```python
+x = np.linspace(0, 1, 100)
+y = 1 + x + x * np.random.random(len(x))
+```
+
+估計函數取 $\hat{y}(x) = \alpha_1 x + \alpha_0$。因為 $U(0,1)$ 的期望值是 $0.5$，理論上 $y$ 的期望是 $1 + 1.5x$，所以斜率 $\alpha_1 = 1.5$、截距 $\alpha_0 = 1.0$（講義此處把截距寫成 $\alpha_2$，對照估計函數的定義應為 $\alpha_0$）。Python 裡做最小平方回歸的途徑很多：NumPy、SciPy、scikit-learn，以及統計模型取向的 statsmodels。
+
+### 四種解法，同一個答案（第 16–23 頁）
+
+組裝設計矩陣的方式四種解法都一樣——第一欄是常數項、第二欄是 $x$：
+
+```python
+A = np.vstack([np.ones(len(x)), x]).T   # 形狀 (100, 2)
+y = y[:, np.newaxis]                    # 轉成行向量 (100, 1)
+```
+
+| 解法 | 關鍵呼叫 | 範例 | $\alpha_0$（理論 1.0） | $\alpha_1$（理論 1.5） |
+| --- | --- | --- | --- | --- |
+| 直接反矩陣 | `np.linalg.inv(A.T @ A) @ A.T @ y` | `10_1.py` | 0.99430995 | 1.51582738 |
+| 虛反矩陣 | `np.linalg.pinv(A) @ y` | `10_2.py` | 1.00195876 | 1.53499311 |
+| NumPy 的 LLS | `np.linalg.lstsq(A, y, rcond=None)[0]` | `10_3.py` | 1.00592029 | 1.49263994 |
+| SciPy 曲線擬合 | `optimize.curve_fit(func, xdata=x, ydata=y)[0]` | `10_4.py` | 1.01678655 | 1.50276192 |
+
+四組數字的差異只來自每次隨機雜訊不同與數值解法的細節，都落在理論值附近。實務上建議用後兩者：`np.linalg.inv` 要求 $\mathbf{A}^T\mathbf{A}$ 真的可逆，一旦特徵接近共線就會數值爆炸；`pinv` 與 `lstsq` 內部走的是比較穩定的分解。而 `scipy.optimize.curve_fit` 更進一步——它連非線性函數都能在最小平方的意義下擬合，這是下一節的伏筆。
+
+![LLS Regression (Direct Inverse) 散點圖：橫軸 x 從 0 到 1、縱軸 y 從 1 到 3，藍色資料點呈上升趨勢且散幅隨 x 增大，一條紅色直線穿過點群中央](/note-images/ml-week14/05-lls-direct-inverse-fit.png)
+
+*第 17 頁：注意散幅隨著 $x$ 變大而變寬——因為雜訊項是 $x\,U(0,1)$，本身就與 $x$ 成正比。四種解法畫出來的圖幾乎一模一樣。*
+
+### scikit-learn 的線性模型（第 24 頁）
+
+`sklearn.linear_model` 底下的回歸器全部共用同一套 estimator API：
+
+```python
+slr = LinearRegression()
+slr.fit(X, y)
+y_pred = slr.predict(X)
+```
+
+講義列出的四個成員，正好對應本週摘要裡談過的幾種處方：`LinearRegression`（基礎最小平方）、`RANSACRegressor`（對離群值穩健的回歸）、以及三種帶正則化的版本——`Ridge`（L2 懲罰）、`Lasso`（L1 懲罰）、`ElasticNet`（加權的 L1 + L2 懲罰）。
+
+### 多項式特徵（第 25 頁）
+
+`sklearn.preprocessing.PolynomialFeatures` 負責產生特徵的高次項與交互作用項，它走的是 transformer API，產出的特徵再丟給線性回歸器去擬合：
+
+```python
+X = np.arange(6).reshape(3, 2)      # [[0,1],[2,3],[4,5]]
+poly = PolynomialFeatures(2)
+poly.fit_transform(X)
+# [[1., 0., 1., 0., 0., 1.],
+#  [1., 2., 3., 4., 6., 9.],
+#  [1., 4., 5., 16., 20., 25.]]
+```
+
+兩個特徵 $(X_1, X_2)$ 被展開成 $(1,\ X_1,\ X_2,\ X_1^2,\ X_1X_2,\ X_2^2)$——注意交互作用項 $X_1X_2$ 也在裡面，這是多項式特徵除了「彎曲」之外的另一個作用。
+
+### 回歸的評估指標（第 26 頁）
+
+`sklearn.metrics` 提供三個：
+
+$$
+\begin{aligned}
+\text{MSE} &= \frac{1}{n}\sum_{i=1}^{n}\left(y^{(i)} - \hat{y}^{(i)}\right)^2 \\
+\text{MAE} &= \frac{1}{n}\sum_{i=1}^{n}\left|y^{(i)} - \hat{y}^{(i)}\right| \\
+R^2 &= 1 - \frac{\text{SSE}}{\text{SST}} = 1 - \frac{\frac{1}{n}\sum_{i=1}^{n}\left(y^{(i)} - \hat{y}^{(i)}\right)^2}{\frac{1}{n}\sum_{i=1}^{n}\left(y^{(i)} - \mu_y\right)^2} = 1 - \frac{\text{MSE}}{\mathrm{Var}(y)}
+\end{aligned}
+$$
+
+三者對應的函式依序是 `mean_squared_error`、`mean_absolute_error`、`r2_score`。
+
+最後一個等式把決定係數（coefficient of determination）的意義講得很清楚：分母是「直接拿平均值去猜」的誤差，分子是模型的誤差，所以 $R^2$ 量的是「比起猜平均值，我好多少」。
+
+## 非線性回歸
+
+### 有些函數寫不成基函數的線性組合（第 28 頁）
+
+線性回歸要求估計函數是基函數的線性組合，但有些函數就是寫不成這種形式，例如指數函數 $\hat{y}(x) = \alpha e^{\beta x}$——參數 $\beta$ 卡在指數上。這時最小平方法仍然適用，只是要換做法，講義給兩條路：
+
+1. 兩邊取對數，把非線性函數轉成線性函數
+2. 直接用 `scipy.optimize.curve_fit()`，以最小平方的意義估計非線性函數的參數
+
+### 指數函數的對數技巧（第 29 頁）
+
+對 $\hat{y}(x) = \alpha e^{\beta x}$ 兩邊取自然對數：
+
+$$
+\tilde{y}(x) = \ln\hat{y}(x) = \ln\alpha + \beta x = \alpha_1 x + \alpha_0
+$$
+
+這個式子對 $\alpha_1$、$\alpha_0$ 而言是線性的，所以可以直接對 $\tilde{y}$ 做線性最小平方回歸，解完再還原原本的參數：$\alpha = e^{\alpha_0}$、$\beta = \alpha_1$。
+
+### 冪次函數的對數技巧（第 30 頁）
+
+同一招也適用於冪次函數 $\hat{y}(x) = \alpha x^{\beta}$，差別只在對數取完之後線性的對象變成 $\ln x$：
+
+$$
+\tilde{y}(x) = \ln\hat{y}(x) = \ln\alpha + \beta\ln x = \alpha_1\ln x + \alpha_0
+$$
+
+還原方式完全相同：$\alpha = e^{\alpha_0}$、$\beta = \alpha_1$。
+
+### 直接擬合任意形式的函數（第 31 頁）
+
+`scipy.optimize.curve_fit()` 可以擬合任何形式的函數（指數、冪次……）並估計它的參數。它假設 `ydata = f(xdata, *params) + eps`，而第一個引數 `f` 必須是可呼叫物件，且「以自變數為第一個引數、要擬合的參數為其餘各別引數」。
+
+### 範例：$\hat{y}(x) = \alpha e^{\beta x}$（第 32–35 頁）
+
+人造資料是 $y = 0.1e^{0.3x} + 0.1\,U(-0.5, 0.5)$，$m = 100$，理論值 $\alpha = 0.1$、$\beta = 0.3$：
+
+```python
+x = np.linspace(0, 10, 100)
+y = 0.1 * np.exp(0.3 * x) + 0.1 * (np.random.random(len(x)) - 0.5)
+```
+
+兩條路各跑一次，結果如下：
+
+| 做法 | 關鍵呼叫 | 範例 | $\alpha$（理論 0.1） | $\beta$（理論 0.3） |
+| --- | --- | --- | --- | --- |
+| 對數技巧 + NumPy 的 LLS | `np.linalg.lstsq(A, np.log(y), rcond=None)[0]` 後取 `np.exp` 還原 | `10_5.py` | 0.10217484 | 0.29723644 |
+| SciPy 曲線擬合 | `optimize.curve_fit(lambda x, a, b: a*np.exp(b*x), x, y)[0]` | `10_6.py` | 0.10128494 | 0.29852918 |
+
+![Nonlinear Regression (Log tricks + Numpy lstsq()) 散點圖：橫軸 x 從 0 到 10、縱軸 y 從 0 到 2，藍色資料點沿指數曲線上升，一條紅色曲線緊貼點群](/note-images/ml-week14/06-nonlinear-log-trick-fit.png)
+
+*第 34 頁：先取對數拉直、在對數尺度上做線性回歸、再還原成指數曲線。要留意的是這一招同時把雜訊也取了對數，所以它最小化的其實是對數尺度上的誤差，與直接擬合的 `curve_fit` 在數學上並不等價——這也是兩組參數略有差異的原因。*
+
+### 用 MLP 做非線性回歸（第 36–38 頁）
+
+多層感知器（multilayer perceptron, MLP）也能做非線性回歸：把輸入特徵送過一層或多層帶非線性激活函數（ReLU、sigmoid 或 tanh 等）的隱藏層即可。損失函數通常用均方誤差（MSE）來量測預測值與連續目標之間的距離。
+
+範例 `10_7.py` 用 `sklearn.neural_network.MLPRegressor` 擬合 $y = \sin(x)$ 加雜訊的資料，網路是兩層隱藏層（64 與 32 個神經元）、ReLU 激活、`solver='adam'`、`max_iter=1000`。關鍵細節是資料要先標準化（MLP 對特徵縮放很敏感），測試集的 $R^2$ 分數是 0.9763。
+
+![Nonlinear Regression (scikit-learn MLP) 散點圖：橫軸 x 從 −3 到 3，灰色測試資料點呈正弦波形狀，一條紅色曲線平滑地沿波形穿過](/note-images/ml-week14/07-mlp-regression-fit.png)
+
+*第 38 頁：同一套最小平方的精神，只是估計函數從「基函數的線性組合」換成了神經網路。講義補充：想對網路架構、損失計算與最佳化過程有最大的控制權，就改用 PyTorch 自己實作一個 MLP 回歸器——作業六要求的正是這件事。*
+
+## 作業六：糖尿病疾病進展預測器
+
+### 目的與應用情境（第 40 頁）
+
+建立一個「基準一年後糖尿病疾病進展」的預測器。應用情境是臨床醫學定量評估（clinical quantitative assessment）：假設病患的基礎生理特徵與化驗數據已由醫院預先採集完成，本作業只負責建立回歸模型來預測一年後的疾病進展指數。
+
+### 資料集（第 41 頁）
+
+`sklearn.datasets.load_diabetes()`：
+
+- 442 筆病患臨床紀錄
+- 10 維生理與化驗特徵，包含年齡、性別、BMI、血壓及 6 種血清化驗數據
+- 連續型目標值：基準一年後疾病進展的定量測量值，數值範圍介於 25 到 346 之間
+- 各項特徵已預先經過縮放（每項特徵的平方和皆為 1）
+
+### 實作任務與要求（第 42 頁）
+
+以三種不同的演算法建立回歸預測器並進行效能比較，流程要運用資料切分、特徵縮放與模型評估：
+
+- 切分比例：80% 訓練集、20% 測試集
+- 模型評估：MSE 與 $R^2$
+- 多元線性回歸：使用基礎線性模型作為效能基準線（baseline）
+- 多項式回歸：以 `PolynomialFeatures` 設定 `degree=2` 進行特徵轉換
+- MLP 非線性回歸：以 PyTorch 實作 MLP regressor
+
+### 預期結果（第 43–44 頁）
+
+預期結果一是輸出三種模型在測試集上的量化指標比較表，分別列出 MSE 與 $R^2$ 分數；在測試集（約 89 筆樣本）上，三者之中最佳的 $R^2$ 必須達 0.46 以上。講義的範例輸出：
+
+```text
+========== 各模型效能比較 ==========
+[Linear Regression] MSE: 2900.19 | R² Score: 0.4526
+[Polynomial Regression] MSE: 3096.03 | R² Score: 0.4156
+[PyTorch MLP Regressor] MSE: 2586.11 | R² Score: 0.5119
+```
+
+預期結果二是把三種模型的效能對比畫成長條圖，標題須註明測試集字樣，長條上方須精準標示四位小數的 $R^2$ 數值：
+
+![Comparison of Regression Models (Test Set) 長條圖：三根長條分別是 Linear Regression 0.4526、Polynomial Regression 0.4156、PyTorch MLP Regressor 0.5119，縱軸為 R² Score](/note-images/ml-week14/08-assignment6-r2-barchart.png)
+
+*第 44 頁：講義在這張圖旁邊寫了一句結論——在機器學習中，模型不是越酷炫、越複雜就越好。degree=2 的多項式回歸把 10 維特徵展開成 65 維，分數反而輸給最陽春的線性回歸。*
+
+### 各模型的參考區間（第 45 頁）
+
+講義附上這份區間表，用意是讓人在調參時知道「調到什麼程度算合理」，而不是無止境地追分數：
+
+| 模型種類 | $R^2$ 區間 | 備註 |
+| --- | --- | --- |
+| 多元線性回歸 | 0.45 ~ 0.47 | 基本盤，但容易受極端值影響 |
+| Lasso / Ridge 回歸 | 0.47 ~ 0.50 | 表現最穩定；透過 L1／L2 懲罰項能有效壓制共線性特徵 |
+| 多項式回歸（degree=2） | 0.30 ~ 0.42（或負值） | 維度災難。不加正規化一定會因為特徵暴增而過擬合 |
+| KNN 回歸（調參後） | 0.48 ~ 0.53 | 透過調整適當的鄰居數（如 $K = 9$），在小資料集表現不錯 |
+| 隨機森林 / XGBoost | 0.45 ~ 0.52 | 樹模型擅長抓非線性，但在此資料集因樣本太少，很容易長出過深的樹導致過擬合 |
+| MLP / 類神經網路 | 0.46 ~ 0.53 | 架構必須非常小，且必須提早停止（early stopping），否則必過擬合 |
+
+整份講義的測試集最佳 $R^2$ 通常落在 0.45 到 0.55 之間——這個資料集本身的訊號強度就到這裡為止。
 
 ## 教材預習重點
 

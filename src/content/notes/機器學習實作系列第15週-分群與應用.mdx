@@ -3,7 +3,7 @@ title: "機器學習實作系列：第 15 週 - 分群與應用"
 description: ""
 tags: ["機器學習實作系列"]
 createdAt: "2026-12-14"
-updatedAt: "2026-12-14"
+updatedAt: "2026-10-29"
 ---
 
 import GeneratedFrame from '@/components/GeneratedFrame.astro'
@@ -131,6 +131,316 @@ status: generated
 <GeneratedFrame id="ml-week15-selection" type="diagram" prompt={"四個問題挑分群演算法：形狀規不規則、要不要先決定 k、有沒有離群點、需不需要信心度。"} caption={"四個問題挑分群演算法：形狀規不規則、要不要先決定 $k$、有沒有離群點、需不需要信心度。"}>
   <MlWeek15Selection />
 </GeneratedFrame>
+
+## 講義精讀：分群問題怎麼定義
+
+> 原始講義：[Lecture 11 - Clustering and Applications（PDF）](/notes-assets/_references/機器學習實作系列/第15週-分群與應用.pdf)，教師陳慶永。以下節次標註的頁碼即該 PDF 的頁次。大綱裡的圖論式分群（graph-based clustering／spectral clustering）在投影片上是灰字，本次沒有講。
+
+### 分群在找什麼（第 4 頁）
+
+分群（clustering，也譯集群）又稱群集分析（cluster analysis），屬於非監督式學習，讓我們在「事先不知道正確答案」的資料裡找出隱藏的結構。目標是找到資料中自然的分組：同一群內的項目彼此比較相似，與其他群的項目差異較大——用講義的八個字就是「群內相似，群間差異較大」。
+
+### 相似度就是距離，所以一定要先縮放（第 5 頁）
+
+要怎麼量兩個物件之間的相似度？講義把相似度定義成「平方歐氏距離的相反」——距離越小越相似：
+
+$$
+d(\mathbf{x}, \mathbf{y})^2 = \sum_{j=1}^{m}\left(x_j - y_j\right)^2 = \|\mathbf{x} - \mathbf{y}\|_2^2
+$$
+
+這個定義適合衡量連續特徵的距離。隨之而來的是一個無法迴避的前處理要求：距離會被尺度大的特徵主導（年薪的數值範圍輾壓年資），所以必須做特徵縮放，讓所有特徵站在同一個尺度上。
+
+### 應用與示範資料（第 6 頁）
+
+典型應用包括依主題分組文件、音樂與電影，或依共同購買行為找出興趣相似的顧客。講義特別註明：後面用的二維圖形只是為了適合示範，真實資料可能有很多維。
+
+![二維散點圖：150 筆資料點在 Feature 1 與 Feature 2 的平面上，肉眼可見分成左上、右上、右下三團](/note-images/ml-week15/01-demo-dataset-2d.png)
+
+*第 6 頁：150 筆資料、2 個特徵。這份資料後面會一路用到手肘法那一節。*
+
+### 沒有標準答案時怎麼評估（第 7 頁）
+
+非監督式學習最大的挑戰就是沒有明確的答案——資料集裡沒有真實類別標籤。因此要量化分群品質，必須改用內部指標（intrinsic metric）來比較不同分群模型的表現。「內部」的意思是只看資料與分群結果本身算得出來，不需要外部的答案，下一節的 SSE 就是一個例子。
+
+### 先降維再分群（第 8 頁）
+
+分群同樣會遇到維度災難，所以講義建議在分群之前先套用（非監督式的）降維技術，而且特別常見的做法是壓到二維子空間——這樣就能用二維散點圖把群集與指派到的標籤畫出來，對評估結果特別有幫助。這正好銜接第 13 週的 t-SNE，最後一節的綜合實作就是這樣做的。
+
+## 原型式分群：k-means
+
+### 質心與中心點（第 10 頁）
+
+原型式分群（prototype-based clustering）裡，每一群都由一個原型（prototype）代表。原型有兩種選擇：
+
+| 原型 | 定義 | 適用 |
+| --- | --- | --- |
+| 質心（centroid） | 群內所有點的平均值，不一定存在於原始資料中 | 連續特徵 |
+| 中心點（medoid） | 群內最具代表性的一個真實資料點 | 類別型特徵 |
+
+最流行的演算法是 k-means。它的兩個性格要記住：擅長找出球形（spherical）的群；而且必須事先指定群數 $k$——$k$ 選得不恰當，分群結果就會很差。
+
+### 目標函數：群內平方誤差和（第 11 頁）
+
+k-means 是一個反覆最小化群內平方誤差和（within-cluster sum of squared errors, SSE）的迭代方法，SSE 又稱群集慣量（cluster inertia）：
+
+$$
+SSE = \sum_{i=1}^{n}\sum_{j=1}^{k} w^{(i,j)}\left\|\mathbf{x}^{(i)} - \boldsymbol{\mu}^{(j)}\right\|_2^2,
+\qquad
+w^{(i,j)} = \begin{cases} 1, & \text{if } \mathbf{x}^{(i)} \in j \\ 0, & \text{otherwise} \end{cases}
+$$
+
+$i$ 是樣本索引、$j$ 是群索引，$\boldsymbol{\mu}^{(j)}$ 是第 $j$ 群的質心（也就是該群的平均特徵向量）。這個 SSE 同時也是前一節說的內部指標——它不需要任何標籤就能算出來。
+
+### 演算法流程（第 12 頁）
+
+1. 從樣本中隨機挑 $k$ 個點當初始質心
+2. 把每個樣本指派給最近的質心 $\boldsymbol{\mu}^{(j)}$，$j \in \{1, \ldots, k\}$
+3. 把質心移到被指派給它的那些樣本的中心（群內平均值）
+4. 重複步驟 2 與 3，直到指派不再改變、或達到使用者定義的容忍度或最大迭代次數
+
+### 一個四筆資料的小例子（第 13 頁）
+
+講義用四筆一維資料 1、2、8、9 把上面的流程走一遍，指定 $k = 2$、初始質心 $\mu_1 = 1$、$\mu_2 = 8$：
+
+- 第一次指派：$\{1, 2\}$ 與 $\{8, 9\}$，此時 $SSE = 2$
+- 更新質心：$1.5$ 與 $8.5$，$SSE = 4 \times 0.5^2 = 1$
+
+一次更新就讓 SSE 從 2 掉到 1——這正是「移到群內平均值」這一步在做的事：平均值是讓該群平方距離和最小的那個點。
+
+### scikit-learn 的 KMeans（第 14 頁）
+
+```python
+from sklearn.cluster import KMeans
+
+km = KMeans(n_clusters=3,        # 須指定群數 k
+            init='random',       # 換成 'k-means++' 可讓初始質心彼此遠離
+            n_init=10,           # 不同初始化的執行次數
+            max_iter=300,
+            tol=1e-04,
+            random_state=0)
+y_km = km.fit_predict(X)
+```
+
+`n_init` 的作用值得單獨記住：演算法會獨立跑 10 次，最後選 SSE 最低的那個模型當結果——因為 k-means 會收斂到局部最小值，換個初始質心就可能得到不同的分群。
+
+![k-means 分群結果散點圖：150 筆資料被分成三群，分別以綠色方塊、藍色倒三角、橘色圓點表示，三顆紅色星號標出各群質心](/note-images/ml-week15/02-kmeans-result.png)
+
+*第 14 頁：三群各自找到自己的質心（紅星）。對照第 6 頁的原始散點，這份資料本來就有三團，所以 $k = 3$ 是對的。*
+
+### 手肘法（第 15 頁）
+
+手肘法（elbow method）是一個用群內 SSE 估計最佳群數 $k$ 的圖形工具：比較不同 $k$ 的群內 SSE，觀察 SSE 下降幅度開始趨緩的位置。
+
+![手肘法折線圖：橫軸 Number of clusters 從 1 到 10、縱軸 Distortion 從 0 到 700，曲線在 k=3 之後急遽轉平，紅色箭頭標註 The elbow is located at k = 3](/note-images/ml-week15/03-elbow-method.png)
+
+*第 15 頁：$k$ 從 1 增加到 3 時 SSE 大幅下降，之後幾乎是水平的——多分一群已經換不到什麼了，轉折處就是手肘。*
+
+## 階層式分群
+
+### 樹狀圖與兩種方向（第 17 頁）
+
+階層式分群（hierarchical clustering）把群集組織成樹狀圖（dendrogram），以階層樹的形式視覺化。它最大的好處是不必事先指定群數。兩種主要做法：
+
+- 聚合式階層分群（agglomerative hierarchical clustering）：由下而上，每點各自一群，逐步合併
+- 分裂式階層分群（divisive hierarchical clustering）：由上而下，全部一群，逐步分割
+
+講義在聚合式旁邊打勾、分裂式旁邊打叉，理由寫在頁尾：分裂式運算繁複，且早期分割錯誤難以彌補，實務應用中遠不如聚合式。
+
+### 連結準則（第 18–19 頁）
+
+決定「兩群之間的距離」怎麼算的規則叫連結準則（linkage criteria）：
+
+| 準則 | 定義 | 合併規則 |
+| --- | --- | --- |
+| 單一連結（single linkage） | 兩群之間最小的跨群點距離 | 計算每一對群集中最相似成員之間的距離，合併這個距離最小的兩群 |
+| 完全連結（complete linkage） | 兩群之間最大的跨群點距離 | 與單一連結類似，但改比較最不相似的成員來決定合併 |
+
+講義頁尾補充：其他常用的聚合式連結準則還有平均連結（average linkage）與華德連結（Ward's linkage）——最後一節的實作用的就是 Ward。
+
+![兩團資料點的示意圖：左團紫色、右團棕色，一條實線箭頭連接兩團最接近的一對點並標註 Most similar members (single linkage)，一條虛線箭頭連接兩團最遠的一對點並標註 Most dissimilar members (complete linkage)](/note-images/ml-week15/04-linkage-criteria.png)
+
+*第 19 頁：同樣兩群，單一連結量的是最近的那一對、完全連結量的是最遠的那一對——差別只在挑哪一對代表「群間距離」。*
+
+### 聚合式分群的流程（第 20 頁）
+
+1. 計算所有樣本的兩兩距離矩陣（pair-wise distance matrix）
+2. 把每個資料點視為一個單點群集
+3. 以最不相似（最遠）成員之間的距離為準（使用完全連結），合併最接近的兩群
+4. 更新連結矩陣（linkage matrix）
+5. 重複步驟 2 到 4，直到只剩下一個群集
+
+一句話總結：每次選擇群間完全距離（最遠跨群成員間距離）最小的一對合併。
+
+### 五筆資料的小例子（第 21–23 頁）
+
+五筆（ID_0 到 ID_4）三維資料的兩兩歐氏距離矩陣：
+
+| | ID_0 | ID_1 | ID_2 | ID_3 | ID_4 |
+| --- | --- | --- | --- | --- | --- |
+| ID_0 | 0.000000 | 4.973534 | 5.516653 | 5.899885 | 3.835396 |
+| ID_1 | 4.973534 | 0.000000 | 4.347073 | 5.104311 | 6.698233 |
+| ID_2 | 5.516653 | 4.347073 | 0.000000 | 7.244262 | 8.316594 |
+| ID_3 | 5.899885 | 5.104311 | 7.244262 | 0.000000 | 4.382864 |
+| ID_4 | 3.835396 | 6.698233 | 8.316594 | 4.382864 | 0.000000 |
+
+矩陣裡最小的非零值是 3.835396（ID_0 與 ID_4），所以第一次就合併這兩個。整個過程記錄在連結矩陣裡——每列記錄一次合併，共 $n - 1$ 列；欄 1、2 是被合併的群 ID，欄 3 是這次合併的連結距離，欄 4 是新群包含的原始樣本數：
+
+| | row label 1 | row label 2 | distance | no. of items in clust. |
+| --- | --- | --- | --- | --- |
+| cluster 1 | 0.0 | 4.0 | 3.835396 | 2.0 |
+| cluster 2 | 1.0 | 2.0 | 4.347073 | 2.0 |
+| cluster 3 | 3.0 | 5.0 | 5.899885 | 3.0 |
+| cluster 4 | 6.0 | 7.0 | 8.316594 | 5.0 |
+
+讀法的關鍵在編號規則：原始樣本編號 0 到 4，新產生的群從 5 開始接著編。所以 cluster 3 那一列的「3.0 與 5.0」指的是樣本 ID_3 與「第一次合併產生的那個群（ID_0 + ID_4）」，合併後有 3 個樣本；最後一列的 6.0 與 7.0 則是第二、第三次合併產生的群。
+
+![樹狀圖：橫軸由左至右是 ID_1、ID_2、ID_3、ID_0、ID_4 五個葉節點，縱軸是 Euclidean distance，四次合併分別標註編號 ①②③④，最高的合併發生在約 8.3 的高度](/note-images/ml-week15/05-dendrogram.png)
+
+*第 23 頁：葉節點代表原始樣本，合併高度代表連結距離。在某個高度畫一條水平線切樹，就得到一個分群結果——切得越低、群越多。*
+
+### scikit-learn 的聚合式分群（第 24 頁）
+
+```python
+from sklearn.cluster import AgglomerativeClustering
+
+ac = AgglomerativeClustering(n_clusters=3,        # 可任意指定切樹後的群數
+                             metric='euclidean',
+                             linkage='complete')  # 連結準則
+labels = ac.fit_predict(X)
+print(f'Cluster labels: {labels}')
+# Cluster labels: [1 0 0 2 1]
+```
+
+輸出的 `[1 0 0 2 1]` 與上面的樹狀圖一致：ID_0 與 ID_4 同群、ID_1 與 ID_2 同群、ID_3 自成一群。指定 `n_clusters` 的作用就是「在對應的高度把樹剪斷」。
+
+## 密度式分群：DBSCAN
+
+### 為什麼需要密度（第 26 頁）
+
+密度式分群（density-based clustering）依照點的稠密區域（density）指派群集標籤，也就是以局部密度連接群組。它一次解掉前兩種方法的兩個限制：不像 k-means 那樣假設群是球形的；也不像階層式那樣要把資料切成階層、再人工決定切在哪裡。
+
+### 核心點、邊界點、雜訊點（第 27–28 頁）
+
+DBSCAN（density-based spatial clustering of applications with noise，基於密度的雜訊空間分群演算法）把密度定義成「指定半徑 $\varepsilon$ 之內的點數」，再依下列規則替每個點貼標籤：
+
+| 標籤 | 條件 |
+| --- | --- |
+| 核心點（core point） | 在半徑 $\varepsilon$ 之內，至少有指定數量（MinPts）的鄰居點 |
+| 邊界點（border point） | 在 $\varepsilon$ 之內的鄰居少於 MinPts，但自己落在某個核心點的 $\varepsilon$ 半徑內 |
+| 雜訊點（noise point） | 其餘所有既不是核心點也不是邊界點的點 |
+
+所以它的超參數只有兩個：$\varepsilon$（鄰域半徑）與 MinPts（鄰域樣本數門檻）。講義在頁尾提醒：如果資料集內部的密度差異相對較大，要找到好的 MinPts 與 $\varepsilon$ 組合會很棘手。
+
+![DBSCAN 的點分類示意圖：三個以虛線圓表示的 ε 鄰域互相重疊，黑色方塊標為 Core point、紫色圓點標為 Border point、綠色點與散落在外的空心圓標為 Noise point，右下角註明 MinPts = 3](/note-images/ml-week15/06-dbscan-core-border-noise.png)
+
+*第 28 頁：同樣一個點是核心還是邊界，完全取決於 $\varepsilon$ 畫多大、MinPts 設多少——這兩個數字就是 DBSCAN 的全部。*
+
+### 貼完標籤之後只剩兩步（第 29 頁）
+
+1. 為每個核心點、或每一組彼此相連的核心點，各自形成一個獨立的群集（兩個核心點若距離不超過 $\varepsilon$ 就算相連）
+2. 把每個邊界點指派給它所對應的核心點所在的群
+
+也就是先連接彼此鄰近的核心點、沿著核心點鏈持續擴張，再把邊界點附加到可到達的群上。講義強調了一個與前兩種方法根本不同的性質：DBSCAN 不一定會把每個點都指派到某一群，它能夠把雜訊點剔除掉——這在前兩種方法裡是做不到的。
+
+### 半月形資料：三種方法的分水嶺（第 30–32 頁）
+
+200 筆二維資料，實際上形成兩個半月形（half-moon-shaped）：
+
+```python
+X, y = make_moons(n_samples=200, noise=0.05, random_state=0)
+```
+
+![半月形資料散點圖：200 個藍色點形成上下交錯的兩道彎月形，彼此凹凸相嵌但不相連](/note-images/ml-week15/07-half-moons-raw.png)
+
+*第 30 頁：兩道月牙是人眼一看就分得出來的兩群，但它們不是球形、也不是線性可分的。*
+
+![兩張分群結果圖：上圖 K-means clustering 把資料沿一條斜線切成左右兩半，每一半都同時含有兩道月牙的一部分；下圖 Agglomerative clustering 的切法同樣橫跨兩道月牙](/note-images/ml-week15/08-half-moons-kmeans-agglomerative.png)
+
+*第 31 頁：k-means 與聚合式分群都失敗了，而且是同一種失敗——它們都在找「團」，而這份資料的群是「帶狀」的。*
+
+![DBSCAN 分群結果圖：上方月牙全部是空心圓的 Cluster 1、下方月牙全部是紅色方塊的 Cluster 2，兩道月牙被完整地分開](/note-images/ml-week15/09-half-moons-dbscan.png)
+
+*第 32 頁：$\varepsilon = 0.2$、MinPts = 5 的 DBSCAN 完整分出兩道月牙——因為它問的不是「離哪個中心近」，而是「沿著稠密區能不能走到」。這就是講義說的「能分群任意形狀的資料」。*
+
+### scikit-learn 的 DBSCAN（第 33 頁）
+
+```python
+from sklearn.cluster import DBSCAN
+
+db = DBSCAN(eps=0.2,          # ε
+            min_samples=5,    # MinPts
+            metric='euclidean')
+y_db = db.fit_predict(X)
+```
+
+輸出的群集標籤有一個特別約定：雜訊樣本給標籤 $-1$，非負整數才代表群集歸屬。
+
+## 綜合實作：三種演算法分群手寫數字
+
+### 任務與前處理（第 35–36 頁）
+
+用 k-means、聚合式分群、DBSCAN 三種演算法對 64 維的 Digits 資料集（低解析度手寫數字 0–9，`sklearn.datasets.load_digits()`）分群，範例程式 `11_1.py`。先用 t-SNE 降到二維以便視覺化分群結果——真實標籤只用於評估，不參與分群。
+
+![Ground Truth (0-9 Digits) 散點圖：t-SNE 降維後的手寫數字資料，十個數字各自以不同顏色聚成一團，右側色條標示 Digit 0 到 9](/note-images/ml-week15/10-digits-tsne-ground-truth.png)
+
+*第 36 頁：這是真實標籤畫出來的樣子，當作後面三種分群結果的對照組。*
+
+### 三種演算法的設定（第 37 頁）
+
+```python
+kmeans = KMeans(n_clusters=10, random_state=42, n_init='auto')
+y_kmeans = kmeans.fit_predict(X_tsne)
+
+agg = AgglomerativeClustering(n_clusters=10, linkage="ward")
+y_agg = agg.fit_predict(X_tsne)
+
+# t-SNE 後的資料間距較大，eps 要設為大約 4.5 到 5.5 之間
+dbscan = DBSCAN(eps=4.8, min_samples=15)
+y_dbscan = dbscan.fit_predict(X_tsne)
+```
+
+注意 DBSCAN 的 `eps` 從半月形例子的 0.2 跳到 4.8——因為 t-SNE 輸出的座標尺度完全不同。這也再次說明 $\varepsilon$ 不是一個可以照抄的數字，必須看資料的實際間距。
+
+### 用 ARI 評估（第 38 頁）
+
+調整後蘭德指數（adjusted Rand index, ARI）是評估分群結果與真實標籤（ground truth）之間（或與另一組分群結果之間）相似度的外部評估指標——與前面的 SSE 不同，它需要外部答案才算得出來，所以只能用在這種「有標籤但假裝沒有」的驗證情境。
+
+```python
+from sklearn.metrics import adjusted_rand_score
+
+ari_kmeans = adjusted_rand_score(y, y_kmeans)
+ari_agg = adjusted_rand_score(y, y_agg)
+ari_dbscan = adjusted_rand_score(y, y_dbscan)
+```
+
+```text
+--- ARI 比較（越接近 1 越完美）---
+K-Means ARI               : 0.8891
+Agglomerative (Ward) ARI  : 0.9002
+DBSCAN ARI                : 0.8232
+```
+
+### 結果比較（第 39–40 頁）
+
+![兩張並排的 t-SNE 散點圖：左為 Ground Truth (0-9 Digits) 真實標籤，右為 K-Means (ARI: 0.89) 的分群結果，兩者的團塊劃分幾乎一致，只是顏色對應不同](/note-images/ml-week15/11-comparison-truth-kmeans.png)
+
+*第 40 頁左半：ARI 不在意顏色（群編號）對不對得上，只在意「哪些點被分在一起」，所以配色不同不影響分數。*
+
+![兩張並排的 t-SNE 散點圖：左為 Agglomerative (ARI: 0.90)，右為 DBSCAN (ARI: 0.82, Clusters found: 10)，DBSCAN 圖上有兩個紅色虛線橢圓，一個圈住被合併成同一群的兩個相鄰團塊，另一個圈住左上角一小撮落單的點](/note-images/ml-week15/12-comparison-agglomerative-dbscan.png)
+
+*第 40 頁右半：DBSCAN 自動找出 10 群，但紅圈處暴露了它的弱點——兩個島嶼之間只要有少數橋接點，就會被連成同一群。*
+
+### 討論（第 41 頁）
+
+經過 t-SNE 降維後，手寫數字會在二維空間中凝聚成 10 個相對明顯、但形狀不規則的「島嶼」群集。三種演算法的表現：
+
+| 演算法 | 表現 | 原因與代價 |
+| --- | --- | --- |
+| k-means | 優秀 | 雖然數字群集形狀不完全是圓形，但質心分佈明確 |
+| 聚合式（Ward） | 優秀 | Ward 連結準則會尋找群內 SSE 最小的合併方式 |
+| DBSCAN | 高度依賴超參數 | 調得好時能「自動」發現剛好有 10 群、不需人工指定；但島嶼之間若有少數橋接點連在一起，兩個群集會被誤判為同一個，而且有些落單的點會直接被定義為雜訊（標籤 $-1$） |
+
+這張表把本週三種方法的取捨講完了：要不要先告訴它群數、能不能處理非球形的群、以及願不願意接受「有些點不屬於任何一群」。
 
 ## 教材預習重點
 

@@ -3,7 +3,7 @@ title: "機器學習實作系列：第 13 週 - 降維與應用"
 description: ""
 tags: ["機器學習實作系列"]
 createdAt: "2026-11-30"
-updatedAt: "2026-11-30"
+updatedAt: "2026-10-29"
 ---
 
 import GeneratedFrame from '@/components/GeneratedFrame.astro'
@@ -180,6 +180,341 @@ status: generated
 <GeneratedFrame id="ml-week13-explained-variance" type="chart" prompt={"長條 + 階梯線呈現每個主成分的個別與累積解釋變異，標出達到 90% / 95% 的位置。"} caption={"累積解釋變異決定保留幾個主成分：這組資料到第 7 個成分就跨過 90%，第 8 個跨過 95%。"}>
   <MlWeek13ExplainedVariance client:visible />
 </GeneratedFrame>
+
+## 講義精讀：為什麼需要特徵提取
+
+> 原始講義：[Lecture 9 - Dimensionality Reduction and Applications（PDF）](/notes-assets/_references/機器學習實作系列/第13週-降維與應用.pdf)，教師陳慶永。以下節次標註的頁碼即該 PDF 的頁次。
+
+### 維度災難的五個症狀（第 4 頁）
+
+在機器學習裡，維度（dimension）就是描述每一筆樣本的特徵數量。維度一高會同時引發五件事，講義稱之為維度災難（curse of dimensionality）：
+
+| 症狀 | 發生什麼事 |
+| --- | --- |
+| 資料稀疏（data sparsity） | 高維空間中資料點變得極其稀疏，模型很難找到資料之間的統計規律 |
+| 距離失去意義（loss of distance meaning） | 任兩點之間的距離都變得非常相似，靠距離判斷相似度的方法失效 |
+| 嚴重過擬合（severe overfitting） | 特徵數量遠大於樣本數量時，模型變得太過複雜 |
+| 計算瓶頸（computational bottleneck） | 訓練所需的記憶體與計算時間呈指數級增長 |
+| 特徵共線性（multi-collinearity） | 特徵之間高度相關，或者純粹是雜訊 |
+
+### 特徵選取與特徵提取是兩條不同的路（第 5–6 頁）
+
+第 6 週學過的循序特徵選取（sequential feature selection）屬於特徵選取（feature selection）：從原始特徵中挑一個子集出來，留下的欄位保持原意。本週要談的是另一條路——特徵提取（feature extraction）：不是挑欄位，而是從整組特徵「導出」資訊，把資料投影到一個維度更低的新特徵子空間。
+
+講義把特徵提取定義成一種資料壓縮：在保留大部分相關資訊的前提下，摘要整份資料集的資訊內容。它同時改善三件事——儲存空間、學習演算法的運算效率、以及預測表現。
+
+## 線性代數地基：矩陣特徵值問題
+
+### 矩陣乘法在做什麼（第 8–9 頁）
+
+把一個 $n \times n$ 方陣 $\mathbf{A}$ 乘上向量，就是做一次線性轉換。對大多數向量 $\mathbf{x}$ 來說，$\mathbf{A}\mathbf{x}$ 的方向與長度都會改變；但對某些特別的 $\mathbf{v}$，結果只是原向量的伸縮：
+
+$$
+\mathbf{A}\mathbf{x} = \lambda\mathbf{x}
+$$
+
+方向不變、只有尺度改變（拉長、壓縮或翻向），這樣的 $\lambda$ 稱為特徵值（eigenvalue），對應的 $\mathbf{x} \neq \mathbf{0}$ 稱為特徵向量（eigenvector）。講義用一句話定位它們的身分：這組特別的 $\mathbf{v}$ 與 $\lambda$ 刻畫了這個矩陣，是「$\mathbf{A}$ 的本命」。$\mathbf{A}$ 所有特徵值的集合稱為 $\mathbf{A}$ 的譜（spectrum）。特徵向量可以正規化成長度 1 的單位特徵向量——方向才是重點，長度只是表示方式，例如 $\mathbf{x}_1 = [1\ \ 2]^T$ 可正規化為 $[1/\sqrt{5}\ \ 2/\sqrt{5}]^T$。
+
+### 特徵基底：把複雜的轉換拆成幾個單純的縮放（第 10–11 頁）
+
+若 $n \times n$ 方陣 $\mathbf{A}$ 有 $n$ 個線性獨立的特徵向量，這些向量就構成 $\mathbb{R}^n$ 的一組基底，稱為特徵基底（eigenbasis）。此時任一向量都能寫成特徵向量的線性組合，整個線性轉換就被拆解成一連串獨立方向上的單純縮放：
+
+$$
+\begin{aligned}
+\mathbf{x} &= c_1\mathbf{x}_1 + c_2\mathbf{x}_2 + \cdots + c_n\mathbf{x}_n \\
+\mathbf{y} = \mathbf{A}\mathbf{x} &= c_1\mathbf{A}\mathbf{x}_1 + \cdots + c_n\mathbf{A}\mathbf{x}_n = c_1\lambda_1\mathbf{x}_1 + \cdots + c_n\lambda_n\mathbf{x}_n
+\end{aligned}
+$$
+
+講義在這裡點出研究特徵值與特徵向量的真正目的：找到一個最完美的觀測角度（也就是特徵向量座標系），讓矩陣的行為變得清晰——而「行為」就反映在特徵值上。注意前提是必須有 $n$ 個獨立的特徵向量才組得成特徵基底。
+
+![兩張向量圖：對角矩陣 A = [[2,0],[0,1]] 作用在 x = [1,1] 上，轉換後向量的 x 分量被拉長為兩倍；作用在 x = [1,0] 上則單純沿水平方向拉長兩倍，標註 λ₁ = 2](/note-images/ml-week13/01-linear-transformation-example.png)
+
+*第 11 頁：以 `A = np.array([[2, 0],[0, 1]])` 為例，$\mathbf{x}_1 = [1\ \ 0]^T$、$\mathbf{x}_2 = [0\ \ 1]^T$ 是它的兩個特徵向量，特徵值分別是 $\lambda_1 = 2$、$\lambda_2 = 1$。右圖沿特徵向量方向送進去，輸出只是同方向拉長兩倍，方向完全沒變。*
+
+### 對稱矩陣保證有標準正交特徵基底（第 12–13 頁）
+
+實數方陣若滿足 $\mathbf{A}^T = \mathbf{A}$（轉置等於自己）就是對稱矩陣（symmetric matrix），它有兩個對降維極其關鍵的性質：特徵值全為實數；而且擁有 $\mathbb{R}^n$ 的標準正交特徵基底（orthonormal eigenbasis）——特徵向量兩兩正交（$\mathbf{x}_i \perp \mathbf{x}_j$，$i \neq j$）且長度為 1。正交保證線性獨立，所以對稱矩陣一定組得出特徵基底，而且一定可以轉成一組標準正交基底。
+
+有了標準正交基底，分解式裡的係數就有了具體幾何意義——它是 $\mathbf{x}$ 在特徵向量方向上的投影（projection）：
+
+$$
+c_i = \mathbf{x}\cdot\mathbf{x}_i = \mathbf{x}^T\mathbf{x}_i
+$$
+
+![向量內積的幾何意義：三張圖分別畫出夾角 γ 小於、等於、大於 90 度時，向量 a 在 b 方向上的投影長度 p 為正、為零、為負](/note-images/ml-week13/02-inner-product-projection.png)
+
+*第 13 頁：$p = |\mathbf{a}|\cos\gamma = \mathbf{a}\cdot\frac{\mathbf{b}}{|\mathbf{b}|}$。因為 $\frac{\mathbf{b}}{|\mathbf{b}|}$ 只是與 $\mathbf{b}$ 同方向的單位向量，所以和單位特徵向量做內積，取出來的就是投影量。*
+
+### 用一部分特徵向量壓縮向量（第 14 頁）
+
+向量 $\mathbf{x}$ 在標準正交特徵基底底下被 $n$ 個係數 $[c_1, c_2, \ldots, c_n]$ 完整表示。若只取其中一個子集，例如 $\tilde{\mathbf{x}} = c_i\mathbf{x}_i + c_j\mathbf{x}_j$，$\mathbf{x}$ 就被壓縮成二維向量 $[c_i, c_j]$，活在由 $\{\mathbf{x}_i, \mathbf{x}_j\}$ 張成的子空間裡。講義在此留下兩個問題，正好是 PCA 與 LDA 各自的答案：
+
+1. 要怎麼挑這個子集，才能最大程度保留 $\mathbf{x}$ 中與 $\mathbf{A}$ 最相關的資訊？
+2. 在特徵提取的語境裡，$\mathbf{A}$ 到底該是什麼矩陣？
+
+## PCA：非監督式的線性降維
+
+### PCA 在找什麼（第 16 頁）
+
+主成分分析（principal component analysis, PCA）依據特徵之間的相關性（correlation）找出資料中的模式，具體是找出高維資料中變異量最大（也就是資訊最多）的那些互相正交的方向，這些方向稱為主成分（principal component），再把資料投影到維度更低的新子空間。
+
+這裡有個實務上的硬性前提：PCA 對資料的尺度極度敏感，所以做 PCA 之前一定要先標準化特徵。
+
+![散點雲示意圖：橢圓形點雲上畫出互相垂直的兩個箭頭，較長的標為 PC 1、較短的標為 PC 2](/note-images/ml-week13/03-pca-principal-components.png)
+
+*第 16 頁：PC 1 指向點雲散得最開的方向，PC 2 與它正交、是剩下的方向中變異最大的。*
+
+### PCA 演算法（第 17–18 頁）
+
+1. 標準化 $n$ 維資料集 $\mathbf{X}$（$N \times n$，$N$ 是樣本數、$n$ 是特徵數）
+2. 建構 $\mathbf{X}$ 的共變異數矩陣 $\mathbf{R}_{xx}$
+3. 把共變異數矩陣分解成特徵向量 $\mathbf{x}_1, \ldots, \mathbf{x}_n$ 與特徵值 $\lambda_1, \ldots, \lambda_n$
+4. 特徵值由大到小排序，用來排名對應的特徵向量
+5. 選出最大的 $k$ 個特徵值所對應的 $k$ 個特徵向量（$k \leq n$ 就是新特徵子空間的維度）
+6. 用這「最上面」的 $k$ 個特徵向量組成投影矩陣 $\mathbf{W}$，再把 $\mathbf{X}$ 轉換過去：
+
+$$
+\mathbf{W} = [\mathbf{x}_1, \mathbf{x}_2, \ldots, \mathbf{x}_k]_{(n \times k)}, \qquad \mathbf{X}' = \mathbf{X}\mathbf{W} \quad (N \times k) = (N \times n)(n \times k)
+$$
+
+回答第 14 頁留下的第二個問題：在 PCA 裡，被拿去做特徵分解的 $\mathbf{A}$ 就是共變異數矩陣。
+
+### 共變異數矩陣（第 19 頁）
+
+對隨機向量 $\mathbf{x} = [x_1, x_2, \ldots, x_n]^T$，共變異數矩陣（covariance matrix）定義為
+
+$$
+\mathbf{R}_{xx} = E\left[(\mathbf{x} - \boldsymbol{\mu})(\mathbf{x} - \boldsymbol{\mu})^T\right], \qquad \boldsymbol{\mu} = E[\mathbf{x}]
+$$
+
+它是一個對稱矩陣（所以前一節的標準正交特徵基底性質全部適用），第 $(i, j)$ 項是 $x_i$ 與 $x_j$ 的共變異數。整個矩陣描述的是多個隨機變數「各自的離散程度」（對角線上的變異數）以及「兩兩之間的線性相關程度」（非對角線的共變異數）——把這裡的變數直接想成特徵即可。實務上會用總體平均值（ensemble mean）取代理論期望值 $E[\cdot]$。
+
+### scikit-learn 的 transformer API（第 20–21 頁）
+
+`sklearn.decomposition.PCA` 是 scikit-learn 的 transformer 類別之一，用法的鐵則是：**用訓練資料 fit 模型，然後用同一組模型參數去 transform 訓練集與測試集**。任何要被轉換的資料陣列，其特徵數必須與當初 fit 時的資料一致。
+
+![Transformer API 流程圖：訓練資料經 est.fit(X_train) 建出 Model，再分別以 est.transform(X_train) 與 est.transform(X_test) 產生轉換後的訓練資料與測試資料](/note-images/ml-week13/04-transformer-api.png)
+
+*第 20 頁：fit 只能看訓練資料，測試資料只經過 transform——這條線一旦跨過去就是資料洩漏。*
+
+```python
+# 標準化
+sc = StandardScaler()
+X_train_std = sc.fit_transform(X_train)
+X_test_std = sc.transform(X_test)
+
+# 降維
+pca = PCA(n_components=2)          # n_components 就是新特徵子空間的維度
+X_train_pca = pca.fit_transform(X_train_std)
+X_test_pca = pca.transform(X_test_std)
+
+lr.fit(X_train_pca, y_train)
+```
+
+### 解釋變異量比率（第 22 頁）
+
+特徵值的大小代表對應特徵向量方向上的變異量。單一特徵值佔所有特徵值總和的比例，就是解釋變異量比率（explained variance ratio）：
+
+$$
+\text{Explained variance ratio} = \frac{\lambda_j}{\sum_{j=1}^{d}\lambda_j}
+$$
+
+在 scikit-learn 裡用 `pca.explained_variance_ratio_` 取得。講義的例子是 `[0.43502782 0.19500007 0.09781519 0.06486409 0.05253378]`，加總後 $k = 5$ 時的總解釋變異量（total explained variance）約為 84.52%。
+
+### 直接放進 Pipeline（第 23 頁）
+
+PCA 在流程中的角色就是特徵提取，所以它和標準化一樣是 transformer，可以直接串進 pipeline——兩個 transformer 加一個 estimator：
+
+```python
+pipe_lr = make_pipeline(StandardScaler(),
+                        PCA(n_components=2),
+                        LogisticRegression())
+pipe_lr.fit(X_train, y_train)
+y_pred = pipe_lr.predict(X_test)
+```
+
+### 應用：乳腺癌威斯康辛資料集（第 24–27 頁）
+
+任務是對乳腺癌威斯康辛資料集（Breast Cancer Wisconsin dataset）做 PCA 降維，並觀察 $k = 2, 3, \ldots$ 時的總解釋變異量，範例程式 `09_1.py`。原始資料是 455 筆訓練樣本、30 維特徵，迴圈測試 $k$ 從 2 到 10 的結果如下：
+
+| 目標維度 $k$ | 總解釋變異量 | | 目標維度 $k$ | 總解釋變異量 |
+| --- | --- | --- | --- | --- |
+| 2 | 63.00% | | 7 | 90.87% |
+| 3 | 72.78% | | 8 | 92.52% |
+| 4 | 79.27% | | 9 | 93.90% |
+| 5 | 84.52% | | 10 | 95.11% |
+| 6 | 88.64% | | | |
+
+*第 26 頁的輸出。這張表就是本週摘要裡「累積解釋變異量到 90–95% 再決定留幾維」的實際長相：30 維壓到 7 維就跨過 90%，壓到 10 維跨過 95%。*
+
+![PCA of WDBC dataset 散點圖：橫軸 PC1 佔 43.50%、縱軸 PC2 佔 19.50%，惡性與良性兩類在二維平面上大致分成左右兩團但有重疊](/note-images/ml-week13/05-pca-wdbc-2d.png)
+
+*第 27 頁：只用前兩個主成分（合計 63.00% 的變異量）就能把惡性與良性大致分開——但請注意 PCA 從頭到尾沒有看過標籤，這個分離是資料本身的結構造成的。*
+
+## LDA：監督式的線性降維
+
+### 與 PCA 的差別（第 29–30 頁）
+
+線性判別分析（linear discriminant analysis, LDA）的概念與 PCA 非常相似，兩者都是用來降維的線性轉換技術，差別在於目標函數：
+
+- PCA 是非監督式，找的是資料中變異量最大的正交成分軸（尋找特徵的線性組合，盡可能保留最多的資訊）
+- LDA 是監督式，找的是讓類別可分性（class separability）最佳化的特徵子空間（尋找特徵的線性組合，盡可能把不同類別分離）
+
+![二類別 LDA 示意圖：兩團分別為圓圈與十字的點雲，沿 LD 1 投影後兩個機率分布明顯分開（笑臉），沿 LD 2 投影後兩個分布幾乎重疊（哭臉）](/note-images/ml-week13/06-lda-two-class.png)
+
+*第 30 頁：LD 1 能把兩個常態分布的類別分得很好；LD 2 雖然抓住了資料裡很大一部分的變異量，卻完全沒抓到任何區分類別的資訊，當判別方向就失敗了。圖上的曲線是投影量的機率分布。*
+
+### LDA 演算法（第 31–32 頁）
+
+1. 標準化 $n$ 維資料集 $\mathbf{X}$（$N \times n$）
+2. 對每一類 $i$ 計算 $n$ 維平均向量 $\boldsymbol{\mu}_i = \frac{1}{n_i}\sum_{\mathbf{x} \in D_i}\mathbf{x}$（第 $i$ 類的平均特徵）
+3. 建構類間散布矩陣 $\mathbf{S}_B$ 與類內散布矩陣 $\mathbf{S}_W$
+4. 計算 $\mathbf{S}_W^{-1}\mathbf{S}_B$ 的特徵向量與對應的特徵值
+5. 特徵值由大到小排序，選出最大的 $k$ 個所對應的特徵向量，其中 $k \leq \min(C - 1,\ n)$
+6. 組成投影矩陣 $\mathbf{W}$，再做 $\mathbf{X}' = \mathbf{X}\mathbf{W}$（與 PCA 完全相同的最後兩步）
+
+第 2 到第 4 步就是與 PCA 的差異處：PCA 分解的是共變異數矩陣，LDA 分解的是 $\mathbf{S}_W^{-1}\mathbf{S}_B$；而且 LDA 的降維上限被類別數 $C$ 綁死。
+
+### 散布矩陣（第 33 頁）
+
+$$
+\begin{aligned}
+\mathbf{S}_W &= \sum_{i=1}^{C}\mathbf{S}_i, &\quad \mathbf{S}_i &= \frac{1}{n_i}\sum_{\mathbf{x} \in D_i}(\mathbf{x} - \boldsymbol{\mu}_i)(\mathbf{x} - \boldsymbol{\mu}_i)^T \\
+\mathbf{S}_B &= \sum_{i=1}^{C} n_i(\boldsymbol{\mu}_i - \boldsymbol{\mu})(\boldsymbol{\mu}_i - \boldsymbol{\mu})^T, &\quad \boldsymbol{\mu} &= E[\mathbf{x}]
+\end{aligned}
+$$
+
+類內散布矩陣（within-class scatter matrix）$\mathbf{S}_W$ 衡量的是單一類別內部點與點之間的密集程度；類間散布矩陣（between-class scatter matrix）$\mathbf{S}_B$ 衡量的是不同類別中心點之間的距離。秩的限制也寫在這一頁：每個 $n_i(\boldsymbol{\mu}_i - \boldsymbol{\mu})(\boldsymbol{\mu}_i - \boldsymbol{\mu})^T$ 的秩是 1，加總後 $\mathbf{S}_B$ 的秩至多為 $C$——這正是 $k \leq C - 1$ 的來源。
+
+$\mathbf{S}_W^{-1}\mathbf{S}_B$ 最大的那幾組特徵對，同時達成兩件事：不同類別之間距離大、單一類別內部距離小。
+
+![LDA 投影方向比較圖：紅點與藍叉兩類資料上畫出 LD1 與 LD2 兩個方向，沿 LD1 投影的兩個機率分布分開（笑臉），沿 LD2 投影的分布重疊（哭臉）](/note-images/ml-week13/07-scatter-matrix-meaning.png)
+
+*第 33 頁：同一組資料、兩個候選方向，差別只在投影後兩類的機率分布有沒有分開。*
+
+### LDA 與 PCA 對照（第 34 頁）
+
+| 特性 | LDA（線性判別分析） | PCA（主成分分析） |
+| --- | --- | --- |
+| 主要目標 | 分類（classification）導向 | 資訊保留（information）導向 |
+| 物理視角 | 尋找能完美切開不同類別的投影方向 | 尋找資料變異數最大（最分散、細節最多）的方向 |
+| 標籤需求 | 監督式（必須知道每個點是哪一類） | 非監督式（不需要知道標籤，只看整體形狀） |
+| 缺點限制 | 如果資料本質上無法用直線切開（例如非線性環狀分布），效果很差 | 可能會為了保留最大變異，而把不同類別的特徵混在一起 |
+
+### scikit-learn 的 LDA（第 35 頁）
+
+`sklearn.discriminant_analysis.LinearDiscriminantAnalysis` 同樣是 transformer 類別，但因為是監督式，`fit_transform` 必須同時傳入 `y`：
+
+```python
+from sklearn.discriminant_analysis import LinearDiscriminantAnalysis as LDA
+
+lda = LDA(n_components=2)          # 上限是 min(C − 1, n)
+X_train_lda = lda.fit_transform(X_train_std, y_train)
+```
+
+### 應用：同一份乳腺癌資料（第 36–39 頁）
+
+同樣是乳腺癌威斯康辛資料集，但因為只有惡性與良性兩類（$C = 2$），降維後的維度只能是 $k = 1$，範例程式 `09_2.py`。輸出如下：
+
+```text
+原本的資料形狀： (455, 30)
+降維後的資料形狀： (455, 1)
+
+各成分的解釋變異量比率： [1.]
+總共保留的資訊量（總解釋變異量）： 100.00%
+```
+
+這裡的「100%」要小心解讀：LDA 的解釋變異量比率算的是「該判別軸區分類別的能力佔總區分能力的比例」，而不是保留了原始資料多少變異量。只有一個判別軸可用時，它當然佔掉全部的 100%。
+
+![LDA of WDBC dataset 一維散點圖：橫軸 LD1 佔 100%，惡性集中在左側、良性集中在右側，兩群在零點附近交界](/note-images/ml-week13/08-lda-wdbc-1d.png)
+
+*第 39 頁：只剩一維，兩類仍然清楚地分在左右兩側——對照第 27 頁的 PCA 二維圖，LDA 用更少的維度換到了更乾淨的分離。縱軸只是為了避免點疊在一起而加的抖動（jitter），沒有意義。*
+
+## 非線性降維與流形學習
+
+### 線性方法壓不動的問題（第 41 頁）
+
+真實世界的應用經常是非線性問題，這時候 PCA、LDA 這類線性轉換技術未必是最佳選擇。
+
+![線性問題與非線性問題的對比圖：左圖兩類資料能用一條直線分開，右圖十字類被圓圈類包圍在中間，必須用一個圓才能分開](/note-images/ml-week13/09-linear-vs-nonlinear.png)
+
+*第 41 頁：右邊這種「一類被另一類包圍」的分布，任何直線都切不開，也就不可能靠線性投影壓扁後還保住結構。*
+
+### 流形學習（第 42–43 頁）
+
+非線性降維技術的發展與應用統稱為流形學習（manifold learning）。流形（manifold）指的是嵌在高維空間裡的一個低維拓樸空間；流形學習的演算法必須抓住資料的複雜結構，才能把它投影到一個仍然保留資料點之間關係的低維空間。目的可以一句話總結：把高維資料對應到低維空間，在去除冗餘資訊的同時保留資料原本的幾何結構。用途有二——視覺化，或特徵提取。
+
+![三維瑞士捲（Swiss roll）的四張圖：上排是同一個捲筒狀資料的三種視角，下排是投影到二維特徵空間的兩種結果，超參數設定好時攤成平整的長方形、設定不好時揉成一團 V 字](/note-images/ml-week13/10-swiss-roll.png)
+
+*第 43 頁：捲起來的三維資料攤平成二維。下排左右兩張的差別只有超參數——這直接帶出下一頁的難處。*
+
+### 流形學習難用在哪（第 44 頁）
+
+- 真實資料不像瑞士捲那樣能直接畫出來看，結構並不明顯
+- 超參數選不好時，害處可能大於好處
+- 除非投影到二維或三維（但這往往不足以表達更複雜的關係），否則很難、甚至不可能評估結果的品質
+
+講義的結論相當務實：正因如此，很多人在降維時仍然依賴 PCA、LDA 這些比較簡單的技術。
+
+### t-SNE（第 45–46 頁）
+
+t-SNE（t-distributed stochastic neighbor embedding）以資料點在原始高維空間中的兩兩距離（pair-wise distance）建模：它在新的低維空間中找出一個兩兩距離的機率分布，讓這個分布盡可能接近原始空間中兩兩距離的機率分布。換句話說，t-SNE 學的是「如何把資料點嵌入低維空間，使得原空間的兩兩距離被保留下來」。
+
+講義明確指出它只為視覺化而生，理由有二：它需要整份資料集才能做投影；而且它是直接對點的位置做最佳化，不像 PCA 那樣產生一個投影矩陣，所以無法套用到新的資料點。這也反映在 API 上——`sklearn.manifold.TSNE` 只有 `fit` 與 `fit_transform` 兩個方法，沒有 `transform`：
+
+```python
+from sklearn.manifold import TSNE
+
+tsne = TSNE(n_components=2, init='pca', random_state=123)
+X_digits_tsne = tsne.fit_transform(X_digits)
+```
+
+### 應用：手寫數字資料集（第 47–48 頁）
+
+用 t-SNE 把 64 維的 Digits 資料集（低解析度手寫數字 0–9，`sklearn.datasets.load_digits()`）視覺化，範例程式 `09_3.py`。資料形狀從 `(1797, 64)` 降到 `(1797, 2)`。
+
+![t-SNE visualization of Digits dataset：十個數字各自聚成一團並標上數字，紅色箭頭指向兩處被拆散的小團塊，紅色虛線橢圓圈起相鄰的 3 與 9 兩團](/note-images/ml-week13/11-tsne-digits.png)
+
+*第 48 頁：十個類別幾乎都各自聚成一團。講義用紅色箭頭標出同一個數字被拆成兩團的情形（1 與 9 各有一小撮落單），並用虛線圈出 3 與 9 這兩團緊鄰——它們本來就是最容易混淆的筆畫。要記得團塊之間的距離與大小不具意義，只有「誰跟誰是鄰居」可信。*
+
+## 作業五：用 PCA 做手寫數字的多類別分類器
+
+### 任務與要求（第 50–53 頁）
+
+作業五（Assignment #5）基本上與作業三（Lecture 6）的實作任務相同，唯一的差別是**把特徵選取換成特徵提取**（使用 PCA）。
+
+- 目的：低解析度手寫數字（0–9）的多類別分類器
+- 資料集：`sklearn.datasets.load_digits()`，1797 張 $8 \times 8$ 灰階（grayscale）影像，64 維（像素值）特徵、整數值 $[0, 16]$，多類別標籤共 10 類
+- 分類器演算法：邏輯迴歸（logistic regression）
+- 流程須包含資料切分、特徵縮放、特徵提取（使用 PCA）、模型選取與模型評估
+- 切分比例：80% 訓練（用於交叉驗證）、20% 測試
+- 降維後的特徵空間維度 $\leq 40$
+- 測試集（約 360 筆樣本）上的整體正確率（accuracy）須達 95% 以上
+- 用 `joblib.dump()` 把訓練好的最佳模型（指整條管線）儲存成檔案
+
+繳交規則：把模型評估部分的程式碼與模型儲存檔案獨立出來、打包成單一 `.zip` 上傳，**不要包含任何訓練或模型選取的程式碼**——助教是直接執行評估程式批閱，沒有時間跑交叉驗證與微調。評估程式只載入 `train_test_split()` 與 metrics 相關函式、只使用測試集資料、直接載入模型進行評估。
+
+### 預期結果（第 54–56 頁）
+
+預期結果一是輸出降維後的維度與總解釋變異量，講義的範例輸出是：
+
+```text
+PCA 提取後的特徵維度 (n_components): 40 (從原本的 64 維降至 40 維)
+特徵提取的總解釋變異量: 95.18%
+```
+
+預期結果二是輸出測試集的分類報告並視覺化混淆矩陣：
+
+![左為 10×10 的混淆矩陣熱圖，對角線深色、非對角線幾乎全空；右為分類報告文字，十個類別的 precision、recall、f1-score 多在 0.94 到 1.00 之間，accuracy 為 0.97、support 為 360](/note-images/ml-week13/12-assignment5-confusion-report.png)
+
+*第 55 頁：整體正確率 0.97，滿足「必須達 0.95 以上」的要求。*
+
+預期結果三是輸出誤判的樣本總數並畫出所有誤判樣本，每張標示真實標籤與預測結果，而且必須與混淆矩陣對應：
+
+![十張 8×8 的手寫數字誤判樣本，每張上方標示 True 標籤、左下角以紅色標示預測結果，例如 True: 1 被預測成 2、True: 5 被預測成 9](/note-images/ml-week13/13-assignment5-misclassified.png)
+
+*第 56 頁：測試集總共誤判了 10 張圖片——360 筆中錯 10 筆，正好對應 0.97 的正確率。*
 
 ## 教材預習重點
 
