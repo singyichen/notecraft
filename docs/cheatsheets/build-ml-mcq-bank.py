@@ -15,6 +15,7 @@
 """
 import argparse
 import html
+import json
 import pathlib
 import re
 
@@ -160,6 +161,12 @@ KATEX_DIST = ROOT / "node_modules/katex/dist"
 (QUIZ_DIR / "katex/katex.min.css").write_bytes((KATEX_DIST / "katex.min.css").read_bytes())
 for font in (KATEX_DIST / "fonts").glob("*.woff2"):
     (QUIZ_DIR / "katex/fonts" / font.name).write_bytes(font.read_bytes())
+# 每題對應小抄哪一塊，對完答案後顯示，方便回頭在紙本上找
+CS_MAP = json.loads((ROOT / "docs/cheatsheets/ml-mcq-cheatsheet-map.json").read_text())
+cs_sections, cs_map = CS_MAP["sections"], CS_MAP["map"]
+missing = [f"W{w}-{n}" for w, _, qs in weeks for n, *_ in qs if f"W{w}-{n}" not in cs_map]
+assert not missing, f"ml-mcq-cheatsheet-map.json 缺這些題的小抄出處：{missing}"
+
 quiz = []
 for w, title, qs in weeks:
     quiz.append(f'<section class="week" data-week="{w}"><h2>{html.escape(title)}</h2>')
@@ -167,7 +174,9 @@ for w, title, qs in weeks:
         quiz.append(
             f'<article class="q" data-id="W{w}-{n}" data-week="{w}" data-answer="{a}">'
             f'<div class="qn">W{w}-{n}<span class="verdict" hidden></span></div>{q}'
-            f'<div class="sol" hidden><span class="lbl">正解 {a}</span>{body}</div></article>'
+            f'<div class="sol" hidden><span class="lbl">正解 {a}</span>'
+            f'<div class="ref">小抄 <b>{html.escape(cs_sections[cs_map[f"W{w}-{n}"]][0])}</b>'
+            f'<span>{cs_sections[cs_map[f"W{w}-{n}"]][1]}</span></div>{body}</div></article>'
         )
     quiz.append("</section>")
 QUIZ_OUT.write_text(

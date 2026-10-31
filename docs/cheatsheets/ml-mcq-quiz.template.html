@@ -69,6 +69,11 @@ blockquote p, .sol p { margin: 4px 0; }
 .nc-choice__text { flex: 1; min-width: 0; }
 .sol { margin-top: 10px; border-top: 1px dashed var(--line); padding-top: 8px; font-size: 14px; }
 .sol > .lbl { font-weight: 700; color: var(--accent); }
+.sol > .ref { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap;
+  margin: 6px 0 8px; padding: 5px 9px; border-left: 3px solid var(--accent);
+  background: var(--code-bg); border-radius: 0 4px 4px 0; font-size: 13px; }
+.sol > .ref b { color: var(--accent); }
+.sol > .ref span { font-size: 12px; opacity: .72; }
 .nc-cb { margin: 6px 0; background: var(--code-bg); border: 1px solid var(--line); border-radius: 6px; padding: 6px 10px; overflow-x: auto; }
 .nc-cb pre { margin: 0; font-size: 13px; line-height: 1.45; }
 code { font-family: "SF Mono", Menlo, monospace; font-size: .92em; }
