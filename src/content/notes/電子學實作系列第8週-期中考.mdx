@@ -20,7 +20,7 @@ import PdfRefChip from '@/components/islands/PdfRefChip.tsx'
 | 題號 | 主題 | 對應章節 | 核心公式 | 答案 |
 | --- | --- | --- | --- | --- |
 | 1 | 半波整流器的漣波，電容並聯 | CH3.3 | $V_R \approx \dfrac{I_L}{C_1 f_{in}}$ | (a) 0.97 V、(b) 0.48 V |
-| 2 | PN 接面內建電位隨溫度變化 | CH2.2 | $V_0 = V_T\ln\!\dfrac{N_AN_D}{n_i^2}$、$n_i(T)$ | (a) 0.72 V、(b) 0.63 V |
+| 2 | PN 接面內建電位隨溫度變化 | CH2.2 | $V_0 = V_T\ln\!\dfrac{N_AN_D}{n_i^2}$、$n_i(T)$ | (a) 0.716 V、(b) 0.634 V |
 | 3 | BJT 工作點與小訊號模型 | CH4.4 | $I_C = I_S\exp\dfrac{V_{BE}}{V_T}$、$g_m$、$r_\pi$ | (a) 4.61 mA、(b) 1 mA |
 | 4 | 爾利效應對 $V_{BE}$ 的影響 | CH4.4 | $I_C \approx I_S\exp\!\dfrac{V_{BE}}{V_T}\left(1+\dfrac{V_{CE}}{V_A}\right)$ | (a) 750 mV、(b) 747 mV |
 | 5 | 二極體限幅器的轉移特性 | CH3.2 | 定電壓模型，門檻 $V_B + V_{D,on}$ | 折線圖，轉折在 1.8 V |
@@ -97,10 +97,10 @@ excerpt: A transformer converts the 110-V, 60-Hz line voltage to a peak-to-peak 
 
 $$
 \begin{aligned}
-V_T(300) &= \frac{kT}{q} = (8.625\times10^{-5})(300) = 25.9\ \text{mV}\\
-V_T(350) &= (8.625\times10^{-5})(350) = 30.2\ \text{mV}\\[6pt]
-n_i(300) &= 5.2\times10^{15}(300)^{3/2}\exp\!\left(-\frac{1.12}{2(8.625\times10^{-5})(300)}\right) = 1.08\times10^{10}\ \text{cm}^{-3}\\
-n_i(350) &= 5.2\times10^{15}(350)^{3/2}\exp\!\left(-\frac{1.12}{2(8.625\times10^{-5})(350)}\right) = 2.99\times10^{11}\ \text{cm}^{-3}
+V_T(300) &= \frac{kT}{q} = (8.625\times10^{-5})(300) = 25.875\ \text{mV}\\
+V_T(350) &= (8.625\times10^{-5})(350) = 30.1875\ \text{mV}\\[6pt]
+n_i(300) &= 5.2\times10^{15}(300)^{3/2}\exp\!\left(-\frac{1.12}{2(8.625\times10^{-5})(300)}\right) = 1.0776\times10^{10}\ \text{cm}^{-3}\\
+n_i(350) &= 5.2\times10^{15}(350)^{3/2}\exp\!\left(-\frac{1.12}{2(8.625\times10^{-5})(350)}\right) = 2.9897\times10^{11}\ \text{cm}^{-3}
 \end{aligned}
 $$
 
@@ -108,16 +108,16 @@ $N_AN_D = (3\times10^{15})(4\times10^{16}) = 1.2\times10^{32}\ \text{cm}^{-6}$�
 
 $$
 \begin{aligned}
-\text{(a)}\quad V_0 &= (25.9\ \text{mV})\ln\!\left(\frac{1.2\times10^{32}}{(1.08\times10^{10})^2}\right)\\
-&= (25.9\ \text{mV})\ln\!\left(1.03\times10^{12}\right) = (25.9\ \text{mV})(27.66) = 716\ \text{mV}\\[6pt]
-\text{(b)}\quad V_0 &= (30.2\ \text{mV})\ln\!\left(\frac{1.2\times10^{32}}{(2.99\times10^{11})^2}\right)\\
-&= (30.2\ \text{mV})\ln\!\left(1.34\times10^{9}\right) = (30.2\ \text{mV})(21.02) = 635\ \text{mV}
+\text{(a)}\quad V_0 &= (25.875\ \text{mV})\ln\!\left(\frac{1.2\times10^{32}}{(1.0776\times10^{10})^2}\right)\\
+&= (25.875\ \text{mV})\ln\!\left(1.0334\times10^{12}\right) = (25.875\ \text{mV})(27.664) = 715.8\ \text{mV} \approx 716\ \text{mV}\\[6pt]
+\text{(b)}\quad V_0 &= (30.1875\ \text{mV})\ln\!\left(\frac{1.2\times10^{32}}{(2.9897\times10^{11})^2}\right)\\
+&= (30.1875\ \text{mV})\ln\!\left(1.3425\times10^{9}\right) = (30.1875\ \text{mV})(21.018) = 634.5\ \text{mV} \approx 634\ \text{mV}
 \end{aligned}
 $$
 
-**答案與陷阱**：(a) 約 0.72 V、(b) 約 0.63 V。溫度升高 50 K，內建電位**下降**約 81 mV，相當於 $-1.6\ \text{mV/K}$。
+**答案與陷阱**：(a) 約 0.716 V、(b) 約 0.634 V。溫度升高 50 K，內建電位**下降**約 81 mV，相當於 $-1.6\ \text{mV/K}$。
 
-最大的陷阱是**只更新 $V_T$、沿用 300 K 的 $n_i$**：那會算出 $30.2 \times 27.66 = 835\ \text{mV}$，方向完全相反。看拆解就知道為什麼：
+最大的陷阱是**只更新 $V_T$、沿用 300 K 的 $n_i$**：那會算出 $30.1875 \times 27.664 = 835\ \text{mV}$，方向完全相反。看拆解就知道為什麼：
 
 $$
 \begin{aligned}
@@ -157,7 +157,7 @@ excerpt: Determine the density of electrons in silicon at T = 300 K (room temper
 | 溫度 | 只有 300 K | 300 K 與 600 K | 300 K 與 350 K |
 | $N_A$ | $2\times10^{16}$ | — | $3\times10^{15}$ |
 | $N_D$ | $4\times10^{16}$ | — | $4\times10^{16}$ |
-| 答案 | 768 mV | $1.08\times10^{10}$、$1.54\times10^{15}$ | 716 mV、635 mV |
+| 答案 | 768 mV | $1.08\times10^{10}$、$1.54\times10^{15}$ | 716 mV、634 mV |
 
 **考卷改了什麼**：把兩題串起來，考的就是**有沒有發現 $n_i$ 也要跟著溫度重算**。講義分開教時，$n_i = 1.08\times10^{10}$ 像是一個常數；一旦合併，只背常數的人就會算出 835 mV（方向相反）。
 
