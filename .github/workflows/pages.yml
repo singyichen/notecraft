@@ -24,6 +24,9 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
+    # Node 預設 heap 不夠，astro build 轉譯 client chunk 時會 OOM（2026-10-31 起 CI 全失敗）
+    env:
+      NODE_OPTIONS: --max-old-space-size=6144
     steps:
       - uses: actions/checkout@v4
 
