@@ -171,29 +171,40 @@ ws.sheet_view.showGridLines = False
 ws1 = wb.create_sheet('實驗一 特性曲線')
 title_block(ws1, '實驗一　輸出特性曲線 I_D-V_DS（講義第 6–7 頁）',
             'R1 = 1 kΩ 串在源極．填 R1 壓降，I_D 自動換算．V_GS = 0 V 那組全是 0 是正常的（截止區）', 14)
-HDR = 4                       # 欄組標題列
-SUB = 5                       # 欄名列
-R0 = 6                        # 第一列資料
+R_ROW = 4                     # 取樣電阻值（可改，所有換算欄跟著動）
+HDR = 6                       # 欄組標題列
+SUB = 7                       # 欄名列
+R0 = 8                        # 第一列資料
 RN = R0 + len(VDS_ROWS) - 1
+RCELL1 = '$B$4'
+
+ws1.cell(row=R_ROW, column=1, value='源極取樣電阻 R1 (Ω)').font = BOLD
+put(ws1, R_ROW, 2, R1_EXP1, font=BLUE, fmt='0')
+ws1.cell(row=R_ROW, column=3,
+         value='← 講義指定 1 kΩ；改這一格，所有 I_D 與元件電壓欄會跟著變').font = NOTE
 
 col_head(ws1, SUB, 1, 'V_DS 設定 (V)', width=14)
 ws1.cell(row=HDR, column=1).border = BOX
 for g, vgs in enumerate(VGS_GROUPS):
-    c0 = 2 + g * 3
-    group_head(ws1, HDR, c0, 3, f'V_GS = {vgs:g} V')
-    col_head(ws1, SUB, c0, 'V_R1 量測 (V)', width=13)
-    col_head(ws1, SUB, c0 + 1, 'I_D (mA)', width=11)
-    col_head(ws1, SUB, c0 + 2, 'LTspice (mA)', width=13)
+    c0 = 2 + g * 5
+    group_head(ws1, HDR, c0, 5, f'V_GS 設定 = {vgs:g} V')
+    col_head(ws1, SUB, c0, '實測 V_R1 (V)', width=13)
+    col_head(ws1, SUB, c0 + 1, 'I_D = V_R1/R1 (mA)', width=15)
+    col_head(ws1, SUB, c0 + 2, 'V_GS 元件 (V)', width=13)
+    col_head(ws1, SUB, c0 + 3, 'V_DS 元件 (V)', width=13)
+    col_head(ws1, SUB, c0 + 4, 'LTspice I_D (mA)', width=15)
 
 for i, vds in enumerate(VDS_ROWS):
     r = R0 + i
     put(ws1, r, 1, vds, fmt='0.0', align='center')
-    for g in range(len(VGS_GROUPS)):
-        c0 = 2 + g * 3
+    for g, vgs in enumerate(VGS_GROUPS):
+        c0 = 2 + g * 5
         put(ws1, r, c0, None, fill=FILL_IN, fmt='0.000')
         vr1 = f'{get_column_letter(c0)}{r}'
-        put(ws1, r, c0 + 1, f'=IF({vr1}="","",{vr1}/{R1_EXP1}*1000)', fmt='0.000')
-        put(ws1, r, c0 + 2, round(PRED1[g][i], 4), font=BLUE, fmt='0.000')
+        put(ws1, r, c0 + 1, f'=IF({vr1}="","",{vr1}/{RCELL1}*1000)', fmt='0.000')
+        put(ws1, r, c0 + 2, f'=IF({vr1}="","",{vgs}-{vr1})', fmt='0.000')
+        put(ws1, r, c0 + 3, f'=IF({vr1}="","",$A{r}-{vr1})', fmt='0.000')
+        put(ws1, r, c0 + 4, round(PRED1[g][i], 4), font=BLUE, fmt='0.000')
 
 rn = RN + 2
 ws1.cell(row=rn, column=1,
@@ -201,6 +212,11 @@ ws1.cell(row=rn, column=1,
                'V_GS = 0 V 那組建議還是量一次，當作「截止區電流為零」的證據。').font = NOTE
 ws1.cell(row=rn + 1, column=1,
          value='V_GS = 6 V 在低 V_DS 時每加 1 V 電流約多 1 mA，那是 1 kΩ 的斜率、不是元件的三極管電阻。').font = NOTE
+ws1.cell(row=rn + 2, column=1,
+         value='只要量 R1 的壓降這一個電壓就夠：汲極直接接在 CH2 上，V_D 必定等於電源設定值，'
+               '所以元件真正的 V_GS 與 V_DS 都可以由 V_R1 減出來（右邊兩欄已自動算好）。').font = NOTE
+ws1.cell(row=rn + 3, column=1,
+         value='報告要畫「元件端」的特性曲線時，橫軸用 V_DS 元件 那一欄，不是最左邊的電源設定值。').font = NOTE
 
 ch1 = ScatterChart()
 ch1.title = 'I_D - V_DS 輸出特性曲線'
@@ -210,12 +226,12 @@ ch1.height, ch1.width = 10, 18
 ch1.style = 2
 xs1 = Reference(ws1, min_col=1, min_row=R0, max_row=RN)
 for g, vgs in enumerate(VGS_GROUPS):
-    c0 = 2 + g * 3
+    c0 = 2 + g * 5
     ch1.series.append(dot_series(Reference(ws1, min_col=c0 + 1, min_row=R0, max_row=RN),
                                  xs1, f'實測 V_GS={vgs:g}V'))
-    ch1.series.append(line_series(Reference(ws1, min_col=c0 + 2, min_row=R0, max_row=RN),
+    ch1.series.append(line_series(Reference(ws1, min_col=c0 + 4, min_row=R0, max_row=RN),
                                   xs1, f'LTspice V_GS={vgs:g}V'))
-ws1.add_chart(ch1, f'A{rn + 3}')
+ws1.add_chart(ch1, f'A{rn + 5}')
 ws1.sheet_view.showGridLines = False
 
 
@@ -223,29 +239,48 @@ ws1.sheet_view.showGridLines = False
 ws2 = wb.create_sheet('實驗二 轉移曲線')
 title_block(ws2, '實驗二　轉移特性曲線 I_D-V_GS 與臨界電壓（講義第 8–9 頁）',
             'R1 = 100 Ω 串在汲極、源極接地．填汲極對地電壓 V_D，I_D 自動換算成 (V_DS − V_D)/100 Ω', 14)
+RCELL2 = '$B$4'
+ws2.cell(row=R_ROW, column=1, value='汲極取樣電阻 R1 (Ω)').font = BOLD
+put(ws2, R_ROW, 2, R1_EXP2, font=BLUE, fmt='0')
+ws2.cell(row=R_ROW, column=3,
+         value='← 講義指定 100 Ω；改這一格，所有 I_D 換算欄會跟著變').font = NOTE
+
 col_head(ws2, SUB, 1, 'V_GS 設定 (V)', width=14)
 ws2.cell(row=HDR, column=1).border = BOX
 RN2 = R0 + len(VGS_ROWS) - 1
 for g, vds in enumerate(VDS_GROUPS):
-    c0 = 2 + g * 3
-    group_head(ws2, HDR, c0, 3, f'V_DS = {vds:g} V')
-    col_head(ws2, SUB, c0, 'V_D 量測 (V)', width=13)
-    col_head(ws2, SUB, c0 + 1, 'I_D (mA)', width=11)
-    col_head(ws2, SUB, c0 + 2, 'LTspice (mA)', width=13)
+    c0 = 2 + g * 4
+    group_head(ws2, HDR, c0, 4, f'V_DS 設定 = {vds:g} V')
+    col_head(ws2, SUB, c0, '實測 V_D (V)', width=13)
+    col_head(ws2, SUB, c0 + 1, '實測 V_R1 (V)', width=13)
+    col_head(ws2, SUB, c0 + 2, 'I_D (mA)', width=12)
+    col_head(ws2, SUB, c0 + 3, 'LTspice (mA)', width=13)
 
 for i, vgs in enumerate(VGS_ROWS):
     r = R0 + i
     put(ws2, r, 1, vgs, fmt='0.0', align='center')
     for g, vds in enumerate(VDS_GROUPS):
-        c0 = 2 + g * 3
+        c0 = 2 + g * 4
         put(ws2, r, c0, None, fill=FILL_IN, fmt='0.000')
+        put(ws2, r, c0 + 1, None, fill=FILL_IN, fmt='0.000')
         vd = f'{get_column_letter(c0)}{r}'
-        put(ws2, r, c0 + 1, f'=IF({vd}="","",({vds}-{vd})/{R1_EXP2}*1000)', fmt='0.000')
-        put(ws2, r, c0 + 2, round(PRED2[g][i], 4), font=BLUE, fmt='0.000')
+        vr1 = f'{get_column_letter(c0 + 1)}{r}'
+        # lab2 的做法：優先用直接量到的 R1 壓降，沒填時才用 (V_DS − V_D) 減出來
+        put(ws2, r, c0 + 2,
+            f'=IF({vr1}<>"",{vr1}/{RCELL2}*1000,IF({vd}<>"",({vds}-{vd})/{RCELL2}*1000,""))',
+            fmt='0.000')
+        put(ws2, r, c0 + 3, round(PRED2[g][i], 4), font=BLUE, fmt='0.000')
+
+rc = RN2 + 2
+ws2.cell(row=rc, column=1,
+         value='兩欄電壓量其中一個就夠，兩個都量是為了當場對帳：V_D + V_R1 應該等於該組的 V_DS 設定值，'
+               '對不起來就是有一次量錯。I_D 欄優先用 V_R1，沒填時自動改用 (V_DS − V_D)/R1。').font = NOTE
+ws2.cell(row=rc + 1, column=1,
+         value='源極已接地，所以 V_D 就是元件真正的 V_DS、電源設定的 V_GS 就是元件真正的 V_GS，不用再減。').font = NOTE
 
 # 加密掃描：粗掃看出在哪裡抬頭之後，回到那一段用 0.1～0.2 V 一階重掃，
 # 才有兩個落在平方律直線上的點可以外插 V_th。級距當天自己填。
-rf = RN2 + 2
+rf = RN2 + 5
 ws2.cell(row=rf, column=1, value='加密掃描（找 V_th 用）').font = BOLD
 ws2.cell(row=rf, column=3, value='選用的 V_DS (V) →').font = NOTE
 put(ws2, rf, 4, None, fill=FILL_IN, fmt='0.0')
@@ -260,7 +295,7 @@ for i in range(FINE_N):
     put(ws2, r, 1, None, fill=FILL_IN, fmt='0.00')
     put(ws2, r, 2, None, fill=FILL_IN, fmt='0.000')
     put(ws2, r, 3,
-        f'=IF(OR(A{r}="",B{r}="",{vds_cell}=""),"",({vds_cell}-B{r})/{R1_EXP2}*1000)', fmt='0.000')
+        f'=IF(OR(A{r}="",B{r}="",{vds_cell}=""),"",({vds_cell}-B{r})/{RCELL2}*1000)', fmt='0.000')
     put(ws2, r, 4, f'=IF(C{r}="","",SQRT(C{r}))', fmt='0.000')
 ws2.cell(row=FN + 1, column=1,
          value='做法：先看粗掃表在哪一格之間跳起來，回到那一段用 0.1～0.2 V 一階重掃十點；'
@@ -304,10 +339,10 @@ ch2.height, ch2.width = 10, 18
 ch2.style = 2
 xs2 = Reference(ws2, min_col=1, min_row=R0, max_row=RN2)
 for g, vds in enumerate(VDS_GROUPS):
-    c0 = 2 + g * 3
-    ch2.series.append(dot_series(Reference(ws2, min_col=c0 + 1, min_row=R0, max_row=RN2),
+    c0 = 2 + g * 4
+    ch2.series.append(dot_series(Reference(ws2, min_col=c0 + 2, min_row=R0, max_row=RN2),
                                  xs2, f'實測 V_DS={vds:g}V'))
-    ch2.series.append(line_series(Reference(ws2, min_col=c0 + 2, min_row=R0, max_row=RN2),
+    ch2.series.append(line_series(Reference(ws2, min_col=c0 + 3, min_row=R0, max_row=RN2),
                                   xs2, f'LTspice V_DS={vds:g}V'))
 ws2.add_chart(ch2, f'A{rv + 7}')
 
@@ -338,7 +373,7 @@ for gi, vgs in enumerate(VGS_GROUPS):
     group_head(ws3, base_r, base_c, 2, f'V_GS = {vgs:g} V')
     col_head(ws3, base_r + 1, base_c, 'V_DS (experimental setting)', width=26)
     col_head(ws3, base_r + 1, base_c + 1, 'I_D (measure)', width=16)
-    src_c = get_column_letter(2 + gi * 3 + 1)
+    src_c = get_column_letter(2 + gi * 5 + 1)
     for i, vds in enumerate(VDS_ROWS):
         rr = base_r + 2 + i
         put(ws3, rr, base_c, f'{vds:g} V', align='center')
@@ -354,7 +389,7 @@ for gi, vds in enumerate(VDS_GROUPS):
     group_head(ws3, base_r, 1, 2, f'V_DS = {vds:g} V')
     col_head(ws3, base_r + 1, 1, 'V_GS (experimental setting)', width=26)
     col_head(ws3, base_r + 1, 2, 'I_D (measure)', width=16)
-    src_c = get_column_letter(2 + gi * 3 + 1)
+    src_c = get_column_letter(2 + gi * 4 + 2)
     for i, vgs in enumerate(VGS_ROWS):
         rr = base_r + 2 + i
         put(ws3, rr, 1, f'{vgs:g} V', align='center')
