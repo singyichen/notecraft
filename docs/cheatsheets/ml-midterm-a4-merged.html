@@ -1,12 +1,32 @@
 <!doctype html>
 <!--
-  機器學習實作 期中考 A4 雙面小抄「統整版」（範圍：第 1–7 週）
-  由 ml-midterm-a4.html 複製而來，額外併入另一份小抄（A4_duplex_cheatsheet）獨有的內容：
-    §4 mini-batch 每輪更新次數、§7 get_support()、§9 提早停止、§13 加權平均與 FN 索引、
-    §14 joblib 存管線、§16 距離矩陣／同步洗牌／(n,)+(n,1) 陷阱、
-    §19 逐行追蹤＋更新係數的 2＋BCE 防 log(0) 的兩種寫法、§20 更新後 output/e 不會自動重算。
-  為了塞進同一張 A4 雙面，行高 1.27→1.2、程式區塊 6→5.85pt、欄距 3.2→2.5mm，並移除三處與他處重複的句子。
-  原版 ml-midterm-a4.html 與其 PDF 都保持不動。
+  機器學習實作 期中考 A4 雙面小抄「統整版」
+  考試範圍（老師公告）：Lectures 1–6 投影片的內容（機器學習觀念與 Python 程式解讀）
+    L1 課程介紹&ML簡介 / L2 PLA&Python / L3 Adaline&NumPy,Pandas
+    L4 LogReg&Matplotlib / L5 前處理&Scikit-learn / L6 模型選擇與評估
+  由 ml-midterm-a4.html 複製而來，原版與其 PDF 都不更動。
+
+  內容已逐頁對照過六份投影片（357 頁）。相對於原版的差異：
+  [併入另一份小抄 A4_duplex_cheatsheet 的獨有內容]
+    §4 mini-batch 每輪更新 ceil(n/B) 次、§12 np.where 取 FN 索引（對應 L6 p52）、
+    §13 joblib 存整條管線（L6 p53 Save & Load the Model）、
+    §15 距離矩陣廣播（對應 L3 p43 的座標點集練習）／同步洗牌／(n,)+(n,1) 陷阱、
+    §18 逐行追蹤＋更新係數的 2 從何而來＋BCE 防 log(0) 的 np.clip 與 @ 兩種寫法、
+    §19 更新 w 後 output/e 不會自動重算。
+  [移除：投影片沒教，超出考試範圍]
+    原 §8 常見分類演算法整節（SVM margin/RBF/gamma、決策樹資訊增益、隨機森林、KNN 懶惰學習）
+      —— 這些在 L5 p58 只各有一行 sklearn 模組說明，沒有教演算法本身；移除後編號 9–20 順延為 8–19。
+    Seaborn（只以樣式名 'seaborn-v0_8-poster' 出現過）、transAxes/transData、errorbar/fill_between、
+    contour/imshow+meshgrid、色盤 sequential/diverging/qualitative；
+    Pandas 的 loc/iloc 切片、groupby、concat/merge（L3 的 Pandas 只有 6 頁，教 Series/DataFrame 與 to_numpy）；
+    提早停止 early stopping（L5 p32 的過擬合對策沒有這條）；加權平均 weighted 與 support（L6 p29 只有 micro/macro）；
+    維度詛咒、get_support()、2^3 是 XOR、*args/**kwargs。
+  [補回：投影片有教但原本漏收]
+    §14 os 模組 os.path/os.makedirs/os.listdir（L2 第 5 題）與 max()/min()/sum()（L2 第 4 題）；
+    §16 Series.to_numpy()/DataFrame.to_numpy()（L3 p48、p50）；
+    §17 Plot Types 五種圖表與 Common Functions（L4 p32、p33）。
+  版面：第一面 7.35pt（.concepts），第二面維持 6.9pt、程式區塊 5.85pt（程式密度高）。
+
   產出 PDF：
     "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --headless --no-pdf-header-footer --allow-file-access-from-files \
       --virtual-time-budget=5000 --print-to-pdf="src/content/notes/_references/機器學習實作系列/第9週-期中考A4小抄-統整版.pdf" \
@@ -41,6 +61,7 @@
   .page .cols.fixed-cols { column-rule: none; column-count: auto; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 2.5mm; }
   .study-col { min-width: 0; min-height: 0; padding-right: .7mm; border-right: .4pt solid var(--line); }
   .study-col:last-child { border: 0; padding-right: 0; }
+  .concepts { font-size: 7.35pt; line-height: 1.27; }
   .programs pre { font-size: 5.85pt; line-height: 1.17; }
   .head {
     display: flex; justify-content: space-between; align-items: baseline;
@@ -89,8 +110,8 @@
 <body>
 
 <!-- ===================== 第一面：觀念 ===================== -->
-<div class="page">
-  <div class="head"><b>機器學習實作｜期中考小抄 統整版（一）觀念與模型</b><span>範圍：第 1–7 週｜單選 25–50 題｜考觀念不考推導＋Python 程式辨識／結果預期</span></div>
+<div class="page concepts">
+  <div class="head"><b>機器學習實作｜期中考小抄 統整版（一）觀念與模型</b><span>範圍：Lectures 1–6 投影片｜單選 25–50 題｜考觀念不考推導＋Python 程式解讀</span></div>
   <div class="cols fixed-cols">
   <div class="study-col">
 
@@ -145,6 +166,9 @@
     </ul>
   </section>
 
+
+  </div>
+  <div class="study-col">
   <section>
     <h2><span class="n">4</span>梯度下降家族</h2>
     <table>
@@ -161,8 +185,6 @@
     </ul>
   </section>
 
-  </div>
-  <div class="study-col">
   <section>
     <h2><span class="n">5</span>資料前處理</h2>
     <ul>
@@ -182,7 +204,7 @@
       <tr><td>離群值</td><td><b>敏感</b>（其餘被擠扁）</td><td>仍受離群值影響；不限制範圍</td></tr>
       <tr><td>類別</td><td><code>MinMaxScaler</code></td><td><code>StandardScaler</code>（離群多用 <code>RobustScaler</code>）</td></tr>
     </table>
-    <p><b>要縮放</b>：靠梯度或距離者（邏輯迴歸、SVM、KNN、SGD、Adaline）；<b>不必</b>：決策樹、隨機森林（只比大小）</p>
+    <p>標準化對多數演算法更實用，<b>尤其是用 GD／SGD 最佳化的模型</b>（Adaline、邏輯迴歸）：它保留離群值資訊、對其較不敏感。正規化適合需要有界區間時。</p>
   </section>
 
   <section>
@@ -207,33 +229,21 @@
     </ul>
   </section>
 
+
+
+  </div>
+  <div class="study-col">
   <section>
     <h2><span class="n">7</span>特徵選取</h2>
     <ul>
       <li>序列特徵選取＝<b>貪婪搜尋</b>（局部最佳、次佳解但避開組合爆炸）</li>
       <li><b>SFS</b> 從空集合逐個<b>加入</b>；<b>SBS</b> 從全集逐個<b>剔除</b>使判準 $J$ 損失最小者</li>
-      <li>$L_1$＋<code>SelectFromModel</code>；隨機森林的特徵重要度。<code>get_support()</code> 回傳布林遮罩，<b>True 是保留</b></li>
-      <li>減特徵可降維度詛咒與過擬合、加快訓練</li>
+      <li>$L_1$＋<code>SelectFromModel</code>（L5 p55–56）</li>
     </ul>
   </section>
 
   <section>
-    <h2><span class="n">8</span>常見分類演算法</h2>
-    <table>
-      <tr><th>模型</th><th>核心</th><th>旋鈕／注意</th></tr>
-      <tr><td>邏輯迴歸</td><td>sigmoid 機率、BCE</td><td><code>C</code>；權重可解釋</td></tr>
-      <tr><td>SVM</td><td>最大化<b>間隔 margin</b>；只靠支援向量決定</td><td><code>C</code>；RBF 核處理非線性；<code>gamma</code> 太大易過擬合；訓練貴，預測靠支援向量</td></tr>
-      <tr><td>決策樹</td><td>是非題切分，選<b>資訊增益</b>最大（entropy／Gini 不純度下降）</td><td>樹深；不需縮放、可視化</td></tr>
-      <tr><td>隨機森林</td><td>多棵樹（隨機樣本＋隨機特徵）投票</td><td>樹數；省事的預設、不需縮放</td></tr>
-      <tr><td>KNN</td><td><b>懶惰學習</b>：訓練只記資料，預測找 $k$ 鄰居投票</td><td>通常需縮放；$k$ 小 → 易受雜訊、$k$ 大 → 邊界過平；預測慢</td></tr>
-    </table>
-    <p>挑選順序：先跑線性基準 → 不夠才上 RBF-SVM／樹；要解釋選淺樹或邏輯迴歸；資料極大用 SGD 線上學習。</p>
-  </section>
-
-  </div>
-  <div class="study-col">
-  <section>
-    <h2><span class="n">9</span>看圖判讀（觀念應用）</h2>
+    <h2><span class="n">8</span>看圖判讀（觀念應用）</h2>
     <table>
       <tr><th>圖上長相</th><th>判讀</th></tr>
       <tr><td>loss 對 epoch 越來越大、震盪</td><td>可能學習率太大；檢查縮放</td></tr>
@@ -244,19 +254,18 @@
       <tr><td>訓練 acc 高、驗證 acc 低</td><td>過擬合</td></tr>
       <tr><td>兩條 acc 都低且貼合</td><td>欠擬合</td></tr>
       <tr><td>loss 收斂但驗證沒變好</td><td>loss 收斂 ≠ 泛化變好</td></tr>
-      <tr><td>訓練 loss 續降、<b>驗證 loss 先降後升</b></td><td>反升點＝過擬合起點 → <b>提早停止</b>（early stopping）停在驗證最低點附近</td></tr>
     </table>
   </section>
 
   <section>
-    <h2><span class="n">10</span>易混淆一句話</h2>
+    <h2><span class="n">9</span>易混淆一句話</h2>
     <div class="trap">
-      <b>①</b> 邏輯迴歸損失 = 交叉熵，不是 MSE（MSE 是 Adaline）　<b>②</b> 感知器分對不更新　<b>③</b> 不可線性分 → PLA 不收斂　<b>④</b> 標準化 ≠ 常態化　<b>⑤</b> 對測試集 <code>fit</code> = 洩漏　<b>⑥</b> 訓練分數本身就低 ≠ 過擬合　<b>⑦</b> C 是正則化強度的<b>倒數</b>　<b>⑧</b> $L_1$ 稀疏、$L_2$ 只壓小　<b>⑨</b> 樹模型不需縮放、KNN/SVM 通常需縮放　<b>⑩</b> 多標籤可用 OvR，softmax 給互斥多類　<b>⑪</b> $\boldsymbol w$ 定超平面方向（法向量）、$b$ 定離原點遠近 → 只改 $b$ 是平移邊界　<b>⑫</b> 激活函數的用途是引入非線性；Adaline 訓練用恆等函數算誤差，分類時仍用閾值　<b>⑬</b> 概似是<b>參數</b>的函數，不是參數的機率　<b>⑭</b> 變異＝換份資料結果差多少（一致性）、偏差＝系統性誤差　<b>⑮</b> 多重共線性 → 需要矩陣求逆的方法會病態　<b>⑯</b> 獨熱的代價：欄位膨脹、與截距完全共線
+      <b>①</b> 邏輯迴歸損失 = 交叉熵，不是 MSE（MSE 是 Adaline）　<b>②</b> 感知器分對不更新　<b>③</b> 不可線性分 → PLA 不收斂　<b>④</b> 標準化 ≠ 常態化　<b>⑤</b> 對測試集 <code>fit</code> = 洩漏　<b>⑥</b> 訓練分數本身就低 ≠ 過擬合　<b>⑦</b> C 是正則化強度的<b>倒數</b>　<b>⑧</b> $L_1$ 稀疏、$L_2$ 只壓小　<b>⑨</b> One-hot 產生的 0/1 欄<b>不需要</b>特徵縮放（L5 p24 注意事項）　<b>⑩</b> 多標籤可用 OvR，softmax 給互斥多類　<b>⑪</b> $\boldsymbol w$ 定超平面方向（法向量）、$b$ 定離原點遠近 → 只改 $b$ 是平移邊界　<b>⑫</b> 激活函數的用途是引入非線性；Adaline 訓練用恆等函數算誤差，分類時仍用閾值　<b>⑬</b> 概似是<b>參數</b>的函數，不是參數的機率　<b>⑭</b> 變異＝換份資料結果差多少（一致性）、偏差＝系統性誤差　<b>⑮</b> 多重共線性 → 需要矩陣求逆的方法會病態　<b>⑯</b> 獨熱的代價：欄位膨脹、與截距完全共線
     </div>
   </section>
 
   <section>
-    <h2><span class="n">11</span>定義、資料型態與 Iris</h2>
+    <h2><span class="n">10</span>定義、資料型態與 Iris</h2>
     <ul>
       <li><b>Mitchell</b>：任務 T、效能 P、經驗 E —— P 隨 E 提升即「學習」</li>
       <li><b>李宏毅</b>：學習＝找一個函式（參數化模型），一個 $x$ 只能對應一個輸出</li>
@@ -302,7 +311,7 @@
   <div class="study-col">
 
   <section>
-    <h2><span class="n">12</span>模型選擇與交叉驗證</h2>
+    <h2><span class="n">11</span>模型選擇與交叉驗證</h2>
     <ul>
       <li>狹義：<b>超參數調整</b>；廣義：<b>演算法選擇</b>（用巢狀 CV）</li>
       <li><b>Holdout</b>：訓練／驗證／測試三份；缺點是結果對切法敏感</li>
@@ -330,7 +339,7 @@
   </section>
 
   <section>
-    <h2><span class="n">13</span>混淆矩陣與指標</h2>
+    <h2><span class="n">12</span>混淆矩陣與指標</h2>
     <table>
       <tr><th></th><th>預測陽</th><th>預測陰</th></tr>
       <tr><td>真實陽 $P$</td><td>TP</td><td>FN（漏報）</td></tr>
@@ -344,7 +353,7 @@
       <li><b>MCC</b> 用四格，$[-1,1]$，不平衡時比 F1 穩</li>
       <li><b>ROC</b>：掃門檻畫 FPR(x)–TPR(y)；<b>AUC</b> 1 完美、0.5 瞎猜；量排序能力</li>
       <li>題庫 W7-10 的常見取捨：門檻低 → recall↑、precision↓；嚴格說 recall 不減，precision 不保證下降；癌症篩檢重 <b>recall</b>，垃圾信過濾重 <b>precision</b></li>
-      <li><b>微平均</b>每樣本等權（大類主導）；<b>宏平均</b>每類別等權（不平衡適用）；<b>加權平均</b>按各類 <b>support</b>（該類<u>真實</u>樣本數）加權</li>
+      <li><b>微平均</b>每樣本等權（大類主導）；<b>宏平均</b>每類別等權（不平衡適用）</li>
       <li>挑出某一格的樣本：<code>mask=(y_true==1)&amp;(y_pred==0)</code> → <code>np.where(mask)[0]</code> 即 <b>FN 的索引</b>；陣列條件用 <code>&amp;</code>／<code>|</code> 且<b>各加括號</b></li>
       <li><b>類別不平衡</b>：1% 陽性全猜陰也有 99% ACC → 改指標、過採樣、加權 <code>class_weight</code></li>
     </ul>
@@ -352,11 +361,11 @@
   </section>
 
   <section>
-    <h2><span class="n">14</span>scikit-learn API</h2>
+    <h2><span class="n">13</span>scikit-learn API</h2>
     <table>
       <tr><th style="width:18%">API</th><th style="width:38%">方法</th><th>例</th></tr>
       <tr><td>轉換器</td><td><code>fit</code> → <code>transform</code>（<code>fit_transform</code>）</td><td><code>StandardScaler</code>、<code>SimpleImputer</code>、<code>OneHotEncoder</code></td></tr>
-      <tr><td>分類器</td><td><code>fit(X,y)</code> → <code>predict(X)</code></td><td><code>LogisticRegression</code>、<code>SVC</code>、<code>Perceptron</code></td></tr>
+      <tr><td>分類器</td><td><code>fit(X,y)</code> → <code>predict(X)</code></td><td><code>LogisticRegression</code>、<code>Perceptron</code></td></tr>
     </table>
 <pre>sc = StandardScaler()
 X_tr = sc.fit_transform(X_train)  <span class="o"># ✔ 只 fit 訓練</span>
@@ -367,7 +376,7 @@ sc.fit_transform(X_test)          <span class="o"># ✘ 重估測試統計量</s
       <li><code>transform</code> 的特徵數須與 <code>fit</code> 時相同</li>
       <li><b>Pipeline</b>：訓練時各轉換器 <code>fit_transform</code>、最後估計器 <code>fit</code>；預測時只 <code>transform</code> 再 <code>predict</code> → 將原始資料與整條管線交給 CV，逐折 fit</li>
       <li><code>make_pipeline(StandardScaler(), LogisticRegression())</code> 免命名；<code>Pipeline([('sc',…),('clf',…)])</code></li>
-      <li>Pipeline 調參用<b>步驟名＋雙底線＋參數名</b>：<code>clf__C</code>、<code>svc__gamma</code>；不是單底線。<code>make_pipeline</code> 自動用類別名小寫命名。</li>
+      <li>Pipeline 調參用<b>步驟名＋雙底線＋參數名</b>：<code>clf__C</code>；不是單底線。<code>make_pipeline</code> 自動用類別名小寫命名，所以同一個參數變成 <code>logisticregression__C</code>。</li>
       <li><code>cross_val_score(pipe,X,y,cv=10)</code> 回傳 <b>10 個分數的陣列</b>；GridSearch 3×4 組 × cv=5 = 60 次 CV fit（預設重訓再 +1）；<code>gs.best_estimator_</code> 取最佳模型，最後只在測試集 score 一次</li>
       <li><code>train_test_split(…, test_size=0.3, stratify=y, random_state=1)</code></li>
       <li><code>joblib.dump</code>／<code>load</code> 存取<b>整條管線</b>（含前處理學到的統計量），載入後直接 <code>predict</code>，不必再訓練</li>
@@ -377,9 +386,9 @@ sc.fit_transform(X_test)          <span class="o"># ✘ 重估測試統計量</s
   </div>
   <div class="study-col">
   <section>
-    <h2><span class="n">15</span>Python 基礎（猜輸出）</h2>
+    <h2><span class="n">14</span>Python 基礎（猜輸出）</h2>
 <pre>7/2 <span class="o">→ 3.5</span>    7//2 <span class="o">→ 3</span>    -7//2 <span class="o">→ -4</span>   7%3 <span class="o">→ 1</span>
-2**3 <span class="o">→ 8</span>    2^3 <span class="o">→ 1（^ 是 XOR！）</span>
+2**3 <span class="o">→ 8</span>
 "3"*3 <span class="o">→ '333'</span>  [1,2]*2 <span class="o">→ [1,2,1,2]</span>  "3"+3 <span class="o">→ TypeError</span>
 a=[0,1,2,3,4,5]
 a[1:4] <span class="o">→ [1,2,3]</span>  a[-2:] <span class="o">→ [4,5]</span>
@@ -390,8 +399,6 @@ len(set("hello")) <span class="o">→ 4</span>    bool([]) <span class="o">→ F
 d={'a':1}; d.get('b',0) <span class="o">→ 0</span>; d['b'] <span class="o">→ KeyError</span>
 t=(1,2); t[0]=5 <span class="o">→ TypeError（tuple 不可變）</span>
 f"{3.14159:.2f}" <span class="o">→ '3.14'</span>   int("3.5") <span class="o">→ ValueError</span>
-def g(*args, **kw): print(args, kw)
-g(1, 2, k=3) <span class="o">→ (1, 2) {'k': 3}</span>
 def f(x, L=[]): L.append(x); return L
 f(1); print(f(2)) <span class="o">→ [1, 2]（預設值只建一次）</span></pre>
     <table>
@@ -407,11 +414,13 @@ f(1); print(f(2)) <span class="o">→ [1, 2]（預設值只建一次）</span></
       <li>選容器看可變性、順序、查詢成本；dict／set 用雜湊，平均查詢快。</li>
       <li><code>input()</code> 回傳字串；<code>random.randint(1,100)</code> 兩端都含</li>
       <li><code>try/except ValueError</code> 捕捉轉型錯誤；<code>PermissionError</code> 是 <code>OSError</code> 子類</li>
+      <li><b>os 模組</b>（L2 第 5 題）：<code>os.path.exists/isdir</code> 判斷路徑、<code>os.makedirs</code> 建資料夾、<code>os.listdir</code> 列出檔名，外面包 <code>try…except</code></li>
+      <li>內建函式 <code>max()</code>／<code>min()</code>／<code>sum()</code>（L2 第 4 題配 <code>random</code> 模組與列表推導式）</li>
     </ul>
   </section>
 
   <section>
-    <h2><span class="n">16</span>NumPy</h2>
+    <h2><span class="n">15</span>NumPy</h2>
 <pre>np.array([1,2,3]).shape <span class="o">→ (3,)</span>  <span class="o"># 一維，非行也非列向量</span>
 np.array([[1],[2],[3]]).shape <span class="o">→ (3,1)</span>
 np.array([[[1],[2]]]).shape <span class="o">→ (1,2,1)</span>  <span class="o"># ndim=中括號層數</span>
@@ -448,14 +457,11 @@ x[:,np.newaxis].shape <span class="o">→ (4,1)</span></pre>
   </section>
 
   <section>
-    <h2><span class="n">17</span>Pandas</h2>
-<pre>s=pd.Series([10,20,30], index=['a','b','c'])
-s.loc['a':'b'].tolist() <span class="o">→ [10,20]（含尾端）</span>
-s.iloc[0:1].tolist() <span class="o">→ [10]（不含尾端）</span></pre>
+    <h2><span class="n">16</span>Pandas</h2>
     <ul>
       <li><code>DataFrame</code>＝共用索引的多個 <code>Series</code>；<code>df['col']</code> → Series；<code>df[['col']]</code> → 二維 DataFrame</li>
+      <li><b>轉成 NumPy</b>：<code>Series.to_numpy()</code>／<code>DataFrame.to_numpy()</code>（L3 p48、p50 的重點）</li>
       <li><code>isnull()</code>（NaN/None/NaT）、<code>dropna()</code> 預設刪<b>列</b>、<code>axis=1</code> 刪欄、<code>fillna(v)</code></li>
-      <li><code>groupby</code>＝split–apply–combine；<code>concat</code> 沿軸疊、<code>merge/join</code> 依鍵配對</li>
       <li><code>pd.get_dummies(…, drop_first=True)</code> → $k-1$ 欄</li>
     </ul>
   </section>
@@ -464,23 +470,27 @@ s.iloc[0:1].tolist() <span class="o">→ [10]（不含尾端）</span></pre>
   <div class="study-col">
 
   <section>
-    <h2><span class="n">18</span>Matplotlib／Seaborn</h2>
+    <h2><span class="n">17</span>Matplotlib</h2>
     <ul>
       <li>狀態式 <code>plt.plot/plt.title</code>（作用在「目前的圖」）vs 物件導向 <code>fig, ax = plt.subplots()</code>、<code>ax.set_title</code>（多出 <code>set_</code>）</li>
       <li><b>Figure</b>＝整張畫布；<b>Axes</b>＝子圖；Axis＝單條軸。</li>
-      <li><code>ax.transAxes</code>：子圖相對座標，(0,0) 左下、(1,1) 右上；<code>transData</code> 用資料值；<code>fig.transFigure</code> 相對整張畫布。</li>
       <li><code>axes[0,2]</code> 從 0 起算 ＝ <code>plt.subplot(2,3,3)</code> 從 1 起算、逐列編號</li>
       <li><code>plot</code> 全點同樣式、快；<code>scatter</code> 可逐點設 <code>s</code>／<code>c</code>／<code>alpha</code>、慢</li>
-      <li>分布看 <code>hist</code>（bins 太寬可能隱藏雙峰）、占比看 <code>pie</code></li>
-      <li><code>errorbar</code>／<code>fill_between</code> 畫不確定性；<code>contour/imshow</code> 配 <code>meshgrid</code></li>
-      <li>色盤：有序→sequential、有中點→diverging、類別→qualitative；jet 灰階會崩</li>
-      <li>探索分布／關聯用 Seaborn（架在 Matplotlib 上、直吃 DataFrame）；報告精細標註回 Matplotlib：<code>histplot</code>、<code>kdeplot</code>、<code>pairplot</code>、<code>jointplot</code></li>
+    <table>
+      <tr><th>圖</th><th>函式</th><th>用途</th></tr>
+      <tr><td>折線</td><td><code>plt.plot()</code></td><td>追蹤隨時間／序列變化</td></tr>
+      <tr><td>散點</td><td><code>plt.scatter()</code></td><td>看兩變數的相關</td></tr>
+      <tr><td>長條</td><td><code>plt.bar()</code></td><td>比較不同類別的值</td></tr>
+      <tr><td>直方</td><td><code>plt.hist()</code></td><td>看資料分布</td></tr>
+      <tr><td>圓餅</td><td><code>plt.pie()</code></td><td>看占整體的比例</td></tr>
+    </table>
+    <p><b>Common Functions</b>（L4 p33）：<code>plt.style.use('seaborn-v0_8-poster')</code> 設樣式、<code>plt.tight_layout()</code> 調子圖間距、<code>plt.show()</code> 顯示、<code>plt.savefig("file_name.png")</code> 存檔。</p>
     </ul>
   </section>
 
 
   <section>
-    <h2><span class="n">19</span>模型內部功能辨識</h2>
+    <h2><span class="n">18</span>模型內部功能辨識</h2>
     <p>各片段獨立辨識，對照課堂 0/1 分類；<code>np</code> 為 NumPy。</p>
 <pre>z = X @ w + b
 <span class="o"># 淨輸入；X:(n,d), w:(d,) → z:(n,)</span>
@@ -526,7 +536,7 @@ loss = (-y @ np.log(p) - (1-y) @ np.log(1-p)) / len(y)</pre>
     <p class="muted"><code>y</code> 與 <code>p</code> 都應為 <code>(n,)</code>，<span class="k">別把閾值化後的 <code>pred</code> 當 <code>p</code> 代入</span>。單筆 $y{=}1$：$p{=}0.9$ → $0.105$、$p{=}0.1$ → $2.303$，<b>分對類別不代表 loss=0</b>。迴圈：$X$、$y$ 各 4 筆、<code>range(3)</code> 內層逐筆 → 共 <b>12 筆次</b>，但 PLA 實際更新可少於 12 次；下一筆沿用前一筆更新後的參數。</p>
   </section>
   <section>
-    <h2><span class="n">20</span>API 結果預期與常見陷阱</h2>
+    <h2><span class="n">19</span>API 結果預期與常見陷阱</h2>
     <p><b>predict</b> 回傳類別 (n,)；<b>predict_proba</b> 回傳 (n,K)，欄位順序看 <code>classes_</code>，不是預測正確率。</p>
 <pre># 假設 clf.classes_ 為 [0,1]
 P=np.array([[.8,.2],[.3,.7],[.6,.4]])
@@ -540,7 +550,7 @@ sc.transform([[3.]]) <span class="o">→ [[2.]]</span></pre>
     <ul>
       <li>100 筆、<code>test_size=.3</code> → 訓練 70、測試 30；回傳順序 <code>X_train,X_test,y_train,y_test</code>。</li>
       <li><code>stratify=y</code> 保持類別比例；<code>random_state</code> 固定切分的隨機性，不保證分數更高。</li>
-      <li><code>confusion_matrix</code> 的列＝真實、欄＝預測；labels=[0,1] 時為 <code>[[TN,FP],[FN,TP]]</code>，與 §13 排列不同。</li>
+      <li><code>confusion_matrix</code> 的列＝真實、欄＝預測；labels=[0,1] 時為 <code>[[TN,FP],[FN,TP]]</code>，與 §12 排列不同。</li>
       <li>更新 <code>w</code> 之後，<b>先前算好的 <code>output</code>／<code>e</code> 不會自動重算</b>；<code>errors</code> 這類計數器須事先初始化。</li>
       <li>判讀順序：<b>型別 → shape → 索引 → 運算 → 回傳值</b>。</li>
     </ul>
