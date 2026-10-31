@@ -176,6 +176,16 @@ $$
 
 ### 預演：Tinkercad 接線配方
 
+已經建好的設計：[Lab 3 Exp 1: MOSFET Output Characteristic Curve](https://www.tinkercad.com/things/chcRtmq7JoB)
+
+![Tinkercad 的實驗一接線：2N7000 插在 f15／f16／f17，R1 1 kΩ 橫插 i11 到 i15，兩台電源與一台電壓表，模擬中電表讀 2.41 V](/note-images/ec-week11-tinkercad/lab3-exp1-tinkercad.png)
+
+*$V_{GS}$ = 4 V、$V_{DS}$ = 5 V 時 CH2 讀 2.41 mA、電表讀 2.41 V（= $I_D \times 1\ \text{k}\Omega$），兩個讀數互相驗證。*
+
+**Tinkercad 的 nMOS 腳位預設是 D／G／S**（由左到右），和真正的 2N7000 相反。按六次 `R` 轉 180° 之後本體朝溝槽掛下去，腳位才變成 S／G／D，和手上那顆一致——上面那張圖就是轉過的。不轉的話接線會整個鏡像。
+
+**Tinkercad 的通用 nMOS 不是 2N7000**：同樣條件下它給 2.41 mA，LTspice 的 BS170 給 1.67 mA（臨界電壓不同）。**形狀照抄、數值不要抄。**
+
 | 元件／接線 | 插在哪裡 | 備註 |
 | --- | --- | --- |
 | MOSFET（搜尋 `nMOS`） | 插在上半區，三隻腳落在相鄰三欄 | 懸停讀腳名；配方一律寫 閘極／汲極／源極，不寫左右 |
@@ -352,6 +362,12 @@ $$
 - 同樣只看形狀。CircuitJS 的 $V_t$ 是寫死的 2.1 V，不是你手上那顆的值。
 
 ### 預演：Tinkercad 接線配方（和實驗一的差異）
+
+已經建好的設計：[Lab 3 Exp 2/3: Transfer Curve & Turn-on Resistance](https://www.tinkercad.com/things/3Zihf2XPSJu)
+
+![Tinkercad 的實驗二接線：源極 j15 跳線接地，R1 100 Ω 橫插 i17 到 i21，電表量汲極對地電壓，模擬中讀 3.36 V](/note-images/ec-week11-tinkercad/lab3-exp2-tinkercad.png)
+
+*$V_{GS}$ = 3 V、$V_{DS}$ = 5 V 時 CH2 讀 16.4 mA、電表讀 3.36 V。驗算：$5 - 16.4\ \text{mA} \times 100\ \Omega = 3.36$ V，對得起來。*
 
 照實驗一那張配方，只改三條線：
 
@@ -579,6 +595,12 @@ excerpt: Circuit schematic (switch). Requirement: cut-off and triode region obse
 - 把 V_GS 拉回 1 V，LED 熄滅、電流歸零：截止區。
 
 ### 預演：Tinkercad 接線配方（和實驗一的差異）
+
+已經建好的設計：[Lab 3 Exp 4: MOSFET as a Switch (LED)](https://www.tinkercad.com/things/5hgfPggjxlL)
+
+![Tinkercad 的實驗四接線：LED 橫插 h17 到 h18（陰極在 17 朝汲極），R1 100 Ω 在源極，模擬中 LED 發紅光、電表讀 754 mV](/note-images/ec-week11-tinkercad/lab3-exp4-tinkercad.png)
+
+*$V_{GS}$ = 3 V、$V_{DD}$ = 8 V 時 LED 真的亮起來，$I_D$ = 7.54 mA、電表讀 754 mV。LTspice 在同樣條件給 5.26 mA——同一個量級，門檻位置可信、絕對值不要抄。*
 
 | 改什麼 | 實驗一 | 實驗四 |
 | --- | --- | --- |
@@ -918,6 +940,15 @@ $$
 
 ### 預演：Tinkercad 只能確認接線，不能抄讀值
 
+已經建好的設計：[Lab 3 Part 2: Common-Source Amplifier](https://www.tinkercad.com/things/3pBpNsfiOjC)
+
+![Tinkercad 的共源級放大器接線：七顆電阻與三顆電容排在 30 欄小板上，函數波產生器、15 V 電源與兩台示波器；上方示波器的輸入正弦明顯變形](/note-images/ec-week11-tinkercad/lab3-exp5-tinkercad.png)
+
+**這張圖是「接線正確、波形作廢」的範例。** 兩件事同時成立：
+
+- **直流對得上**：電源讀到 15.0 V／**137 µA**，和 LTspice 預報的「汲極 29.7 µA ＋ 分壓 100 µA ≈ 130 µA」吻合。把函數波產生器的振幅設成 0 V 再跑一次，讀數一樣是 137 µA——代表七顆電阻與 MOSFET 的接線沒問題。
+- **交流整輪作廢**：上方那台量 $V_{in}$ 的示波器畫出來的不是乾淨正弦，是忽大忽小的扭曲波；下方的 $V_{out}$ 更是鋸齒。照「看量輸入那一台」的判準，這一輪的所有波形讀值都不能用。
+
 這個電路有三顆耦合／旁路電容加一個交流源，正是 [Lab 2 的 CE 放大器](/notes/電子學實作系列第6週-ce放大器實驗)在 Tinkercad 上解不出來的那一類。症狀有兩種，都要當成失敗：
 
 | 症狀 | 怎麼認 |
@@ -1244,5 +1275,16 @@ $R_5$ 本來只是模擬訊號源的內阻，訊號產生器自己就有 50 Ω �
 | 出圖與預報數字 | [`simulations/lab3/plot.py`](https://github.com/SteveLin100132/notecraft/blob/HEAD/simulations/lab3/plot.py) |
 | 麵包板接線圖 | [`simulations/lab3/draw_breadboard.py`](https://github.com/SteveLin100132/notecraft/blob/HEAD/simulations/lab3/draw_breadboard.py) |
 | 電流分析圖 | [`simulations/lab3/annotate_current_path.py`](https://github.com/SteveLin100132/notecraft/blob/HEAD/simulations/lab3/annotate_current_path.py)、[`annotate_schematic.py`](https://github.com/SteveLin100132/notecraft/blob/HEAD/simulations/lab3/annotate_schematic.py) |
+
+### Tinkercad 設計
+
+| 實驗 | 連結 | 模擬可信度 |
+| --- | --- | --- |
+| 實驗一 輸出特性曲線 | [Lab 3 Exp 1](https://www.tinkercad.com/things/chcRtmq7JoB) | 讀值可用（但模型不是 2N7000） |
+| 實驗二／三 轉移曲線與 $R_{on}$ | [Lab 3 Exp 2/3](https://www.tinkercad.com/things/3Zihf2XPSJu) | 同上 |
+| 實驗四 LED 開關 | [Lab 3 Exp 4](https://www.tinkercad.com/things/5hgfPggjxlL) | 同上，LED 會真的亮 |
+| 第二部分 共源級放大器 | [Lab 3 Part 2](https://www.tinkercad.com/things/3pBpNsfiOjC) | **只有直流可信**，交流波形作廢 |
+
+四個設計都用 30 欄的「小型電路試驗板」，2N7000 一律插在 f15／f16／f17（第二部分是 f20／f21／f22），本體按六次 `R` 轉 180° 掛進溝槽，腳位才是 S／G／D。
 
 **為什麼 LTspice 用 BS170 而不是 2N7000**：LTspice 的標準庫沒有 2N7000。BS170 與 2N7000 是同一族的 N 通道增強型小訊號 MOSFET（60 V／500 mA／TO-92），差別主要在腳位順序，模型的 $V_{to}$ = 2.14 V 落在 2N7000 規格書 0.8–3.0 V 範圍的典型值附近。另外用庫裡的 2N7002（SOT-23 版的同晶片，$V_{to}$ = 1.6 V）交叉驗算過第二部分：工作點 35.5 µA、增益 9.3 倍，與 BS170 的 29.7 µA／8.7 倍同一量級，結論不變。
