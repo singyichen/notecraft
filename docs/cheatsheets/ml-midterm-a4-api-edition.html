@@ -1,4 +1,23 @@
 <!doctype html>
+<!--
+  機器學習實作 期中考 A4 雙面小抄「考前重點與 API 補強版」
+  以 ml-midterm-a4-merged.html（統整版）為底，另加三塊 scikit-learn API 速查：
+    補強 A 前處理 API（L5 p51–56）、補強 B 搜尋與回傳值（L6 p33–41）、補強 C 評估函式（L6 p42–47）。
+  2026-10-31 逐項對照 Lectures 1–6 投影片（含渲染程式截圖）校過一次：
+    - 補強 A/B/C 的每個 API 與參數名都對得到投影片，連 n_features_to_select、direction、
+      inverse_transform、passthrough、make_scorer(pos_label=0) 都在截圖裡。
+    - 數值全部實測無誤（混淆矩陣例、BCE 0.105/2.303、MSE .065、逐行追蹤、GridSearch 60 次…）；
+      classification_report 的 macro 0.50/0.56/0.49 與 weighted 0.70/0.60/0.61 與 L6 p46 完全一致。
+    - 移除 loc/iloc 切片：L3 p47–50 的 Pandas 只教 Series/DataFrame 建構與 to_numpy()；
+      課堂實際的取欄寫法是 df.drop(columns=[...]).to_numpy()（L5 p71），已改為這個。
+    - 補回 svc__gamma/svc__kernel：L6 p37、p47 的 GridSearchCV 範例就是用 SVC 當估計器
+      （SVM 的理論仍未教，只是示範用的模型）。
+  產出 PDF：
+    "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --headless --no-pdf-header-footer --allow-file-access-from-files \
+      --virtual-time-budget=5000 --print-to-pdf="src/content/notes/_references/機器學習實作系列/第9週-期中考A4小抄-API補強版.pdf" \
+      "file://$PWD/docs/cheatsheets/ml-midterm-a4-api-edition.html"
+  驗證：Pages 必須是 2；畫面右下出現紅色 OVERFLOW 代表塞爆。
+-->
 
 <html lang="zh-Hant">
 <head>
@@ -366,7 +385,7 @@ sc.fit_transform(X_test)          <span class="o"># ✘ 重估測試統計量</s
       <li><code>transform</code> 的特徵數須與 <code>fit</code> 時相同</li>
       <li><b>Pipeline</b>：訓練時各轉換器 <code>fit_transform</code>、最後估計器 <code>fit</code>；預測時只 <code>transform</code> 再 <code>predict</code> → 將原始資料與整條管線交給 CV，逐折 fit</li>
       <li><code>make_pipeline(StandardScaler(), LogisticRegression())</code> 免命名；<code>Pipeline([('sc',…),('clf',…)])</code></li>
-      <li>Pipeline 調參用<b>步驟名＋雙底線＋參數名</b>：<code>clf__C</code>；不是單底線。<code>make_pipeline</code> 自動用類別名小寫命名，所以同一個參數變成 <code>logisticregression__C</code>。</li>
+      <li>Pipeline 調參用<b>步驟名＋雙底線＋參數名</b>：<code>clf__C</code>、<code>svc__gamma</code>／<code>svc__kernel</code>（L6 p37、p47 範例）；不是單底線。<code>make_pipeline</code> 自動用類別名小寫命名，所以同一個參數變成 <code>logisticregression__C</code>。</li>
       <li><code>cross_val_score(pipe,X,y,cv=10)</code> 回傳 <b>10 個分數的陣列</b>；GridSearch 3×4 組 × cv=5 = 60 次 CV fit（預設重訓再 +1）；<code>gs.best_estimator_</code> 取最佳模型，最後只在測試集 score 一次</li>
       <li><code>train_test_split(…, test_size=0.3, stratify=y, random_state=1)</code></li>
       <li><code>joblib.dump</code>／<code>load</code> 存取<b>整條管線</b>（含前處理學到的統計量），載入後直接 <code>predict</code>，不必再訓練</li>
@@ -377,20 +396,28 @@ sc.fit_transform(X_test)          <span class="o"># ✘ 重估測試統計量</s
   <div class="study-col">
   <section>
     <h2><span class="n">14</span>Python 基礎（猜輸出）</h2>
-<pre>7/2 <span class="o">→ 3.5</span>    7//2 <span class="o">→ 3</span>    -7//2 <span class="o">→ -4</span>   7%3 <span class="o">→ 1</span>
-2**3 <span class="o">→ 8</span>
-"3"*3 <span class="o">→ '333'</span>  [1,2]*2 <span class="o">→ [1,2,1,2]</span>  "3"+3 <span class="o">→ TypeError</span>
-a=[0,1,2,3,4,5]
-a[1:4] <span class="o">→ [1,2,3]</span>  a[-2:] <span class="o">→ [4,5]</span>
-a[::2] <span class="o">→ [0,2,4]</span>  a[::-1] <span class="o">→ [5,4,3,2,1,0]</span>
-list(range(1,10,3)) <span class="o">→ [1,4,7]</span>   <span class="o"># 不含終點</span>
+<pre>7/2 <span class="o">→ 3.5</span>  <span class="o"># / 永遠回 float</span>
+7//2 <span class="o">→ 3</span>   -7//2 <span class="o">→ -4</span> <span class="o"># 往負無窮取整，不是砍小數</span>
+7%3 <span class="o">→ 1</span>    -7%2 <span class="o">→ 1</span>  <span class="o"># 餘數符號跟除數走</span>
+2**3 <span class="o">→ 8</span>  <span class="o"># ** 是次方（^ 才是 XOR）</span>
+"3"*3 <span class="o">→ '333'</span>  [1,2]*2 <span class="o">→ [1,2,1,2]</span> <span class="o"># 重複，非逐元素</span>
+"3"+3 <span class="o">→ TypeError</span> <span class="o"># 不自動轉型</span>
+a=[0,1,2,3,4,5]  <span class="o"># a[start:stop:step] 含頭不含尾</span>
+a[1:4] <span class="o">→ [1,2,3]</span>  a[-2:] <span class="o">→ [4,5]</span> <span class="o"># -1 是最後一個</span>
+a[::2] <span class="o">→ [0,2,4]</span>  a[::-1] <span class="o">→ [5,4,3,2,1,0]</span> <span class="o"># 反轉</span>
+list(range(1,10,3)) <span class="o">→ [1,4,7]</span> <span class="o"># 1→4→7，10 已達 stop</span>
 [x**2 for x in range(5) if x%2==0] <span class="o">→ [0,4,16]</span>
-len(set("hello")) <span class="o">→ 4</span>    bool([]) <span class="o">→ False</span>
+<span class="o"># 先迭代→再 if 篩→最後算式子</span>
+len(set("hello")) <span class="o">→ 4</span> <span class="o"># 逐字元去重 {h,e,l,o}</span>
+bool([]) <span class="o">→ False</span> <span class="o"># 空容器、0、""、None 皆為假</span>
 d={'a':1}; d.get('b',0) <span class="o">→ 0</span>; d['b'] <span class="o">→ KeyError</span>
+<span class="o"># get 回預設值不拋錯，中括號才拋</span>
 t=(1,2); t[0]=5 <span class="o">→ TypeError（tuple 不可變）</span>
-f"{3.14159:.2f}" <span class="o">→ '3.14'</span>   int("3.5") <span class="o">→ ValueError</span>
+f"{3.14159:.2f}" <span class="o">→ '3.14'</span> <span class="o"># 四捨五入，回「字串」</span>
+int("3.5") <span class="o">→ ValueError</span> <span class="o"># 要 int(float("3.5"))=3</span>
 def f(x, L=[]): L.append(x); return L
-f(1); print(f(2)) <span class="o">→ [1, 2]（預設值只建一次）</span></pre>
+f(1); print(f(2)) <span class="o">→ [1, 2]</span>
+<span class="o"># 預設值在 def 時只建一次，之後每次共用同一個</span></pre>
     <table>
       <tr><th>容器</th><th>可變</th><th>有序</th><th>用途</th></tr>
       <tr><td>list</td><td>✔</td><td>✔</td><td>增刪暫存</td></tr>
@@ -415,19 +442,21 @@ f(1); print(f(2)) <span class="o">→ [1, 2]（預設值只建一次）</span></
 np.array([[1],[2],[3]]).shape <span class="o">→ (3,1)</span>
 np.array([[[1],[2]]]).shape <span class="o">→ (1,2,1)</span>  <span class="o"># ndim=中括號層數</span>
 np.zeros((2,3))：全0；np.ones((2,3))：全1
-np.eye(3)：單位矩陣；(10,3,4)@(4,5)→(10,3,5)
+np.eye(3)：單位矩陣
+(10,3,4)@(4,5) <span class="o">→ (10,3,5)</span> <span class="o"># 只有末兩維做矩陣乘</span>
 A=np.array([[1,2],[3,4]])
 B=np.array([[5,6],[7,8]])
 A*B <span class="o">→ [[5,12],[21,32]]</span>   <span class="o"># 逐元素</span>
-A@B <span class="o">→ [[19,22],[43,50]]</span>   <span class="o"># 矩陣乘法 = np.matmul</span>
-np.dot([1,2,3],[4,5,6]) <span class="o">→ 32</span>
+A@B <span class="o">→ [[19,22],[43,50]]</span>  <span class="o"># =np.matmul；列點乘欄 1×5+2×7=19</span>
+np.dot([1,2,3],[4,5,6]) <span class="o">→ 32</span> <span class="o"># 一維即內積 1×4+2×5+3×6</span>
 M=np.arange(6).reshape(2,3)  <span class="o"># [[0,1,2],[3,4,5]]</span>
-M.sum(axis=0) <span class="o">→ [3,5,7]</span>  M.sum(axis=1) <span class="o">→ [3,12]</span>
+M.sum(axis=0) <span class="o">→ [3,5,7]</span> <span class="o"># axis=被壓掉那維；同欄 0+3,1+4,2+5</span>
+M.sum(axis=1) <span class="o">→ [3,12]</span> <span class="o"># 同列 0+1+2, 3+4+5</span>
 x=np.array([1,5,3,8])
-x[x>2] <span class="o">→ [5,3,8]</span>  <span class="o"># 布林遮罩</span>
-x[[0,3]] <span class="o">→ [1,8]</span>    <span class="o"># 花式索引</span>
-np.array([1,2.5]).dtype <span class="o">→ float64</span>
-x[:,np.newaxis].shape <span class="o">→ (4,1)</span></pre>
+x[x>2] <span class="o">→ [5,3,8]</span> <span class="o"># x>2 先成 [F,T,T,T] 再拿來篩</span>
+x[[0,3]] <span class="o">→ [1,8]</span> <span class="o"># 花式索引：位置寫成清單</span>
+np.array([1,2.5]).dtype <span class="o">→ float64</span> <span class="o"># 同型別，int 升 float</span>
+x[:,np.newaxis].shape <span class="o">→ (4,1)</span> <span class="o"># 變直欄，同 reshape(-1,1)</span></pre>
     <p><b>廣播</b>：從<b>最右邊</b>維度往左比，每對須<b>相等或其一為 1</b>；缺的維度補 1；結果取各維最大。</p>
     <table>
       <tr><th>形狀</th><th>結果</th></tr>
@@ -440,7 +469,7 @@ x[:,np.newaxis].shape <span class="o">→ (4,1)</span></pre>
     </table>
     <ul>
       <li><code>axis=k</code> 表示<b>被壓掉</b>的那一維；<code>.T</code> 對一維陣列無效；<code>reshape(-1,1)</code> 才變二維直欄</li>
-      <li><b>距離矩陣</b>：A:(a,m)、B:(b,m) → <code>A[:,None,:]-B[None,:,:]</code> 得 (a,b,m)，再沿 <code>axis=2</code> 取 norm 才是 (a,b)</li>
+      <li><b>距離矩陣</b>：A:(a,m)、B:(b,m) → <code>A[:,None,:]-B[None,:,:]</code>，即 (a,1,m) 與 (1,b,m) 廣播成 (a,b,m)＝每對點的<b>座標差</b>；再沿 <code>axis=2</code> 取 norm 壓掉 m 才是 (a,b) 距離</li>
       <li><b>同步洗牌</b>：<code>idx=rng.permutation(len(y))</code>、<code>X,y=X[idx],y[idx]</code> 必須用<b>同一組索引</b></li>
       <li><code>b=a</code> 共用同一物件、<code>b=a.copy()</code> 才複製；<code>np.where(z&gt;=0,1,0)</code> 回傳門檻分類</li>
       <li>ndarray 元素同型別；切片可能不連續；向量化由預編譯底層常式處理，減少 Python 迴圈；矩陣乘法用 <code>@</code></li>
@@ -449,12 +478,13 @@ x[:,np.newaxis].shape <span class="o">→ (4,1)</span></pre>
   </section>
 
   <section>
-    <h2><span class="n">16</span>Pandas</h2><p>pd.read_csv 讀 CSV；pd.Series(data,index=...) 建一維帶標籤資料；多個 Series 組 DataFrame 依索引對齊。loc 按標籤切片含尾端；iloc 按位置不含尾端。</p>
+    <h2><span class="n">16</span>Pandas</h2><p><code>pd.read_csv</code> 讀 CSV（L5 p9、p71）；<code>pd.Series(data,index=...)</code> 建一維帶標籤資料；多個 Series 組 DataFrame 依索引對齊。</p>
     <ul>
       <li><code>DataFrame</code>＝共用索引的多個 <code>Series</code>；<code>df['col']</code> → Series；<code>df[['col']]</code> → 二維 DataFrame</li>
       <li><b>轉成 NumPy</b>：<code>Series.to_numpy()</code>／<code>DataFrame.to_numpy()</code>（L3 p48、p50 的重點）</li>
       <li><code>isnull()</code>（NaN/None/NaT）、<code>dropna()</code> 預設刪<b>列</b>、<code>axis=1</code> 刪欄、<code>fillna(v)</code></li>
       <li><code>pd.get_dummies(…, drop_first=True)</code> → $k-1$ 欄</li>
+      <li><b>課堂的取欄寫法</b>（L5 p71 端到端範例）：<code>X = df.drop(columns=['target']).to_numpy()</code>、<code>y_raw = df['target'].to_numpy()</code>；<code>LabelEncoder</code> 轉完用 <code>classes_</code> 看對照（B→0、M→1）</li>
     </ul>
   </section>
 
