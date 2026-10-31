@@ -81,11 +81,11 @@
     background: #f5f7fb; border-left: 1.2pt solid var(--blue); margin: .25mm 0; padding: .35mm .8mm;
     white-space: pre-wrap; break-inside: avoid;
   }
-  pre .o { color: var(--green); }
-  .en { font-size: .82em; color: var(--muted); }
+  .r { color: var(--green); font-weight: 600; }   /* 執行結果 */
+  .c { color: var(--muted); }                      /* 註解說明 */
+  .en { font-size: .82em; color: var(--muted); margin-left: .25em; }
   .trap { background: var(--orange-bg); border-left: 1.4pt solid var(--orange); padding: .3mm .8mm; margin: .35mm 0; break-inside: avoid; }
   .trap b, .k { color: var(--orange); }
-  .ans { color: var(--green); font-weight: 600; }
   .muted { color: var(--muted); }
   .katex { font-size: 1.04em; }
   .katex-display { margin: .3mm 0; }
@@ -106,7 +106,7 @@ table{table-layout:fixed} td,th{overflow-wrap:anywhere} </style>
 
 <!-- ===================== 第一面：觀念 ===================== -->
 <div class="page concepts">
-  <div class="head"><b>機器學習實作｜期中考小抄 考前重點與 API 補強版（一）觀念與模型</b><span>範圍：Lectures 1–6 投影片｜單選 25–50 題｜考觀念不考推導＋Python 程式解讀</span></div>
+  <div class="head"><b>機器學習實作｜期中考小抄 API 補強版（一）觀念與模型</b><span>Lectures 1–6｜<b class="r">綠＝結果</b>　<b class="c">灰＝說明</b>　<b class="k">橘＝易錯</b></span></div>
   <div class="cols fixed-cols">
   <div class="study-col">
 
@@ -225,7 +225,7 @@ table{table-layout:fixed} td,th{overflow-wrap:anywhere} </style>
       <tr><td>幾何</td><td>約束區域是圓</td><td>菱形，角在座標軸上</td></tr>
     </table>
     <ul>
-      <li>$\lambda$ 越大越趨向欠擬合；sklearn 的 $C\propto 1/\lambda$：<span class="k">C 越小 = 正則化越強</span></li>
+      <li>$\lambda$ 越大越趨向欠擬合；sklearn 的 $C\propto 1/\lambda$：<b>C 越小 = 正則化越強</b></li>
       <li>正則化前通常先標準化（各特徵尺度一致，懲罰才公平）</li>
       <li>較大模型訓練 loss 反而更高：先查最佳化（初始化、學習率），不能只判過擬合。</li>
       <li><b>泛化誤差</b>＝在沒見過的資料上的誤差，用測試集估計；測試集越小估得越不準</li>
@@ -378,9 +378,9 @@ table{table-layout:fixed} td,th{overflow-wrap:anywhere} </style>
       <tr><td>分類器 <span class="en">classifier</span></td><td><code>fit(X,y)</code> → <code>predict(X)</code></td><td><code>LogisticRegression</code>、<code>Perceptron</code></td></tr>
     </table>
 <pre>sc = StandardScaler()
-X_tr = sc.fit_transform(X_train) <span class="o"># ✔ 只 fit 訓練</span>
-X_te = sc.transform(X_test) <span class="o"># ✔ 沿用訓練的 μ、σ</span>
-sc.fit_transform(X_test) <span class="o"># ✘ 重估測試統計量</span></pre>
+X_tr = sc.fit_transform(X_train) <span class="c"># ✔ 只 fit 訓練</span>
+X_te = sc.transform(X_test) <span class="c"># ✔ 沿用訓練的 μ、σ</span>
+sc.fit_transform(X_test) <span class="c"># ✘ 重估測試統計量</span></pre>
     <ul>
       <li>學到的參數結尾帶底線：<code>coef_</code> 權重、<code>intercept_</code> 偏差；建構子給的是超參數</li>
       <li><code>transform</code> 的特徵數須與 <code>fit</code> 時相同</li>
@@ -397,30 +397,30 @@ sc.fit_transform(X_test) <span class="o"># ✘ 重估測試統計量</span></pre
   <div class="study-col">
   <section>
     <h2><span class="n">14</span>Python 基礎（猜輸出）</h2>
-<pre>7/2 <span class="o">→ 3.5</span> <span class="o"># / 永遠回 float</span>
-7//2 <span class="o">→ 3</span>   -7//2 <span class="o">→ -4</span> <span class="o"># 往負無窮取整，不是砍小數</span>
-7%3 <span class="o">→ 1</span>    -7%2 <span class="o">→ 1</span> <span class="o"># 餘數符號跟除數走</span>
-2**3 <span class="o">→ 8</span> <span class="o"># ** 是次方（^ 才是 XOR）</span>
-"3"*3 <span class="o">→ '333'</span> <span class="o"># str×int＝把字串重複 3 次再接起來</span>
-[1,2]*2 <span class="o">→ [1,2,1,2]</span> <span class="o"># list 整串重複，不是逐元素乘</span>
-"3"+3 <span class="o">→ TypeError</span> <span class="o"># 不自動轉型</span>
-a=[0,1,2,3,4,5] <span class="o"># a[start:stop:step] 含頭不含尾</span>
-a[1:4] <span class="o">→ [1,2,3]</span>  a[-2:] <span class="o">→ [4,5]</span> <span class="o"># -1 是最後一個</span>
-a[::2] <span class="o">→ [0,2,4]</span>  a[::-1] <span class="o">→ [5,4,3,2,1,0]</span> <span class="o"># 反轉</span>
-list(range(1,10,3)) <span class="o">→ [1,4,7]</span> <span class="o"># 1→4→7，10 已達 stop</span>
-[x**2 for x in range(5) if x%2==0] <span class="o">→ [0,4,16]</span>
-<span class="o"># 先迭代→再 if 篩→最後算式子</span>
-len(set("hello")) <span class="o">→ 4</span> <span class="o"># 逐字元去重 {h,e,l,o}</span>
-bool([]) <span class="o">→ False</span> <span class="o"># 空容器、0、""、None 皆為假</span>
-d={'a':1}; d.get('b',0) <span class="o">→ 0</span>; d['b'] <span class="o">→ KeyError</span>
-<span class="o"># get 回預設值不拋錯，中括號才拋</span>
-t=(1,2); t[0]=5 <span class="o">→ TypeError</span>
-<span class="o"># tuple 不可變：不能改元素，但可整個重新指派 t=(5,2)</span>
-f"{3.14159:.2f}" <span class="o">→ '3.14'</span> <span class="o"># 四捨五入，回「字串」</span>
-int("3.5") <span class="o">→ ValueError</span> <span class="o"># 要 int(float("3.5"))=3</span>
+<pre>7/2 <span class="r">→ 3.5</span> <span class="c"># / 永遠回 float</span>
+7//2 <span class="r">→ 3</span>   -7//2 <span class="r">→ -4</span> <span class="c"># 往負無窮取整，不是砍小數</span>
+7%3 <span class="r">→ 1</span>    -7%2 <span class="r">→ 1</span> <span class="c"># 餘數符號跟除數走</span>
+2**3 <span class="r">→ 8</span> <span class="c"># ** 是次方（^ 才是 XOR）</span>
+"3"*3 <span class="r">→ '333'</span> <span class="c"># str×int＝把字串重複 3 次再接起來</span>
+[1,2]*2 <span class="r">→ [1,2,1,2]</span> <span class="c"># list 整串重複，不是逐元素乘</span>
+"3"+3 <span class="r">→ TypeError</span> <span class="c"># 不自動轉型</span>
+a=[0,1,2,3,4,5] <span class="c"># a[start:stop:step] 含頭不含尾</span>
+a[1:4] <span class="r">→ [1,2,3]</span>  a[-2:] <span class="r">→ [4,5]</span> <span class="c"># -1 是最後一個</span>
+a[::2] <span class="r">→ [0,2,4]</span>  a[::-1] <span class="r">→ [5,4,3,2,1,0]</span> <span class="c"># 反轉</span>
+list(range(1,10,3)) <span class="r">→ [1,4,7]</span> <span class="c"># 1→4→7，10 已達 stop</span>
+[x**2 for x in range(5) if x%2==0] <span class="r">→ [0,4,16]</span>
+<span class="c"># 先迭代→再 if 篩→最後算式子</span>
+len(set("hello")) <span class="r">→ 4</span> <span class="c"># 逐字元去重 {h,e,l,o}</span>
+bool([]) <span class="r">→ False</span> <span class="c"># 空容器、0、""、None 皆為假</span>
+d={'a':1}; d.get('b',0) <span class="r">→ 0</span>; d['b'] <span class="r">→ KeyError</span>
+<span class="c"># get 回預設值不拋錯，中括號才拋</span>
+t=(1,2); t[0]=5 <span class="r">→ TypeError</span>
+<span class="c"># tuple 不可變：不能改元素，但可整個重新指派 t=(5,2)</span>
+f"{3.14159:.2f}" <span class="r">→ '3.14'</span> <span class="c"># 四捨五入，回「字串」</span>
+int("3.5") <span class="r">→ ValueError</span> <span class="c"># 要 int(float("3.5"))=3</span>
 def f(x, L=[]): L.append(x); return L
-f(1); print(f(2)) <span class="o">→ [1, 2]</span>
-<span class="o"># 預設值在 def 時只建一次，之後每次共用同一個</span></pre>
+f(1); print(f(2)) <span class="r">→ [1, 2]</span>
+<span class="c"># 預設值在 def 時只建一次，之後每次共用同一個</span></pre>
     <table>
       <tr><th>容器</th><th>可變</th><th>有序</th><th>用途</th></tr>
       <tr><td>list</td><td>✔</td><td>✔</td><td>增刪暫存；依位置取 O(1)、找值 O(n)</td></tr>
@@ -441,42 +441,42 @@ f(1); print(f(2)) <span class="o">→ [1, 2]</span>
 
   <section>
     <h2><span class="n">15</span>NumPy</h2>
-<pre><span class="o"># .shape 是「每一維長度」組成的 tuple；由最外層往內數</span>
-np.array([1,2,3]).shape <span class="o">→ (3,)</span>
-<span class="o"># 一層括號3個元素。一維就是一維，非行也非列向量</span>
-np.array([[1],[2],[3]]).shape <span class="o">→ (3,1)</span>
-<span class="o"># 外層3個、每個內層1個 → 3列1欄的直欄</span>
-np.array([[[1],[2]]]).shape <span class="o">→ (1,2,1)</span>
-<span class="o"># ndim=中括號層數；最外1、中間2、最內1</span>
-np.zeros((2,3))<span class="o">：全0</span>；np.ones((2,3))<span class="o">：全1</span>
-<span class="o"># 傳進去的 tuple 直接就是 shape</span>
-np.eye(3)<span class="o">：單位矩陣 # 對角線1、其餘0</span>
-(10,3,4)@(4,5) <span class="o">→ (10,3,5)</span>
-<span class="o"># 只有末兩維做矩陣乘 (3,4)@(4,5)=(3,5)，10 當批次帶著走</span>
-A=np.array([[1,2],[3,4]]) <span class="o"># 兩個 2×2 方陣</span>
+<pre><span class="c"># .shape 是「每一維長度」組成的 tuple；由最外層往內數</span>
+np.array([1,2,3]).shape <span class="r">→ (3,)</span>
+<span class="c"># 一層括號3個元素。一維就是一維，非行也非列向量</span>
+np.array([[1],[2],[3]]).shape <span class="r">→ (3,1)</span>
+<span class="c"># 外層3個、每個內層1個 → 3列1欄的直欄</span>
+np.array([[[1],[2]]]).shape <span class="r">→ (1,2,1)</span>
+<span class="c"># ndim=中括號層數；最外1、中間2、最內1</span>
+np.zeros((2,3)); np.ones((2,3)) <span class="c"># 全 0／全 1</span>
+<span class="c"># 傳進去的 tuple 直接就是 shape</span>
+np.eye(3) <span class="c"># 單位矩陣：對角線 1、其餘 0</span>
+(10,3,4)@(4,5) <span class="r">→ (10,3,5)</span>
+<span class="c"># 只有末兩維做矩陣乘 (3,4)@(4,5)=(3,5)，10 當批次帶著走</span>
+A=np.array([[1,2],[3,4]]) <span class="c"># 兩個 2×2 方陣</span>
 B=np.array([[5,6],[7,8]])
-A*B <span class="o">→ [[5,12],[21,32]]</span> <span class="o"># 逐元素：1×5、2×6、3×7、4×8</span>
-A@B <span class="o">→ [[19,22],[43,50]]</span> <span class="o"># =np.matmul；列點乘欄 1×5+2×7=19</span>
-np.dot([1,2,3],[4,5,6]) <span class="o">→ 32</span> <span class="o"># 一維即內積 1×4+2×5+3×6</span>
+A*B <span class="r">→ [[5,12],[21,32]]</span> <span class="c"># 逐元素：1×5、2×6、3×7、4×8</span>
+A@B <span class="r">→ [[19,22],[43,50]]</span> <span class="c"># =np.matmul；列點乘欄 1×5+2×7=19</span>
+np.dot([1,2,3],[4,5,6]) <span class="r">→ 32</span> <span class="c"># 一維即內積 1×4+2×5+3×6</span>
 M=np.arange(6).reshape(2,3)
-<span class="o"># arange(6)=[0..5] 共6個，再排成2列3欄 [[0,1,2],[3,4,5]]</span>
-M.sum(axis=0) <span class="o">→ [3,5,7]</span> <span class="o"># axis=被壓掉那維；同欄 0+3,1+4,2+5</span>
-M.sum(axis=1) <span class="o">→ [3,12]</span> <span class="o"># 同列 0+1+2, 3+4+5</span>
+<span class="c"># arange(6)=[0..5] 共6個，再排成2列3欄 [[0,1,2],[3,4,5]]</span>
+M.sum(axis=0) <span class="r">→ [3,5,7]</span> <span class="c"># axis=被壓掉那維；同欄 0+3,1+4,2+5</span>
+M.sum(axis=1) <span class="r">→ [3,12]</span> <span class="c"># 同列 0+1+2, 3+4+5</span>
 x=np.array([1,5,3,8])
-x>2 <span class="o">→ [F,T,T,T]</span> <span class="o"># 比較是逐元素的，得同長度布林陣列</span>
-x[x>2] <span class="o">→ [5,3,8]</span> <span class="o"># 布林遮罩 boolean mask：只留 True 的位置</span>
-x[[0,3]] <span class="o">→ [1,8]</span> <span class="o"># 花式索引 fancy indexing：位置由清單決定</span>
-np.array([1,2.5]).dtype <span class="o">→ float64</span> <span class="o"># 同型別，int 升 float</span>
-x[:,np.newaxis].shape <span class="o">→ (4,1)</span> <span class="o"># 變直欄，同 reshape(-1,1)</span></pre>
+x>2 <span class="r">→ [F,T,T,T]</span> <span class="c"># 比較是逐元素的，得同長度布林陣列</span>
+x[x>2] <span class="r">→ [5,3,8]</span> <span class="c"># 布林遮罩 boolean mask：只留 True 的位置</span>
+x[[0,3]] <span class="r">→ [1,8]</span> <span class="c"># 花式索引 fancy indexing：位置由清單決定</span>
+np.array([1,2.5]).dtype <span class="r">→ float64</span> <span class="c"># 同型別，int 升 float</span>
+x[:,np.newaxis].shape <span class="r">→ (4,1)</span> <span class="c"># 變直欄，同 reshape(-1,1)</span></pre>
     <p><b>廣播</b><span class="en">broadcasting</span>：從<b>最右邊</b>維度往左比，每對須<b>相等或其一為 1</b>；缺的維度補 1；結果取各維最大。</p>
     <table>
       <tr><th>形狀</th><th>結果</th></tr>
-      <tr><td>(4,3)+(3,)</td><td>(4,3)　右邊左補成 (1,3)；3=3、1 撐成 4</td></tr>
+      <tr><td>(4,3)+(3,)</td><td><span class="r">(4,3)</span>　右邊左補成 (1,3)；3=3、1 撐成 4</td></tr>
       <tr><td>(4,3)+(4,)</td><td class="k">ValueError</td></tr>
       <tr><td colspan="2" class="muted">　補成 (1,4) 後最右 3 vs 4，兩者都不是 1 → 失敗。要成功先 <code>reshape(-1,1)</code></td></tr>
-      <tr><td>(4,1)+(3,)</td><td>(4,3)　(4,1) 與 (1,3)，兩邊各把 1 撐開</td></tr>
-      <tr><td>(3,1,2)−(5,2)</td><td>(3,5,2)　2=2、1 撐成 5、左補 1 給 3（座標差，還不是距離）</td></tr>
-      <tr><td>(8,1,6,1)+(7,1,5)</td><td>(8,7,6,5)　右邊補成 (1,7,1,5)，逐位取大</td></tr>
+      <tr><td>(4,1)+(3,)</td><td><span class="r">(4,3)</span>　(4,1) 與 (1,3)，兩邊各把 1 撐開</td></tr>
+      <tr><td>(3,1,2)−(5,2)</td><td><span class="r">(3,5,2)</span>　2=2、1 撐成 5、左補 1 給 3（座標差，還不是距離）</td></tr>
+      <tr><td>(8,1,6,1)+(7,1,5)</td><td><span class="r">(8,7,6,5)</span>　右邊補成 (1,7,1,5)，逐位取大</td></tr>
       <tr><td class="k">(n,)+(n,1)</td><td class="k">(n,n)：不報錯卻算錯！</td></tr>
       <tr><td colspan="2" class="muted">　(n,) 補成 (1,n) 被當成一「列」、另一個是直欄，撐成方陣</td></tr>
     </table>
@@ -492,19 +492,19 @@ x[:,np.newaxis].shape <span class="o">→ (4,1)</span> <span class="o"># 變直�
 
   <section>
     <h2><span class="n">16</span>Pandas</h2>
-<pre>df = pd.read_csv("x.csv") <span class="o"># 讀成 DataFrame</span>
+<pre>df = pd.read_csv("x.csv") <span class="c"># 讀成 DataFrame</span>
 s = pd.Series([10,20,30], index=['a','b','c'])
-<span class="o"># Series＝帶索引標籤的一維；多個共用索引的 Series 組成 DataFrame</span>
-df['col'] <span class="o">→ Series</span> <span class="o"># 一個中括號＝一維</span>
-df[['col']] <span class="o">→ DataFrame</span> <span class="o"># 兩個中括號＝二維</span>
-df['col'].to_numpy() <span class="o">→ ndarray</span> <span class="o"># 轉成 NumPy 才能餵模型</span>
-X = df.drop(columns=['target']).to_numpy() <span class="o"># 課堂取 X 的寫法</span>
+<span class="c"># Series＝帶索引標籤的一維；多個共用索引的 Series 組成 DataFrame</span>
+df['col'] <span class="r">→ Series</span> <span class="c"># 一個中括號＝一維</span>
+df[['col']] <span class="r">→ DataFrame</span> <span class="c"># 兩個中括號＝二維</span>
+df['col'].to_numpy() <span class="r">→ ndarray</span> <span class="c"># 轉成 NumPy 才能餵模型</span>
+X = df.drop(columns=['target']).to_numpy() <span class="c"># 課堂取 X 的寫法</span>
 y_raw = df['target'].to_numpy()
-<span class="o"># LabelEncoder 轉完用 classes_ 看對照（B→0、M→1）</span>
-df.isnull().sum() <span class="o"># 每欄缺值數；NaN/None/NaT 算，空字串不算</span>
-df.dropna() <span class="o"># 預設刪「列」；axis=1 才是刪欄</span>
-df.fillna(v) <span class="o"># 補值</span>
-pd.get_dummies(df, drop_first=True) <span class="o"># 獨熱並去冗餘 → k−1 欄</span></pre>
+<span class="c"># LabelEncoder 轉完用 classes_ 看對照（B→0、M→1）</span>
+df.isnull().sum() <span class="c"># 每欄缺值數；NaN/None/NaT 算，空字串不算</span>
+df.dropna() <span class="c"># 預設刪「列」；axis=1 才是刪欄</span>
+df.fillna(v) <span class="c"># 補值</span>
+pd.get_dummies(df, drop_first=True) <span class="c"># 獨熱並去冗餘 → k−1 欄</span></pre>
   </section>
 
 <section><h2>補強 B｜搜尋、回傳值與評估</h2><table>
@@ -520,15 +520,15 @@ pd.get_dummies(df, drop_first=True) <span class="o"># 獨熱並去冗餘 → k�
 
   <section>
     <h2><span class="n">17</span>Matplotlib</h2>
-<pre>fig, ax = plt.subplots() <span class="o"># 物件導向：明確拿到 Figure 與 Axes</span>
-ax.plot(x,y); ax.set_title("t") <span class="o"># 物件導向版多一個 set_</span>
-plt.plot(x,y); plt.title("t") <span class="o"># 狀態式：作用在「目前的圖」</span>
-plt.subplots(2,3) <span class="o"># 建 6 個子圖</span>
-axes[0,2] <span class="o"># 從 0 起算＝plt.subplot(2,3,3) 從 1 起算、逐列編號</span>
-plt.style.use('seaborn-v0_8-poster') <span class="o"># 設樣式</span>
-plt.tight_layout() <span class="o"># 調子圖間距</span>
-plt.show() <span class="o"># 顯示</span>
-plt.savefig("file_name.png") <span class="o"># 存檔</span></pre>
+<pre>fig, ax = plt.subplots() <span class="c"># 物件導向：明確拿到 Figure 與 Axes</span>
+ax.plot(x,y); ax.set_title("t") <span class="c"># 物件導向版多一個 set_</span>
+plt.plot(x,y); plt.title("t") <span class="c"># 狀態式：作用在「目前的圖」</span>
+plt.subplots(2,3) <span class="c"># 建 6 個子圖</span>
+axes[0,2] <span class="c"># 從 0 起算＝plt.subplot(2,3,3) 從 1 起算、逐列編號</span>
+plt.style.use('seaborn-v0_8-poster') <span class="c"># 設樣式</span>
+plt.tight_layout() <span class="c"># 調子圖間距</span>
+plt.show() <span class="c"># 顯示</span>
+plt.savefig("file_name.png") <span class="c"># 存檔</span></pre>
     <p><b>Figure</b>＝整張畫布；<b>Axes</b>＝子圖；Axis＝單條軸。<code>plot</code> 全點同樣式、快；<code>scatter</code> 可逐點設 <code>s</code>／<code>c</code>／<code>alpha</code>、慢。</p>
     <table>
       <tr><th>圖</th><th>函式</th><th>用途</th></tr>
@@ -545,20 +545,20 @@ plt.savefig("file_name.png") <span class="o"># 存檔</span></pre>
     <h2><span class="n">18</span>模型內部功能辨識</h2>
     <p>各片段獨立辨識，對照課堂 0/1 分類；<code>np</code> 為 NumPy。</p>
 <pre>z = X @ w + b
-<span class="o"># 淨輸入；X:(n,d), w:(d,) → z:(n,)</span>
+<span class="c"># 淨輸入；X:(n,d), w:(d,) → z:(n,)</span>
 y_hat = (z >= 0).astype(int)
-<span class="o"># PLA 的階梯分類：z=0 也輸出 1</span>
+<span class="c"># PLA 的階梯分類：z=0 也輸出 1</span>
 pred = int(xi @ w + b >= 0)
 update = eta * (target - pred)
 w += update * xi; b += update
-<span class="o"># PLA 單筆更新：分對 → update=0</span>
+<span class="c"># PLA 單筆更新：分對 → update=0</span>
 a = z
-<span class="o"># Adaline 訓練用線性激活</span>
+<span class="c"># Adaline 訓練用線性激活</span>
 a = 1 / (1 + np.exp(-z))
-<span class="o"># 邏輯迴歸 sigmoid；不是類別標籤</span>
+<span class="c"># 邏輯迴歸 sigmoid；不是類別標籤</span>
 errors = y - a
 w += eta * X.T @ errors / len(y)
-<span class="o"># 全批次更新；a 的定義決定模型</span>
+<span class="c"># 全批次更新；a 的定義決定模型</span>
 b += eta * errors.mean()</pre>
     <table>
       <tr><th>程式／線索</th><th>辨識重點</th></tr>
@@ -569,21 +569,21 @@ b += eta * errors.mean()</pre>
     </table>
 <pre>X=np.array([[1.,2.],[3.,4.]])
 w=np.array([1.,-1.]); b=0.
-z=X@w+b <span class="o">→ [-1.,-1.]</span> <span class="o"># X@w=[1·1+2·(−1), 3·1+4·(−1)]=[−1,−1]，再加 b</span>
-(z&gt;=0).astype(int) <span class="o">→ [0,0]</span> <span class="o"># −1≥0 不成立；True→1、False→0</span>
-<span class="o"># 同一筆換 b=1.：z=[0,0]</span>
-p=1/(1+np.exp(-z)) <span class="o">→ [.5,.5]</span> <span class="o"># σ(0)=1/(1+1)=.5</span>
-pred=(p&gt;=.5).astype(int) <span class="o">→ [1,1]</span> <span class="o"># .5≥.5 成立，邊界算正類</span>
+z=X@w+b <span class="r">→ [-1.,-1.]</span> <span class="c"># X@w=[1·1+2·(−1), 3·1+4·(−1)]=[−1,−1]，再加 b</span>
+(z&gt;=0).astype(int) <span class="r">→ [0,0]</span> <span class="c"># −1≥0 不成立；True→1、False→0</span>
+<span class="c"># 同一筆換 b=1.：z=[0,0]</span>
+p=1/(1+np.exp(-z)) <span class="r">→ [.5,.5]</span> <span class="c"># σ(0)=1/(1+1)=.5</span>
+pred=(p&gt;=.5).astype(int) <span class="r">→ [1,1]</span> <span class="c"># .5≥.5 成立，邊界算正類</span>
 eta=0.1; target=1; pred=0
-u=eta*(target-pred) <span class="o">→ 0.1</span> <span class="o"># .1×(1−0)；分對時差為 0 就不更新</span>
-w+u*X[0] <span class="o">→ [1.1,-0.8]</span> <span class="o"># [1,−1]+.1×[1,2]</span>
-b+u <span class="o">→ 0.1</span> <span class="o"># 0+.1</span></pre>
+u=eta*(target-pred) <span class="r">→ 0.1</span> <span class="c"># .1×(1−0)；分對時差為 0 就不更新</span>
+w+u*X[0] <span class="r">→ [1.1,-0.8]</span> <span class="c"># [1,−1]+.1×[1,2]</span>
+b+u <span class="r">→ 0.1</span> <span class="c"># 0+.1</span></pre>
     <p class="muted">題目要機率就回 <code>p</code>、要類別才回 <code>pred</code>，別混用。MSE 代入例：$y{=}[1,0]$、$a{=}[.8,.3]$ → $e{=}[.2,-.3]$、$\frac{.04+.09}{2}=.065$。</p>
     <div class="trap"><b>更新係數別硬背，先看損失定義。</b>Adaline 損失是 $\frac1n\sum e^2$ 時 <code>w += eta*2*(X.T@e)/len(y)</code>、<code>b += eta*2*e.mean()</code>；題目若寫 $\frac1{2n}\sum e^2$ 就<b>少一個 2</b>。邏輯迴歸 BCE 改成 <code>e = y - p</code> 且<b>沒有那個 2</b>。</div>
     <h3>BCE 實作：防 <code>log(0)</code> 的兩種等價寫法</h3>
 <pre>p = np.clip(p, 1e-15, 1-1e-15)
 loss = -np.mean(y*np.log(p) + (1-y)*np.log(1-p))
-<span class="o"># @ 對一維陣列＝逐項相乘後加總，除樣本數即平均</span>
+<span class="c"># @ 對一維陣列＝逐項相乘後加總，除樣本數即平均</span>
 loss = (-y @ np.log(p) - (1-y) @ np.log(1-p)) / len(y)</pre>
     <p class="muted"><code>y</code> 與 <code>p</code> 都應為 <code>(n,)</code>，<span class="k">別把閾值化後的 <code>pred</code> 當 <code>p</code> 代入</span>。單筆 $y{=}1$：$p{=}0.9$ → $0.105$、$p{=}0.1$ → $2.303$，<b>分對類別不代表 loss=0</b>。迴圈：$X$、$y$ 各 4 筆、<code>range(3)</code> 內層逐筆 → 共 <b>12 筆次</b>，但 PLA 實際更新可少於 12 次；下一筆沿用前一筆更新後的參數。</p>
   </section>
@@ -592,13 +592,13 @@ loss = (-y @ np.log(p) - (1-y) @ np.log(1-p)) / len(y)</pre>
     <p><b>predict</b> 回傳類別 (n,)；<b>predict_proba</b> 回傳 (n,K)，欄位順序看 <code>classes_</code>，不是預測正確率。</p>
 <pre># 假設 clf.classes_ 為 [0,1]
 P=np.array([[.8,.2],[.3,.7],[.6,.4]])
-P[:,1] <span class="o">→ [.2,.7,.4]</span> <span class="o"># 取第1欄＝classes_[1]＝類別1的機率</span>
-(P[:,1]>=.5).astype(int) <span class="o">→ [0,1,0]</span>
-(P[:,1]>=.3).astype(int) <span class="o">→ [0,1,1]</span> <span class="o"># 門檻降到.3，第3筆.4 也過→多抓一個正類</span>
+P[:,1] <span class="r">→ [.2,.7,.4]</span> <span class="c"># 取第1欄＝classes_[1]＝類別1的機率</span>
+(P[:,1]>=.5).astype(int) <span class="r">→ [0,1,0]</span>
+(P[:,1]>=.3).astype(int) <span class="r">→ [0,1,1]</span> <span class="c"># 門檻降到.3，第3筆.4 也過→多抓一個正類</span>
 # StandardScaler：以訓練統計量轉換
 sc=StandardScaler().fit([[0.],[2.]])
-sc.mean_ <span class="o">→ [1.]</span> <span class="o"># μ=(0+2)/2</span>
-sc.transform([[3.]]) <span class="o">→ [[2.]]</span> <span class="o"># σ=1 → (3−1)/1=2</span></pre>
+sc.mean_ <span class="r">→ [1.]</span> <span class="c"># μ=(0+2)/2</span>
+sc.transform([[3.]]) <span class="r">→ [[2.]]</span> <span class="c"># σ=1 → (3−1)/1=2</span></pre>
     <ul>
       <li>100 筆、<code>test_size=.3</code> → 訓練 70、測試 30；回傳順序 <code>X_train,X_test,y_train,y_test</code>。</li>
       <li><code>stratify=y</code> 保持類別比例；<code>random_state</code> 固定切分的隨機性，不保證分數更高。</li>
