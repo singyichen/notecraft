@@ -93,8 +93,8 @@
   }
 
 .concepts {font-size:6.5pt;line-height:1.20}
-.programs {font-size:6pt;line-height:1.15}
-.programs pre {font-size:5.3pt;line-height:1.13}
+.programs {font-size:5.85pt;line-height:1.14}
+.programs pre {font-size:5.2pt;line-height:1.12}
 h2 {font-size:7pt} code {font-size:5.65pt}
 .page.programs .cols.fixed-cols {display:block;column-count:3;column-gap:2.5mm;column-fill:auto;column-rule:.4pt solid var(--line)}
 .page.programs .study-col {display:contents}
@@ -400,7 +400,8 @@ sc.fit_transform(X_test)          <span class="o"># ✘ 重估測試統計量</s
 7//2 <span class="o">→ 3</span>   -7//2 <span class="o">→ -4</span> <span class="o"># 往負無窮取整，不是砍小數</span>
 7%3 <span class="o">→ 1</span>    -7%2 <span class="o">→ 1</span>  <span class="o"># 餘數符號跟除數走</span>
 2**3 <span class="o">→ 8</span>  <span class="o"># ** 是次方（^ 才是 XOR）</span>
-"3"*3 <span class="o">→ '333'</span>  [1,2]*2 <span class="o">→ [1,2,1,2]</span> <span class="o"># 重複，非逐元素</span>
+"3"*3 <span class="o">→ '333'</span> <span class="o"># str×int＝把字串重複 3 次再接起來</span>
+[1,2]*2 <span class="o">→ [1,2,1,2]</span> <span class="o"># list 整串重複，不是逐元素乘</span>
 "3"+3 <span class="o">→ TypeError</span> <span class="o"># 不自動轉型</span>
 a=[0,1,2,3,4,5]  <span class="o"># a[start:stop:step] 含頭不含尾</span>
 a[1:4] <span class="o">→ [1,2,3]</span>  a[-2:] <span class="o">→ [4,5]</span> <span class="o"># -1 是最後一個</span>
@@ -412,7 +413,8 @@ len(set("hello")) <span class="o">→ 4</span> <span class="o"># 逐字元去重
 bool([]) <span class="o">→ False</span> <span class="o"># 空容器、0、""、None 皆為假</span>
 d={'a':1}; d.get('b',0) <span class="o">→ 0</span>; d['b'] <span class="o">→ KeyError</span>
 <span class="o"># get 回預設值不拋錯，中括號才拋</span>
-t=(1,2); t[0]=5 <span class="o">→ TypeError（tuple 不可變）</span>
+t=(1,2); t[0]=5 <span class="o">→ TypeError</span>
+<span class="o"># tuple 不可變：不能改元素，但可整個重新指派 t=(5,2)</span>
 f"{3.14159:.2f}" <span class="o">→ '3.14'</span> <span class="o"># 四捨五入，回「字串」</span>
 int("3.5") <span class="o">→ ValueError</span> <span class="o"># 要 int(float("3.5"))=3</span>
 def f(x, L=[]): L.append(x); return L
@@ -420,10 +422,10 @@ f(1); print(f(2)) <span class="o">→ [1, 2]</span>
 <span class="o"># 預設值在 def 時只建一次，之後每次共用同一個</span></pre>
     <table>
       <tr><th>容器</th><th>可變</th><th>有序</th><th>用途</th></tr>
-      <tr><td>list</td><td>✔</td><td>✔</td><td>增刪暫存</td></tr>
-      <tr><td>tuple</td><td>✘</td><td>✔</td><td>固定組合；元素皆可雜湊時可當鍵</td></tr>
-      <tr><td>dict</td><td>✔</td><td>插入順序</td><td>依名字查（雜湊）</td></tr>
-      <tr><td>set</td><td>✔</td><td>✘</td><td>去重、交集 <code>&amp;</code></td></tr>
+      <tr><td>list</td><td>✔</td><td>✔</td><td>增刪暫存；依位置取 O(1)、找值 O(n)</td></tr>
+      <tr><td>tuple</td><td>✘</td><td>✔</td><td>固定組合；不可變才可雜湊，故能當 dict 的鍵</td></tr>
+      <tr><td>dict</td><td>✔</td><td>插入順序</td><td>依名字查；雜湊表，平均 O(1)</td></tr>
+      <tr><td>set</td><td>✔</td><td>✘</td><td>去重、交集 <code>&amp;</code>；同樣靠雜湊，故無序</td></tr>
     </table>
     <ul>
       <li><code>if/elif</code> 只執行第一個成立分支（FizzBuzz 要先判 15）；縮排是語法</li>
@@ -438,40 +440,50 @@ f(1); print(f(2)) <span class="o">→ [1, 2]</span>
 
   <section>
     <h2><span class="n">15</span>NumPy</h2>
-<pre>np.array([1,2,3]).shape <span class="o">→ (3,)</span>  <span class="o"># 一維，非行也非列向量</span>
+<pre><span class="o"># .shape 是「每一維長度」組成的 tuple；由最外層往內數</span>
+np.array([1,2,3]).shape <span class="o">→ (3,)</span>
+<span class="o">  # 一層括號3個元素。一維就是一維，非行也非列向量</span>
 np.array([[1],[2],[3]]).shape <span class="o">→ (3,1)</span>
-np.array([[[1],[2]]]).shape <span class="o">→ (1,2,1)</span>  <span class="o"># ndim=中括號層數</span>
-np.zeros((2,3))：全0；np.ones((2,3))：全1
-np.eye(3)：單位矩陣
-(10,3,4)@(4,5) <span class="o">→ (10,3,5)</span> <span class="o"># 只有末兩維做矩陣乘</span>
-A=np.array([[1,2],[3,4]])
+<span class="o">  # 外層3個、每個內層1個 → 3列1欄的直欄</span>
+np.array([[[1],[2]]]).shape <span class="o">→ (1,2,1)</span>
+<span class="o">  # ndim=中括號層數；最外1、中間2、最內1</span>
+np.zeros((2,3))<span class="o">：全0</span>；np.ones((2,3))<span class="o">：全1</span>
+<span class="o">  # 傳進去的 tuple 直接就是 shape</span>
+np.eye(3)<span class="o">：單位矩陣 # 對角線1、其餘0</span>
+(10,3,4)@(4,5) <span class="o">→ (10,3,5)</span>
+<span class="o">  # 只有末兩維做矩陣乘 (3,4)@(4,5)=(3,5)，10 當批次帶著走</span>
+A=np.array([[1,2],[3,4]])  <span class="o"># 兩個 2×2 方陣</span>
 B=np.array([[5,6],[7,8]])
-A*B <span class="o">→ [[5,12],[21,32]]</span>   <span class="o"># 逐元素</span>
+A*B <span class="o">→ [[5,12],[21,32]]</span> <span class="o"># 逐元素：1×5、2×6、3×7、4×8</span>
 A@B <span class="o">→ [[19,22],[43,50]]</span>  <span class="o"># =np.matmul；列點乘欄 1×5+2×7=19</span>
 np.dot([1,2,3],[4,5,6]) <span class="o">→ 32</span> <span class="o"># 一維即內積 1×4+2×5+3×6</span>
-M=np.arange(6).reshape(2,3)  <span class="o"># [[0,1,2],[3,4,5]]</span>
+M=np.arange(6).reshape(2,3)
+<span class="o">  # arange(6)=[0..5] 共6個，再排成2列3欄 [[0,1,2],[3,4,5]]</span>
 M.sum(axis=0) <span class="o">→ [3,5,7]</span> <span class="o"># axis=被壓掉那維；同欄 0+3,1+4,2+5</span>
 M.sum(axis=1) <span class="o">→ [3,12]</span> <span class="o"># 同列 0+1+2, 3+4+5</span>
 x=np.array([1,5,3,8])
-x[x>2] <span class="o">→ [5,3,8]</span> <span class="o"># x>2 先成 [F,T,T,T] 再拿來篩</span>
-x[[0,3]] <span class="o">→ [1,8]</span> <span class="o"># 花式索引：位置寫成清單</span>
+x>2 <span class="o">→ [F,T,T,T]</span> <span class="o"># 比較是逐元素的，得同長度布林陣列</span>
+x[x>2] <span class="o">→ [5,3,8]</span> <span class="o"># 布林遮罩：只留 True 的位置</span>
+x[[0,3]] <span class="o">→ [1,8]</span> <span class="o"># 花式索引：位置寫成清單，順序由清單決定</span>
 np.array([1,2.5]).dtype <span class="o">→ float64</span> <span class="o"># 同型別，int 升 float</span>
 x[:,np.newaxis].shape <span class="o">→ (4,1)</span> <span class="o"># 變直欄，同 reshape(-1,1)</span></pre>
     <p><b>廣播</b>：從<b>最右邊</b>維度往左比，每對須<b>相等或其一為 1</b>；缺的維度補 1；結果取各維最大。</p>
     <table>
       <tr><th>形狀</th><th>結果</th></tr>
-      <tr><td>(4,3)+(3,)</td><td>(4,3)</td></tr>
-      <tr><td>(4,3)+(4,)</td><td class="k">ValueError（3≠4）</td></tr>
-      <tr><td>(4,1)+(3,)</td><td>(4,3)</td></tr>
-      <tr><td>(3,1,2)−(5,2)</td><td>(3,5,2)（座標差；還不是距離）</td></tr>
-      <tr><td>(8,1,6,1)+(7,1,5)</td><td>(8,7,6,5)</td></tr>
+      <tr><td>(4,3)+(3,)</td><td>(4,3)　右邊左補成 (1,3)；3=3、1 撐成 4</td></tr>
+      <tr><td>(4,3)+(4,)</td><td class="k">ValueError</td></tr>
+      <tr><td colspan="2" class="muted">　補成 (1,4) 後最右 3 vs 4，兩者都不是 1 → 失敗。要成功先 <code>reshape(-1,1)</code></td></tr>
+      <tr><td>(4,1)+(3,)</td><td>(4,3)　(4,1) 與 (1,3)，兩邊各把 1 撐開</td></tr>
+      <tr><td>(3,1,2)−(5,2)</td><td>(3,5,2)　2=2、1 撐成 5、左補 1 給 3（座標差，還不是距離）</td></tr>
+      <tr><td>(8,1,6,1)+(7,1,5)</td><td>(8,7,6,5)　右邊補成 (1,7,1,5)，逐位取大</td></tr>
       <tr><td class="k">(n,)+(n,1)</td><td class="k">(n,n)：不報錯卻算錯！</td></tr>
+      <tr><td colspan="2" class="muted">　(n,) 補成 (1,n) 被當成一「列」、另一個是直欄，撐成方陣</td></tr>
     </table>
     <ul>
-      <li><code>axis=k</code> 表示<b>被壓掉</b>的那一維；<code>.T</code> 對一維陣列無效；<code>reshape(-1,1)</code> 才變二維直欄</li>
+      <li><code>axis=k</code> 表示<b>被壓掉</b>的那一維——<b>axis 寫幾，shape 的第幾個數字就消失</b>（標準化的 <code>X.mean(axis=0)</code> 就是「每個特徵欄各一個平均」）；<code>.T</code> 對一維陣列<b>無效</b>（只有一個軸，沒有兩軸可換），要直欄得用 <code>reshape(-1,1)</code> 或 <code>np.newaxis</code></li>
       <li><b>距離矩陣</b>：A:(a,m)、B:(b,m) → <code>A[:,None,:]-B[None,:,:]</code>，即 (a,1,m) 與 (1,b,m) 廣播成 (a,b,m)＝每對點的<b>座標差</b>；再沿 <code>axis=2</code> 取 norm 壓掉 m 才是 (a,b) 距離</li>
       <li><b>同步洗牌</b>：<code>idx=rng.permutation(len(y))</code>、<code>X,y=X[idx],y[idx]</code> 必須用<b>同一組索引</b></li>
-      <li><code>b=a</code> 共用同一物件、<code>b=a.copy()</code> 才複製；<code>np.where(z&gt;=0,1,0)</code> 回傳門檻分類</li>
+      <li><code>b=a</code> 只是多一個名字指向<b>同一塊資料</b>，改 b 等於改 a；<code>b=a.copy()</code> 才另配一份。<code>np.where(cond,1,0)</code> 是三參數版：條件成立取 1、否則取 0，逐元素套用</li>
       <li>ndarray 元素同型別；切片可能不連續；向量化由預編譯底層常式處理，減少 Python 迴圈；矩陣乘法用 <code>@</code></li>
       <li><b>線上學習</b>：課堂 <code>AdalineSGD.partial_fit</code> 保留原權重，用新資料接續更新；<code>fit</code> 重新初始化訓練。</li>
     </ul>
