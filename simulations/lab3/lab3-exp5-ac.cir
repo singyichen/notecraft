@@ -1,0 +1,27 @@
+* Lab 3 第二部分：共源級放大器的頻率響應與中頻增益
+* {CB} = 跨接在 R6 上的旁路電容（講義問題 3）：1p 代表「沒有」、100u 代表「完全旁路」
+VDD vdd 0 15
+VGS src 0 AC 1
+R5 src a 100
+C1 a g 1u
+R1 vdd g 100k
+R2 g 0 50k
+R3 vdd d 300k
+M1 d g s s BS170
+R6 s 0 100k
+R7 s2 0 30k
+C3 s s2 1u
+CB s 0 {CB}
+C2 d out 1u
+R4 out 0 1Meg
+* --- 2N7000 的替身：LTspice 內建 standard.mos 的 BS170（同族 60 V／500 mA／TO-92 小訊號 NMOS）---
+.model BS170 NMOS (Level=3 W=200u L=1u Tox=0.05u Vto=2.14 Kp=4e-4 Vmax=0 Uo=700
++ Phi=0.6 NSUB=1e15 NFS=9e11 Gamma=0.1 Delta=0 Eta=0 Theta=0 Kappa=0.005
++ Rg=0 Rs=0 Rd=0.0 Rb=0 Rds=50e9 Cgso=140n Cgdo=10n Cgbo=10n Cbd=100p
++ Cj=2e-4 Cjsw=1n Is=10f N=1 Pb=.8)
+.param CB=1p
+.step param CB list 1p 100u
+.ac dec 100 1 1Meg
+.meas ac Av1k FIND V(out) AT 1k
+.backanno
+.end

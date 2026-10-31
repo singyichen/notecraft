@@ -1,0 +1,19 @@
+* Lab 3 實驗四：MOSFET 當開關點亮 LED（講義第 11 頁，V_DS = 8 V、R1 100 Ω 串在源極）
+* {RS} 用 .step 比較講義原值 100 Ω 與講義問題 4 的 200 Ω
+VDD p 0 8
+DLED p d LEDRED
+VGS g 0 3
+M1 d g s s BS170
+R1 s 0 {RS}
+* --- 2N7000 的替身：LTspice 內建 standard.mos 的 BS170（同族 60 V／500 mA／TO-92 小訊號 NMOS）---
+.model BS170 NMOS (Level=3 W=200u L=1u Tox=0.05u Vto=2.14 Kp=4e-4 Vmax=0 Uo=700
++ Phi=0.6 NSUB=1e15 NFS=9e11 Gamma=0.1 Delta=0 Eta=0 Theta=0 Kappa=0.005
++ Rg=0 Rs=0 Rd=0.0 Rb=0 Rds=50e9 Cgso=140n Cgdo=10n Cgbo=10n Cbd=100p
++ Cj=2e-4 Cjsw=1n Is=10f N=1 Pb=.8)
+* --- 紅光 LED 的概念模型（非特定型號）：10 mA 時順向壓降約 1.9 V ---
+.model LEDRED D(Is=1e-21 N=1.9 Rs=4 Cjo=30p)
+.param RS=100
+.step param RS list 100 200
+.dc VGS 0 6 0.005
+.backanno
+.end

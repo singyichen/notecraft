@@ -1,0 +1,1248 @@
+---
+title: "電子學實作系列：第 11 週 - MOSFET 實驗"
+description: "Lab 3 MOSFET 實驗的講義詳解與執行手冊：第一部分（輸出特性曲線、轉移特性曲線與臨界電壓、導通電阻、LED 開關）與第二部分（共源級放大器的工作點與電壓增益）各附講義目標／理論／問題詳解、CircuitJS 一鍵模擬連結、Tinkercad 接線配方、實體麵包板接線圖與電流分析圖、LTspice 真實型號預報值、實驗室記錄表與檢查點；並收錄九個講義問題與兩個 Bonus 的完整推導，以及講義三處參數對不起來的地方。"
+tags: ["電子學實作系列"]
+createdAt: "2026-10-31"
+updatedAt: "2026-10-31"
+---
+
+import PdfRefChip from '@/components/islands/PdfRefChip.tsx'
+
+# 第 11 週：MOSFET 實驗
+
+*Lab 3: Metal-Oxide-Semiconductor Field-Effect Transistor (MOSFET)*
+
+> 本週參考：[《Fundamentals of Microelectronics》](/notes/fundamentals-of-microelectronics) CH6、CH7.2。
+> 理論部分已在[第 7 週筆記](/notes/電子學實作系列第7週-mos電晶體與cs放大器)逐頁詳解，本篇只負責「實驗當天要翻的那一頁」。
+> 儀器操作見[實驗器材速查](/notes/電子學實作系列-實驗器材速查)。
+
+## Lab 3 實驗總覽
+
+{/* @ai-reference
+id: w11-lab3-objective
+file: _references/電子學實作系列/第七週/App_Lab3.pdf
+page: 4
+status: confirmed
+excerpt: Build-up the concepts for MOSFET operation regions. Saturation region / Cut-off region / Triode region.
+*/}
+<PdfRefChip file="_references/電子學實作系列/第七週/App_Lab3.pdf" page={4} status="confirmed" excerpt={"Objective: Build-up the concepts for MOSFET operation regions. Saturation region - Application: signal amplification in analog circuits. Cut-off region - Application: turn-off state in digital circuit. Triode region - Application: turn-on state in digital circuit."} client:visible />
+
+### 這次實驗在解什麼
+
+整份講義只在回答一個問題：**同一顆 2N7000，什麼時候該把它當電流源、什麼時候該把它當開關**。
+
+三個工作區對應三種用法，判準只有 $V_{GS}$、$V_{GD}$ 和臨界電壓 $V_{th}$ 三個量：
+
+| 工作區 | 條件 | 這顆電晶體在做什麼 | 哪個實驗在看它 |
+| --- | --- | --- | --- |
+| 截止區（cut-off） | $V_{GS} < V_{th}$ | 通道沒形成，等同斷路——數位電路的「關」 | 實驗二、實驗四 |
+| 三極管區（triode） | $V_{GS} > V_{th}$ 且 $V_{GD} > V_{th}$ | 一顆被閘極控制的電阻——數位電路的「開」 | 實驗三、實驗四 |
+| 飽和區（saturation） | $V_{GS} > V_{th}$ 且 $V_{GD} < V_{th}$ | 一顆被閘極控制的電流源——類比放大的工作點 | 實驗一、第二部分 |
+
+兩個部分的分工：**第一部分把這顆元件的三個區量出來**（四個實驗、四張記錄表），**第二部分把它偏壓到飽和區做成放大器**（一張工作點表、一張增益表）。
+
+### 兩個部分、六張記錄表
+
+| 實驗 | 講義頁 | 電路差在哪 | 要填的表 |
+| --- | --- | --- | --- |
+| 實驗一 輸出特性曲線 | 第 6–7 頁 | $R_1$ = 1 kΩ 串在**源極** | 四張 $I_D$–$V_{DS}$（$V_{GS}$ = 0／2／4／6 V） |
+| 實驗二 轉移特性曲線 | 第 8–9 頁 | $R_1$ = 100 Ω 串在**汲極**、源極接地 | 三張 $I_D$–$V_{GS}$（$V_{DS}$ = 1／3／5 V） |
+| 實驗三 導通電阻 | 第 10 頁 | 同實驗二，但改用 10 mA 定電流源 | 一列：$V_{DS}$ 與 $R_{on}$ |
+| 實驗四 LED 開關 | 第 11–12 頁 | 汲極串 LED、源極串 100 Ω，$V_{DD}$ = 8 V | 一張 $V_{GS}$ 對 $I_D$ 與亮／暗 |
+| 第二部分 共源級放大器 | 第 19–20 頁 | 分壓偏壓＋三顆耦合／旁路電容 | 工作點表＋增益表 |
+
+**實驗一和實驗二只差「那顆電阻接在哪一隻腳」**，但量到的東西完全不同——這是整份講義最容易看漏、也最值得先想清楚的一件事。細節在各實驗的「先讀懂這張圖」。
+
+### 器材清單
+
+{/* @ai-reference
+id: w11-lab3-components
+file: _references/電子學實作系列/第七週/App_Lab3.pdf
+page: 14
+status: confirmed
+excerpt: Component list: MOSFET 2N7000 x1, Resistor 100 ohm x1, 1 kohm x1, DC Power Supply, Signal Source, Oscilloscope, Multimeter.
+*/}
+<PdfRefChip file="_references/電子學實作系列/第七週/App_Lab3.pdf" page={14} status="confirmed" excerpt={"Component list (Part 1): MOSFET 2N7000 x 1; Resistor 100 ohm (1/4 W) x 1, 1 kohm (1/4 W) x 1; DC Power Supply GW Instek GPE-3323; Signal Source Keysight EDUX1052G; Oscilloscope Keysight EDUX1052G; Multimeter GW Instek GDM-532."} client:visible />
+
+| 元件 | 第一部分（第 14 頁） | 第二部分（第 21 頁） |
+| --- | --- | --- |
+| MOSFET | 2N7000 ×1 | 2N7000 ×1 |
+| 電阻 | 100 Ω ×1、1 kΩ ×1 | 100 Ω ×1、50 kΩ ×2、100 kΩ ×2、300 kΩ ×1、1 MΩ ×1 |
+| 電容 | — | 1 µF ×3 |
+| LED | 講義沒列，但實驗四要用 | — |
+| 直流電源 | GW Instek GPE-3323 | 同左 |
+| 訊號產生器 | Keysight EDUX1052G | 同左 |
+| 示波器 | Keysight EDUX1052G | 同左 |
+| 三用電表 | GW Instek GDM-532 | 同左 |
+
+**實驗四的 LED 和第二部分的 30 kΩ 都不在講義的零件表裡**，當天要先跟助教要。零件表也沒有列萬用表以外的電流檔用法——本篇一律改成「量取樣電阻的壓降再換算」，理由見實驗一的「電表夾在哪」。
+
+### 2N7000 的腳位：和 2N2222A 不一樣
+
+[第 6 週的 2N2222A](/notes/電子學實作系列第6週-ce放大器實驗) 平面朝自己時由左到右是 E／B／C，2N7000 不是。
+
+| 位置（平面朝自己、腳朝下，由左到右） | 2N7000 | 2N2222A |
+| --- | --- | --- |
+| 第 1 腳 | 源極 S（source） | 射極 E |
+| 第 2 腳 | 閘極 G（gate） | 基極 B |
+| 第 3 腳 | 汲極 D（drain） | 集極 C |
+
+兩顆外觀都是黑色 TO-92，**插錯方向不會冒煙、只會量不到電流**，接完先用電表的二極體檔確認一次：紅棒接源極、黑棒接汲極應該讀到約 0.6 V，紅黑對調應該是開路。那顆是元件內建的體二極體（body diode），陽極接在基體（已與源極短接）、陰極接在汲極，所以只有「源極 → 汲極」這個方向會導通。
+
+### 講義裡三處對不起來的地方
+
+這三處照抄會量不出東西，先記下來：
+
+| 位置 | 講義寫什麼 | 實際是什麼 |
+| --- | --- | --- |
+| 第 19 頁 | 同時有兩個 `C2`、兩個 `R6` | 比對第 23 頁 Bonus 的同一張圖可知正確命名是 C1（輸入耦合）、C2（輸出耦合）、C3（源極旁路）、R6（源極 100 kΩ）、R7（與 C3 串聯的 30 kΩ）。本篇一律用 Bonus 的命名 |
+| 第 21 頁 | 零件表只有 50 kΩ ×2，沒有 30 kΩ | 電路圖要的是 30 kΩ。若當天只拿得到 50 kΩ，增益會從 8.7 掉到 6.3（LTspice 實測，見第二部分） |
+| 第 10 頁 | 模擬圖的 y 軸最大值是 0.002 V，紅線落在約 0.0014 V | 換算 $R_{on}$ = 0.14 Ω，比 2N7000 規格書好一個數量級以上。LTspice 在 $V_{GS}$ = 5 V、$I_D$ = 10 mA 下是 44 mV → 4.4 Ω，才是該期待的量級 |
+
+第 22 頁的講義問題 1 問「$C_1$ 與 $C_2$ 的功能」——電路圖上根本沒有 $C_1$，也是同一個命名錯誤造成的。照 Bonus 的命名回答即可。
+
+## 實驗一：輸出特性曲線 Characteristic Curve（$I_D$–$V_{DS}$）
+
+{/* @ai-reference
+id: w11-lab3-exp1
+file: _references/電子學實作系列/第七週/App_Lab3.pdf
+page: 6
+status: confirmed
+excerpt: Circuit schematic (characteristic curve, I_D-V_DS). Requirement: characteristic curve.
+*/}
+<PdfRefChip file="_references/電子學實作系列/第七週/App_Lab3.pdf" page={6} status="confirmed" excerpt={"Circuit schematic (characteristic curve, I_D-V_DS). M1 = 2N7000, R1 = 1 kohm. Requirement: characteristic curve."} client:visible />
+
+### 先讀懂這張圖：R1 在源極，不是在汲極
+
+![講義第 6 頁的實驗一電路：2N7000 的閘極接 VGS 電源、汲極接 VDS 電源、源極經 R1 1 kΩ 接地](/note-images/ec-week11-handout/lab3-exp1-schematic.png)
+
+*講義第 6 頁的電路。注意 $R_1$ 畫在 MOSFET 的**下面**：它串在源極與地之間，不是串在汲極。*
+
+| 符號 | 是什麼 | 這次的值 | 為什麼放它 |
+| --- | --- | --- | --- |
+| $V_{GS}$ | 閘極側電源 | 0／2／4／6 V | 四個值各掃一輪，產生四條曲線 |
+| $V_{DS}$ | 汲極側電源 | 1 V 起往上加 | 掃描用；每個值對應曲線上的一個點 |
+| $R_1$ | 源極電阻 | 1 kΩ | 限制電流（保護元件），同時當電流取樣電阻 |
+| $M_1$ | MOSFET | 2N7000 | N 通道增強型（enhancement mode） |
+
+這個接法有一個後果一定要先講明白：**電源面板上讀到的 $V_{GS}$、$V_{DS}$ 都不是元件兩端的電壓**。$R_1$ 上有壓降 $I_D R_1$，而這個壓降同時被算進兩個電源的迴路：
+
+$$
+\begin{aligned}
+V_{GS}^{\text{元件}} &= V_{GS}^{\text{電源}} - I_D R_1 \\[4pt]
+V_{DS}^{\text{元件}} &= V_{DS}^{\text{電源}} - I_D R_1
+\end{aligned}
+$$
+
+這叫源極退化（source degeneration），和[第 6 週](/notes/電子學實作系列第6週-ce放大器實驗)的射極退化是同一回事：它讓電流自己穩住（電流一大，源極電位就上升，把 $V_{GS}^{\text{元件}}$ 壓回去），代價是量到的曲線不是教科書那張。
+
+### 講義詳解（第 5–7 頁）
+
+**理論**（第 5 頁）
+
+三個工作區的判準與電流式，講義一次給齊：
+
+$$
+\begin{aligned}
+\text{飽和區}\quad & V_{GS} > V_{th},\ V_{GD} < V_{th}:
+ && I_D = \tfrac{1}{2}\,\mu C_{ox}\,\tfrac{W}{L}\,(V_{GS}-V_{th})^2 \\[6pt]
+\text{三極管區}\quad & V_{GS} > V_{th},\ V_{GD} > V_{th}:
+ && I_D = \tfrac{1}{2}\,\mu C_{ox}\,\tfrac{W}{L}\,\bigl[2(V_{GS}-V_{th})V_{DS}-V_{DS}^2\bigr] \\[6pt]
+\text{截止區}\quad & V_{GS} < V_{th}: && I_D = 0
+\end{aligned}
+$$
+
+兩條判準用 $V_{GD}$ 而不是 $V_{DS}$ 寫，是因為**夾止（pinch-off）發生在汲極那一端**：通道在汲極端消失的條件正是 $V_{GD} = V_{th}$。把 $V_{GD} = V_{GS} - V_{DS}$ 代進去就得到更常見的寫法 $V_{DS} > V_{GS} - V_{th}$。推導見[第 7 週筆記「夾止」一節](/notes/電子學實作系列第7週-mos電晶體與cs放大器)。
+
+**操作步驟**（第 6–7 頁）
+
+1. 照第 6 頁接線：閘極接 CH1、汲極接 CH2、源極經 $R_1$ 1 kΩ 接地。
+2. 把 CH1 固定在第一個 $V_{GS}$ 值（0 V）。
+3. CH2 從 1 V 開始往上加，每個設定值記一次 $I_D$。講義表格印了 1 V、2 V 兩列當示範，後面三列留白由自己決定級距。
+4. $V_{GS}$ 依序換成 2 V、4 V、6 V，各重複一次，共四張表。
+5. 把四組數據畫成同一張 $I_D$–$V_{DS}$ 圖。
+
+**講義表格的級距建議**：$V_{DS}$ 取 1／2／3／4／5 V 五點就夠看出轉折；想看清楚膝點（$V_{GS}$ = 4 V 時大約在 1.8 V、6 V 時大約在 3.8 V）可以在 1–4 V 之間多補 0.5 V 一階的點。
+
+### 先看懂：CircuitJS
+
+[開啟實驗一的 CircuitJS 電路](https://www.falstad.com/circuit/circuitjs.html?ctz=CQAgjCAMB0l3BWcMBMcUHYMGZIA4UA2ATmIxAUmRABZsKBTAWjDACgA3EQmkbNbrzCEqo2lV5iYCNgDNwIhVUwolUECmgQY+NgHdBa4VWNR9GjKrA1eKw5E7iq-CXHvqaVJFOgyDdnid7NgAnCysMQnC+ARN4c0CXaKSHf0sY12dYtgBzZIE7bARVUTZsPHUxKIA1AH0AcQBlKC0yisl1MCo6gBFmmHYAe253GhQwYkIECG8tdQAlMAAuAEkAXhXanrZhiECJccnKChaICABZZd7GtiA)
+
+- 右上角有 **V_GS** 與 **V_DS** 兩支滑桿。先把 V_GS 拉到 4 V，再慢慢把 V_DS 從 0 拉到 5 V。
+- 左下角示波器顯示 $R_1$ 的電流（就是 $I_D$），右下角顯示 MOSFET 兩端的 $V_{DS}$。
+- 要看的是**形狀**：V_DS 低的時候電流隨它線性上升，到某一點之後就平掉。平掉那一段就是飽和區。
+- 把 V_GS 拉到 2 V 以下，整條線會貼在零——那是截止區。
+- **不要抄 CircuitJS 的數值**：它的 MOSFET 是通用模型（$V_t$ = 2.1 V、$\beta$ = 0.08），和 2N7000 只是接近，預報值一律以 LTspice 為準。
+
+### 預演：Tinkercad 接線配方
+
+| 元件／接線 | 插在哪裡 | 備註 |
+| --- | --- | --- |
+| MOSFET（搜尋 `nMOS`） | 插在上半區，三隻腳落在相鄰三欄 | 懸停讀腳名；配方一律寫 閘極／汲極／源極，不寫左右 |
+| 電阻 1 kΩ | 一端與源極同一欄，另一端往左跨十幾欄 | 在「基本」分類第一格 |
+| 跳線 | 電阻左端那一欄 → 上方 − 軌 | 接地 |
+| 跳線 | 閘極那一欄 → 上方 ＋ 軌 | 吃 CH1 |
+| 跳線 | 汲極那一欄 → 右側空欄 | 再從該欄拉去 CH2 |
+| 電源供應器 | 放板子左側 | CH1 ＋ 接 ＋ 軌、CH2 ＋ 接汲極那一欄、兩台 − 共接 − 軌 |
+| 萬用表（電壓檔） | 紅棒點源極那一欄、黑棒點 − 軌 | 讀到的是 $R_1$ 的壓降，除以 1 kΩ 就是 $I_D$ |
+
+Tinkercad 的電源供應器一次只有一組輸出，**兩台電源要放兩個元件**；兩個的 − 端一定要接到同一條 − 軌，否則兩個迴路沒有共同參考點，模擬會給出莫名其妙的讀數。
+
+### 實體麵包板：接在哪
+
+實驗室那塊板是 60 欄全尺寸，和 Tinkercad 的 30 欄小板孔位對不上，所以另外畫一張：
+
+![Lab 3 實驗一的實體麵包板接線圖：2N7000 插在 f30／f31／f32，R1 1 kΩ 橫插 i16 到 i30，閘極跳線到 ＋ 軌、R1 左端跳線到 − 軌，汲極經 h32 到 h44 的跳線接 CH2](/note-images/ec-week11-breadboard/lab3-exp1-breadboard.png)
+
+*接線圖只回答「接在哪」。2N7000 的三隻腳 S／G／D 落在第 30／31／32 欄，本體朝溝槽掛下去，讓 g–j 列空出來給跳線與電表。*
+
+### 同一張圖，標出電流實際流動路徑
+
+綠色粗線是電流走的迴路、紅色三角形是方向、紅底白字編號對應下方表格的列、藍色虛線是電壓表的兩條線（並聯、不分流）；綠色虛線是 TO-92 封裝裡看不到的那一段。疊圖腳本在 [`simulations/lab3/annotate_current_path.py`](https://github.com/SteveLin100132/notecraft/blob/HEAD/simulations/lab3/annotate_current_path.py)。
+
+![Lab 3 實驗一的電流分析圖：電流從 CH2 正端出發，經第 44 欄跳線到汲極，穿過 2N7000 通道到源極，再經 R1 回到 − 軌與電源負端](/note-images/ec-week11-breadboard/lab3-exp1-breadboard-current.png)
+
+*整圈是串聯，所以處處電流相同——這就是為什麼量 $R_1$ 的壓降等於量 $I_D$。閘極那條跳線不在迴路上。*
+
+| 編號 | 電流走到哪 | 為什麼走這裡 |
+| --- | --- | --- |
+| 1 | CH2 ＋ 端 → 第 44 欄的 j 孔 | 電流由電源正端出發 |
+| 2 | 第 44 欄的 j 孔 → h 孔 | 同一欄的 f–j 五個孔是同一節點 |
+| 3 | h44 → h32 的黃跳線 | 把汲極拉到離閘極遠一點的欄位，接線才不會擠 |
+| 4 | 汲極 → 通道 → 源極（封裝內部） | 閘極電壓在氧化層底下感應出反轉層，電子從源極流向汲極，習慣電流方向相反 |
+| 5 | 源極 → $R_1$ → 第 16 欄 | $R_1$ 串在迴路上，壓降 $I_D \times 1\ \text{k}\Omega$ |
+| 6 | 第 16 欄 → − 軌 | 接地跳線 |
+| 7 | − 軌 → CH2 − 端 | 迴路閉合 |
+
+**閘極那一路為什麼沒有電流**：閘極與通道之間隔著二氧化矽，是一顆電容。穩態下電容不導通，所以 CH1 幾乎不供應電流（規格書的閘極漏電流是 nA 等級）。這也是 MOS 和 BJT 最根本的差別——[第 6 週](/notes/電子學實作系列第6週-ce放大器實驗)量 $\beta$ 要算基極電流，這裡沒有對應的量。
+
+**電表量什麼。** 只用一台萬用表的直流電壓檔，紅棒點源極那一欄、黑棒夾在 − 軌，量到的是 $R_1$ 的壓降。**不要把電表切到電流檔串進迴路**：GDM-532 電流檔的內阻會再加進這條迴路，而且每換一個量測點就要拆線。
+
+**預期讀數怎麼估。** 對這一圈寫一次 KVL：
+
+$$
+V_{DS}^{\text{電源}} = V_{DS}^{\text{元件}} + I_D R_1
+$$
+
+$V_{GS}^{\text{電源}}$ = 4 V、$V_{DS}^{\text{電源}}$ = 5 V 時 LTspice 給 $I_D$ = 1.67 mA，所以 $R_1$ 的壓降是 1.67 V，元件實際只分到 3.33 V，而它真正的 $V_{GS}$ 只有 $4 - 1.67 = 2.33$ V——**比電源讀數少了快一半**。曲線會比「教科書版」矮一個數量級，這不是接錯。
+
+### LTspice 預報值：BS170（2N7000 的同族替身）
+
+LTspice 的標準元件庫沒有 2N7000，用的是同一族的 BS170（60 V／500 mA／TO-92，$V_{to}$ = 2.14 V）。網表與理由見 [`simulations/lab3/README.md`](https://github.com/SteveLin100132/notecraft/blob/HEAD/simulations/lab3/README.md)。
+
+![LTspice 實驗一結果：左圖是講義原電路（R1 1 kΩ 在源極）的四條曲線與 1 kΩ 負載線重疊，右圖是源極接地的對照組，電流大兩個數量級](/note-images/ec-week11-ltspice/lab3-exp1-curves.png)
+
+*左圖的上升段幾乎貼著紫色虛線 $I_D = V_{DS}/R_1$——那段的電流根本是 1 kΩ 決定的，不是 MOSFET 的三極管電阻。右圖（源極接地、沒有 $R_1$）的縱軸是對數，$V_{GS}$ = 6 V 時高達 645 mA。*
+
+預報值（單位 mA，$V_{DS}$ 是電源讀數）：
+
+| $V_{GS}$（電源） | 1 V | 2 V | 3 V | 4 V | 5 V |
+| --- | --- | --- | --- | --- | --- |
+| 0 V | 0.000 | 0.000 | 0.000 | 0.000 | 0.000 |
+| 2 V | 0.015 | 0.016 | 0.016 | 0.017 | 0.017 |
+| 4 V | 0.986 | 1.657 | 1.662 | 1.665 | 1.668 |
+| 6 V | 0.996 | 1.987 | 2.958 | 3.562 | 3.570 |
+
+兩件事從表上直接讀得出來：
+
+- **$V_{GS}$ = 2 V 那一列幾乎是 0**：2 V 低於 $V_{th}$（2.14 V），元件在截止區。只有次臨界（subthreshold）漏電流，約 16 µA。
+- **$V_{GS}$ = 6 V 那一列在 1–4 V 之間是等差的**（0.996、1.987、2.958、3.562）：每加 1 V 電流就多約 1 mA，正好是 $1/R_1$。這段元件還在三極管區、電阻遠小於 1 kΩ，所以整圈的電流由 $R_1$ 決定。到 4 V 之後才轉平，那裡才是飽和區。
+
+### 實驗室：記錄表
+
+四張表的欄位一樣，每一欄先抄 $R_1$ 的壓降、再除以 1 kΩ 換成 $I_D$。
+
+$V_{GS}$ = 0 V
+
+| $V_{DS}$（設定） | 1 V | 2 V | | | |
+| --- | --- | --- | --- | --- | --- |
+| $R_1$ 壓降（量測） | | | | | |
+| $I_D$ = 壓降 / 1 kΩ | | | | | |
+
+$V_{GS}$ = 2 V
+
+| $V_{DS}$（設定） | 1 V | 2 V | | | |
+| --- | --- | --- | --- | --- | --- |
+| $R_1$ 壓降（量測） | | | | | |
+| $I_D$ = 壓降 / 1 kΩ | | | | | |
+
+$V_{GS}$ = 4 V
+
+| $V_{DS}$（設定） | 1 V | 2 V | | | |
+| --- | --- | --- | --- | --- | --- |
+| $R_1$ 壓降（量測） | | | | | |
+| $I_D$ = 壓降 / 1 kΩ | | | | | |
+
+$V_{GS}$ = 6 V
+
+| $V_{DS}$（設定） | 1 V | 2 V | | | |
+| --- | --- | --- | --- | --- | --- |
+| $R_1$ 壓降（量測） | | | | | |
+| $I_D$ = 壓降 / 1 kΩ | | | | | |
+
+結報對照：
+
+| 量 | 實測 | LTspice 預報 | 誤差 % | 可能原因 |
+| --- | --- | --- | --- | --- |
+| $I_D$（$V_{GS}$ 4 V、$V_{DS}$ 5 V） | | 1.67 mA | | |
+| $I_D$（$V_{GS}$ 6 V、$V_{DS}$ 5 V） | | 3.57 mA | | |
+| 飽和的轉折點（$V_{GS}$ = 6 V） | | 約 3.8 V | | |
+
+### 檢查點
+
+- $V_{GS}$ = 0 V 整列讀到 0：正常，不是接錯。
+- $V_{GS}$ = 6 V 那一列在低 $V_{DS}$ 時每加 1 V 電流就多約 1 mA：接對了（那是 $R_1$ 的斜率）。
+- 四條曲線通通是 0：先查 2N7000 的方向（S／G／D 是否插反），再查 $R_1$ 的接地跳線。
+- 電流大到 100 mA 以上：$R_1$ 可能接到汲極去了（那就變成實驗二的接法），或根本沒串進迴路。
+
+## 實驗二：轉移特性曲線與臨界電壓 Transfer Curve & Threshold Voltage
+
+{/* @ai-reference
+id: w11-lab3-exp2
+file: _references/電子學實作系列/第七週/App_Lab3.pdf
+page: 8
+status: confirmed
+excerpt: Circuit schematic (transfer curve, I_D-V_GS). Requirement: transfer curve, threshold voltage.
+*/}
+<PdfRefChip file="_references/電子學實作系列/第七週/App_Lab3.pdf" page={8} status="confirmed" excerpt={"Circuit schematic (transfer curve, I_D-V_GS). M1 = 2N7000, R1 = 100 ohm in the drain. Requirement: transfer curve, threshold voltage."} client:visible />
+
+### 先讀懂這張圖：和實驗一只差一件事
+
+![講義第 8 頁的實驗二電路：R1 100 Ω 串在汲極、源極直接接地](/note-images/ec-week11-handout/lab3-exp2-schematic.png)
+
+*講義第 8 頁的電路。$R_1$ 變成 100 Ω 並且搬到 MOSFET 的**上面**（汲極），源極直接接地。*
+
+這個改動解決了實驗一的核心麻煩：**源極一接地，電源讀到的 $V_{GS}$ 就是元件真正的 $V_{GS}$**。不然掃 $V_{GS}$ 找臨界電壓這件事根本做不了——你永遠不知道量到的轉折是元件的 $V_{th}$ 還是 $R_1$ 造成的位移。
+
+代價是汲極這邊變成 $V_{DS}^{\text{元件}} = V_{DS}^{\text{電源}} - I_D \times 100\ \Omega$，但那只影響橫軸參數，不影響臨界電壓的讀取。
+
+### 講義詳解（第 8–9 頁）
+
+**目標**：量出轉移特性曲線，並從中讀出臨界電壓（threshold voltage）。
+
+**操作步驟**
+
+1. 照第 8 頁接線：源極直接跳線接地，$R_1$ 100 Ω 串在汲極與 CH2 之間。
+2. CH2 固定在 1 V。
+3. CH1（$V_{GS}$）從 0.5 V 開始往上加，講義示範到 1 V，之後四列留白；建議用 0.5 V 一階掃到 6 V，**在 2–3 V 之間改成 0.1 V 一階**——轉折全部發生在那一段。
+4. CH2 換成 3 V、5 V 各重複一次，共三張表。
+5. 把三組數據畫成同一張 $I_D$–$V_{GS}$ 圖，並從中求臨界電壓。
+
+**臨界電壓怎麼從曲線讀出來**（講義沒寫方法，這是標準做法）：飽和區的平方律是
+
+$$
+I_D = \tfrac{1}{2}\mu C_{ox}\tfrac{W}{L}\,(V_{GS}-V_{th})^2
+\quad\Longrightarrow\quad
+\sqrt{I_D} = \sqrt{\tfrac{1}{2}\mu C_{ox}\tfrac{W}{L}}\,\;(V_{GS}-V_{th})
+$$
+
+所以把 $\sqrt{I_D}$ 對 $V_{GS}$ 畫，飽和區那一段會是一條直線，**把它外插到交 $x$ 軸，交點就是 $V_{th}$**。手算時取兩個點就夠：
+
+$$
+V_{th} = V_{GS,1} - \frac{V_{GS,2}-V_{GS,1}}{\sqrt{I_{D,2}}-\sqrt{I_{D,1}}}\;\sqrt{I_{D,1}}
+$$
+
+### 先看懂：CircuitJS
+
+[開啟實驗二的 CircuitJS 電路](https://www.falstad.com/circuit/circuitjs.html?ctz=CQAgjCAMB0l3BWcMBMcUHYMGZIA4UA2ATmIxAUmRABZsKBTAWjDACgA3EQmkbNbrzCEqo2lXpiYCNgDNwIhVUwolUECmgQY+NgHdBa4VWNQ2AJw0ZVYGrxWGTcTuIkCacR+o8V1o6DIGDjyujvpWNhiEEXwCkOEh-MrWsaLhDkmhmfEA5jGZGQiqadh4furRAGoA+gDiAMpQsDKltOVgVDUAIo3SbAD2fF40KGDEhAgQSDDaIABKYABcAJIAvMvVXQPgw6PjlL4zOwCyS931bEA)
+
+- 先把 V_DS 拉到 5 V，再把 V_GS 從 0 慢慢往上拉。
+- 在 2.1 V 附近電流會「突然出現」——那就是臨界電壓。
+- 再往上拉到 4 V 以上，電流不太增加了：那是因為 100 Ω 已經把電流限在 $V_{DS}/100\ \Omega$ 附近，MOSFET 本身退到三極管區當開關用。
+- 同樣只看形狀。CircuitJS 的 $V_t$ 是寫死的 2.1 V，不是你手上那顆的值。
+
+### 預演：Tinkercad 接線配方（和實驗一的差異）
+
+照實驗一那張配方，只改三條線：
+
+| 改什麼 | 實驗一 | 實驗二／三 |
+| --- | --- | --- |
+| 源極那一欄 | 接 1 kΩ 的一端 | 直接跳線到 − 軌 |
+| 電阻 | 1 kΩ，在源極 | 100 Ω，一端與汲極同欄、另一端往右跨十幾欄 |
+| 萬用表紅棒 | 點源極那一欄 | 點汲極那一欄 |
+
+實驗三再把 CH2 改成定電流模式（Tinkercad 的電源供應器有電流上限欄位，把電壓開大、電流填 0.01 A 就等效）。
+
+### 實體麵包板：接在哪
+
+![Lab 3 實驗二／三的實體麵包板接線圖：源極經 j30 跳線接地，R1 100 Ω 橫插 i32 到 i44，汲極對地電壓由萬用表量 h32](/note-images/ec-week11-breadboard/lab3-exp2-breadboard.png)
+
+*和實驗一同一塊板，2N7000 位置不動，只有外圍接線換：源極改成直接接地，電阻搬到汲極。*
+
+![Lab 3 實驗二的電流分析圖：電流從 CH2 經 R1 進汲極，穿過通道後由源極直接回 − 軌](/note-images/ec-week11-breadboard/lab3-exp2-breadboard-current.png)
+
+*源極直接接地，所以迴路比實驗一短一段；電表這次量的是汲極對地電壓，也就是元件真正的 $V_{DS}$。*
+
+| 編號 | 電流走到哪 | 為什麼走這裡 |
+| --- | --- | --- |
+| 1 | CH2 ＋ 端 → 第 44 欄的 j 孔 | 電流由電源正端出發 |
+| 2 | 第 44 欄 → $R_1$ 100 Ω → 第 32 欄 | 取樣電阻改串在汲極；壓降是 $I_D \times 100\ \Omega$ |
+| 3 | 第 32 欄的 i 孔 → f 孔（汲極） | 同一欄相通 |
+| 4 | 汲極 → 通道 → 源極（封裝內部） | $V_{GS}$ 高於 $V_{th}$ 才有通道 |
+| 5 | 源極 → 第 30 欄的 j 孔 | 同一欄相通 |
+| 6 | 第 30 欄 → − 軌 | 接地跳線，源極電位固定在 0 V |
+| 7 | − 軌 → CH2 − 端 | 迴路閉合 |
+
+**電表量什麼。** 紅棒點汲極那一欄（第 32 欄）、黑棒夾 − 軌。因為源極已經接地，這一點量到的就是元件的 $V_{DS}$；再用
+
+$$
+I_D = \frac{V_{DS}^{\text{電源}} - V_D}{100\ \Omega}
+$$
+
+把電流換算出來。**一台電表同時給出兩個要填的量**，不用換接線。
+
+### LTspice 預報值
+
+![LTspice 實驗二結果：左圖三條轉移特性曲線（VDS = 1／3／5 V）在 2.4 V 附近抬頭，右圖用 √I_D 線性外插求得臨界電壓 2.14 V](/note-images/ec-week11-ltspice/lab3-exp2-transfer.png)
+
+*左圖的三條線在 $V_{GS}$ 超過約 3 V 之後都平掉，平的高度正好是 $V_{DS}/100\ \Omega$——那是 $R_1$ 的限制，不是元件的飽和。右圖是標準的平方根外插法。*
+
+預報值（單位 mA）：
+
+| $V_{GS}$ | 2.0 | 2.5 | 3.0 | 3.5 | 4.0 | 5.0 | 6.0 |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| $V_{DS}$ = 1 V | 0.018 | 5.20 | 8.63 | 9.13 | 9.36 | 9.58 | 9.69 |
+| $V_{DS}$ = 3 V | 0.020 | 5.69 | 24.8 | 27.2 | 28.0 | 28.7 | 29.0 |
+| $V_{DS}$ = 5 V | 0.021 | 6.00 | 31.3 | 44.9 | 46.5 | 47.8 | 48.4 |
+
+- **平方根外插求得 $V_{th}$ = 2.14 V**，正好等於模型的 $V_{to}$——代表這個方法是對的。
+- 2N7000 規格書的 $V_{GS(th)}$ 範圍是 **0.8 ～ 3.0 V**，離散度極大。你量到 1.5 V 或 2.8 V 都算正常，不要以為接錯。
+- 三條曲線的平台高度分別是 9.7／29.0／48.4 mA，正好接近 $1/0.1$、$3/0.1$、$5/0.1$（單位 mA）。**平台高度由 $R_1$ 決定，不含元件資訊**；要讀的資訊全在抬頭那一段。
+
+### 實驗室：記錄表
+
+$V_{DS}$ = 1 V
+
+| $V_{GS}$（設定） | 0.5 V | 1 V | | | | |
+| --- | --- | --- | --- | --- | --- | --- |
+| $V_D$（量測） | | | | | | |
+| $I_D$ = ($V_{DS}$ − $V_D$) / 100 Ω | | | | | | |
+
+$V_{DS}$ = 3 V
+
+| $V_{GS}$（設定） | 0.5 V | 1 V | | | | |
+| --- | --- | --- | --- | --- | --- | --- |
+| $V_D$（量測） | | | | | | |
+| $I_D$ = ($V_{DS}$ − $V_D$) / 100 Ω | | | | | | |
+
+$V_{DS}$ = 5 V
+
+| $V_{GS}$（設定） | 0.5 V | 1 V | | | | |
+| --- | --- | --- | --- | --- | --- | --- |
+| $V_D$（量測） | | | | | | |
+| $I_D$ = ($V_{DS}$ − $V_D$) / 100 Ω | | | | | | |
+
+臨界電壓計算（取 $V_{DS}$ = 5 V 那一組，挑電流在 1–4 mA 之間的兩點）：
+
+| 量 | 值 |
+| --- | --- |
+| $V_{GS,1}$／$I_{D,1}$ | |
+| $V_{GS,2}$／$I_{D,2}$ | |
+| 外插得到的 $V_{th}$ | |
+| LTspice 預報 | 2.14 V |
+| 規格書範圍 | 0.8 ～ 3.0 V |
+
+### 檢查點
+
+- 曲線在某個 $V_{GS}$ 抬頭之後很快就平掉：正常，那是 100 Ω 在限流。
+- 三條曲線的抬頭位置幾乎重疊：正確。臨界電壓本來就幾乎不隨 $V_{DS}$ 變（只有輕微的汲極引致能障降低效應）。
+- $V_{GS}$ 加到 6 V 還是沒有電流：量一下源極到地是不是真的通（跳線有沒有插到 − 軌）。
+- 電流一開始就是滿的（$V_{GS}$ = 0 也有）：MOSFET 可能已經被靜電打穿，換一顆。
+
+## 實驗三：導通電阻 Turn-on Resistance
+
+{/* @ai-reference
+id: w11-lab3-exp3
+file: _references/電子學實作系列/第七週/App_Lab3.pdf
+page: 10
+status: confirmed
+excerpt: Circuit schematic (turn-on resistance). V_GS = 5 V and I_D = 10 mA. V_DS (measure), R_on (calculation).
+*/}
+<PdfRefChip file="_references/電子學實作系列/第七週/App_Lab3.pdf" page={10} status="confirmed" excerpt={"Circuit schematic (turn-on resistance). R1 = 100 ohm, I2 = 10 mA current source. V_GS = 5 V and I_D = 10 mA. Requirement: turn-on resistance. V_DS (measure) / R_on (calculation)."} client:visible />
+
+### 先讀懂這張圖：電流源，不是電壓源
+
+![講義第 10 頁的實驗三電路：10 mA 定電流源經 R1 100 Ω 灌進汲極，VGS 固定 5 V](/note-images/ec-week11-handout/lab3-exp3-schematic.png)
+
+*講義第 10 頁。右邊那個圓圈裡是**向上的箭頭**，代表定電流源（current source）不是電壓源。*
+
+這是本份講義唯一用定電流源的電路。理由很直接：$R_{on}$ 的定義是
+
+$$
+R_{on} = \left.\frac{V_{DS}}{I_D}\right|_{V_{DS}\to 0}
+$$
+
+要量它就得**先把 $I_D$ 釘死**，再去量 $V_{DS}$。用電壓源做不到，因為電流會隨元件自己變。
+
+$R_1$ 100 Ω 串在定電流源與汲極之間，對電流完全沒有影響（定電流源會自動把電壓拉到剛好），只是為了讓電路和實驗二共用同一塊板。
+
+**實驗室沒有定電流源怎麼辦**：GPE-3323 有電流限制（CC）模式。把電壓旋到最大、電流限制調到 10 mA，電源就會自動進入定電流模式，等效於一台 10 mA 電流源。面板上 CC 指示燈亮起就是進了這個模式。接法與實驗二完全相同，只是 CH2 改成 CC 模式。
+
+### 講義詳解（第 10 頁）
+
+**操作步驟**
+
+1. 接法同實驗二，CH2 改成定電流 10 mA。
+2. CH1（$V_{GS}$）固定 5 V。
+3. 量汲極對源極的電壓 $V_{DS}$。因為會是毫伏等級，電表要切到 mV 檔。
+4. 計算 $R_{on} = V_{DS} / 10\ \text{mA}$。
+5. 講義問題 3 要求再做一次 $V_{GS}$ = 10 V，比較兩者。
+
+**量測注意**：10 mA × 幾歐姆只有幾十毫伏，和接觸電阻、線阻同一個量級。紅黑棒要直接點在汲極與源極那兩欄的孔上（不要點到 − 軌，那樣會把跳線的電阻也量進去）。
+
+### 先看懂：CircuitJS
+
+[開啟實驗三的 CircuitJS 電路](https://www.falstad.com/circuit/circuitjs.html?ctz=CQAgjCAMB0l3BWcMBMcUHYMGZIA4UA2ATmIxAUnBABZsKBTAWjDACgA3EQmkbNbrzCEqo2lSRiYCNgDNwIhVUwolUECmgQY+NgHdBa4VWNQ2AJw0ZVYGrxWGTcNgEtxVflRpxHUWOwMHHndHfSsbDEJwvgFIMODPaMS4wOsYrx9ktgBzJIEHbARVUTZsPHVlZBAANQB9AHEAZT92AHtqYK8UMGJCSgoW9QBZMAAuOoARRrZ2+k7abt6ECEktagAlMYBJAF4t2om2IA)
+
+- 滑桿是 V_GS。拉到 5 V，左下角示波器顯示的 $V_{DS}$ 大約是 43 mV。
+- 繼續往上拉到 10 V，$V_{DS}$ 會掉到一半以下——**導通電阻會隨閘極電壓下降**，這就是講義問題 3 的答案。
+- 右下角示波器顯示 $R_1$ 的壓降恆為 1 V（10 mA × 100 Ω），不管 $V_{GS}$ 怎麼變：定電流源的意思就在這裡。
+
+### 接線與電流路徑：沿用實驗二那一組
+
+實驗三的板子和實驗二**完全一樣**，只有 CH2 從定電壓改成定電流。接線圖、電流分析圖與逐步說明表直接看上一節「實驗二／三」那兩張圖；兩處差異記起來就好：
+
+| 項目 | 實驗二 | 實驗三 |
+| --- | --- | --- |
+| CH2 | 定電壓 1／3／5 V | 定電流 10 mA（CC 模式，電壓開到最大） |
+| 萬用表 | 直流電壓檔，點汲極那一欄 | 同一點，但要切到 mV 檔 |
+| $R_1$ 的壓降 | 隨 $V_{GS}$ 變 | 恆為 1 V（10 mA × 100 Ω），是確認 CC 模式有生效的最快判準 |
+
+### LTspice 預報值
+
+![LTspice 實驗三結果：導通電阻隨閘極電壓下降的曲線，VGS = 5 V 時 4.41 Ω、VGS = 10 V 時 1.59 Ω](/note-images/ec-week11-ltspice/lab3-exp3-ron.png)
+
+*$I_D$ 固定在 10 mA，橫軸是 $V_{GS}$。$V_{GS}$ 越高、反轉層越厚，通道電阻越小。*
+
+| $V_{GS}$ | $V_{DS}$ | $R_{on}$ |
+| --- | --- | --- |
+| 3 V | 161 mV | 16.1 Ω |
+| 4 V | 68.5 mV | 6.85 Ω |
+| **5 V（講義指定）** | **44.1 mV** | **4.41 Ω** |
+| 6 V | 32.5 mV | 3.25 Ω |
+| 8 V | 21.4 mV | 2.14 Ω |
+| **10 V（講義問題 3）** | **15.9 mV** | **1.59 Ω** |
+
+2N7000 規格書列的是 $V_{GS}$ = 10 V、$I_D$ = 0.5 A 時 $R_{DS(on)} \le 5.3\ \Omega$（典型 1.2 Ω），和上表在同一個量級。**講義第 10 頁那張圖的 0.0014 V（= 0.14 Ω）是對不起來的**，見總覽的第三點。
+
+### 實驗室：記錄表
+
+| $V_{GS}$ | $I_D$ | $V_{DS}$（量測） | $R_{on}$ = $V_{DS}$ / $I_D$ | LTspice 預報 |
+| --- | --- | --- | --- | --- |
+| 5 V | 10 mA | | | 4.41 Ω |
+| 10 V | 10 mA | | | 1.59 Ω |
+
+### 檢查點
+
+- 量到的是毫伏等級：對了。量到伏特等級代表元件還沒完全導通（檢查 $V_{GS}$ 有沒有真的加上去）或電流源沒進 CC 模式。
+- $V_{GS}$ 從 5 V 加到 10 V，$V_{DS}$ 掉到大約三分之一：符合預期。
+- 讀數跳動不穩：多半是接觸電阻。把探棒直接壓在元件腳上再讀一次。
+
+## 實驗四：MOSFET 當開關 Switch
+
+{/* @ai-reference
+id: w11-lab3-exp4
+file: _references/電子學實作系列/第七週/App_Lab3.pdf
+page: 11
+status: confirmed
+excerpt: Circuit schematic (switch). Requirement: cut-off and triode region observation, LED resistance.
+*/}
+<PdfRefChip file="_references/電子學實作系列/第七週/App_Lab3.pdf" page={11} status="confirmed" excerpt={"Circuit schematic (switch). LED in the drain, R1 = 100 ohm in the source, V_DS = 8 V. Requirement: cut-off and triode region observation, LED resistance."} client:visible />
+
+### 先讀懂這張圖
+
+![講義第 11 頁的實驗四電路：8 V 電源經 LED 進汲極，源極經 R1 100 Ω 接地，閘極由 VGS 控制](/note-images/ec-week11-handout/lab3-exp4-schematic.png)
+
+*講義第 11 頁。LED 的三角形尖端朝左（朝汲極），所以**陰極朝汲極、陽極朝電源**；電流方向是從 $V_{DD}$ 經 LED 流進汲極。*
+
+這是整份講義唯一「看得見」的實驗：把 MOSFET 當開關，$V_{GS}$ 低時 LED 暗（截止區）、$V_{GS}$ 高時 LED 亮（三極管區）。$R_1$ 100 Ω 這次又回到源極，同時當限流電阻與電流取樣電阻。
+
+講義要求的「**LED 電阻**」指的是 LED 導通後的等效電阻 $V_{LED}/I_D$；它不是定值，會隨電流變，所以每一列都要各算一次。
+
+### 講義詳解（第 11–12 頁）
+
+**操作步驟**
+
+1. 照第 11 頁接線，$V_{DD}$（CH2）固定 8 V。
+2. $V_{GS}$ 從 0.5 V 開始往上加，講義示範 0.5 V、1 V，之後四列留白。
+3. 每一階同時記三件事：$I_D$、LED 的亮／暗、以及 LED 兩端的壓降（算 LED 電阻用）。
+4. 找出 LED 開始發光的那個 $V_{GS}$，並和實驗二量到的 $V_{th}$ 對照。
+
+**級距建議**：0 到 2 V 用 0.5 V 一階（整段都是暗的，快速帶過），2 到 3 V 改 0.1 V 一階（轉折全在這裡），3 到 6 V 回到 0.5 V 一階。
+
+### 先看懂：CircuitJS
+
+[開啟實驗四的 CircuitJS 電路](https://www.falstad.com/circuit/circuitjs.html?ctz=CQAgjCAMB0l3BWcMBMcUHYMGZIA4UA2ATmIxAUmRABZsKBTAWjDACgA3EQmkbNbrzCEqo2lXpiYCNgDNwIhVUwolUECmgQY+NgHdBa4VWNR9GjKrA1eKw5DbDVNOIbs91msJBQ0UCYnB1UVgUTnEJARcqDzEXEDxgqGgZACcLKwxCDL4BEzhzD35lS1zRcztiiLKzAHMcqsqEVXLsRKluEAA1AH0AcQBlZMgZAHtO2NoUMGJCBAgkGG0QACUwAC4ASQBeTZ6AETZx3km-GbmqRa0ggBkAUX31rrYgA)
+
+- 滑桿是 V_GS。從 0 慢慢往上拉，**LED 的圓圈會從灰色變亮**，大約在 2.4 V 開始。
+- 左下角示波器是 $R_1$ 的電流（就是 $I_D$），右下角是 LED 的壓降。拉到 6 V 時 LED 壓降約 2.3 V、電流約 30 mA。
+- 把 V_GS 拉回 1 V，LED 熄滅、電流歸零：截止區。
+
+### 預演：Tinkercad 接線配方（和實驗一的差異）
+
+| 改什麼 | 實驗一 | 實驗四 |
+| --- | --- | --- |
+| 電阻 | 1 kΩ，在源極 | 100 Ω，位置一樣在源極 |
+| 汲極那一欄 | 直接拉線到 CH2 | 先串 LED（元件庫搜尋 `LED`）再拉到 CH2 |
+| LED 方向 | — | 有色環／平邊的短腳是陰極，朝汲極；Tinkercad 懸停會顯示 陽極／陰極 |
+| CH2 | 掃描用 | 固定 8 V |
+
+Tinkercad 的 LED 會真的發光，**拿它來確認「亮不亮的門檻落在哪」很準，但亮度與電流的絕對值不要抄**——它的 LED 是通用模型。
+
+### 實體麵包板：接在哪
+
+![Lab 3 實驗四的實體麵包板接線圖：LED 橫插 h32 到 h40（平邊短腳在 h32 朝汲極），R1 100 Ω 橫插 i16 到 i30 串在源極](/note-images/ec-week11-breadboard/lab3-exp4-breadboard.png)
+
+*LED 的**平邊那一側是陰極**，要插在第 32 欄（汲極那一欄）；長腳（陽極）插第 40 欄，再跳線到 CH2。插反不會壞，但完全不亮、電流也是 0。*
+
+![Lab 3 實驗四的電流分析圖：電流從 CH2 經跳線與 LED 進汲極，穿過通道、經 R1 回到 − 軌](/note-images/ec-week11-breadboard/lab3-exp4-breadboard-current.png)
+
+*這一圈是串聯，LED 和 MOSFET 共用同一個電流；LED 亮不亮完全由 MOSFET 的通道開多大決定。*
+
+| 編號 | 電流走到哪 | 為什麼走這裡 |
+| --- | --- | --- |
+| 1 | CH2 ＋ 端（8 V）→ 第 44 欄 | 電流由電源正端出發 |
+| 2 | 第 44 欄 → 第 40 欄的黃跳線 | 把電源接到 LED 的陽極 |
+| 3 | LED 陽極 → 陰極 → 第 32 欄 | 二極體只讓這個方向通；導通後壓降約 2.1–2.3 V |
+| 4 | 第 32 欄的 h 孔 → f 孔（汲極） | 同一欄相通 |
+| 5 | 汲極 → 通道 → 源極（封裝內部） | $V_{GS} > V_{th}$ 才導通 |
+| 6 | 源極 → $R_1$ 100 Ω → 第 16 欄 → − 軌 | 限流兼取樣；壓降 $I_D \times 100\ \Omega$ |
+| 7 | − 軌 → CH2 − 端 | 迴路閉合 |
+
+**預期讀數怎麼估。** 對這一圈寫 KVL：
+
+$$
+V_{DD} = V_{LED} + V_{DS} + I_D R_1
+$$
+
+$V_{GS}$ = 3 V 時 LTspice 給 $I_D$ = 5.26 mA、$V_{LED}$ = 2.14 V，代回去：
+
+$$
+8 = 2.14 + V_{DS} + 5.26\times10^{-3}\times 100
+\quad\Longrightarrow\quad
+V_{DS} = 8 - 2.14 - 0.53 = 5.33\ \text{V}
+$$
+
+$V_{DS}$ 還有 5.33 V 這麼高，代表這時候 MOSFET **還在飽和區、不是三極管區**——真正進入「開關全開」要再把 $V_{GS}$ 拉高。這一點和講義標題寫的「triode region observation」有落差，結報值得寫一句。
+
+### LTspice 預報值
+
+![LTspice 實驗四結果：VDD = 8 V 時 LED 電流對閘極電壓的曲線，R1 100 Ω 與 200 Ω 兩條，2 mA 的「看得出亮」水平線](/note-images/ec-week11-ltspice/lab3-exp4-switch.png)
+
+*橘色那條是講義問題 4 的 200 Ω 版本。LED 用的是概念模型（10 mA 時壓降約 1.9 V），不是特定型號；判「大概幾伏開始亮」夠用，壓降以當天那顆為準。*
+
+| $V_{GS}$ | 1 V | 2 V | 2.5 V | 3 V | 4 V | 5 V | 6 V |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| $I_D$（$R_1$ = 100 Ω） | 0.00 | 0.02 | 1.71 | 5.26 | 13.2 | 21.7 | 30.3 mA |
+| $I_D$（$R_1$ = 200 Ω） | 0.00 | 0.02 | 1.06 | 3.03 | 7.31 | 11.8 | 16.3 mA |
+
+- 電流越過約 2 mA（肉眼看得出亮）的閘極電壓：100 Ω 版本約 **2.54 V**、200 Ω 版本約 **2.75 V**。
+- $V_{GS}$ = 6 V 時 LED 壓降：100 Ω 版本 2.33 V、200 Ω 版本 2.24 V。
+
+### 實驗室：記錄表（$V_{DD}$ = 8 V）
+
+| $V_{GS}$（設定） | 0.5 V | 1 V | | | | |
+| --- | --- | --- | --- | --- | --- | --- |
+| $R_1$ 壓降（量測） | | | | | | |
+| $I_D$ = 壓降 / 100 Ω | | | | | | |
+| $V_{LED}$（量測） | | | | | | |
+| LED 電阻 = $V_{LED}$ / $I_D$ | | | | | | |
+| 亮／暗 | | | | | | |
+
+| 量 | 實測 | LTspice 預報 | 誤差 % |
+| --- | --- | --- | --- |
+| LED 開始亮的 $V_{GS}$ | | 約 2.5 V | |
+| 實驗二量到的 $V_{th}$ | | 2.14 V | — |
+| $V_{GS}$ = 6 V 時的 $I_D$ | | 30.3 mA | |
+
+### 檢查點
+
+- LED 完全不亮、電流 0：第一個要查的是 LED 方向（平邊短腳要朝汲極）。
+- LED 一開始就全亮、調 $V_{GS}$ 沒反應：MOSFET 可能短路，或 LED 直接接到電源與地之間（跳過了 MOSFET）。
+- 開始亮的 $V_{GS}$ 比實驗二量到的 $V_{th}$ 高約 0.3–0.5 V：**正常**。因為 $R_1$ 在源極，元件真正的 $V_{GS}$ 比電源讀數少了 $I_D R_1$，而且還要電流大到肉眼看得見才算「亮」。
+
+## 第一部分的講義問題與 Bonus
+
+{/* @ai-reference
+id: w11-lab3-q1
+file: _references/電子學實作系列/第七週/App_Lab3.pdf
+page: 15
+status: confirmed
+excerpt: 1. Using the characteristic curve obtained from Experiment 1, generate the corresponding transfer curve. 2. Explain three operation regions. 3. With V_GS = 10 V, what is the observed turn-on voltage? 4. If the resistor in Experiment 4 is replaced with a 200 ohm resistor, how does this affect the experiment?
+*/}
+<PdfRefChip file="_references/電子學實作系列/第七週/App_Lab3.pdf" page={15} status="confirmed" excerpt={"Question: 1. Using the characteristic curve obtained from Experiment 1, generate the corresponding transfer curve. 2. Using the transfer curve obtained from Experiment 2, explain three operation regions corresponding the curve. 3. In Experiment 3, with V_GS = 10V, what is the observed turn-on voltage of the MOSFET? Is it the same as previously measured? If not, explain the reason for any discrepancy. 4. If the resistor in Experiment 4 is replaced with a 200 ohm resistor, how does this affect the experiment compared to the original configuration?"} client:visible />
+
+### 問題 1：用實驗一的特性曲線產生對應的轉移曲線
+
+**作法**：輸出特性曲線是「固定 $V_{GS}$、掃 $V_{DS}$」，轉移曲線是「固定 $V_{DS}$、掃 $V_{GS}$」。兩者是同一張三維曲面 $I_D(V_{GS}, V_{DS})$ 的兩個切法，所以可以互相換算：**在輸出特性曲線上畫一條垂直線 $V_{DS} = $ 常數，它和四條曲線的四個交點，就是轉移曲線上的四個點。**
+
+用實驗一的 LTspice 預報示範，取 $V_{DS}$ = 5 V 那一欄：
+
+| $V_{GS}$（電源） | 0 V | 2 V | 4 V | 6 V |
+| --- | --- | --- | --- | --- |
+| $I_D$（$V_{DS}$ = 5 V） | 0.000 | 0.017 | 1.668 | 3.570 mA |
+
+把這四點畫成 $I_D$ 對 $V_{GS}$ 的圖，就是 $V_{DS}$ = 5 V 的轉移曲線。
+
+**但要點破一件事**：這條曲線和實驗二量到的**不會長得一樣**，因為實驗一有 1 kΩ 串在源極。實驗一的橫軸是電源讀數，元件真正的 $V_{GS}$ 要再減掉 $I_D \times 1\ \text{k}\Omega$：
+
+| 電源 $V_{GS}$ | 0 V | 2 V | 4 V | 6 V |
+| --- | --- | --- | --- | --- |
+| $I_D R_1$ | 0 | 0.017 V | 1.67 V | 3.57 V |
+| 元件真正的 $V_{GS}$ | 0 V | 1.98 V | 2.33 V | 2.43 V |
+
+**四個點在元件端只分布在 2.33 到 2.43 V 這 0.1 V 的範圍內**——源極退化把橫軸壓縮了幾十倍。這正是為什麼實驗二要把電阻搬到汲極：只有源極接地，橫軸才是元件真正的 $V_{GS}$。結報寫到這一題時，把「電源讀數的版本」與「元件端的版本」兩條都畫出來，對照起來最有說服力。
+
+### 問題 2：用實驗二的轉移曲線解釋三個工作區
+
+對著實驗二的 $I_D$–$V_{GS}$ 曲線，由左到右分成三段：
+
+| 曲線上的段 | 工作區 | 判準 | 為什麼長這樣 |
+| --- | --- | --- | --- |
+| $V_{GS}$ 小於約 2.1 V，電流貼著 0 | 截止區 | $V_{GS} < V_{th}$ | 閘極電壓不足以在 p 型基體表面造出反轉層，源汲之間沒有通道 |
+| 約 2.1 到 3 V，電流急速上升 | 飽和區 | $V_{GS} > V_{th}$ 且 $V_{DS} > V_{GS}-V_{th}$ | 通道已形成但在汲極端夾止，電流由 $V_{GS}$ 的平方律決定、幾乎不隨 $V_{DS}$ 變 |
+| 約 3 V 以上，電流平掉 | 三極管區 | $V_{GS} > V_{th}$ 且 $V_{DS} < V_{GS}-V_{th}$ | 通道整條都在，元件變成小電阻；此時整圈電流改由外部的 $R_1$ 決定 |
+
+**第三段平掉不是元件飽和**，是 100 Ω 限流。判準很好驗：平台高度 9.7／29.0／48.4 mA 幾乎等於 $V_{DS}/100\ \Omega$，和元件參數無關。真正的飽和區在中間那一段。
+
+這也解釋了為什麼數位電路用三極管區當「開」、截止區當「關」：兩端都是對外部電阻不敏感的狀態，而中間那段（飽和區）才是類比放大要的。
+
+### 問題 3：$V_{GS}$ = 10 V 時的導通電壓，和之前量到的一樣嗎
+
+**不一樣，會明顯變小。**
+
+| $V_{GS}$ | $V_{DS}$（$I_D$ = 10 mA） | $R_{on}$ |
+| --- | --- | --- |
+| 5 V | 44.1 mV | 4.41 Ω |
+| 10 V | 15.9 mV | 1.59 Ω |
+
+**原因**：三極管區的電流式可以在 $V_{DS}$ 很小時線性化。把 $V_{DS}^2$ 項丟掉，
+
+$$
+I_D \approx \mu C_{ox}\frac{W}{L}\,(V_{GS}-V_{th})\,V_{DS}
+\quad\Longrightarrow\quad
+R_{on}=\frac{V_{DS}}{I_D}\approx\frac{1}{\mu C_{ox}\dfrac{W}{L}(V_{GS}-V_{th})}
+$$
+
+**導通電阻與過驅動電壓（overdrive voltage）$V_{GS}-V_{th}$ 成反比**。用 $V_{th}$ = 2.14 V 檢查一次：
+
+$$
+\frac{R_{on}(5\,\text{V})}{R_{on}(10\,\text{V})} \approx \frac{10-2.14}{5-2.14} = \frac{7.86}{2.86} = 2.75
+$$
+
+LTspice 給的比值是 $4.41/1.59 = 2.77$，吻合。物理上的意思是：**閘極電壓越高，氧化層底下吸來的電子越多、反轉層越厚，通道的片電阻就越小**。這也是為什麼功率 MOSFET 的規格書一律在 $V_{GS}$ = 10 V 下標 $R_{DS(on)}$——驅動電壓不夠高，開關損耗就會大。
+
+### 問題 4：實驗四的電阻換成 200 Ω 會怎樣
+
+三件事會變，第三件最容易被漏掉：
+
+| 變化 | 原值（100 Ω） | 換成 200 Ω | 為什麼 |
+| --- | --- | --- | --- |
+| 同一個 $V_{GS}$ 下的電流 | $V_{GS}$ = 6 V 時 30.3 mA | 16.3 mA | 源極退化加倍，元件真正的 $V_{GS}$ 被壓得更低 |
+| LED 亮度 | 較亮 | 明顯變暗 | 亮度大致隨電流走 |
+| 開始發光的 $V_{GS}$ | 約 2.54 V | 約 2.75 V | 要更高的閘極電壓才能把電流推到 2 mA |
+
+**不是單純「電流減半」**。如果 MOSFET 是理想短路，8 V 扣掉 LED 的 2.1 V 剩 5.9 V，電阻加倍電流就剛好減半。但這裡 MOSFET 在飽和區、$R_1$ 又在源極，電流由
+
+$$
+I_D = \tfrac{1}{2}\mu C_{ox}\tfrac{W}{L}\,\bigl(V_{GS}^{\text{電源}} - I_D R_1 - V_{th}\bigr)^2
+$$
+
+這條隱式方程決定。$V_{GS}$ = 6 V 時 LTspice 給 30.3 mA → 16.3 mA，比值 1.86，確實不到 2。
+
+$R_1$ 越大、負回授越強，$I_D$ 對元件離散（$V_{th}$ 的個體差異）就越不敏感——這是和 [CE 放大器的射極退化](/notes/電子學實作系列第6週-ce放大器實驗)完全相同的權衡。
+
+### Bonus：設計 $R_3$ 的範圍讓 MOSFET 留在飽和區
+
+{/* @ai-reference
+id: w11-lab3-bonus1
+file: _references/電子學實作系列/第七週/App_Lab3.pdf
+page: 16
+status: confirmed
+excerpt: Bonus 1. By the threshold voltage in the experiment calculation, design the vibration region of R3 value to make sure the MOSFET work in saturation region.
+*/}
+<PdfRefChip file="_references/電子學實作系列/第七週/App_Lab3.pdf" page={16} status="confirmed" excerpt={"Bonus: 1. By the threshold voltage in the experiment calculation, design the vibration region of R3 value to make sure the MOSFET work in saturation region."} client:visible />
+
+**題目有兩個地方要先釐清**：第一部分的四張電路圖裡**沒有任何一顆叫 $R_3$ 的電阻**（只有 $R_1$）；唯一的 $R_3$ 是第二部分第 19 頁那顆 300 kΩ 的汲極電阻。另外 `vibration region` 應是 `variation range` 之誤，意思是「可以變動的範圍」。所以這題實際在問：**汲極電阻要落在什麼範圍，MOSFET 才會留在飽和區**。以下用第二部分的電路作答，方法對任何汲極電阻都通用。
+
+**判準**：飽和區的條件是 $V_{DS} > V_{GS} - V_{th}$。把節點電壓寫出來（$V_G$ 由 $R_1$、$R_2$ 分壓固定，$V_S = I_D R_6$，$V_D = V_{DD} - I_D R_3$）：
+
+$$
+\begin{aligned}
+V_{DS} &= V_D - V_S = V_{DD} - I_D(R_3 + R_6) \\[4pt]
+V_{GS} - V_{th} &= V_G - I_D R_6 - V_{th}
+\end{aligned}
+$$
+
+代進條件並整理：
+
+$$
+V_{DD} - I_D(R_3+R_6) > V_G - I_D R_6 - V_{th}
+\quad\Longrightarrow\quad
+\boxed{\;R_3 < \frac{V_{DD} - V_G + V_{th}}{I_D}\;}
+$$
+
+**$R_6$ 自己消掉了**——這是這題最值得記住的結論：源極電阻同時抬高 $V_S$ 與拉低 $V_D$，兩個效應在 $V_{DS}$ 的判準裡互相抵銷。
+
+代入第二部分的值（$V_{DD}$ = 15 V、$V_G$ = 5 V、$V_{th}$ = 2.14 V、$I_D$ = 29.7 µA）：
+
+$$
+R_3 < \frac{15 - 5 + 2.14}{29.7\times10^{-6}} = \frac{12.14}{29.7\times10^{-6}} \approx 409\ \text{k}\Omega
+$$
+
+**下限**則由「要有足夠增益」決定，而不是工作區：$|A_v| \approx g_m (R_3 \parallel R_4)/(1+g_m R_{S,\text{ac}})$，$R_3$ 越小增益越小。所以答案是
+
+$$
+0 < R_3 < 409\ \text{k}\Omega \quad(\text{講義選的 } 300\ \text{k}\Omega \text{ 落在範圍內，留有約 } 27\% \text{ 餘裕})
+$$
+
+LTspice 驗算（見講義問題 4）：$R_3$ = 300 kΩ 時 $V_{DS}$ = 3.13 V，確實在飽和區；換成 1 MΩ（遠超過 409 kΩ）時 $V_{DS}$ 掉到 0.000 V，整顆進三極管區、增益歸零。**邊界算對了。**
+
+> $I_D$ 本身也會隨 $R_3$ 微幅變化（通道長度調變），上式把它當常數是一階近似；要更準就把 $I_D$ 的隱式方程一起解，但結論（上限約 400 kΩ）不變。
+
+## 第二部分：共源級放大器 Common-Source Amplifier
+
+{/* @ai-reference
+id: w11-lab3-exp5
+file: _references/電子學實作系列/第七週/App_Lab3.pdf
+page: 19
+status: confirmed
+excerpt: Circuit schematic. Requirement: operation point and voltage gain.
+*/}
+<PdfRefChip file="_references/電子學實作系列/第七週/App_Lab3.pdf" page={19} status="confirmed" excerpt={"Circuit schematic. V_DD = 15 V, V_GS = 0.05 x sin(2 x pi x 1000 x t). Requirement: operation point and voltage gain."} client:visible />
+
+### 先讀懂這張圖：每個元件在做什麼
+
+![講義第 19 頁的共源級放大器：R1 100k 與 R2 50k 分壓給閘極，R3 300k 是汲極電阻，R6 100k 在源極，C3 與 R7 30k 串聯做部分旁路，C1 與 C2 是輸入輸出耦合電容](/note-images/ec-week11-handout/lab3-exp5-schematic.png)
+
+*講義第 19 頁。元件命名照第 23 頁 Bonus 的版本（講義這張圖把 C1 標成 C3、把 C3 標成 C2、把 R7 標成 R6）。*
+
+| 元件 | 值 | 做什麼 |
+| --- | --- | --- |
+| $R_1$／$R_2$ | 100 kΩ／50 kΩ | 分壓，把閘極釘在 $15 \times \frac{50}{150} = 5$ V |
+| $R_3$ | 300 kΩ | 汲極電阻，把電流變化轉成電壓變化（增益就是從這裡來的） |
+| $R_6$ | 100 kΩ | 源極電阻，提供直流負回授穩住工作點 |
+| $R_7$ | 30 kΩ | 只在交流路徑上，決定「旁路掉多少」源極電阻 |
+| $R_4$ | 1 MΩ | 負載 |
+| $R_5$ | 100 Ω | 訊號源的串聯電阻 |
+| $C_1$ | 1 µF | 輸入耦合，擋住訊號產生器與 5 V 直流閘極之間的直流 |
+| $C_2$ | 1 µF | 輸出耦合，擋住 6.1 V 的直流不讓它進負載 |
+| $C_3$ | 1 µF | 源極旁路，與 $R_7$ 串聯 |
+| $M_1$ | 2N7000 | 工作在飽和區 |
+
+### 直流偏壓：兩圈電流，電容全部斷路
+
+直流穩態下電容是斷路，所以上面那張圖在直流看起來只剩五顆電阻：
+
+![共源級放大器的直流偏壓電流分析：主迴路從 VDD 經 R3、通道、R6 回電源（約 30 µA），分壓迴路從 VDD 經 R1、R2 回電源（100 µA），三顆電容打紅叉](/note-images/ec-week11-handout/lab3-exp5-schematic-current.png)
+
+*粗的那一圈是汲極電流、細的那一圈是分壓電流；三顆電容在直流下都是斷路，所以完全不參與偏壓。*
+
+| 編號 | 電流走到哪 | 為什麼走這裡 |
+| --- | --- | --- |
+| 1 | $V_{DD}$ ＋ 端 → 上方匯流排 | 主迴路出發 |
+| 2 | 經 $R_3$ 300 kΩ → 汲極 | 壓降 $I_D R_3$ 決定 $V_D$ |
+| 3 | 汲極 → 通道 → 源極 | $V_{GS}$ 高於 $V_{th}$ 才有電流；夾止使它表現得像電流源 |
+| 4 | 源極 → $R_6$ 100 kΩ → 地 | 壓降 $I_D R_6$ 就是 $V_S$，提供直流負回授 |
+| 5 | 地 → $V_{DD}$ − 端 | 迴路閉合 |
+| A | $V_{DD}$ → $R_1$ 100 kΩ → 閘極節點 | 分壓上臂 |
+| B | 閘極節點 → $R_2$ 50 kΩ → 地 | 分壓下臂；兩顆串起來吃 $15/150\text{k} = 100\ \mu\text{A}$ |
+
+**閘極那一段沒有電流**，所以 $V_G$ 單純由 $R_1$、$R_2$ 分壓決定，與元件無關：
+
+$$
+V_G = V_{DD}\,\frac{R_2}{R_1+R_2} = 15 \times \frac{50}{150} = 5.00\ \text{V}
+$$
+
+**工作點怎麼解。** 把三條式子聯立（$V_{GS} = V_G - I_D R_6$、飽和區平方律、$V_D = V_{DD} - I_D R_3$）就得到一條對 $I_D$ 的二次式。LTspice 的結果：
+
+| 量 | 值 | 怎麼來的 |
+| --- | --- | --- |
+| $V_G$ | 5.00 V | $R_1$、$R_2$ 分壓 |
+| $V_S$ | 2.97 V | $I_D R_6$ |
+| $V_{GS}$ | 2.03 V | $V_G - V_S$ |
+| $V_D$ | 6.10 V | $V_{DD} - I_D R_3$ |
+| $V_{DS}$ | 3.13 V | $V_D - V_S$；遠大於 $V_{GS}-V_{th}$，**飽和區** |
+| $I_D$ | 29.7 µA | $V_S / R_6$ |
+| 電源總電流 | 約 130 µA | 29.7 µA ＋ 分壓的 100 µA |
+
+**這個工作點非常靠近臨界電壓**（$V_{GS}$ = 2.03 V 對上 $V_{th}$ = 2.14 V），所以講義給的 $g_m = 2I_D/(V_{GS}-V_{th})$ 在這裡算不出合理的值——分母幾乎是 0。實務上改用**由增益回推**：
+
+$$
+g_m = \frac{|A_v|\,\bigl(1 + g_m R_{S,\text{ac}}\bigr)}{R_3 \parallel R_4}
+\quad\Longrightarrow\quad
+g_m \approx 0.297\ \text{mA/V}
+$$
+
+量到的 $g_m$ 應該落在 0.2–0.5 mA/V 這個量級。結報要把「平方律公式在這個偏壓下失效」寫出來，這是這個電路真正的教學點。
+
+### 交流小訊號：電容變短路、$V_{DD}$ 變地
+
+![共源級放大器的交流訊號路徑：訊號經 R5、C1 進閘極，從汲極經 C2 到 R4 回到地，源極端 R6 與 R7+C3 並聯](/note-images/ec-week11-handout/lab3-exp5-schematic-ac-current.png)
+
+*1 kHz 下 1 µF 的阻抗只有 159 Ω，相對於幾十 kΩ 的電阻等於短路；$V_{DD}$ 是固定電壓，對交流來說就是地。*
+
+| 編號 | 訊號走到哪 | 為什麼 |
+| --- | --- | --- |
+| 1 | 訊號源 → $R_5$ → $C_1$ → 閘極 | $C_1$ 擋直流、通交流，讓 5 V 的閘極偏壓不被訊號產生器拉掉 |
+| 2 | 汲極 → $C_2$ → 負載 | 輸出端同理，擋掉 6.1 V 的直流 |
+| 3 | $R_4$ 1 MΩ → 地 | 負載；交流上它與 $R_3$ 並聯（因為 $V_{DD}$ 等於交流地） |
+| 4 | 地 → 回訊號源 | 迴路閉合 |
+
+**增益公式怎麼來的。** 小訊號模型裡，汲極電流是 $i_d = g_m v_{gs}$，而源極有阻抗 $R_{S,\text{ac}}$ 時
+
+$$
+v_{gs} = v_{in} - i_d R_{S,\text{ac}}
+\quad\Longrightarrow\quad
+i_d = g_m\bigl(v_{in} - i_d R_{S,\text{ac}}\bigr)
+\quad\Longrightarrow\quad
+i_d = \frac{g_m\,v_{in}}{1+g_m R_{S,\text{ac}}}
+$$
+
+輸出是 $v_{out} = -i_d\,(R_3 \parallel R_4)$，所以
+
+$$
+\boxed{\;A_v = -\,\frac{g_m\,(R_3\parallel R_4)}{1+g_m R_{S,\text{ac}}}\;}
+\qquad
+R_{S,\text{ac}} = R_6 \parallel R_7 = 100\text{k} \parallel 30\text{k} = 23.1\ \text{k}\Omega
+$$
+
+代入 $g_m$ = 0.297 mA/V、$R_3 \parallel R_4$ = 231 kΩ：
+
+$$
+A_v = -\frac{0.297\times10^{-3}\times 231\times10^{3}}{1+0.297\times10^{-3}\times 23.1\times10^{3}}
+= -\frac{68.6}{7.86} = -8.7
+$$
+
+**負號就是反相**：閘極電位上升 → 通道電流變大 → $R_3$ 的壓降變大 → 汲極電位下降。
+
+### 預演：Tinkercad 只能確認接線，不能抄讀值
+
+這個電路有三顆耦合／旁路電容加一個交流源，正是 [Lab 2 的 CE 放大器](/notes/電子學實作系列第6週-ce放大器實驗)在 Tinkercad 上解不出來的那一類。症狀有兩種，都要當成失敗：
+
+| 症狀 | 怎麼認 |
+| --- | --- |
+| 直接卡住 | 模擬時間幾乎不前進，跳出 `This shouldn't take so long` |
+| 跑得完但結果是錯的 | 波形照畫，但量輸入的那台示波器顯示的 $V_{in}$ 不是乾淨正弦、或振幅明顯短少 |
+
+**判準永遠是看量輸入的那一台**：$V_{in}$ 應該是平滑正弦、峰對峰值等於函數波產生器設定的振幅。只要這一台不對，整輪讀值作廢。
+
+所以 Tinkercad 在這一段只做一件事：**把接線擺出來、確認七顆電阻與三顆電容的節點都對**。波形看 CircuitJS，數值看 LTspice。
+
+### 先看懂：CircuitJS
+
+[開啟共源級放大器的 CircuitJS 電路](https://www.falstad.com/circuit/circuitjs.html?ctz=CQAgjCAMB0l3AmcMGIOxoMyQBwIGwCchaIArJMiACybkCmAtGGAFABuNONcXICObpQhh4UWGShSYZVgCc+A7iyRKpoyKwDG4MKsHg0+fgcox4cCI1kKwR8PmH21wi5tvODd49V6UK8KwAZobGauGm-NAQ5jjyJtwIaPrKjlLYFqwA7qEOlGpgaZo5BWnUOMJFHFyUvrUVedI84JJm4jYJINjUnXXqbtmd3V1kSMOaOpijXZA9U2PTZrAWEJjx8yMLSH2UGXDanUnbvEfSy-AQ+NHxfad9O8gDOeU8Tj5+g96vvR8lBn0bHaDQG8e6-b73BpAgDmP3y-0wSDMrAA9lIhDQEGBCPgKORxDEQAA1AD6AEsAHaologDHULE4vGtaLgYkklEAVwALgAKABK1AAlKwgA)
+
+- 左下角示波器是 $V_{in}$（50 mV 峰值、1 kHz），右下角是 $R_4$ 上的 $V_{out}$。
+- 兩條波形**上下顛倒**，這就是反相。
+- **剛開啟的前幾秒輸出會有直流飄移**，那是三顆耦合電容在充電；等它穩下來再讀峰對峰值。
+- CircuitJS 的通用模型給出的增益約 10.6 倍，LTspice 的真實型號是 8.7 倍。形狀一致、數值以 LTspice 為準。
+
+### LTspice 預報值
+
+![LTspice 共源級放大器時域波形：Vin 50 mV 峰值的藍線與 Vout 437 mV 峰值的橘線，兩者反相](/note-images/ec-week11-ltspice/lab3-exp5-tran.png)
+
+*1 kHz、$V_{in}$ 50 mV 峰值時 $V_{out}$ 是 437 mV 峰值，比值 8.7，相位差 180°。*
+
+| 量 | LTspice 預報 | 備註 |
+| --- | --- | --- |
+| $V_G$ | 5.00 V | 與元件無關，分壓決定 |
+| $V_S$ | 2.97 V | |
+| $V_{GS}$ | 2.03 V | |
+| $V_D$ | 6.10 V | |
+| $V_{DS}$ | 3.13 V | 飽和區 |
+| $I_D$ | 29.7 µA | |
+| $g_m$ | 0.297 mA/V | 由增益回推 |
+| $V_{out}$ 峰值 | 437 mV | $V_{in}$ = 50 mV 峰值 |
+| $\lvert A_v \rvert$ | 8.72（18.8 dB） | 相位 180° |
+
+### 工作點對 $V_{th}$ 極度敏感：當天最可能出事的地方
+
+2N7000 規格書的 $V_{GS(th)}$ 範圍是 0.8 到 3.0 V。把模型的 $V_{to}$ 掃過整段，看工作點跑到哪：
+
+![LTspice 設計分析：左圖是 R7 對增益的影響（30 kΩ 給 8.7 倍、10 kΩ 給 18.6 倍、直接接地給 71 倍），右圖是 Vth 從 0.8 到 3.0 V 時增益與 VDS 的變化](/note-images/ec-week11-ltspice/lab3-exp5-design.png)
+
+| 元件的 $V_{th}$ | $V_S$ | $V_D$ | $V_{DS}$ | $I_D$ | $\lvert A_v \rvert$ |
+| --- | --- | --- | --- | --- | --- |
+| 0.8 V | 3.750 V | 3.751 V | **0.001 V** | 37.5 µA | **0.004** |
+| 1.2 V | 3.748 V | 3.757 V | **0.009 V** | 37.5 µA | **0.10** |
+| 1.6 V | 3.488 V | 4.535 V | 1.047 V | 34.9 µA | 8.7 |
+| 2.14 V | 2.967 V | 6.099 V | 3.132 V | 29.7 µA | 8.7 |
+| 2.5 V | 2.620 V | 7.140 V | 4.520 V | 26.2 µA | 8.6 |
+| 3.0 V | 2.140 V | 8.580 V | 6.441 V | 21.4 µA | 8.4 |
+
+兩個結論：
+
+1. **$I_D$ 很穩**（21–38 µA），這是 $R_6$ 100 kΩ 的負回授在發揮作用——$V_{th}$ 變動 2.2 V，電流只差 1.8 倍。
+2. **$V_{DS}$ 完全不穩**：$V_{th}$ 低於約 1.5 V 時 $V_D$ 會被拉到和 $V_S$ 一樣低，元件掉進三極管區，**增益歸零、輸出一條直線**。
+
+所以當天如果量到 $V_D \approx V_S$、示波器輸出沒有訊號，**先不要懷疑接線**：量一下 $V_D$ 與 $V_S$，兩者相近就代表你那顆 2N7000 的 $V_{th}$ 偏低。補救方法是把 $R_2$ 換小一點（降低 $V_G$，把電流壓下來），或把 $R_3$ 換成 100 kΩ；結報把這段寫進去，比硬湊出一個增益數字有價值得多。
+
+### 實驗室：記錄表
+
+$V_{DD}$ = 15 V 的直流工作點（訊號產生器先關掉）：
+
+| 量 | 理論 | 量測 | LTspice 預報 | 誤差 % |
+| --- | --- | --- | --- | --- |
+| $V_G$ | 5.00 V | | 5.00 V | |
+| $V_S$ | | | 2.97 V | |
+| $V_{GS}$ = $V_G$ − $V_S$ | | | 2.03 V | |
+| $V_D$ | | | 6.10 V | |
+| $V_{DS}$ = $V_D$ − $V_S$ | | | 3.13 V | |
+| $I_D$ = $V_S$ / 100 kΩ | | | 29.7 µA | |
+| 工作區 | | | 飽和區 | — |
+| $g_m$（由 $I_D$ 推） | | | 0.297 mA/V | |
+
+接上 $V_{in} = 0.05\sin(2\pi\times 1000\,t)$ 之後：
+
+| 量 | 理論 | 量測 | LTspice 預報 | 誤差 % |
+| --- | --- | --- | --- | --- |
+| $V_{out}$ 最大值 | | | 437 mV（峰值） | |
+| $A_v$ 最大值 | | | −8.72 | |
+| $A_v$（由量測算） | | | — | |
+| $g_m$（由量測算） | | | 0.297 mA/V | |
+| 相位差 | 180° | | 180° | — |
+
+### 檢查點
+
+- 先量直流再接訊號。$V_G$ 量到 5.00 V 代表分壓對了；$V_G$ 不是 5 V 就先查 $R_1$、$R_2$。
+- $V_D$ 在 4 到 9 V 之間：工作點可用。$V_D$ 貼著 15 V 代表元件截止，貼著 $V_S$ 代表進了三極管區。
+- 示波器兩個通道的地夾都接到電路的地（這個電路輸入輸出有共同地，不像[第 3 週的橋式整流](/notes/電子學實作系列第3週-整流電路實驗)，可以兩通道同時接）。
+- 輸出波形削頂：把輸入振幅調小。$V_D$ = 6.1 V、$V_S$ = 2.97 V，往下只剩約 3.1 V 的擺幅空間，增益 8.7 時對應輸入上限約 350 mV 峰值。
+- 輸出和輸入同相：量錯點了（量到源極去了），或示波器的某個通道按了反相。
+
+## 第二部分的講義問題與 Bonus
+
+{/* @ai-reference
+id: w11-lab3-q2
+file: _references/電子學實作系列/第七週/App_Lab3.pdf
+page: 22
+status: confirmed
+excerpt: 1. What is the function of C1 & C2. 2. Derive the equation of voltage gain. 3. Calculate the voltage gain when a capacitor is connected in parallel with R6. 4. If the R3 is replaced with a 1 Mohm resistor. 5. If the R1 is replaced with a 1 Mohm resistor.
+*/}
+<PdfRefChip file="_references/電子學實作系列/第七週/App_Lab3.pdf" page={22} status="confirmed" excerpt={"Question: 1. What is the function of C1 & C2. 2. Derive the equation of voltage gain for the experiment circuit configuration. 3. Calculate the voltage gain when a capacitor is connected in parallel with R6. 4. If the R3 in Experiment is replaced with a 1 Mohm resistor, how does this affect the experiment compared to the original configuration? 5. If the R1 in Experiment is replaced with a 1 Mohm resistor, how does this affect the experiment compared to the original configuration?"} client:visible />
+
+### 問題 1：$C_1$ 與 $C_2$ 的功能
+
+兩顆都是耦合電容（coupling capacitor），功能一樣：**讓交流訊號通過、把直流擋在外面**。
+
+| 電容 | 位置 | 擋掉什麼 | 不擋會怎樣 |
+| --- | --- | --- | --- |
+| $C_1$ | 訊號產生器與閘極之間 | 訊號產生器的低輸出阻抗（50 Ω）會把閘極的 5 V 直流拉到 0 V | 閘極電位塌掉，$V_{GS}$ 低於 $V_{th}$，整顆截止，完全沒有放大 |
+| $C_2$ | 汲極與負載之間 | 汲極的 6.1 V 直流 | 1 MΩ 的負載會和 $R_3$ 形成新的分壓，把 $V_D$ 從 6.1 V 拉低，工作點整個偏掉；負載上也會多出 6 V 的直流偏移 |
+
+**值夠不夠大怎麼判**：耦合電容與它看到的電阻組成高通濾波器，轉角頻率
+
+$$
+f_c = \frac{1}{2\pi R C}
+$$
+
+$C_2$ 這一端看到的是 $R_3 + R_4 \approx 1.3\ \text{M}\Omega$，所以 $f_c = 1/(2\pi \times 1.3\times10^6 \times 10^{-6}) = 0.12$ Hz，遠低於 1 kHz，形同短路。$C_1$ 這一端看到 $R_5 + (R_1\parallel R_2) \approx 33.4\ \text{k}\Omega$，$f_c$ = 4.8 Hz，同樣沒問題。
+
+### 問題 2：推導這個電路的電壓增益
+
+小訊號模型（忽略通道長度調變，即 $r_o \to \infty$）：
+
+$$
+\begin{aligned}
+&\text{汲極電流}\quad && i_d = g_m\,v_{gs} \\[4pt]
+&\text{源極節點}\quad && v_s = i_d\,R_{S,\text{ac}},\qquad R_{S,\text{ac}} = R_6 \parallel R_7 \\[4pt]
+&\text{閘源電壓}\quad && v_{gs} = v_{in} - v_s = v_{in} - i_d R_{S,\text{ac}}
+\end{aligned}
+$$
+
+把第三條代進第一條：
+
+$$
+i_d = g_m\bigl(v_{in} - i_d R_{S,\text{ac}}\bigr)
+\quad\Longrightarrow\quad
+i_d\bigl(1 + g_m R_{S,\text{ac}}\bigr) = g_m v_{in}
+\quad\Longrightarrow\quad
+i_d = \frac{g_m}{1+g_m R_{S,\text{ac}}}\,v_{in}
+$$
+
+輸出端（交流時 $V_{DD}$ 是地，所以 $R_3$ 與 $R_4$ 並聯）：
+
+$$
+v_{out} = -\,i_d\,\bigl(R_3 \parallel R_4\bigr)
+$$
+
+因此
+
+$$
+A_v = \frac{v_{out}}{v_{in}} = -\,\frac{g_m\,(R_3\parallel R_4)}{1+g_m\,(R_6\parallel R_7)}
+$$
+
+代入本電路的值：
+
+$$
+\begin{aligned}
+R_3\parallel R_4 &= \frac{300\text{k}\times 1000\text{k}}{1300\text{k}} = 230.8\ \text{k}\Omega \\[4pt]
+R_6\parallel R_7 &= \frac{100\text{k}\times 30\text{k}}{130\text{k}} = 23.08\ \text{k}\Omega \\[4pt]
+A_v &= -\frac{0.297\text{m}\times 230.8\text{k}}{1+0.297\text{m}\times 23.08\text{k}} = -\frac{68.6}{7.86} = -8.73
+\end{aligned}
+$$
+
+LTspice 的 `.ac` 量到 18.81 dB = 8.72 倍、相位 179.8°。**吻合到小數第二位。**
+
+$g_m R_{S,\text{ac}} = 6.86 \gg 1$ 時，上式退化成
+
+$$
+A_v \approx -\frac{R_3\parallel R_4}{R_6\parallel R_7} = -\frac{230.8}{23.08} = -10
+$$
+
+**增益幾乎只由電阻比決定、和元件參數無關**——這就是負回授的好處，也是為什麼上一節的 $V_{th}$ 掃描中增益一直停在 8.4–8.7。
+
+### 問題 3：在 $R_6$ 上並聯一顆電容，增益變多少
+
+在 $R_6$ 上直接並聯一顆電容，等於**在交流上把源極直接短路到地**，$R_{S,\text{ac}} \to 0$：
+
+$$
+A_v = -g_m\,(R_3\parallel R_4) = -0.297\times10^{-3}\times 230.8\times10^{3} = -68.6
+$$
+
+LTspice（`lab3-exp5-ac.cir` 的 `.step`）給 36.96 dB = **70.6 倍**，與手算的 68.6 吻合。**增益變成原來的 8.1 倍**。
+
+但要加一句：**這個增益用不上**。$V_D$ 靜態 6.10 V、$V_S$ 2.97 V，往下只有 3.13 V 的空間，增益 70 時只要輸入 45 mV 峰值就會削頂。LTspice 的 `.tran` 在 50 mV 輸入下量到大訊號增益只剩 60.7（壓縮約 14%），波形已經不對稱。
+
+| $R_7$（與 $C_3$ 串聯） | $R_{S,\text{ac}}$ | $\lvert A_v \rvert$（小訊號） | 50 mV 輸入時的實際表現 |
+| --- | --- | --- | --- |
+| 短路（全旁路） | 0 | 70.6 | 削頂，壓縮到 60.7 |
+| 100 Ω | 99.9 Ω | 68.5 | 削頂，壓縮到 60.1 |
+| 10 kΩ | 9.09 kΩ | 18.6 | 乾淨，不對稱 1.2% |
+| 25 kΩ | 20.0 kΩ | 9.87 | 乾淨 |
+| **30 kΩ（講義原值）** | 23.1 kΩ | **8.72** | 乾淨，不對稱 0.2% |
+| 50 kΩ | 33.3 kΩ | 6.28 | 乾淨 |
+
+**完全旁路與完全不旁路之間，$R_7$ 給的是一個連續的旋鈕**：增益與線性度（還有頻寬）在這裡互換。講義選 30 kΩ 是把線性擺在前面。
+
+### 問題 4：$R_3$ 換成 1 MΩ 會怎樣
+
+**整顆掉出飽和區，放大器失效。**
+
+| 量 | $R_3$ = 300 kΩ | $R_3$ = 1 MΩ |
+| --- | --- | --- |
+| $V_S$ | 2.967 V | 1.364 V |
+| $V_D$ | 6.099 V | 1.364 V |
+| $V_{DS}$ | 3.132 V | **0.000 V** |
+| $I_D$ | 29.7 µA | 13.6 µA |
+| $\lvert A_v \rvert$ | 8.72 | **0.0042**（−47.6 dB） |
+
+**為什麼**：如果 $I_D$ 還是 29.7 µA，$R_3$ 上的壓降會是 $29.7\ \mu\text{A} \times 1\ \text{M}\Omega = 29.7$ V，遠超過 15 V 的電源。電路不可能這樣，於是汲極電位被拉到幾乎等於源極電位，$V_{DS} \to 0$，**MOSFET 掉進深三極管區變成一顆小電阻**。電流重新平衡到 13.6 µA（此時 $(R_3+R_6) \times I_D = 1.1\text{M} \times 13.6\mu \approx 15$ V，整個電源電壓都落在兩顆電阻上）。
+
+三極管區的元件沒有 $g_m$ 可言（它不是電流源了），所以輸出幾乎不隨閘極變化，增益歸零。
+
+這正好是第一部分 Bonus 算出來的那條邊界的反面驗證：$R_3 < 409\ \text{k}\Omega$，1 MΩ 遠超過它。
+
+### 問題 5：$R_1$ 換成 1 MΩ 會怎樣
+
+**整顆截止，輸出貼在電源電壓上。**
+
+$$
+V_G = V_{DD}\,\frac{R_2}{R_1+R_2} = 15 \times \frac{50\text{k}}{1050\text{k}} = 0.714\ \text{V}
+$$
+
+| 量 | $R_1$ = 100 kΩ | $R_1$ = 1 MΩ |
+| --- | --- | --- |
+| $V_G$ | 5.000 V | **0.714 V** |
+| $V_S$ | 2.967 V | 0.000 V |
+| $V_{GS}$ | 2.033 V | **0.714 V**（低於 $V_{th}$ = 2.14 V） |
+| $V_D$ | 6.099 V | **15.000 V**（貼電源） |
+| $I_D$ | 29.7 µA | 約 0 |
+| $\lvert A_v \rvert$ | 8.72 | **0.0029**（−50.8 dB） |
+
+$V_{GS}$ = 0.714 V 遠低於臨界電壓，通道根本沒形成，$I_D \approx 0$，$R_3$ 上沒有壓降，汲極就停在 15 V。輸出是一條直線。
+
+**和問題 4 的差別**：問題 4 是偏壓偏到另一端（太導通），問題 5 是偏壓不足（不導通）。兩者都是「工作點跑掉」，但往反方向跑，示波器上的症狀剛好相反：
+
+| 症狀 | 原因 | 要查什麼 |
+| --- | --- | --- |
+| $V_D$ 貼在 15 V、輸出平線 | 截止：$V_{GS} < V_{th}$ | 分壓電阻（$R_1$ 太大或 $R_2$ 太小）、$V_G$ 量到幾伏 |
+| $V_D$ 掉到和 $V_S$ 一樣、輸出平線 | 三極管區：$V_{DS}$ 太小 | $R_3$ 太大、或元件的 $V_{th}$ 偏低 |
+
+### Bonus：設計一個增益大於 10 且反相的電路
+
+{/* @ai-reference
+id: w11-lab3-bonus2
+file: _references/電子學實作系列/第七週/App_Lab3.pdf
+page: 23
+status: confirmed
+excerpt: Bonus 1. Design the circuit according to the configuration shown below and fulfill the requirements. 1) The voltage gain must be greater than 10. 2) The output signal must be 180 degrees out of phase with the input signal.
+*/}
+<PdfRefChip file="_references/電子學實作系列/第七週/App_Lab3.pdf" page={23} status="confirmed" excerpt={"Bonus: Design the circuit according to the configuration shown below and fulfill the requirements. 1) The voltage gain must be greater than 10. 2) The output signal must be 180 degrees out of phase with the input signal."} client:visible />
+
+![講義第 23 頁的 Bonus 電路：和第 19 頁同一個拓樸，但元件命名正確（C1 輸入耦合、C2 輸出耦合、C3 源極旁路、R7 與 C3 串聯），值留空由自己設計](/note-images/ec-week11-handout/lab3-bonus-schematic.png)
+
+*Bonus 的電路圖和第 19 頁是同一個拓樸，只是值留空——這也是確認第 19 頁命名錯誤的依據。*
+
+**第二個條件自動成立**：共源級本來就反相，只要工作點留在飽和區，相位差一定是 180°。真正要設計的是第一個條件。
+
+**哪個旋鈕可以動**。從增益式
+
+$$
+|A_v| = \frac{g_m\,(R_3\parallel R_4)}{1+g_m\,(R_6\parallel R_7)}
+$$
+
+看，分子的 $R_3$ 不能加大（問題 4 已證明會掉出飽和區，上限 409 kΩ），分母的 $R_6$ 不能減小（它決定偏壓），$g_m$ 由工作點決定。**唯一能自由動的是 $R_7$**——它只在交流路徑上，直流完全不影響偏壓。
+
+**定案：$R_7$ 從 30 kΩ 換成 10 kΩ，其餘全部不動。**
+
+$$
+R_{S,\text{ac}} = 100\text{k}\parallel 10\text{k} = 9.09\ \text{k}\Omega
+\quad\Longrightarrow\quad
+|A_v| = \frac{68.6}{1+0.297\text{m}\times 9.09\text{k}} = \frac{68.6}{3.70} = 18.5
+$$
+
+LTspice 驗證（`lab3-bonus-design.cir`，同時掃 $V_{th}$ 看耐受度）：
+
+| 元件的 $V_{th}$ | $V_{out}$ 正峰 | $V_{out}$ 負峰 | $\lvert A_v \rvert$（峰對峰） | 不對稱 | 判定 |
+| --- | --- | --- | --- | --- | --- |
+| 1.2 V | 7.8 mV | −3.9 mV | 0.12 | 50% | 失敗（元件在三極管區） |
+| 1.6 V | 933 mV | −907 mV | 18.4 | 2.7% | 通過 |
+| 2.14 V | 924 mV | −934 mV | **18.6** | 1.2% | 通過 |
+| 2.6 V | 891 mV | −909 mV | 18.0 | 1.9% | 通過 |
+| 3.0 V | 852 mV | −875 mV | 17.3 | 2.7% | 通過 |
+
+**$V_{th}$ 只要在 1.6 V 以上，增益都穩穩落在 17–19 之間，遠超過門檻 10，而且波形不對稱度都在 3% 以內。** 這個方案的好處是偏壓一個字都沒動，當天只要換一顆電阻。
+
+**為什麼不乾脆把 $C_3$ 直接接地（$R_7$ = 0）**：那會給 70 倍的增益，確實「大於 10」，但 50 mV 輸入下輸出要 3.5 V 峰值，而往下只有 3.13 V 的擺幅空間，波形會削頂（LTspice 量到壓縮 14%、不對稱 2.2%）。要用這個方案就得把輸入降到 30 mV 峰值以下，並在報告裡說明。
+
+**$R_7$ 的可用範圍**：門檻 $|A_v| > 10$ 對應 $R_{S,\text{ac}} < 19.7\ \text{k}\Omega$，也就是
+
+$$
+R_7 < \frac{1}{\dfrac{1}{19.7\text{k}} - \dfrac{1}{100\text{k}}} = 24.5\ \text{k}\Omega
+$$
+
+![LTspice 的 R7 掃描：R7 越小增益越大，30 kΩ 給 8.7 倍、10 kΩ 給 18.6 倍、直接接地給 71 倍，門檻 10 倍落在 R7 ≈ 24.5 kΩ](/note-images/ec-week11-ltspice/lab3-exp5-design.png)
+
+**零件表的現實**：講義第 21 頁只有 100 Ω ×1、50 kΩ ×2、100 kΩ ×2、300 kΩ ×1、1 MΩ ×1。主電路用掉之後剩下一顆 50 kΩ 與一顆 100 kΩ，兩者都大於 24.5 kΩ，並聯起來是 33.3 kΩ 也不夠。所以實際可行的替代方案有兩個：
+
+| 方案 | $R_7$ | $\lvert A_v \rvert$ | 代價 |
+| --- | --- | --- | --- |
+| 跟助教要一顆 10 kΩ（**建議**） | 10 kΩ | 18.6 | 無，偏壓不動 |
+| 把 $R_5$ 的 100 Ω 挪來當 $R_7$ | 100 Ω | 68.5 | 幾乎全旁路，輸入要降到 30 mV 峰值以下才不削頂 |
+
+$R_5$ 本來只是模擬訊號源的內阻，訊號產生器自己就有 50 Ω 輸出阻抗，拿掉它對電路幾乎沒有影響。
+
+## 交出去的兩份檔
+
+| 檔 | 內容 | 位置 |
+| --- | --- | --- |
+| 預報 | 本篇各實驗「LTspice 預報值」那幾張表的數字 ＋ 第一部分 Bonus 的 $R_3$ 範圍推導 | 上課前交 |
+| 結報 | 六張記錄表的實測值 ＋ 誤差欄 ＋ 九個講義問題 ＋ 兩個 Bonus | 實驗後一週內 |
+
+結報成品產生腳本住在 `simulations/lab3/report/`，輸出檔放 `src/content/notes/_outputs/lab3/`（不進版控、不上公開站）。寫結報正文時走 `lab-workflow` skill 的 `--final` 口吻契約。
+
+## 附錄：模擬檔與 CircuitJS 原始碼
+
+所有網表、腳本與跑法見 [`simulations/lab3/README.md`](https://github.com/SteveLin100132/notecraft/blob/HEAD/simulations/lab3/README.md)。
+
+| 用途 | 檔案 |
+| --- | --- |
+| CircuitJS 電路（可用「檔案 → 從文字匯入」還原） | [`simulations/lab3/circuitjs/`](https://github.com/SteveLin100132/notecraft/blob/HEAD/simulations/lab3/circuitjs) |
+| LTspice 網表（`.model` 已內嵌，線上版也開得起來） | [`simulations/lab3/`](https://github.com/SteveLin100132/notecraft/blob/HEAD/simulations/lab3) |
+| 出圖與預報數字 | [`simulations/lab3/plot.py`](https://github.com/SteveLin100132/notecraft/blob/HEAD/simulations/lab3/plot.py) |
+| 麵包板接線圖 | [`simulations/lab3/draw_breadboard.py`](https://github.com/SteveLin100132/notecraft/blob/HEAD/simulations/lab3/draw_breadboard.py) |
+| 電流分析圖 | [`simulations/lab3/annotate_current_path.py`](https://github.com/SteveLin100132/notecraft/blob/HEAD/simulations/lab3/annotate_current_path.py)、[`annotate_schematic.py`](https://github.com/SteveLin100132/notecraft/blob/HEAD/simulations/lab3/annotate_schematic.py) |
+
+**為什麼 LTspice 用 BS170 而不是 2N7000**：LTspice 的標準庫沒有 2N7000。BS170 與 2N7000 是同一族的 N 通道增強型小訊號 MOSFET（60 V／500 mA／TO-92），差別主要在腳位順序，模型的 $V_{to}$ = 2.14 V 落在 2N7000 規格書 0.8–3.0 V 範圍的典型值附近。另外用庫裡的 2N7002（SOT-23 版的同晶片，$V_{to}$ = 1.6 V）交叉驗算過第二部分：工作點 35.5 µA、增益 9.3 倍，與 BS170 的 29.7 µA／8.7 倍同一量級，結論不變。
