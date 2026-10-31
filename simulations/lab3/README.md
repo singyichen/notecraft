@@ -33,6 +33,7 @@ LTspice 網表與圖。LTspice 全部用內建元件庫的 **BS170** 模型（`.
 | `draw_breadboard.py` | 從零畫實體麵包板接線圖（三張）到 `public/note-images/ec-week11-breadboard/` | — |
 | `annotate_current_path.py` | 在上面三張接線圖疊電流分析（輸出加 `-current`） | — |
 | `annotate_schematic.py` | 在講義第 19 頁的原理圖上疊直流偏壓與交流訊號兩種電流路徑 | — |
+| `build_record_xlsx.py` | 產生當天填數據用的 `measured/Lab3-數據記錄.xlsx`（四個分頁、三張圖，預報欄讀 `.raw`） | — |
 
 ## 跑法
 
@@ -43,6 +44,7 @@ cd simulations/lab3
 ../lab1/.venv/bin/python draw_breadboard.py
 ../lab1/.venv/bin/python annotate_current_path.py
 ../lab1/.venv/bin/python annotate_schematic.py
+../lab1/.venv/bin/python build_record_xlsx.py        # 已存在不覆蓋，要重產加 --force
 node ../../.claude/skills/lab-workflow/scripts/circuitjs-link.mjs circuitjs/*.txt   # 印 CircuitJS 連結
 ```
 

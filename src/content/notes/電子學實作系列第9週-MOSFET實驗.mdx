@@ -55,6 +55,23 @@ excerpt: Build-up the concepts for MOSFET operation regions. Saturation region /
 
 **實驗一和實驗二只差「那顆電阻接在哪一隻腳」**，但量到的東西完全不同——這是整份講義最容易看漏、也最值得先想清楚的一件事。細節在各實驗的「先讀懂這張圖」。
 
+### 當天用的 Excel 記錄簿
+
+兩張必做的表都做成活頁簿了，當天用筆電直接填：
+
+[simulations/lab3/measured/Lab3-數據記錄.xlsx](simulations/lab3/measured/Lab3-數據記錄.xlsx)
+
+| 分頁 | 內容 |
+| --- | --- |
+| 說明 | 助教公告的範圍、怎麼用、量測注意 |
+| 實驗一 特性曲線 | $V_{GS}$ = 0／2／4／6 V 四組 × $V_{DS}$ 1–5 V，填 $R_1$ 壓降、$I_D$ 自動換算，右邊一張 $I_D$–$V_{DS}$ 散佈圖 |
+| 實驗二 轉移曲線 | $V_{DS}$ = 1／3／5 V 三組粗掃 ＋ 十列加密掃描 ＋ 臨界電壓外插（附合理性檢查），兩張圖 |
+| 交報告用 | 版面照講義第 7、9 頁排好，數字由前兩張表帶過來，直接複製貼進報告 |
+
+黃底是當天要填的格子，其餘是公式或 LTspice 預報值。**$I_D$ 欄不要自己算**——實驗一填 $R_1$ 壓降、實驗二填汲極對地電壓 $V_D$，換算是公式做的。
+
+**臨界電壓要用加密掃描那一塊。** 粗掃的六格級距太寬，抬頭那一段往往只落得到一個點；平方根外插必須有兩個都在平方律直線上的點（建議 $I_D$ 落在 1～5 mA），取到被 $R_1$ 限流的平台會算出負的 $V_{th}$。活頁簿裡有一格自動檢查會直接寫「兩點取在平台上了，重挑」。
+
 ### 器材清單
 
 {/* @ai-reference
@@ -210,7 +227,7 @@ Tinkercad 的電源供應器一次只有一組輸出，**兩台電源要放兩�
 
 ### 同一張圖，標出電流實際流動路徑
 
-綠色粗線是電流走的迴路、紅色三角形是方向、紅底白字編號對應下方表格的列、藍色虛線是電壓表的兩條線（並聯、不分流）；綠色虛線是 TO-92 封裝裡看不到的那一段。疊圖腳本在 [`simulations/lab3/annotate_current_path.py`](https://github.com/SteveLin100132/notecraft/blob/HEAD/simulations/lab3/annotate_current_path.py)。
+綠色粗線是電流走的迴路、紅色三角形是方向、紅底白字編號對應下方表格的列、藍色虛線是電壓表的兩條線（並聯、不分流）；綠色虛線是 TO-92 封裝裡看不到的那一段。疊圖腳本在 `simulations/lab3/annotate_current_path.py`。
 
 ![Lab 3 實驗一的電流分析圖：電流從 CH2 正端出發，經第 44 欄跳線到汲極，穿過 2N7000 通道到源極，再經 R1 回到 − 軌與電源負端](/note-images/ec-week11-breadboard/lab3-exp1-breadboard-current.png)
 
@@ -240,7 +257,7 @@ $V_{GS}^{\text{電源}}$ = 4 V、$V_{DS}^{\text{電源}}$ = 5 V 時 LTspice 給 
 
 ### LTspice 預報值：BS170（2N7000 的同族替身）
 
-LTspice 的標準元件庫沒有 2N7000，用的是同一族的 BS170（60 V／500 mA／TO-92，$V_{to}$ = 2.14 V）。網表與理由見 [`simulations/lab3/README.md`](https://github.com/SteveLin100132/notecraft/blob/HEAD/simulations/lab3/README.md)。
+LTspice 的標準元件庫沒有 2N7000，用的是同一族的 BS170（60 V／500 mA／TO-92，$V_{to}$ = 2.14 V）。網表與理由見 `simulations/lab3/README.md`。
 
 ![LTspice 實驗一結果：左圖是講義原電路（R1 1 kΩ 在源極）的四條曲線與 1 kΩ 負載線重疊，右圖是源極接地的對照組，電流大兩個數量級](/note-images/ec-week11-ltspice/lab3-exp1-curves.png)
 
@@ -1268,15 +1285,16 @@ $R_5$ 本來只是模擬訊號源的內阻，訊號產生器自己就有 50 Ω �
 
 ## 附錄：模擬檔與 CircuitJS 原始碼
 
-所有網表、腳本與跑法見 [`simulations/lab3/README.md`](https://github.com/SteveLin100132/notecraft/blob/HEAD/simulations/lab3/README.md)。
+所有網表、腳本與跑法見 `simulations/lab3/README.md`。
 
 | 用途 | 檔案 |
 | --- | --- |
-| CircuitJS 電路（可用「檔案 → 從文字匯入」還原） | [`simulations/lab3/circuitjs/`](https://github.com/SteveLin100132/notecraft/blob/HEAD/simulations/lab3/circuitjs) |
-| LTspice 網表（`.model` 已內嵌，線上版也開得起來） | [`simulations/lab3/`](https://github.com/SteveLin100132/notecraft/blob/HEAD/simulations/lab3) |
-| 出圖與預報數字 | [`simulations/lab3/plot.py`](https://github.com/SteveLin100132/notecraft/blob/HEAD/simulations/lab3/plot.py) |
-| 麵包板接線圖 | [`simulations/lab3/draw_breadboard.py`](https://github.com/SteveLin100132/notecraft/blob/HEAD/simulations/lab3/draw_breadboard.py) |
-| 電流分析圖 | [`simulations/lab3/annotate_current_path.py`](https://github.com/SteveLin100132/notecraft/blob/HEAD/simulations/lab3/annotate_current_path.py)、[`annotate_schematic.py`](https://github.com/SteveLin100132/notecraft/blob/HEAD/simulations/lab3/annotate_schematic.py) |
+| CircuitJS 電路（可用「檔案 → 從文字匯入」還原） | `simulations/lab3/circuitjs/` |
+| LTspice 網表（`.model` 已內嵌，線上版也開得起來） | `simulations/lab3/` |
+| 出圖與預報數字 | `simulations/lab3/plot.py` |
+| 當天填數據的 Excel 記錄簿 | [`simulations/lab3/measured/Lab3-數據記錄.xlsx`](simulations/lab3/measured/Lab3-數據記錄.xlsx)（產生腳本 `build_record_xlsx.py`） |
+| 麵包板接線圖 | `simulations/lab3/draw_breadboard.py` |
+| 電流分析圖 | `simulations/lab3/annotate_current_path.py`、`annotate_schematic.py` |
 
 ### Tinkercad 設計
 
