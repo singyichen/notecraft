@@ -1,5 +1,5 @@
 ---
-title: "電子學實作系列：第 11 週 - MOSFET 實驗"
+title: "電子學實作系列：第 9 週 - MOSFET 實驗"
 description: "Lab 3 MOSFET 實驗的講義詳解與執行手冊：第一部分（輸出特性曲線、轉移特性曲線與臨界電壓、導通電阻、LED 開關）與第二部分（共源級放大器的工作點與電壓增益）各附講義目標／理論／問題詳解、CircuitJS 一鍵模擬連結、Tinkercad 接線配方、實體麵包板接線圖與電流分析圖、LTspice 真實型號預報值、實驗室記錄表與檢查點；並收錄九個講義問題與兩個 Bonus 的完整推導，以及講義三處參數對不起來的地方。"
 tags: ["電子學實作系列"]
 createdAt: "2026-10-31"
@@ -8,13 +8,15 @@ updatedAt: "2026-10-31"
 
 import PdfRefChip from '@/components/islands/PdfRefChip.tsx'
 
-# 第 11 週：MOSFET 實驗
+# 第 9 週：MOSFET 實驗
 
 *Lab 3: Metal-Oxide-Semiconductor Field-Effect Transistor (MOSFET)*
 
 > 本週參考：[《Fundamentals of Microelectronics》](/notes/fundamentals-of-microelectronics) CH6、CH7.2。
 > 理論部分已在[第 7 週筆記](/notes/電子學實作系列第7週-mos電晶體與cs放大器)逐頁詳解，本篇只負責「實驗當天要翻的那一頁」。
 > 儀器操作見[實驗器材速查](/notes/電子學實作系列-實驗器材速查)。
+>
+> **實驗日期：11/7（六）。** 助教公告的當天優先順序是**實驗一與實驗二必做**（各至少量一條導通的曲線、填表並畫出 $I_D$–$V_{DS}$ 與 $I_D$–$V_{GS}$ 關係圖），實驗三、實驗四與第二部分「行有餘力再完成」。
 
 ## Lab 3 實驗總覽
 
