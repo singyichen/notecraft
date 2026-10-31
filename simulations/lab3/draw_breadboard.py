@@ -5,7 +5,7 @@
 平面朝自己、腳朝下時由左到右是 **S（源極）／G（閘極）／D（汲極）**，與 2N2222A 的
 E／B／C 不同，配方表與圖上都標出來。
 
-輸出到 public/note-images/ec-week11-breadboard/：
+輸出到 public/note-images/ec-week9-breadboard/：
   lab3-exp1-breadboard.png    實驗一：R1 1 kΩ 串在**源極**（輸出特性曲線）
   lab3-exp2-breadboard.png    實驗二／三：R1 100 Ω 串在**汲極**、源極直接接地
   lab3-exp4-breadboard.png    實驗四：LED 開關（LED 在汲極、R1 100 Ω 在源極）
@@ -22,7 +22,7 @@ sys.path.insert(0, os.path.join(HERE, "..", "lab2"))
 
 import draw_real_breadboard as bb  # noqa: E402
 
-OUT_DIR = os.path.join(HERE, "..", "..", "public", "note-images", "ec-week11-breadboard")
+OUT_DIR = os.path.join(HERE, "..", "..", "public", "note-images", "ec-week9-breadboard")
 
 # ── 這三張圖共用的孔位 ────────────────────────────────────────────
 C_S, C_G, C_D = 30, 31, 32      # 2N7000 的三隻腳（源極／閘極／汲極）

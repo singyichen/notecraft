@@ -1,4 +1,4 @@
-"""Lab 3 LTspice 結果出圖（dataviz 參考色票、淺色底），輸出到 public/note-images/ec-week11-ltspice/。
+"""Lab 3 LTspice 結果出圖（dataviz 參考色票、淺色底），輸出到 public/note-images/ec-week9-ltspice/。
 
 用法（在 simulations/lab3 目錄）：../lab1/.venv/bin/python plot.py
 需要先用 ../tools/run-lt.sh lab3-*.cir 產生 .raw。
@@ -18,7 +18,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..'
 from ltraw import read_raw  # noqa: E402
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-OUT = os.path.join(HERE, '..', '..', 'public', 'note-images', 'ec-week11-ltspice')
+OUT = os.path.join(HERE, '..', '..', 'public', 'note-images', 'ec-week9-ltspice')
 os.makedirs(OUT, exist_ok=True)
 
 SURF, INK, INK2, GRID = '#fcfcfb', '#0b0b0b', '#52514e', '#e6e5e1'

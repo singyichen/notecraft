@@ -29,8 +29,8 @@ LTspice 網表與圖。LTspice 全部用內建元件庫的 **BS170** 模型（`.
 | `lab3-q5-r1.cir`／`-op.cir` | 講義問題 5：R1 100 kΩ → 1 MΩ | `.ac`／`.op` + `.step` |
 | `lab3-bonus-r7-sweep.cir` | Bonus：掃 R7 找 \|A_v\| > 10 的範圍 | `.ac` + `.meas` |
 | `lab3-bonus-design.cir`／`-ac.cir`／`-op.cir` | Bonus 定案（R7 = 10 kΩ）的時域、增益與工作點，並掃 V_th 看耐受度 | `.tran`／`.ac`／`.op` |
-| `plot.py` | 讀 `.raw`／`.log` 出六張 PNG 到 `public/note-images/ec-week11-ltspice/`，並把預報表的數字印到 stdout | — |
-| `draw_breadboard.py` | 從零畫實體麵包板接線圖（三張）到 `public/note-images/ec-week11-breadboard/` | — |
+| `plot.py` | 讀 `.raw`／`.log` 出六張 PNG 到 `public/note-images/ec-week9-ltspice/`，並把預報表的數字印到 stdout | — |
+| `draw_breadboard.py` | 從零畫實體麵包板接線圖（三張）到 `public/note-images/ec-week9-breadboard/` | — |
 | `annotate_current_path.py` | 在上面三張接線圖疊電流分析（輸出加 `-current`） | — |
 | `annotate_schematic.py` | 在講義第 19 頁的原理圖上疊直流偏壓與交流訊號兩種電流路徑 | — |
 | `build_record_xlsx.py` | 產生當天填數據用的 `measured/Lab3-數據記錄.xlsx`（四個分頁、三張圖，預報欄讀 `.raw`） | — |

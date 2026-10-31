@@ -21,7 +21,7 @@ from current_overlay import (  # noqa: E402
     BLUE, BLUE_TXT, GREEN, GREEN_DASH, GREEN_TXT, RED, badge, compose, f, label, path,
 )
 
-DIR = os.path.join(HERE, "..", "..", "public", "note-images", "ec-week11-breadboard")
+DIR = os.path.join(HERE, "..", "..", "public", "note-images", "ec-week9-breadboard")
 
 # 常用孔位（和 draw_breadboard.py 同一套幾何）
 C_S, C_G, C_D, C_GND, C_SUP, C_BLK = 30, 31, 32, 16, 44, 54

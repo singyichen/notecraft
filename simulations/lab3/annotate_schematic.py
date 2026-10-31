@@ -17,7 +17,7 @@ from current_overlay import (  # noqa: E402
     BLUE_TXT, GREEN, GREEN_DASH, GREEN_TXT, RED, badge, blocker, compose, f, label, path,
 )
 
-DIR = os.path.join(HERE, "..", "..", "public", "note-images", "ec-week11-handout")
+DIR = os.path.join(HERE, "..", "..", "public", "note-images", "ec-week9-handout")
 BASE = os.path.join(DIR, "lab3-exp5-schematic.png")
 
 # 底圖上量到的主要導線（1978 x 1056）
