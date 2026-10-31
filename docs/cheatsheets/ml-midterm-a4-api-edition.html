@@ -151,7 +151,7 @@ table{table-layout:fixed} td,th{overflow-wrap:anywhere} </style>
     <h2><span class="n">3</span>邏輯迴歸細節</h2>
     <ul>
       <li>名字有 regression，做的是<b>分類</b>；線性建模的是 logit，不是 $p$</li>
-      <li>勝算 $\frac{p}{1-p}$（$p{=}0.8$ → 4）；logit $=\ln\frac{p}{1-p}$ 把 $(0,1)$ 映到全實數；sigmoid 是 logit 的反函數，$\sigma(0)=0.5$</li>
+      <li>勝算 $\frac{p}{1-p}$（$p{=}0.8$ → 4）；logit $=\ln\frac{p}{1-p}$ 把 $(0,1)$ 映到全實數。<b>為什麼要繞這圈</b>：線性式 $\boldsymbol w^T\boldsymbol x+b$ 的值域是整條實數線、機率卻只在 $(0,1)$，所以改成「用線性式建模 logit」，再用其反函數 sigmoid 轉回機率，$\sigma(0)=0.5$</li>
       <li>sigmoid 輸出是<b>條件機率</b> $p(y{=}1|\boldsymbol x)$＝「已知特徵時屬於正類」的機率，<span class="k">不是預測正確的機率</span></li>
       <li>BCE：$L=-\frac1n\sum[y\ln a+(1-y)\ln(1-a)]$；單筆 $y{=}1$ 時 $-\ln a$，<b>自信地答錯</b>（$a\to0$）損失 $\to\infty$</li>
       <li>損失辨識：Adaline 的 MSE 比較 $y$ 與線性輸出 $z$；邏輯迴歸的 BCE 比較 $y$ 與機率 $a=\sigma(z)$，<b>不要把 $z$ 當機率</b>。Adaline：$y=1,z=5$ 已分對，平方誤差仍為 16，會把 $z$ 拉回 1</li>
@@ -245,24 +245,24 @@ table{table-layout:fixed} td,th{overflow-wrap:anywhere} </style>
   <section>
     <h2><span class="n">7</span>特徵選取</h2>
     <ul>
-      <li>序列特徵選取＝<b>貪婪搜尋</b>（局部最佳、次佳解但避開組合爆炸）</li>
+      <li>序列特徵選取＝<b>貪婪搜尋</b>：每一步只挑當下最好的一欄，<b>前面丟掉的之後不再回頭考慮</b>，所以是次佳解；但避開了窮舉 $2^d$ 組合的爆炸</li>
       <li><b>SFS</b> 從空集合逐個<b>加入</b>；<b>SBS</b> 從全集逐個<b>剔除</b>使判準 $J$ 損失最小者</li>
-      <li>$L_1$＋<code>SelectFromModel</code>（L5 p55–56）</li>
+      <li>$L_1$＋<code>SelectFromModel</code>（L5 p56）：$L_1$ 會把不重要的權重壓到<b>恰好 0</b>，等於順手做了選取</li>
     </ul>
   </section>
 
   <section>
     <h2><span class="n">8</span>看圖判讀（觀念應用）</h2>
     <table>
-      <tr><th>圖上長相</th><th>判讀</th></tr>
-      <tr><td>loss 對 epoch 越來越大、震盪</td><td>可能學習率太大；檢查縮放</td></tr>
-      <tr><td>loss 下降極慢、像直線</td><td>學習率太小，或特徵沒縮放</td></tr>
-      <tr><td>SGD 的 loss 抖動但整體下降</td><td>正常：單筆梯度吵雜</td></tr>
-      <tr><td>PLA 錯誤數最後歸零</td><td>資料線性可分</td></tr>
-      <tr><td>PLA 錯誤數一直不歸零</td><td>可能不可線性分，或輪數不足</td></tr>
-      <tr><td>訓練 acc 高、驗證 acc 低</td><td>過擬合</td></tr>
-      <tr><td>兩條 acc 都低且貼合</td><td>欠擬合</td></tr>
-      <tr><td>loss 收斂但驗證沒變好</td><td>loss 收斂 ≠ 泛化變好</td></tr>
+      <tr><th>圖上長相</th><th>判讀＋為什麼</th></tr>
+      <tr><td>loss 對 epoch 越來越大、震盪</td><td><b>學習率太大</b>：步伐跨過谷底、落到對面更高處，來回放大</td></tr>
+      <tr><td>loss 下降極慢、像直線</td><td><b>學習率太小</b>每步移動太少；或<b>特徵沒縮放</b>讓等高線極扁，負梯度不指向谷底</td></tr>
+      <tr><td>SGD 的 loss 抖動但整體下降</td><td><b>正常</b>：每步只用一筆估梯度，方向有雜訊但期望仍朝下坡</td></tr>
+      <tr><td>PLA 錯誤數最後歸零</td><td><b>線性可分</b>：Novikoff 保證可分時有限步內收斂</td></tr>
+      <tr><td>PLA 錯誤數一直不歸零</td><td><b>可能不可分</b>（永遠有分錯的樣本，更新停不下來）<b>或輪數不足</b></td></tr>
+      <tr><td>訓練 acc 高、驗證 acc 低</td><td><b>過擬合</b>：連訓練集的雜訊都記住了，新資料用不上</td></tr>
+      <tr><td>兩條 acc 都低且貼合</td><td><b>欠擬合</b>：表達力不足，連訓練集的規律都抓不到</td></tr>
+      <tr><td>loss 收斂但驗證沒變好</td><td><b>loss 收斂 ≠ 泛化變好</b>：loss 是訓練目標上的值，和 acc／F1 不是同一件事</td></tr>
     </table>
   </section>
 
@@ -277,7 +277,7 @@ table{table-layout:fixed} td,th{overflow-wrap:anywhere} </style>
     <h2><span class="n">10</span>定義、資料型態與 Iris</h2>
     <ul>
       <li><b>Mitchell</b>：任務 T、效能 P、經驗 E —— P 隨 E 提升即「學習」</li>
-      <li><b>李宏毅</b>：學習＝找一個函式（參數化模型），一個 $x$ 只能對應一個輸出</li>
+      <li><b>李宏毅</b>：學習＝找一個函式（參數化模型）。<b>一個 $x$ 只能對應一個輸出</b>——這是函式的定義；多對一可以（不同 $x$ 給同一答案），一對多不行，否則同一筆輸入會有兩個預測</li>
       <li>AI（目標）⊃ ML（手段：資料 → 知識）⊃ DL（多層神經網路）</li>
       <li>學完的用途＝對新資料做<b>預測</b>（prediction／inference）</li>
     </ul>
@@ -300,7 +300,7 @@ table{table-layout:fixed} td,th{overflow-wrap:anywhere} </style>
     <h3>Iris 資料集</h3>
     <ul>
       <li>150 筆、4 個連續特徵（花萼／花瓣長寬，cm）、3 類各 50 筆、無缺值</li>
-      <li>按類別排序（1–50／51–100／101–150）→ 訓練前要 <b>shuffle</b></li>
+      <li>按類別排序（1–50／51–100／101–150）→ 訓練前要 <b>shuffle</b>：不洗的話前 100 筆只含兩類，切分或逐筆更新都會嚴重偏掉</li>
       <li>非監督示範：遮掉標籤後分群；群數相同不代表分群一定正確</li>
     </ul>
     <h3>題庫判讀提醒</h3>
