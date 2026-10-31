@@ -559,15 +559,15 @@ b += eta * errors.mean()</pre>
     </table>
 <pre>X=np.array([[1.,2.],[3.,4.]])
 w=np.array([1.,-1.]); b=0.
-z=X@w+b <span class="o">→ [-1.,-1.]</span> <span class="o"># X@w 算完要加 b 才是 z</span>
-(z&gt;=0).astype(int) <span class="o">→ [0,0]</span> <span class="o"># True→1、False→0</span>
+z=X@w+b <span class="o">→ [-1.,-1.]</span> <span class="o"># X@w=[1·1+2·(−1), 3·1+4·(−1)]=[−1,−1]，再加 b</span>
+(z&gt;=0).astype(int) <span class="o">→ [0,0]</span> <span class="o"># −1≥0 不成立；True→1、False→0</span>
 <span class="o"># 同一筆換 b=1.：z=[0,0]</span>
-p=1/(1+np.exp(-z)) <span class="o">→ [.5,.5]</span>
-pred=(p&gt;=.5).astype(int) <span class="o">→ [1,1]</span>
+p=1/(1+np.exp(-z)) <span class="o">→ [.5,.5]</span> <span class="o"># σ(0)=1/(1+1)=.5</span>
+pred=(p&gt;=.5).astype(int) <span class="o">→ [1,1]</span> <span class="o"># .5≥.5 成立，邊界算正類</span>
 eta=0.1; target=1; pred=0
-u=eta*(target-pred) <span class="o">→ 0.1</span>
-w+u*X[0] <span class="o">→ [1.1,-0.8]</span>
-b+u <span class="o">→ 0.1</span></pre>
+u=eta*(target-pred) <span class="o">→ 0.1</span> <span class="o"># .1×(1−0)；分對時差為 0 就不更新</span>
+w+u*X[0] <span class="o">→ [1.1,-0.8]</span> <span class="o"># [1,−1]+.1×[1,2]</span>
+b+u <span class="o">→ 0.1</span> <span class="o"># 0+.1</span></pre>
     <p class="muted">題目要機率就回 <code>p</code>、要類別才回 <code>pred</code>，別混用。MSE 代入例：$y{=}[1,0]$、$a{=}[.8,.3]$ → $e{=}[.2,-.3]$、$\frac{.04+.09}{2}=.065$。</p>
     <div class="trap"><b>更新係數別硬背，先看損失定義。</b>Adaline 損失是 $\frac1n\sum e^2$ 時 <code>w += eta*2*(X.T@e)/len(y)</code>、<code>b += eta*2*e.mean()</code>；題目若寫 $\frac1{2n}\sum e^2$ 就<b>少一個 2</b>。邏輯迴歸 BCE 改成 <code>e = y - p</code> 且<b>沒有那個 2</b>。</div>
     <h3>BCE 實作：防 <code>log(0)</code> 的兩種等價寫法</h3>
@@ -582,13 +582,13 @@ loss = (-y @ np.log(p) - (1-y) @ np.log(1-p)) / len(y)</pre>
     <p><b>predict</b> 回傳類別 (n,)；<b>predict_proba</b> 回傳 (n,K)，欄位順序看 <code>classes_</code>，不是預測正確率。</p>
 <pre># 假設 clf.classes_ 為 [0,1]
 P=np.array([[.8,.2],[.3,.7],[.6,.4]])
-P[:,1] <span class="o">→ [.2,.7,.4]（類別1機率）</span>
+P[:,1] <span class="o">→ [.2,.7,.4]</span> <span class="o"># 取第1欄＝classes_[1]＝類別1的機率</span>
 (P[:,1]>=.5).astype(int) <span class="o">→ [0,1,0]</span>
-(P[:,1]>=.3).astype(int) <span class="o">→ [0,1,1]</span>
+(P[:,1]>=.3).astype(int) <span class="o">→ [0,1,1]</span> <span class="o"># 門檻降到.3，第3筆.4 也過→多抓一個正類</span>
 # StandardScaler：以訓練統計量轉換
 sc=StandardScaler().fit([[0.],[2.]])
-sc.mean_ <span class="o">→ [1.]</span>
-sc.transform([[3.]]) <span class="o">→ [[2.]]</span></pre>
+sc.mean_ <span class="o">→ [1.]</span> <span class="o"># μ=(0+2)/2</span>
+sc.transform([[3.]]) <span class="o">→ [[2.]]</span> <span class="o"># σ=1 → (3−1)/1=2</span></pre>
     <ul>
       <li>100 筆、<code>test_size=.3</code> → 訓練 70、測試 30；回傳順序 <code>X_train,X_test,y_train,y_test</code>。</li>
       <li><code>stratify=y</code> 保持類別比例；<code>random_state</code> 固定切分的隨機性，不保證分數更高。</li>
