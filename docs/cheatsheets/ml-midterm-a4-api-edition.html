@@ -84,6 +84,7 @@
   .r { color: var(--purple); font-weight: 700; }   /* 執行結果 */
   .c { color: var(--green); }                      /* 註解說明 */
   .en { font-size: .82em; color: var(--muted); margin-left: .25em; }
+  h2 .en { color: rgba(255,255,255,.8); font-weight: 400; }
   .trap { background: var(--orange-bg); border-left: 1.4pt solid var(--orange); padding: .3mm .8mm; margin: .35mm 0; break-inside: avoid; }
   .trap b, .k { color: var(--orange); }
   .muted { color: var(--muted); }
@@ -321,7 +322,7 @@ table{table-layout:fixed} td,th{overflow-wrap:anywhere} </style>
   <div class="study-col">
 
   <section>
-    <h2><span class="n">11</span>模型選擇與交叉驗證 <span class="en">model selection / cross-validation</span></h2>
+    <h2><span class="n">11</span>模型選擇與交叉驗證 <span class="en">model selection / CV</span></h2>
     <ul>
       <li>狹義：<b>超參數調整</b><span class="en">hyperparameter tuning</span>；廣義：<b>演算法選擇</b><span class="en">algorithm selection</span>（用巢狀 CV）</li>
       <li><b>Holdout</b>：訓練／驗證／測試三份；缺點是結果對切法敏感</li>
@@ -381,15 +382,24 @@ table{table-layout:fixed} td,th{overflow-wrap:anywhere} </style>
 X_tr = sc.fit_transform(X_train) <span class="c"># ✔ 只 fit 訓練</span>
 X_te = sc.transform(X_test) <span class="c"># ✔ 沿用訓練的 μ、σ</span>
 sc.fit_transform(X_test) <span class="c"># ✘ 重估測試統計量</span></pre>
+    <h3>命名慣例</h3>
     <ul>
-      <li>學到的參數結尾帶底線：<code>coef_</code> 權重、<code>intercept_</code> 偏差；建構子給的是超參數</li>
-      <li><code>transform</code> 的特徵數須與 <code>fit</code> 時相同</li>
-      <li><b>Pipeline</b>：訓練時各轉換器 <code>fit_transform</code>、最後估計器 <code>fit</code>；預測時只 <code>transform</code> 再 <code>predict</code> → 將原始資料與整條管線交給 CV，逐折 fit</li>
-      <li><code>make_pipeline(StandardScaler(), LogisticRegression())</code> 免命名；<code>Pipeline([('sc',…),('clf',…)])</code></li>
-      <li>Pipeline 調參用<b>步驟名＋雙底線＋參數名</b>：<code>clf__C</code>、<code>svc__gamma</code>／<code>svc__kernel</code>；不是單底線。<code>make_pipeline</code> 自動用類別名小寫命名，所以同一個參數變成 <code>logisticregression__C</code>。</li>
-      <li><code>cross_val_score(pipe,X,y,cv=10)</code> 回傳 <b>10 個分數的陣列</b>；GridSearch 3×4 組 × cv=5 = 60 次 CV fit（預設重訓再 +1）；<code>gs.best_estimator_</code> 取最佳模型，最後只在測試集 score 一次</li>
-      <li><code>train_test_split(…, test_size=0.3, stratify=y, random_state=1)</code></li>
-      <li><code>joblib.dump</code>／<code>load</code> 存取<b>整條管線</b>（含前處理學到的統計量），載入後直接 <code>predict</code>，不必再訓練</li>
+      <li>結尾帶底線＝<b>從資料學到的</b>：<code>coef_</code>、<code>intercept_</code>、<code>classes_</code>；建構子傳的才是超參數</li>
+      <li>調參寫 <b>步驟名＋雙底線＋參數名</b>：<code>clf__C</code>、<code>svc__gamma</code>（<span class="k">不是單底線</span>）。<code>make_pipeline</code> 自動用類別名小寫，所以變成 <code>logisticregression__C</code></li>
+    </ul>
+    <h3>Pipeline</h3>
+    <ul>
+      <li>兩種建法：<code>Pipeline([('sc',…),('clf',…)])</code> 自己命名；
+      <code>make_pipeline(StandardScaler(), LogisticRegression())</code> 免命名</li>
+      <li>運作：<code>fit</code> 時各轉換器 <code>fit_transform</code>、最後估計器 <code>fit</code>；<code>predict</code> 時只 <code>transform</code> 再 <code>predict</code></li>
+      <li><b>為什麼要用</b>：整條管線交給 CV，前處理會在每折內重新 fit，才不洩漏</li>
+    </ul>
+    <h3>常用呼叫</h3>
+    <ul>
+      <li><code>train_test_split(…, test_size=.3, stratify=y, random_state=1)</code></li>
+      <li><code>cross_val_score(pipe,X,y,cv=10)</code> <span class="r">→ 10 個分數的陣列</span></li>
+      <li><code>joblib.dump</code>／<code>load</code> 存取<b>整條管線</b>（含前處理學到的統計量），載入後直接 <code>predict</code></li>
+      <li><span class="k"><code>transform</code> 的特徵數必須與 <code>fit</code> 時相同</span></li>
     </ul>
   </section>
 
@@ -511,7 +521,7 @@ pd.get_dummies(df, drop_first=True) <span class="c"># 獨熱並去冗餘 → k�
 <tr><td>StratifiedKFold.split</td><td>回各折訓練／驗證索引；shuffle預設False</td></tr>
 <tr><td>learning_curve</td><td>回 train_sizes、train_scores、test_scores</td></tr>
 <tr><td>validation_curve</td><td>回 train_scores、test_scores；改 param_range</td></tr>
-<tr><td>GridSearchCV</td><td>param_grid窮舉；多字典分別算組合後相加</td></tr>
+<tr><td>GridSearchCV</td><td>param_grid窮舉；多字典分別算組合後相加。<b>次數</b>＝組合數×cv，3×4 組×cv=5 <span class="r">→ 60</span> 次（refit 再 +1）</td></tr>
 <tr><td>RandomizedSearchCV</td><td>param_distributions；n_iter抽樣組數</td></tr>
 <tr><td>HalvingRandomSearchCV</td><td>逐次加資源、淘汰候選；factor決定淘汰比例</td></tr>
 </table><p>曲線函式 test_scores 指 CV 驗證折，不是最終 test。n_jobs=-1 用全部 CPU；scoring 選評分標準，不改訓練 loss。best_params_最佳設定、best_score_平均CV最佳分數；refit=True時 best_estimator_ 已重訓。</p>
