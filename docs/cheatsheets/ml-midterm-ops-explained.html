@@ -1,0 +1,217 @@
+<!doctype html>
+<!--
+  機器學習實作 期中考｜Python 與 NumPy 運算逐項解析（考前複習用，不帶進考場）
+  小抄只放「看了就想得起來」的結果；這份補上每一項「怎麼來的」。
+  所有結果都以 Python 3 / NumPy 實測過。範圍對應 Lectures 1–6 的 L2 Python、L3 NumPy。
+  產出 PDF：
+    "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --headless --no-pdf-header-footer --allow-file-access-from-files \
+      --virtual-time-budget=5000 --print-to-pdf="src/content/notes/_references/機器學習實作系列/第9週-期中考-運算逐項解析.pdf" \
+      "file://$PWD/docs/cheatsheets/ml-midterm-ops-explained.html"
+-->
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<title>期中考 運算逐項解析</title>
+<style>
+  @page { size: A4; margin: 11mm 12mm 12mm; }
+  :root { --ink:#1a1f2b; --muted:#5b6475; --blue:#1d4ed8; --blue-bg:#eef3ff; --orange:#c2410c; --orange-bg:#fff4ec; --line:#c9d2e3; --green:#15803d; }
+  * { box-sizing: border-box; }
+  html,body { margin:0; padding:0; background:#fff; color:var(--ink); }
+  body { font-family:"PingFang TC","Heiti TC","Noto Sans TC",sans-serif; font-size:9.3pt; line-height:1.5;
+         -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+  h1 { font-size:15pt; color:var(--blue); margin:0 0 1mm; letter-spacing:.02em; }
+  .sub { color:var(--muted); font-size:8.2pt; margin:0 0 4mm; padding-bottom:2mm; border-bottom:1.4pt solid var(--blue); }
+  h2 { font-size:10.5pt; color:#fff; background:var(--blue); border-radius:1.2mm; padding:.8mm 2mm; margin:5mm 0 2mm; break-after:avoid; }
+  h3 { font-size:9.6pt; color:var(--blue); margin:3.5mm 0 1mm; break-after:avoid; }
+  p { margin:1mm 0; }
+  table { width:100%; border-collapse:collapse; margin:1.5mm 0 2.5mm; break-inside:auto; }
+  th,td { border:.4pt solid var(--line); padding:1mm 1.6mm; vertical-align:top; text-align:left; }
+  th { background:var(--blue-bg); font-weight:600; font-size:8.8pt; }
+  tr { break-inside:avoid; }
+  code,.m { font-family:"SF Mono",Menlo,Consolas,monospace; font-size:8.6pt; }
+  code { background:#f2f4f8; padding:0 .6mm; border-radius:.6mm; overflow-wrap:anywhere; }
+  td.r code { background:none; padding:0; color:var(--green); font-weight:600; }
+  col.c1 { width:27%; } col.c2 { width:19%; } col.c3 { width:54%; }
+  .trap { background:var(--orange-bg); border-left:1.6pt solid var(--orange); padding:1.2mm 2mm; margin:2mm 0; break-inside:avoid; }
+  .trap b { color:var(--orange); }
+  .muted { color:var(--muted); font-size:8.4pt; }
+  pre { font-family:"SF Mono",Menlo,monospace; font-size:8.4pt; line-height:1.4; background:#f5f7fb;
+        border-left:1.4pt solid var(--blue); margin:1.5mm 0; padding:1.4mm 2mm; white-space:pre-wrap; break-inside:avoid; }
+  pre .o { color:var(--green); }
+  .k { color:var(--orange); font-weight:600; }
+</style>
+</head>
+<body>
+
+<h1>期中考｜Python 與 NumPy 運算逐項解析</h1>
+<p class="sub">小抄只放「看了就想得起來」的結果，這份補上每一項<b>怎麼來的</b>。對應 L2 Python Basics 與 L3 NumPy。
+所有結果都以 Python 3 / NumPy 實測過。<b>考前複習用，不帶進考場。</b></p>
+
+<h2>A　Python 基礎</h2>
+
+<h3>A-1　除法家族：三個符號三種行為</h3>
+<table><colgroup><col class="c1"><col class="c2"><col class="c3"></colgroup>
+<tr><th>式子</th><th>結果</th><th>怎麼來的</th></tr>
+<tr><td><code>7/2</code></td><td class="r"><code>3.5</code></td><td><code>/</code> 是<b>真除法</b>，永遠回 float。整除也一樣：<code>4/2</code> 是 <code>2.0</code> 不是 <code>2</code></td></tr>
+<tr><td><code>7//2</code></td><td class="r"><code>3</code></td><td><code>//</code> 是<b>地板除法</b>：算出 3.5 後往<b>負無窮</b>方向取整</td></tr>
+<tr><td><code>-7//2</code></td><td class="r"><code>-4</code></td><td>−3.5 往負無窮取整是 <b>−4</b>。<span class="k">不是 −3</span>——地板除法不是「砍掉小數」</td></tr>
+<tr><td><code>7%3</code></td><td class="r"><code>1</code></td><td>餘數。配合 <code>//</code> 看：<code>7 = 3×2 + 1</code></td></tr>
+<tr><td><code>-7%2</code></td><td class="r"><code>1</code></td><td>Python 的 <code>%</code> 結果符號<b>跟除數走</b>。由 <code>-7 = 2×(-4) + 1</code> 得 1，<span class="k">不是 −1</span></td></tr>
+<tr><td><code>2**3</code></td><td class="r"><code>8</code></td><td><code>**</code> 是次方，不是 XOR。（<code>^</code> 才是位元 XOR，本課投影片沒教）</td></tr>
+</table>
+<p class="muted">口訣：<code>//</code> 與 <code>%</code> 恆滿足 <code>a == (a//b)*b + a%b</code>。先定 <code>//</code> 往下取整，<code>%</code> 就被決定了。</p>
+
+<h3>A-2　序列的 <code>*</code> 與 <code>+</code>：是重複與接合，不是算術</h3>
+<table><colgroup><col class="c1"><col class="c2"><col class="c3"></colgroup>
+<tr><th>式子</th><th>結果</th><th>怎麼來的</th></tr>
+<tr><td><code>"3"*3</code></td><td class="r"><code>'333'</code></td><td>str × int ＝把字串<b>重複 3 次</b>再接起來</td></tr>
+<tr><td><code>[1,2]*2</code></td><td class="r"><code>[1,2,1,2]</code></td><td>list 整串重複，<span class="k">不是逐元素乘</span>。這是和 NumPy 最大的分野</td></tr>
+<tr><td><code>"3"+3</code></td><td class="r"><code>TypeError</code></td><td><code>+</code> 對 str 是接字串、對 int 是加法，Python <b>不自動轉型</b>。要先 <code>int("3")+3</code></td></tr>
+</table>
+<div class="trap"><b>對照記：</b><code>np.array([1,2])*2</code> → <code>[2,4]</code>（逐元素），<code>[1,2]*2</code> → <code>[1,2,1,2]</code>（重複）。
+兩個 list 之間做 <code>*</code> 或 <code>@</code> 都會 TypeError。</div>
+
+<h3>A-3　切片 <code>a[start:stop:step]</code></h3>
+<p class="muted">以下皆用 <code>a = [0,1,2,3,4,5]</code>。規則只有一條：<b>含頭不含尾</b>，三個位置都可省略。</p>
+<table><colgroup><col class="c1"><col class="c2"><col class="c3"></colgroup>
+<tr><th>式子</th><th>結果</th><th>怎麼來的</th></tr>
+<tr><td><code>a[1:4]</code></td><td class="r"><code>[1,2,3]</code></td><td>取索引 1、2、3；索引 4 是 stop，<b>不含</b></td></tr>
+<tr><td><code>a[-2:]</code></td><td class="r"><code>[4,5]</code></td><td>負索引從尾數：−1 是最後一個、−2 是倒數第二個；stop 省略＝到底</td></tr>
+<tr><td><code>a[::2]</code></td><td class="r"><code>[0,2,4]</code></td><td>start/stop 都省略＝整段，step 2 ＝每 2 個取 1</td></tr>
+<tr><td><code>a[::-1]</code></td><td class="r"><code>[5,4,3,2,1,0]</code></td><td>step 為 −1 ＝從尾往頭走，效果就是<b>整串反轉</b></td></tr>
+<tr><td><code>list(range(1,10,3))</code></td><td class="r"><code>[1,4,7]</code></td><td>從 1 每次 +3：1、4、7；下一個 10 已達 stop 故停。<b>不含終點</b></td></tr>
+</table>
+
+<h3>A-4　推導式、容器與查值</h3>
+<table><colgroup><col class="c1"><col class="c2"><col class="c3"></colgroup>
+<tr><th>式子</th><th>結果</th><th>怎麼來的</th></tr>
+<tr><td><code>[x**2 for x in range(5) if x%2==0]</code></td><td class="r"><code>[0,4,16]</code></td><td>執行順序是<b>先迭代 → 再 <code>if</code> 篩 → 最後算前面的式子</b>。range(5) 給 0..4，篩出 0,2,4，各自平方</td></tr>
+<tr><td><code>len(set("hello"))</code></td><td class="r"><code>4</code></td><td>字串被<b>逐字元</b>放進 set，重複的 l 只留一個 → <code>{h,e,l,o}</code></td></tr>
+<tr><td><code>bool([])</code></td><td class="r"><code>False</code></td><td>空容器視為假。<code>0</code>、<code>""</code>、<code>None</code>、<code>{}</code> 同理</td></tr>
+<tr><td><code>d={'a':1}; d.get('b',0)</code></td><td class="r"><code>0</code></td><td><code>get</code> 查不到就回<b>預設值</b>，不拋錯；沒給預設值則回 <code>None</code></td></tr>
+<tr><td><code>d['b']</code></td><td class="r"><code>KeyError</code></td><td>中括號查不到就<b>拋錯</b>。這組對比最常考</td></tr>
+<tr><td><code>t=(1,2); t[0]=5</code></td><td class="r"><code>TypeError</code></td><td>tuple <b>不可變</b>，建立後不能改元素（但可以整個重新指派 <code>t=(5,2)</code>）</td></tr>
+</table>
+
+<h3>A-5　型別轉換與格式化</h3>
+<table><colgroup><col class="c1"><col class="c2"><col class="c3"></colgroup>
+<tr><th>式子</th><th>結果</th><th>怎麼來的</th></tr>
+<tr><td><code>f"{3.14159:.2f}"</code></td><td class="r"><code>'3.14'</code></td><td><code>:.2f</code> 四捨五入到小數 2 位。<b>回傳的是字串</b>，不是數字</td></tr>
+<tr><td><code>int("3.5")</code></td><td class="r"><code>ValueError</code></td><td><code>int()</code> 只解析<b>整數字串</b>，看到小數點就失敗</td></tr>
+<tr><td><code>int(float("3.5"))</code></td><td class="r"><code>3</code></td><td>要先 <code>float()</code> 再 <code>int()</code>；<code>int()</code> 對 float 是<b>往零截斷</b>（<code>int(-3.5)</code> 是 −3，與 <code>//</code> 不同）</td></tr>
+</table>
+
+<h3>A-6　可變預設參數：定義時只建立一次</h3>
+<pre>def f(x, L=[]):
+    L.append(x)
+    return L
+
+f(1)        <span class="o">→ [1]</span>
+print(f(2)) <span class="o">→ [1, 2]   ← 不是 [2]</span></pre>
+<p><b>怎麼來的</b>：預設值 <code>[]</code> 在 <b>def 這一行被執行時</b>就建立好，整個程式生命週期只有這一個 list 物件。
+每次呼叫沒傳 <code>L</code>，用的都是<b>同一個</b>，所以內容會累積。
+正確寫法是 <code>def f(x, L=None): L = [] if L is None else L</code>。</p>
+
+<h3>A-7　容器怎麼選</h3>
+<table>
+<tr><th>容器</th><th>可變</th><th>有序</th><th>查詢</th><th>用途與判準</th></tr>
+<tr><td><code>list</code></td><td>✔</td><td>✔</td><td>依位置 O(1)、找值 O(n)</td><td>要增刪、要保留順序</td></tr>
+<tr><td><code>tuple</code></td><td>✘</td><td>✔</td><td>同 list</td><td>固定組合；元素皆可雜湊時可當 dict 的鍵</td></tr>
+<tr><td><code>dict</code></td><td>✔</td><td>插入順序</td><td>雜湊，平均 O(1)</td><td>依名字查值</td></tr>
+<tr><td><code>set</code></td><td>✔</td><td>✘</td><td>雜湊，平均 O(1)</td><td>去重、交集 <code>&amp;</code> 聯集 <code>|</code></td></tr>
+</table>
+<p class="muted">選的時候問三件事：<b>要不要改、要不要順序、要不要查得快</b>。
+<code>if/elif</code> 只執行<b>第一個</b>成立的分支——FizzBuzz 必須先判 15，否則永遠印不出 FizzBuzz。縮排本身就是語法。</p>
+
+<h2>B　NumPy</h2>
+
+<h3>B-1　shape 怎麼讀</h3>
+<p><b>規則</b>：<code>ndim</code> ＝中括號的層數；shape 從<b>最外層</b>往內數，每一層的長度依序排出來。</p>
+<table><colgroup><col class="c1"><col class="c2"><col class="c3"></colgroup>
+<tr><th>式子</th><th>shape</th><th>怎麼來的</th></tr>
+<tr><td><code>np.array([1,2,3])</code></td><td class="r"><code>(3,)</code></td><td>一層括號、3 個元素。<b>一維就是一維</b>，既不是行向量也不是列向量</td></tr>
+<tr><td><code>np.array([[1],[2],[3]])</code></td><td class="r"><code>(3,1)</code></td><td>外層 3 個、每個內層各 1 個 → 3 列 1 欄的直欄</td></tr>
+<tr><td><code>np.array([[[1],[2]]])</code></td><td class="r"><code>(1,2,1)</code></td><td>三層：最外 1 個、中間 2 個、最內 1 個</td></tr>
+<tr><td><code>np.zeros((2,3))</code> / <code>np.ones((2,3))</code></td><td class="r"><code>(2,3)</code></td><td>傳進去的 tuple 就是 shape，填滿 0 或 1</td></tr>
+<tr><td><code>np.eye(3)</code></td><td class="r"><code>(3,3)</code></td><td>單位矩陣：對角線 1、其餘 0</td></tr>
+</table>
+
+<h3>B-2　乘法有三種，別混用</h3>
+<p class="muted">以下 <code>A=[[1,2],[3,4]]</code>、<code>B=[[5,6],[7,8]]</code>。</p>
+<table><colgroup><col class="c1"><col class="c2"><col class="c3"></colgroup>
+<tr><th>式子</th><th>結果</th><th>怎麼來的</th></tr>
+<tr><td><code>A*B</code></td><td class="r"><code>[[5,12],[21,32]]</code></td><td><b>逐元素</b>相乘，位置對位置：1×5、2×6、3×7、4×8</td></tr>
+<tr><td><code>A@B</code></td><td class="r"><code>[[19,22],[43,50]]</code></td><td><b>矩陣乘法</b>（＝<code>np.matmul</code>）：左邊的<b>列</b>點乘右邊的<b>欄</b>。左上角 = 1×5+2×7 = 19</td></tr>
+<tr><td><code>np.dot([1,2,3],[4,5,6])</code></td><td class="r"><code>32</code></td><td>兩個一維陣列時就是<b>內積</b>：1×4+2×5+3×6 = 4+10+18</td></tr>
+<tr><td><code>(10,3,4)@(4,5)</code></td><td class="r"><code>(10,3,5)</code></td><td><b>只有最後兩維參與矩陣乘</b>：(3,4)@(4,5)=(3,5)，前面的 10 被當成批次原樣帶著走</td></tr>
+</table>
+<div class="trap"><b>模型裡最常見的那一行：</b><code>z = X @ w + b</code>。
+<code>X:(n,m)</code>、<code>w:(m,)</code> → <code>X@w:(n,)</code>，每一筆樣本得到一個分數；再加 <code>b</code>（純量，廣播到每一筆）。
+反向算梯度時 <code>X.T @ e</code>：<code>(m,n)@(n,)</code> → <code>(m,)</code>，剛好是每個權重一個梯度。</div>
+
+<h3>B-3　<code>axis</code> 是「被壓掉」的那一維</h3>
+<p class="muted"><code>M = np.arange(6).reshape(2,3)</code> 也就是 <code>[[0,1,2],[3,4,5]]</code>，shape 是 (2,3)：axis 0 是列、axis 1 是欄。</p>
+<table><colgroup><col class="c1"><col class="c2"><col class="c3"></colgroup>
+<tr><th>式子</th><th>結果</th><th>怎麼來的</th></tr>
+<tr><td><code>M.sum(axis=0)</code></td><td class="r"><code>[3,5,7]</code></td><td>壓掉 axis 0（列）→ (2,3) 變 (3,)。<b>同一欄</b>相加：0+3、1+4、2+5</td></tr>
+<tr><td><code>M.sum(axis=1)</code></td><td class="r"><code>[3,12]</code></td><td>壓掉 axis 1（欄）→ (2,3) 變 (2,)。<b>同一列</b>相加：0+1+2、3+4+5</td></tr>
+</table>
+<p class="muted">記法：<b>axis 寫幾，shape 的第幾個數字就消失</b>。標準化 <code>X.mean(axis=0)</code> 是「每個特徵欄各算一個平均」，正是這個道理。</p>
+
+<h3>B-4　兩種索引</h3>
+<p class="muted"><code>x = np.array([1,5,3,8])</code>。</p>
+<table><colgroup><col class="c1"><col class="c2"><col class="c3"></colgroup>
+<tr><th>式子</th><th>結果</th><th>怎麼來的</th></tr>
+<tr><td><code>x &gt; 2</code></td><td class="r"><code>[False,True,True,True]</code></td><td>比較是<b>逐元素</b>的，得到一個同長度的布林陣列</td></tr>
+<tr><td><code>x[x&gt;2]</code></td><td class="r"><code>[5,3,8]</code></td><td><b>布林遮罩</b>：把上面那個布林陣列放進中括號，只留 True 的位置</td></tr>
+<tr><td><code>x[[0,3]]</code></td><td class="r"><code>[1,8]</code></td><td><b>花式索引</b>：把要的位置寫成清單一次取出，順序由清單決定</td></tr>
+<tr><td><code>np.array([1,2.5]).dtype</code></td><td class="r"><code>float64</code></td><td>陣列元素<b>必須同型別</b>，有一個是小數就整條往 float 升</td></tr>
+<tr><td><code>x[:,np.newaxis].shape</code></td><td class="r"><code>(4,1)</code></td><td>在第 1 軸插入一個長度 1 的新軸，把 <code>(4,)</code> 變成直欄。等價於 <code>x.reshape(-1,1)</code></td></tr>
+</table>
+<p class="muted">挑某一格的樣本就是布林遮罩的應用：<code>mask=(y_true==1)&amp;(y_pred==0)</code> → <code>np.where(mask)[0]</code> 得到 FN 的索引。
+陣列條件要用 <code>&amp;</code>／<code>|</code> 且<b>各自加括號</b>（運算優先序的關係），不能用 <code>and</code>／<code>or</code>。</p>
+
+<h3>B-5　廣播：形狀不同也能運算</h3>
+<p><b>規則</b>：兩個 shape 從<b>最右邊</b>對齊往左比，每一對必須<b>相等或其中一方是 1</b>；位數不夠的在左邊補 1；結果每一維取兩者較大者。</p>
+<table><colgroup><col class="c1"><col class="c2"><col class="c3"></colgroup>
+<tr><th>形狀</th><th>結果</th><th>怎麼來的</th></tr>
+<tr><td><code>(4,3) + (3,)</code></td><td class="r"><code>(4,3)</code></td><td>右邊左補 1 成 <code>(1,3)</code>；最右 3=3 相等，左邊 1 撐成 4 → 同一列複製 4 次</td></tr>
+<tr><td><code>(4,3) + (4,)</code></td><td class="r k">ValueError</td><td>右邊補成 <code>(1,4)</code>，最右是 3 vs 4，<b>兩者都不是 1</b> 故失敗。想成功要先 <code>reshape(-1,1)</code></td></tr>
+<tr><td><code>(4,1) + (3,)</code></td><td class="r"><code>(4,3)</code></td><td><code>(4,1)</code> 與 <code>(1,3)</code>：兩邊各自把 1 撐開，得 4×3</td></tr>
+<tr><td><code>(3,1,2) − (5,2)</code></td><td class="r"><code>(3,5,2)</code></td><td>右對齊：2=2、1 撐成 5、左邊補 1 給 3</td></tr>
+<tr><td><code>(8,1,6,1) + (7,1,5)</code></td><td class="r"><code>(8,7,6,5)</code></td><td>右邊補成 <code>(1,7,1,5)</code>，逐位取較大者</td></tr>
+<tr><td><code>(n,) + (n,1)</code></td><td class="r k">(n,n)</td><td><span class="k">最常踩的陷阱</span>：<code>(n,)</code> 補成 <code>(1,n)</code> 被當成一列、另一個是直欄，撐成方陣。<b>不報錯，但答案全錯</b></td></tr>
+</table>
+
+<h3>B-6　距離矩陣：廣播的經典應用（L3 p43 的練習）</h3>
+<pre>A.shape <span class="o">→ (a, m)</span>   # a 個點，每點 m 維
+B.shape <span class="o">→ (b, m)</span>   # b 個點
+
+D = A[:, None, :] - B[None, :, :]
+<span class="o"># A[:,None,:] 是 (a,1,m)、B[None,:,:] 是 (1,b,m)</span>
+<span class="o"># 廣播後 D 是 (a,b,m)：每一對點在每個維度的「座標差」</span>
+
+dist = np.linalg.norm(D, axis=2)
+<span class="o"># 沿 axis=2 把 m 個分量平方和開根號壓掉 → (a,b) 才是距離</span></pre>
+<p class="muted">關鍵在<b>插新軸的位置不同</b>：A 在中間插、B 在最前面插，廣播時才會「每個 A 配每個 B」。
+<code>(a,b,m)</code> 還不是距離，少了最後那一步 norm——小抄上寫「座標差；還不是距離」就是這個意思。</p>
+
+<h3>B-7　兩個容易出錯的習慣</h3>
+<table><colgroup><col class="c1"><col class="c2"><col class="c3"></colgroup>
+<tr><th>寫法</th><th>行為</th><th>怎麼來的</th></tr>
+<tr><td><code>idx = rng.permutation(len(y))</code><br><code>X, y = X[idx], y[idx]</code></td><td class="r">同步洗牌</td><td>先產生一組打亂的索引，特徵與標籤用<b>同一組</b> <code>idx</code> 重排，對應關係才不會錯開。分開各洗一次就毀了</td></tr>
+<tr><td><code>b = a</code></td><td class="r">共用</td><td>只是多一個名字指向<b>同一塊</b>資料，改 <code>b</code> 等於改 <code>a</code></td></tr>
+<tr><td><code>b = a.copy()</code></td><td class="r">複製</td><td>真的另外配一份記憶體，兩者從此獨立</td></tr>
+<tr><td><code>np.where(z&gt;=0, 1, 0)</code></td><td class="r">門檻分類</td><td>三參數版的 <code>where</code>：條件成立取 1、否則取 0，逐元素套用</td></tr>
+</table>
+<p class="muted">其他性質：ndarray 元素同型別、切片出來的 view 可能不連續；<code>.T</code> 對一維陣列<b>無效</b>（一維沒有兩個軸可換），要轉直欄得用 <code>reshape(-1,1)</code> 或 <code>np.newaxis</code>；
+向量化之所以快，是把 Python 迴圈換成預先編譯好的底層常式一次處理整個陣列。</p>
+
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    const n = Math.ceil(document.body.scrollHeight / (297 * 96 / 25.4));
+    console.log("[pages] 約 " + n + " 頁");
+  });
+</script>
+</body>
+</html>
