@@ -12,13 +12,15 @@ updatedAt: "2026-11-02"
 
 > 小抄：[A4 雙面小抄（PDF）](_references/機器學習實作系列/第9週-期中考A4小抄.pdf)——點開會在右側抽屜檢視，列印時選「實際大小」、雙面列印。
 >
-> 統整版小抄：[A4 雙面小抄・統整版（PDF）](_references/機器學習實作系列/第9週-期中考A4小抄-統整版.pdf)——以上面那份為底，**逐頁對照過 Lectures 1–6 共 357 頁投影片**後的版本。併入另一份小抄（`A4_duplex_cheatsheet`）獨有且確實在講義範圍內的內容：逐行追蹤淨輸入到類別、更新係數的 2 從哪裡來、BCE 防 `log(0)` 的 `np.clip` 與 `@` 兩種寫法、距離矩陣廣播（對應 L3 p43 練習）、`np.where(mask)[0]` 取 FN 索引（L6 p52）、`joblib` 存整條管線（L6 p53）。**移除投影片沒教的部分**：原 §8 常見分類演算法整節（SVM／決策樹／隨機森林／KNN 只在 L5 p58 以 sklearn 模組清單各出現一行）、Seaborn 與 `transAxes`／`errorbar`／`meshgrid`／色盤、Pandas 的 `loc`／`iloc`／`groupby`／`merge`、提早停止、加權平均與 support、維度詛咒、`get_support()`、XOR 與 `*args`／`**kwargs`；編號因此順延為 1–19。**補回投影片有教卻漏收的**：`os` 模組（L2 第 5 題）與 `max()`／`min()`／`sum()`（L2 第 4 題）、`Series.to_numpy()`／`DataFrame.to_numpy()`（L3 p48、p50）、Plot Types 五種圖與 Common Functions（L4 p32、p33）。騰出的空間讓第一面字級從 6.9pt 放大到 7.35pt。來源是 `docs/cheatsheets/ml-midterm-a4-merged.html`，重建指令與完整差異清單寫在檔頭註解，原版 `ml-midterm-a4.html` 不受影響。
+> 統整版小抄：[A4 雙面小抄・統整版（PDF）](_references/機器學習實作系列/第9週-期中考A4小抄-統整版.pdf)——以原版為底，**逐頁對照過 Lectures 1–6 共 357 頁投影片**後的版本（§1–19，第一面 7.35pt）。併入另一份小抄（`A4_duplex_cheatsheet`）獨有且確實在範圍內的內容：逐行追蹤淨輸入到類別、更新係數的 2 從哪裡來、BCE 防 `log(0)` 的 `np.clip` 與 `@` 兩種寫法、距離矩陣廣播（L3 p43 練習）、`np.where(mask)[0]` 取 FN 索引（L6 p52）、`joblib` 存整條管線（L6 p53）。**移除投影片沒教的**：原 §8 常見分類演算法整節（SVM／決策樹／隨機森林／KNN 的理論只在 L5 p58 以 sklearn 模組清單各一行出現）、Seaborn 與 `transAxes`／`errorbar`／`meshgrid`／色盤、Pandas 的 `loc`／`iloc`／`groupby`／`merge`、提早停止、維度詛咒、XOR 與 `*args`／`**kwargs`。**補回投影片有教卻漏收的**：`os` 模組與 `max()`／`min()`／`sum()`（L2 第 4、5 題）、`to_numpy()`（L3 p48、p50）、`pd.read_csv`（L5 p9）、Plot Types 與 Common Functions（L4 p32、p33）、micro 平均＝accuracy（L6 p46 註腳）。來源 `docs/cheatsheets/ml-midterm-a4-merged.html`，完整差異清單在檔頭註解。
 >
-> 題庫：[選擇題題庫（PDF，92 題）](_references/機器學習實作系列/機器學習選擇題題庫.pdf)——期中範圍第 1–7 週筆記的全部選擇題，前半題目不標答案，答案表與詳解在最後；重新產生的指令寫在 `docs/cheatsheets/build-ml-mcq-bank.py` 開頭。
+> API 補強版：[A4 雙面小抄・考前重點與 API 補強版（PDF）](_references/機器學習實作系列/第9週-期中考A4小抄-API補強版.pdf)——以統整版為底再加三塊 scikit-learn API 速查：**補強 A 前處理 API（L5）** `LabelEncoder`／`OneHotEncoder`／`FunctionTransformer`／`ColumnTransformer`／`SequentialFeatureSelector`／`SelectFromModel`；**補強 B 搜尋與回傳值（L6）** `StratifiedKFold.split`／`learning_curve`／`validation_curve`／`GridSearchCV`／`RandomizedSearchCV`／`HalvingRandomSearchCV` 各自回傳什麼、`n_jobs`／`scoring`／`refit`／`best_params_`；**補強 C 評估函式（L6）** `precision_score`／`recall_score`／`f1_score`／`matthews_corrcoef`／`classification_report`／`roc_curve`／`auc`／`roc_auc_score`／`make_scorer`。這三塊逐項核對過，全部對得上 L5 p51–56 與 L6 p33–47 的投影片。另外補了 `np.zeros`／`np.ones`／`np.eye`（L3 p28）、鑑別式與生成式 AI（L1 p35）、驗證曲線橫軸方向的判讀。**注意**：這份把 Pandas 的 `loc`／`iloc` 切片含不含尾端又加了回去，那兩個在 L3 p47–50 的投影片裡沒有（只教 Series／DataFrame 建構與 `to_numpy()`），要考 API 細節時別被它誤導。
+>
+> 題庫：[選擇題題庫（PDF，106 題）](_references/機器學習實作系列/機器學習選擇題題庫.pdf)——期中範圍第 1–7 週筆記的教材範圍內選擇題，前半題目不標答案，答案表與詳解在最後；重新產生的指令寫在 `docs/cheatsheets/build-ml-mcq-bank.py` 開頭。
 >
 > 關鍵定義：[關鍵定義總表（PDF，118 個名詞）](_references/機器學習實作系列/機器學習關鍵定義總表.pdf)——本篇最後一章「各週關鍵定義總整理」的列印版，考前複習用、不帶進考場；重新產生的指令寫在 `docs/cheatsheets/build-ml-key-terms.py` 開頭。
 >
-> 線上練習：[選擇題作答頁](/quiz/ml-mcq.html)——同一批 92 題，可全部或依週次作答、對答案算分數；作答紀錄存在這台電腦的瀏覽器，按「重新答題」才會清除該範圍的紀錄。
+> 線上練習：[選擇題作答頁](/quiz/ml-mcq.html)——同一批 106 題，可全部或依週次作答、對答案算分數；作答紀錄存在這台電腦的瀏覽器，按「重新答題」才會清除該範圍的紀錄。
 
 ## 考試形式
 
@@ -31,6 +33,14 @@ updatedAt: "2026-11-02"
 | 考什麼 | 考觀念、不考推導（例：邏輯迴歸用哪一種損失函數）；Python 程式題考「辨識函式功能」或「預期程式執行結果」；也可能給一張訓練曲線問看得出什麼傾向（例如是否過擬合） |
 | 小抄 | 可帶一張 A4 雙面，不限手寫 |
 | 範圍 | **Lectures 1–6 投影片的內容**（機器學習觀念與 Python 程式解讀）。Lecture 編號與週次差一號：L1 第 1 週、L2 第 2 週、L3 第 3 週、L4 第 5 週、L5 第 6 週、L6 第 7 週（第 4 週教師節放假）。以投影片為準，筆記裡自行補充的延伸內容（例如第 6 週的「演算法巡禮」）不在範圍內 |
+
+## 題庫範圍校正（Lectures 1–6）
+
+目前線上與列印題庫共 **106 題**。原92題中，10題移到各週文末「延伸練習」並以投影片題目替換，另新增14題；修正門檻與precision、one-hot縮放、Adaline門檻等敘述。新版作答紀錄與舊版分開，避免相同題號對應到舊題答案。
+
+重點補入：Series／DataFrame輸出、Matplotlib通用函式、FunctionTransformer、ColumnTransformer、標籤編碼、序列特徵選取、分類報告、ROC、自訂評分器與搜尋API。這些是依投影片改編的練習題，不是教授公布的考古題。
+
+> API補強版小抄：[A4雙面 PDF](_references/機器學習實作系列/第9週-期中考A4小抄-API補強版.pdf)。保留先前兩份PDF，補強版另存，不覆蓋原檔。
 
 ## 小抄內容導覽
 

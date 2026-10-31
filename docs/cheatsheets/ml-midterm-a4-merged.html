@@ -19,12 +19,15 @@
     Seaborn（只以樣式名 'seaborn-v0_8-poster' 出現過）、transAxes/transData、errorbar/fill_between、
     contour/imshow+meshgrid、色盤 sequential/diverging/qualitative；
     Pandas 的 loc/iloc 切片、groupby、concat/merge（L3 的 Pandas 只有 6 頁，教 Series/DataFrame 與 to_numpy）；
-    提早停止 early stopping（L5 p32 的過擬合對策沒有這條）；加權平均 weighted 與 support（L6 p29 只有 micro/macro）；
-    維度詛咒、get_support()、2^3 是 XOR、*args/**kwargs。
+    提早停止 early stopping（L5 p32 的過擬合對策沒有這條）；維度詛咒、get_support()、2^3 是 XOR、*args/**kwargs。
+    註：weighted/support 與 svc__gamma 一度被當成超範圍刪掉，後來渲染程式截圖才發現 L6 p46 的
+    classification_report 輸出就有 support 與 weighted avg、L6 p37 的 GridSearchCV 範例就用 SVC 與 svc__gamma，
+    兩者已還原。只靠 PDF 抽文字會漏掉截圖裡的內容，判定「講義沒有」前要把該頁渲染出來看。
   [補回：投影片有教但原本漏收]
     §14 os 模組 os.path/os.makedirs/os.listdir（L2 第 5 題）與 max()/min()/sum()（L2 第 4 題）；
     §16 Series.to_numpy()/DataFrame.to_numpy()（L3 p48、p50）；
-    §17 Plot Types 五種圖表與 Common Functions（L4 p32、p33）。
+    §17 Plot Types 五種圖表與 Common Functions（L4 p32、p33）；
+    §16 pd.read_csv（L5 p9）；§12 micro 平均＝accuracy（L6 p46 註腳）。
   版面：第一面 7.35pt（.concepts），第二面維持 6.9pt、程式區塊 5.85pt（程式密度高）。
 
   產出 PDF：
@@ -353,7 +356,7 @@
       <li><b>MCC</b> 用四格，$[-1,1]$，不平衡時比 F1 穩</li>
       <li><b>ROC</b>：掃門檻畫 FPR(x)–TPR(y)；<b>AUC</b> 1 完美、0.5 瞎猜；量排序能力</li>
       <li>題庫 W7-10 的常見取捨：門檻低 → recall↑、precision↓；嚴格說 recall 不減，precision 不保證下降；癌症篩檢重 <b>recall</b>，垃圾信過濾重 <b>precision</b></li>
-      <li><b>微平均</b>每樣本等權（大類主導）；<b>宏平均</b>每類別等權（不平衡適用）</li>
+      <li><b>微平均</b>每樣本等權（大類主導）；<b>宏平均</b>每類別等權（不平衡適用）；<b>加權平均</b>按各類 <b>support</b>（該類<u>真實</u>樣本數）加權。<code>classification_report</code> 的輸出就是這三列＋support（L6 p46）；完整單標籤多分類時 <b>micro＝accuracy</b></li>
       <li>挑出某一格的樣本：<code>mask=(y_true==1)&amp;(y_pred==0)</code> → <code>np.where(mask)[0]</code> 即 <b>FN 的索引</b>；陣列條件用 <code>&amp;</code>／<code>|</code> 且<b>各加括號</b></li>
       <li><b>類別不平衡</b>：1% 陽性全猜陰也有 99% ACC → 改指標、過採樣、加權 <code>class_weight</code></li>
     </ul>
@@ -365,7 +368,7 @@
     <table>
       <tr><th style="width:18%">API</th><th style="width:38%">方法</th><th>例</th></tr>
       <tr><td>轉換器</td><td><code>fit</code> → <code>transform</code>（<code>fit_transform</code>）</td><td><code>StandardScaler</code>、<code>SimpleImputer</code>、<code>OneHotEncoder</code></td></tr>
-      <tr><td>分類器</td><td><code>fit(X,y)</code> → <code>predict(X)</code></td><td><code>LogisticRegression</code>、<code>Perceptron</code></td></tr>
+      <tr><td>分類器</td><td><code>fit(X,y)</code> → <code>predict(X)</code></td><td><code>LogisticRegression</code>、<code>Perceptron</code>、<code>SVC</code>（L6 p37 範例）</td></tr>
     </table>
 <pre>sc = StandardScaler()
 X_tr = sc.fit_transform(X_train)  <span class="o"># ✔ 只 fit 訓練</span>
@@ -376,7 +379,7 @@ sc.fit_transform(X_test)          <span class="o"># ✘ 重估測試統計量</s
       <li><code>transform</code> 的特徵數須與 <code>fit</code> 時相同</li>
       <li><b>Pipeline</b>：訓練時各轉換器 <code>fit_transform</code>、最後估計器 <code>fit</code>；預測時只 <code>transform</code> 再 <code>predict</code> → 將原始資料與整條管線交給 CV，逐折 fit</li>
       <li><code>make_pipeline(StandardScaler(), LogisticRegression())</code> 免命名；<code>Pipeline([('sc',…),('clf',…)])</code></li>
-      <li>Pipeline 調參用<b>步驟名＋雙底線＋參數名</b>：<code>clf__C</code>；不是單底線。<code>make_pipeline</code> 自動用類別名小寫命名，所以同一個參數變成 <code>logisticregression__C</code>。</li>
+      <li>Pipeline 調參用<b>步驟名＋雙底線＋參數名</b>：<code>clf__C</code>、<code>svc__gamma</code>（L6 p37 範例）；不是單底線。<code>make_pipeline</code> 自動用類別名小寫命名，所以同一個參數變成 <code>logisticregression__C</code>。</li>
       <li><code>cross_val_score(pipe,X,y,cv=10)</code> 回傳 <b>10 個分數的陣列</b>；GridSearch 3×4 組 × cv=5 = 60 次 CV fit（預設重訓再 +1）；<code>gs.best_estimator_</code> 取最佳模型，最後只在測試集 score 一次</li>
       <li><code>train_test_split(…, test_size=0.3, stratify=y, random_state=1)</code></li>
       <li><code>joblib.dump</code>／<code>load</code> 存取<b>整條管線</b>（含前處理學到的統計量），載入後直接 <code>predict</code>，不必再訓練</li>
@@ -459,6 +462,7 @@ x[:,np.newaxis].shape <span class="o">→ (4,1)</span></pre>
   <section>
     <h2><span class="n">16</span>Pandas</h2>
     <ul>
+      <li><code>pd.read_csv()</code> 讀 CSV 成 DataFrame（L5 p9 的缺值示範）</li>
       <li><code>DataFrame</code>＝共用索引的多個 <code>Series</code>；<code>df['col']</code> → Series；<code>df[['col']]</code> → 二維 DataFrame</li>
       <li><b>轉成 NumPy</b>：<code>Series.to_numpy()</code>／<code>DataFrame.to_numpy()</code>（L3 p48、p50 的重點）</li>
       <li><code>isnull()</code>（NaN/None/NaT）、<code>dropna()</code> 預設刪<b>列</b>、<code>axis=1</code> 刪欄、<code>fillna(v)</code></li>
