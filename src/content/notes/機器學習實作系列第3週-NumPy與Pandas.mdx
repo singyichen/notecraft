@@ -13,6 +13,8 @@ import MlWeek3Pipeline from '@/components/generated/ml-week3-pipeline'
 
 # 第 3 週：Adaline 與 NumPy、Pandas
 
+> 期中題庫以 Lectures 1–6 投影片為準；本週新增題的詳解標有教材頁碼。文中的延伸閱讀及文末「延伸練習」不屬於指定投影片範圍。
+
 *Adaline & NumPy, Pandas*
 
 > 本週參考：[《Python Data Science Handbook》](/notes/python-data-science-handbook)（NumPy／Pandas 部分）
@@ -1274,6 +1276,13 @@ excerpt: Assignment #1 目的：使用 Adaline SGD 分類模型，透過測試�
 
 ## 考題
 
+### 期中補強：陣列與表格程式判讀（L3 p28、35、47–50）
+
+- `np.zeros((2,3))`、`np.ones((2,3))`：指定形狀的全0／全1；`np.eye(3)`：單位矩陣。
+- `X:(10,3,4)`、`W:(4,5)`，則 `X @ W` 為 `(10,3,5)`；高維 `@` 以批次矩陣乘法解讀。
+- `Series` 是帶索引的一維資料；多個 Series 組成 DataFrame 時依索引對齊。
+- `.to_numpy()` 取資料值；單欄 Series 得 `(n,)`，單欄 DataFrame 得 `(n,1)`。
+
 ### 選擇題
 
 #### 選擇題 1
@@ -1318,22 +1327,25 @@ excerpt: Assignment #1 目的：使用 Adaline SGD 分類模型，透過測試�
 
 #### 選擇題 3
 
-> `.loc` 與 `.iloc` 在切片行為上的差別是什麼？
-> :en[How does slicing behave differently between `.loc` and `.iloc`?]
+> Series 轉為 NumPy 陣列時，下面會印出什麼？
+> :en[What does the following code print when converting a Series to a NumPy array?]
 
-:::choices{answer="B"}
-- 兩者都包含尾端 :en[Both include the endpoint]
-- `.loc` 包含尾端，`.iloc` 不包含 :en[`.loc` includes the endpoint, `.iloc` does not]
-- `.loc` 不包含尾端，`.iloc` 包含 :en[`.loc` excludes the endpoint, `.iloc` includes it]
-- 兩者都不包含尾端 :en[Neither includes the endpoint]
+```python
+s = pd.Series([10, 20], index=['a', 'b'])
+print(s.to_numpy().tolist())
+```
+
+:::choices{answer="A"}
+- `[10, 20]` :en[`[10, 20]`]
+- `["a", "b"]` :en[`["a", "b"]`]
+- `[0, 1]` :en[`[0, 1]`]
+- 包含值與標籤的二維表格 :en[A two-dimensional table containing both values and labels]
 :::
 
 :::tip{collapsible title="詳解"}
-`.loc` 依標籤選取，切片**包含**尾端；`.iloc` 依整數位置選取，切片**不包含**尾端，與 Python 原生切片一致。
+to_numpy() 取出資料值，不會把索引標籤一起變成陣列欄位。
 
-第三項把兩者對調，是最容易出錯的地方，而且錯了不會報錯——只會安靜地多一列或少一列。`.loc` 之所以包含尾端，是因為標籤沒有「下一個」的概念，寫 `'a':'c'` 時使用者要的就是到 `'c'` 為止。
-
-**考的觀念**：標籤切片含尾端，位置切片不含。
+**教材依據**：L3 p47–48。
 :::
 
 #### 選擇題 4
@@ -1418,22 +1430,20 @@ excerpt: Assignment #1 目的：使用 Adaline SGD 分類模型，透過測試�
 
 #### 選擇題 8
 
-> `concat` 與 `merge` 的差別是什麼？
-> :en[What is the difference between `concat` and `merge`?]
+> DataFrame 與 Series 的關係，哪個敘述正確？
+> :en[Which statement about DataFrame and Series is correct?]
 
-:::choices{answer="D"}
-- `concat` 只能用於 `Series`，`merge` 只能用於 `DataFrame` :en[`concat` works only on a `Series`, `merge` only on a `DataFrame`]
-- `concat` 會去除重複列，`merge` 不會 :en[`concat` drops duplicate rows, `merge` does not]
-- 兩者相同，只是參數寫法不同 :en[They are the same; only the argument syntax differs]
-- `concat` 沿指定軸把資料疊起來，`merge` 依共同鍵值配對 :en[`concat` stacks data along a chosen axis, `merge` matches rows by a shared key]
+:::choices{answer="B"}
+- DataFrame 只能放相同型別 :en[A DataFrame can only contain one data type]
+- DataFrame 可由依索引對齊的多個 Series 組成 :en[A DataFrame can be formed from multiple Series aligned by index]
+- Series 必須是二維 :en[A Series must be two-dimensional]
+- DataFrame 沒有欄名 :en[A DataFrame has no column names]
 :::
 
 :::tip{collapsible title="詳解"}
-`concat` 是「疊」：沿指定軸把多份資料接在一起，對齊靠的是索引。`merge`／`join` 是「配對」：依共同的鍵值把來自兩張表的資料列對應起來，相當於關聯式資料庫的 join。
+DataFrame 同時有列與欄標籤，可視為一組對齊的 Series。
 
-判斷很簡單——問自己「我是要把更多列（或更多欄）接上去，還是要依某個欄位把兩張表對起來」。前者用 `concat`，後者用 `merge`。
-
-**考的觀念**：疊起來用 `concat`，依鍵配對用 `merge`。
+**教材依據**：L3 p49–50。
 :::
 
 #### 選擇題 9
@@ -1599,28 +1609,62 @@ X + w
 
 #### 選擇題 16
 
-> 下列程式會印出什麼？
-> :en[What does the following code print?]
+> 下面兩個 NumPy 陣列的形狀為何？
+> :en[What are the shapes of the two NumPy arrays below?]
 
 ```python
-import pandas as pd
-df = pd.DataFrame({"x": [10, 20, 30, 40]})
-print(len(df.loc[0:2]), len(df.iloc[0:2]))
+df = pd.DataFrame({"x": [10, 20, 30]})
+print(df["x"].to_numpy().shape)
+print(df[["x"]].to_numpy().shape)
 ```
 
 :::choices{answer="C"}
-- `2 2` :en[Prints `2 2`]
-- `2 3` :en[Prints `2 3`]
-- `3 2` :en[Prints `3 2`]
-- `3 3` :en[Prints `3 3`]
+- `(3,1)` 與 `(3,)` :en[`(3,1)` and `(3,)`]
+- 都是 `(3,)` :en[Both are `(3,)`]
+- `(3,)` 與 `(3,1)` :en[`(3,)` and `(3,1)`]
+- 都是 `(3,1)` :en[Both are `(3,1)`]
 :::
 
 :::tip{collapsible title="詳解"}
-`.loc` 依**標籤**選取，切片**包含**尾端，`0:2` 取到標籤 0、1、2 共 3 列；`.iloc` 依**整數位置**選取，行為和 Python 切片一樣**不含**尾端，`0:2` 只取位置 0、1 共 2 列。
+選單一欄得到一維 Series；以欄名清單選取仍是二維 DataFrame。
 
-選 (B) 的人把兩者的規則對調；選 (A) 的人以為兩者都照 Python 切片規則。這裡索引剛好是 0、1、2、3，標籤和位置數值相同，更容易誤以為兩者等價。
+**教材依據**：L3 p47–50。
+:::
 
-**考的觀念**：`.loc` 含尾端、`.iloc` 不含尾端。
+#### 選擇題 17
+
+> y=[1,0]、Adaline 線性輸出 a=[0.8,0.3]，MSE 是多少？
+> :en[For y=[1,0] and Adaline linear outputs a=[0.8,0.3], what is the MSE?]
+
+:::choices{answer="A"}
+- 0.065 :en[0.065]
+- 0.13 :en[0.13]
+- 0.25 :en[0.25]
+- 0 :en[0]
+:::
+
+:::tip{collapsible title="詳解"}
+誤差為 .2 與 -.3，平方和 .04+.09=.13，除以2得 .065。分類分對不代表平方誤差為0。
+
+**教材依據**：L3 p6。
+:::
+
+#### 選擇題 18
+
+> A 為 (3,2)、B 為 (5,2)，D=A[:,None,:]-B[None,:,:] 的形狀為何？
+> :en[If A has shape (3,2) and B has shape (5,2), what is the shape of D=A[:,None,:]-B[None,:,:]?]
+
+:::choices{answer="B"}
+- (3,5) :en[(3,5)]
+- (3,5,2) :en[(3,5,2)]
+- (5,3,2) :en[(5,3,2)]
+- 無法廣播 :en[Broadcasting fails]
+:::
+
+:::tip{collapsible title="詳解"}
+兩組座標擴充為 (3,1,2) 和 (1,5,2)，相減為 (3,5,2)；再沿 axis=2 取 norm 才是 (3,5) 距離矩陣。
+
+**教材依據**：L3 p42–44。
 :::
 
 ### 概念辨析題
@@ -1861,3 +1905,73 @@ D=
 $$
 
 這題沿用講義第 43–44 頁課堂練習「兩組點集合透過 `np.newaxis` 廣播後求歐幾里得距離矩陣」的題型結構，但座標與矩陣大小是另外設計的練習數字，不是講義原題。
+
+## 延伸練習（不納入期中題庫）
+
+以下保留原有補充題作自學用途。Lectures 1–6 未直接教授這些細節，不納入期中線上與列印題庫；不要視為教授指定考點。
+
+#### 延伸題（原 W3-3）
+
+> `.loc` 與 `.iloc` 在切片行為上的差別是什麼？
+> :en[How does slicing behave differently between `.loc` and `.iloc`?]
+
+:::choices{answer="B"}
+- 兩者都包含尾端 :en[Both include the endpoint]
+- `.loc` 包含尾端，`.iloc` 不包含 :en[`.loc` includes the endpoint, `.iloc` does not]
+- `.loc` 不包含尾端，`.iloc` 包含 :en[`.loc` excludes the endpoint, `.iloc` includes it]
+- 兩者都不包含尾端 :en[Neither includes the endpoint]
+:::
+
+:::tip{collapsible title="詳解"}
+`.loc` 依標籤選取，切片**包含**尾端；`.iloc` 依整數位置選取，切片**不包含**尾端，與 Python 原生切片一致。
+
+第三項把兩者對調，是最容易出錯的地方，而且錯了不會報錯——只會安靜地多一列或少一列。`.loc` 之所以包含尾端，是因為標籤沒有「下一個」的概念，寫 `'a':'c'` 時使用者要的就是到 `'c'` 為止。
+
+**考的觀念**：標籤切片含尾端，位置切片不含。
+:::
+
+#### 延伸題（原 W3-8）
+
+> `concat` 與 `merge` 的差別是什麼？
+> :en[What is the difference between `concat` and `merge`?]
+
+:::choices{answer="D"}
+- `concat` 只能用於 `Series`，`merge` 只能用於 `DataFrame` :en[`concat` works only on a `Series`, `merge` only on a `DataFrame`]
+- `concat` 會去除重複列，`merge` 不會 :en[`concat` drops duplicate rows, `merge` does not]
+- 兩者相同，只是參數寫法不同 :en[They are the same; only the argument syntax differs]
+- `concat` 沿指定軸把資料疊起來，`merge` 依共同鍵值配對 :en[`concat` stacks data along a chosen axis, `merge` matches rows by a shared key]
+:::
+
+:::tip{collapsible title="詳解"}
+`concat` 是「疊」：沿指定軸把多份資料接在一起，對齊靠的是索引。`merge`／`join` 是「配對」：依共同的鍵值把來自兩張表的資料列對應起來，相當於關聯式資料庫的 join。
+
+判斷很簡單——問自己「我是要把更多列（或更多欄）接上去，還是要依某個欄位把兩張表對起來」。前者用 `concat`，後者用 `merge`。
+
+**考的觀念**：疊起來用 `concat`，依鍵配對用 `merge`。
+:::
+
+#### 延伸題（原 W3-16）
+
+> 下列程式會印出什麼？
+> :en[What does the following code print?]
+
+```python
+import pandas as pd
+df = pd.DataFrame({"x": [10, 20, 30, 40]})
+print(len(df.loc[0:2]), len(df.iloc[0:2]))
+```
+
+:::choices{answer="C"}
+- `2 2` :en[Prints `2 2`]
+- `2 3` :en[Prints `2 3`]
+- `3 2` :en[Prints `3 2`]
+- `3 3` :en[Prints `3 3`]
+:::
+
+:::tip{collapsible title="詳解"}
+`.loc` 依**標籤**選取，切片**包含**尾端，`0:2` 取到標籤 0、1、2 共 3 列；`.iloc` 依**整數位置**選取，行為和 Python 切片一樣**不含**尾端，`0:2` 只取位置 0、1 共 2 列。
+
+選 (B) 的人把兩者的規則對調；選 (A) 的人以為兩者都照 Python 切片規則。這裡索引剛好是 0、1、2、3，標籤和位置數值相同，更容易誤以為兩者等價。
+
+**考的觀念**：`.loc` 含尾端、`.iloc` 不含尾端。
+:::

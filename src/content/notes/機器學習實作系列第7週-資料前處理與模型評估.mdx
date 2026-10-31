@@ -15,6 +15,8 @@ import MlWeek7SearchStrategies from '@/components/generated/ml-week7-search-stra
 
 # 第 7 週：資料前處理、特徵工程與模型選擇評估
 
+> 期中題庫以 Lectures 1–6 投影片為準；本週新增題的詳解標有教材頁碼。文中的延伸閱讀及文末「延伸練習」不屬於指定投影片範圍。
+
 *Data Preprocessing and Feature Engineering. Model Selection and Evaluation*
 
 > 本週參考：[《Machine Learning with PyTorch and Scikit-Learn》](/notes/machine-learning-with-pytorch-and-scikit-learn)
@@ -1385,6 +1387,22 @@ CV 上領先 0.35 個百分點的設定，到了測試集反而多錯 1 張。�
 
 ## 考題
 
+### 期中補強：搜尋與評估程式（L6 p33–47）
+
+| API／欄位 | 功能或回傳值 |
+| --- | --- |
+| `StratifiedKFold.split(X,y)` | 各折 train／validation 索引 |
+| `learning_curve` | `train_sizes, train_scores, test_scores`；test_scores 是CV驗證折分數 |
+| `validation_curve` | `train_scores, test_scores`；依 `param_range` 改一個參數 |
+| `RandomizedSearchCV` | 從 `param_distributions` 抽 `n_iter` 組；CV次數為組數×折數 |
+| `HalvingRandomSearchCV` | 少資源起步、淘汰候選、增加存活者資源；`factor` 控制比例 |
+| `classification_report` | 每類 precision／recall／F1／support；support 為真實樣本數，weighted avg 按support加權 |
+| `roc_curve(y,score)` | `fpr, tpr, thresholds`；使用連續正類分數／機率 |
+| `auc(fpr,tpr)`／`roc_auc_score(y,score)` | 前者由曲線算面積，後者由真實標籤與分數計ROC AUC |
+| `make_scorer(f1_score,pos_label=0)` | 建立以0為正類的F1評分器；不改模型訓練loss |
+
+`n_jobs=-1` 用所有可用CPU。`best_params_` 是最佳設定、`best_score_` 是最佳平均CV分數；預設 `refit=True` 時 `best_estimator_` 已在完整訓練集重訓。
+
 ### 選擇題
 
 #### 選擇題 1
@@ -1569,22 +1587,20 @@ holdout 只切一次，換一種切法結論可能就變了——$k$ 折交叉�
 
 #### 選擇題 10
 
-> 把決策門檻調鬆（更容易判為陽性），精確率與召回率會怎麼變化？
-> :en[If the decision threshold is loosened (making a positive call easier), how do precision and recall change?]
+> 固定模型分數、降低判正類門檻，哪個敘述一定成立（同一批樣本且同一正類）？
+> :en[For fixed model scores on the same samples with the same positive class, which statement must hold when the positive-class threshold is lowered?]
 
 :::choices{answer="B"}
-- 精確率上升、召回率下降 :en[Precision rises, recall falls]
-- 召回率上升、精確率下降 :en[Recall rises, precision falls]
-- 兩者同時上升，因為判為陽性的樣本變多了 :en[Both rise, because more samples are called positive]
-- 兩者都不會變，門檻只影響整體的正確率 :en[Neither changes; the threshold only affects overall accuracy]
+- 精確率一定下降 :en[Precision must decrease]
+- 召回率不減，精確率可能升也可能降 :en[Recall cannot decrease; precision may increase or decrease]
+- 召回率一定下降 :en[Recall must decrease]
+- TP與FP都一定嚴格增加 :en[TP and FP must both strictly increase]
 :::
 
 :::tip{collapsible title="詳解"}
-門檻調鬆後判為陽性的樣本變多，真陽性被抓到的比例（召回率）上升；但誤報也跟著變多，判為陽性的樣本中真的是陽性的比例（精確率）下降。
+門檻降低後，判正的樣本集合只會擴大，因此TP／FP不減，Recall／FPR不減；新增樣本的組成決定Precision升降，不能保證下降。
 
-第三項是最直覺的誤判——「判為陽性的變多」確實讓召回率上升，但精確率的分母 $TP + FP$ 也跟著變大，兩者是拉鋸而不是同向。實務上的取捨由代價結構決定：癌症篩檢寧可誤報不能漏報，優先召回率；垃圾信過濾誤殺重要信的代價高，偏向精確率。
-
-**考的觀念**：精確率與召回率的拉鋸來自同一個門檻。
+**教材依據**：L6 p25–28。
 :::
 
 #### 選擇題 11
@@ -1700,7 +1716,7 @@ print(clf.score(X_test, y_test))
 :::
 
 :::tip{collapsible title="詳解"}
-`best_estimator_` 是格狀搜尋挑出的最佳參數組合所對應的模型。這段程式用訓練集訓練它，再用 `score` 在**測試集**上評估一次。這正是工作流程的最後一步：超參數全部決定後，測試集才拿出來用一次。
+`best_estimator_` 是格狀搜尋挑出的最佳參數組合所對應的模型。預設 `GridSearchCV(refit=True)` 已用完整訓練集重訓最佳模型，因此這裡再次 `clf.fit(X_train, y_train)` 是重複訓練、不是必要步驟；接著 `score` 在**測試集**上評估一次。這正是工作流程的最後一步：超參數全部決定後，測試集才拿出來用一次。
 
 選 (B) 的人把測試分數和交叉驗證分數搞混，這裡 `score` 吃的是 `X_test`。(A)、(D) 都是拿測試集來調模型，違反「測試集全程不碰」，測出來的分數會過度樂觀。
 
@@ -1739,6 +1755,114 @@ $$
 選 (A) 的人把精確率和召回率的分母對調了：精確率問「預測為陽性的裡面有多少是真的」，召回率問「真的陽性裡面抓到多少」。
 
 **考的觀念**：從預測結果數出 TP／FP／FN，再套精確率與召回率。
+:::
+
+#### 選擇題 17
+
+> classification_report 裡某類的 support=30，代表什麼？
+> :en[In classification_report, what does support=30 mean for a class?]
+
+:::choices{answer="C"}
+- 預測該類共30筆 :en[30 samples were predicted as that class]
+- 正確預測該類30筆 :en[30 samples of that class were correctly predicted]
+- 真實標籤屬於該類共30筆 :en[30 samples truly belong to that class]
+- 該類精確率30% :en[The precision of that class is 30%]
+:::
+
+:::tip{collapsible title="詳解"}
+support 是真實類別樣本數；weighted avg 依各類 support 加權。
+
+**教材依據**：L6 p46。
+:::
+
+#### 選擇題 18
+
+> make_scorer(f1_score, pos_label=0) 的作用是什麼？
+> :en[What does make_scorer(f1_score, pos_label=0) do?]
+
+:::choices{answer="D"}
+- 把所有預測改成0 :en[Changes all predictions to 0]
+- 只訓練標籤為0的樣本 :en[Trains only on samples labeled 0]
+- 把訓練損失改成F1 :en[Changes the training loss to F1]
+- 建立以類別0為正類的F1評分器 :en[Creates an F1 scorer that treats class 0 as positive]
+:::
+
+:::tip{collapsible title="詳解"}
+make_scorer 將指標包成可供搜尋使用的評分器；pos_label 改正類，並不更動訓練資料或模型loss。
+
+**教材依據**：L6 p47。
+:::
+
+#### 選擇題 19
+
+> 二元分類要畫 ROC 曲線，通常應提供哪個輸入？
+> :en[What inputs are normally used to construct an ROC curve for binary classification?]
+
+:::choices{answer="A"}
+- 真實標籤與正類的連續預測分數／機率 :en[True labels and continuous positive-class scores or probabilities]
+- 真實標籤與各類樣本數 :en[True labels and class sample counts]
+- 只提供0／1預測類別即可保留完整排序 :en[Hard 0/1 predictions alone preserve the complete ranking]
+- 只提供訓練loss :en[Training loss alone]
+:::
+
+:::tip{collapsible title="詳解"}
+roc_curve 回傳 fpr、tpr、thresholds；連續分數保留掃門檻所需資訊，硬類別只保留單一切點。
+
+**教材依據**：L6 p45。
+:::
+
+#### 選擇題 20
+
+> RandomizedSearchCV 設 n_iter=12、cv=5，忽略 refit，共做幾次CV訓練？
+> :en[With n_iter=12 and cv=5 in RandomizedSearchCV, how many CV fits are performed, excluding refit?]
+
+:::choices{answer="B"}
+- 12 :en[12]
+- 60 :en[60]
+- 17 :en[17]
+- 5 :en[5]
+:::
+
+:::tip{collapsible title="詳解"}
+抽12組候選設定，每組5折，12×5=60次。
+
+**教材依據**：L6 p38–39。
+:::
+
+#### 選擇題 21
+
+> Successive halving 的資源分配策略是什麼？
+> :en[How does successive halving allocate resources?]
+
+:::choices{answer="C"}
+- 每次只評估同一個候選 :en[It evaluates only the same candidate each time]
+- 先給所有候選最多資源 :en[It gives every candidate the maximum resources initially]
+- 先少資源評估多個候選，淘汰後增加存活者資源 :en[It evaluates many candidates with few resources, eliminates some, and increases resources for survivors]
+- 與Grid Search完全相同 :en[It works exactly like grid search]
+:::
+
+:::tip{collapsible title="詳解"}
+逐次減半搜尋以逐輪淘汰與資源增加節省搜尋成本，可能較早淘汰後來才表現好的設定。
+
+**教材依據**：L6 p19、p40。
+:::
+
+#### 選擇題 22
+
+> learning_curve 的橫軸與 validation_curve 的橫軸，分別是什麼？
+> :en[What do the horizontal axes of learning_curve and validation_curve represent, respectively?]
+
+:::choices{answer="D"}
+- epochs、訓練量 :en[Epochs and training-set size]
+- 超參數、epochs :en[Hyperparameter values and epochs]
+- 驗證量、類別數 :en[Validation-set size and class count]
+- 訓練資料量、指定超參數的取值 :en[Training-set size and values of a specified hyperparameter]
+:::
+
+:::tip{collapsible title="詳解"}
+learning_curve 比較不同訓練量，validation_curve 改單一超參數；兩者均可取得train與CV驗證分數。
+
+**教材依據**：L6 p11、p14、p35–36。
 :::
 
 ### 概念辨析題
@@ -1804,7 +1928,7 @@ Holdout 的結果對「訓練集與驗證集怎麼分」非常敏感，換一種
 
 **詳解**
 
-兩者共用同一個決策門檻。門檻調鬆時，更多樣本被判為陽性：真陽性增加使召回率上升，但偽陽性也一起增加，使精確率下降；門檻調緊則相反。這是同一組預測分數的重新切割，不是模型變好或變壞。選擇取決於兩種錯誤的代價：癌症篩檢的漏診（FN）代價遠高於誤報（FP，頂多多做一次複檢），因此**偏向召回率**，寧可門檻鬆一點；垃圾信過濾誤殺一封重要信件（FP）的代價高於漏掉一封垃圾信（FN），因此**偏向精確率**，門檻要嚴。
+兩者共用同一個決策門檻。門檻調鬆時，判為陽性的樣本集合擴大，TP 與 FP 不減，因此召回率與 FPR 不減；精確率則取決於新增樣本的真偽比例，可能上升、下降或不變。課堂常見的「precision 與 recall 取捨」是典型趨勢，不是每次改門檻都嚴格成立。這是同一組預測分數的重新切割，不是模型變好或變壞。選擇取決於兩種錯誤的代價：癌症篩檢的漏診（FN）代價遠高於誤報（FP，頂多多做一次複檢），因此**偏向召回率**，寧可門檻鬆一點；垃圾信過濾誤殺一封重要信件（FP）的代價高於漏掉一封垃圾信（FN），因此**偏向精確率**，門檻要嚴。
 
 #### 複習題 8
 

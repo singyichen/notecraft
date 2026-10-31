@@ -7,20 +7,25 @@
 
 用法（先跑過 astro build）：
   python3 docs/cheatsheets/build-ml-mcq-bank.py
+  # 獨立建置時：python3 docs/cheatsheets/build-ml-mcq-bank.py --dist /path/to/build
   "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --headless --no-pdf-header-footer \
     --allow-file-access-from-files --virtual-time-budget=5000 \
     --print-to-pdf="src/content/notes/_references/機器學習實作系列/機器學習選擇題題庫.pdf" \
     "file://$PWD/docs/cheatsheets/ml-mcq-bank.html"
 """
+import argparse
 import html
 import pathlib
 import re
 
 ROOT = pathlib.Path(__file__).resolve().parents[2]
 NOTES = ROOT / "src/content/notes"
-DIST = ROOT / "dist/notes"
+parser = argparse.ArgumentParser(description="從已建置筆記產生機器學習期中題庫")
+parser.add_argument("--dist", type=pathlib.Path, default=ROOT / "dist", help="Astro建置輸出資料夾（可用獨立outDir）")
+args = parser.parse_args()
+DIST = args.dist / "notes"
 OUT = ROOT / "docs/cheatsheets/ml-mcq-bank.html"
-MIDTERM_LAST_WEEK = 7  # 期中考範圍：第 1–7 週
+MIDTERM_LAST_WEEK = 7  # Lectures 1–6：第1、2、3、5、6、7週；只收「選擇題」，延伸題不收
 KATEX_CSS = "../../node_modules/katex/dist/katex.min.css"  # 相對於 OUT，避免寫進本機絕對路徑
 
 HEAD_RE = re.compile(r'<h4 id="選擇題-(\d+)">')
@@ -41,6 +46,7 @@ def extract(page: str):
         tip = chunk.find('<details class="nc-adm nc-adm--tip"')
         assert tip > 0, f"選擇題 {m.group(1)} 找不到詳解"
         q, sol = chunk[:tip], chunk[tip:]
+        assert q.count('class="nc-en"') >= 5, f"選擇題 {m.group(1)} 缺少英文題幹或選項"
         answer = re.findall(
             r'<li class="nc-choice nc-choice--correct"><span class="nc-choice__key">([A-Z])', q
         )
@@ -137,7 +143,7 @@ th, td {{ border: 1px solid #bbb; padding: 2px 6px; vertical-align: top; }}
 img, svg {{ max-width: 100%; }}
 </style></head><body>
 <div class="cover"><h1>機器學習實作系列｜選擇題題庫</h1>
-<p>共 {total} 題（{"、".join(f"第 {w} 週 {len(q)} 題" for w, _, q in weeks)}）。期中考範圍第 1–7 週。前半為題目，答案表與詳解在最後。</p></div>
+<p>共 {total} 題（{"、".join(f"第 {w} 週 {len(q)} 題" for w, _, q in weeks)}）。範圍：Lectures 1–6 投影片（對應第1、2、3、5、6、7週）；延伸練習不收錄。前半為題目，答案表與詳解在最後。</p></div>
 {"".join(parts)}
 </body></html>
 """)

@@ -8,6 +8,8 @@ updatedAt: "2026-09-26"
 
 # 第 2 週：PLA 與 Python 基礎（測試）
 
+> 期中題庫以 Lectures 1–6 投影片為準；本週新增題的詳解標有教材頁碼。文中的延伸閱讀及文末「延伸練習」不屬於指定投影片範圍。
+
 *Perceptron Learning Algorithm & Python Basics*
 
 ## PLA：感知器學習演算法（Perceptron Learning Algorithm）
@@ -1297,22 +1299,20 @@ tuple 是不可變容器，建立之後不能新增、刪除或改寫元素；li
 
 #### 選擇題 12
 
-> Adaline 訓練時用連續的線性輸出算損失，那實際要輸出類別時怎麼辦？
-> :en[Adaline computes its loss from a continuous linear output during training. How does it emit an actual class?]
+> 本課0／1標籤的 Adaline，訓練用連續輸出；預測時應怎麼做？
+> :en[In the course Adaline implementation with 0/1 labels, how is the continuous output converted into a predicted class?]
 
 :::choices{answer="D"}
-- 直接四捨五入到最接近的類別編號 :en[Round directly to the nearest class number]
-- 用階梯函數對淨輸入取符號 :en[Take the sign of the net input with a step function]
-- 再訓練一個額外的分類器 :en[Train one additional classifier on top]
-- 對淨輸入套用分類閾值，超過就判為正類 :en[Apply a classification threshold to the net input; above it the class is positive]
+- 先將輸出四捨五入成任意整數 :en[Round the output to any nearest integer]
+- 永遠以0為門檻，不看程式定義 :en[Always use a zero threshold regardless of the implementation]
+- 再訓練一個額外分類器 :en[Train an additional classifier]
+- 依程式的0.5門檻，z>=0.5判1、否則判0 :en[Apply the specified 0.5 threshold: predict 1 if z >= 0.5, otherwise 0]
 :::
 
 :::tip{collapsible title="詳解"}
-訓練與預測用的是同一個淨輸入 $z$，但用途不同：訓練時 $z$ 直接進損失函數算梯度，預測時才對 $z$ 套一個閾值轉成類別（本週實作取 $z \geq 0.5$ 判為 1）。
+Adaline 訓練使用 identity 輸出計算連續誤差；分類才使用門檻。本課實作採0.5，不能與 PLA 的0門檻混用。
 
-第三項不必要——閾值只是後處理，不需要額外模型。這個「訓練用連續值、預測才離散化」的分工，後面的邏輯斯迴歸也是同一套做法，差別只在中間多套了一層 sigmoid。
-
-**考的觀念**：連續輸出負責學習，閾值負責決策。
+**教材依據**：L3 p5、p55。
 :::
 
 #### 選擇題 13
@@ -1415,6 +1415,42 @@ print([n ** 2 for n in nums if n % 2 == 0])
 選 (A) 的人把條件看成「餘數不為 0」，留下了奇數；選 (C) 的人只做了篩選、漏了前面的平方；選 (D) 的人漏了篩選條件。
 
 **考的觀念**：列表推導式的「篩選 → 轉換」順序。
+:::
+
+#### 選擇題 17
+
+> 使用者輸入 3.5，哪行能得到浮點數並印出 7.00？
+> :en[The user enters 3.5. Which line converts it to a float and prints 7.00?]
+
+:::choices{answer="B"}
+- `n=int(input()); print(n*2)` :en[`n=int(input()); print(n*2)`]
+- `n=float(input()); print(f"{n*2:.2f}")` :en[`n=float(input()); print(f"{n*2:.2f}")`]
+- `n=input(); print(n*2)` :en[`n=input(); print(n*2)`]
+- `n=input(); print(n+2)` :en[`n=input(); print(n+2)`]
+:::
+
+:::tip{collapsible title="詳解"}
+input 回字串；float 可轉小數，格式 .2f 保留小數二位。
+
+**教材依據**：L2 p25–26。
+:::
+
+#### 選擇題 18
+
+> os.listdir(path) 的作用為何？
+> :en[What does os.listdir(path) do?]
+
+:::choices{answer="C"}
+- 建立資料夾 :en[Creates a directory]
+- 判斷路徑是否為資料夾 :en[Checks whether the path is a directory]
+- 列出指定資料夾中的項目名稱 :en[Lists the names of entries in the specified directory]
+- 刪除資料夾 :en[Deletes a directory]
+:::
+
+:::tip{collapsible title="詳解"}
+listdir 列名稱；makedirs 建立資料夾；path.isdir 判斷是否為目錄。
+
+**教材依據**：L2 p33–34。
 :::
 
 ### 概念辨析題

@@ -16,6 +16,8 @@ import MlWeek6SklearnApiMap from '@/components/generated/ml-week6-sklearn-api-ma
 
 # 第 6 週：Scikit-learn 機器學習
 
+> 期中題庫以 Lectures 1–6 投影片為準；本週新增題的詳解標有教材頁碼。文中的延伸閱讀及文末「延伸練習」不屬於指定投影片範圍。
+
 *Machine Learning in Python: Scikit-learn*
 
 > 本週參考：[《Python Data Science Handbook》](/notes/python-data-science-handbook)
@@ -914,6 +916,17 @@ excerpt: 本範例完成了一個完整的端到端機器學習專案原型：�
 
 ## 考題
 
+### 期中補強：轉換器與選特徵 API（L5 p51–56）
+
+| API | 功能／結果判讀 |
+| --- | --- |
+| `LabelEncoder` | 對 y 編碼，`inverse_transform()` 還原標籤；編號不表示順序 |
+| `OneHotEncoder` | 類別特徵轉 dummy；輸入二維，`drop='first'` 去一欄 |
+| `FunctionTransformer(np.log1p)` | 包裝逐元素 `ln(1+x)`；如 0 變0、1變 ln2 |
+| `ColumnTransformer` | 分欄轉換；tuple 是 `(name, transformer, columns)`；`drop` 刪除、`passthrough` 原樣保留 |
+| `SequentialFeatureSelector` | `direction='forward'/'backward'` 對應逐步加入／剔除；`n_features_to_select` 指定欄數 |
+| `SelectFromModel` | 依模型權重／重要度選欄，L1 可提供稀疏權重 |
+
 ### 選擇題
 
 #### 選擇題 1
@@ -938,22 +951,26 @@ Adaline 只改一處：更新權重時不看跳階函數的對錯，而看連續
 
 #### 選擇題 2
 
-> 關於 k 近鄰與 RBF 核支援向量機的計算成本，下列哪一項正確？
-> :en[Which of the following is correct about the computational cost of k-nearest neighbours and of an RBF-kernel support vector machine?]
+> 下列轉換結果最接近哪個選項？
+> :en[Which option is closest to the result of the following transformation?]
 
-:::choices{answer="B"}
-- 兩者都是訓練昂貴、預測便宜，差別只在準確率 :en[Both are expensive to train and cheap to predict; only accuracy differs]
-- k 近鄰訓練幾乎免費但預測昂貴，核支援向量機相反 :en[k-NN is almost free to train but expensive to predict; the kernel SVM is the reverse]
-- k 近鄰訓練昂貴但預測便宜，核支援向量機相反 :en[k-NN is expensive to train but cheap to predict; the kernel SVM is the reverse]
-- 兩者的訓練與預測都便宜，成本差異可以忽略 :en[Both are cheap to train and to predict; the cost difference is negligible]
+```python
+transformer = FunctionTransformer(np.log1p)
+X = np.array([[0,1],[2,3]])
+transformer.transform(X)
+```
+
+:::choices{answer="C"}
+- `[[0,1],[2,3]]` :en[`[[0,1],[2,3]]`]
+- `[[1,2],[3,4]]` :en[`[[1,2],[3,4]]`]
+- `[[0,.693],[1.099,1.386]]` :en[`[[0,.693],[1.099,1.386]]`]
+- 每欄平均0、標準差1 :en[Each column has mean 0 and standard deviation 1]
 :::
 
 :::tip{collapsible title="詳解"}
-k 近鄰是懶惰學習者，訓練時只把資料記住，預測時才要跟每一個樣本比距離；核支援向量機的訓練要解二次規劃（昂貴），但預測時只跟少數支援向量比（便宜）。
+FunctionTransformer 包裝指定函式；log1p(x)=ln(1+x)，不會自動做標準化。
 
-第三項剛好把兩者對調，也是最容易記反的地方。實務上的差別很直接：上百萬筆資料時核支援向量機的訓練成本會爆掉，要改用支援 `partial_fit` 的隨機梯度下降；k 近鄰則相反，訓練免費但每次預測都要翻過全部資料。
-
-**考的觀念**：成本會從哪一端付出去，決定模型適不適合你的場景。
+**教材依據**：L5 p53。
 :::
 
 #### 選擇題 3
@@ -1038,22 +1055,20 @@ k 近鄰是懶惰學習者，訓練時只把資料記住，預測時才要跟每
 
 #### 選擇題 7
 
-> 獨熱編碼產生的 0／1 虛擬欄位，接下來要怎麼處理？
-> :en[What should be done next with the 0/1 dummy columns produced by one-hot encoding?]
+> 依本課投影片，one-hot 產生的 0／1 欄位通常如何處理？
+> :en[According to the course slides, how are one-hot encoded 0/1 features usually handled?]
 
 :::choices{answer="A"}
-- 不需要再做特徵縮放，它本身已經是 0 與 1 :en[No further feature scaling is needed; they are already 0 and 1]
-- 必須再做標準化，否則與其他欄位尺度不同 :en[They must be standardized, or their scale will differ from the other columns]
-- 必須再做正規化，把它壓到 0 與 1 之間 :en[They must be normalized, to squash them between 0 and 1]
-- 需不需要縮放取決於該欄相異值的個數 :en[Whether scaling is needed depends on how many distinct values the column had]
+- 通常不必另外縮放 :en[They usually do not need additional scaling]
+- 必須再正規化才會成為0與1 :en[They must be normalized again to become 0 and 1]
+- 應刪掉所有1 :en[All values of 1 should be deleted]
+- 必須編成有順序的整數 :en[They must be encoded as ordered integers]
 :::
 
 :::tip{collapsible title="詳解"}
-講義特別提醒：獨熱編碼後產生的 0 與 1 特徵欄位不需要再進行特徵縮放。
+課堂範例中的二元欄通常不另縮放；這是本課的處理慣例，不代表所有模型與正則化情境一律禁止縮放二元特徵。
 
-第三項是自我矛盾的選項——正規化的目的就是把數值壓到 $[0, 1]$，而這些欄位已經只有 0 與 1 兩個值，再壓一次不會有任何改變。第二項聽起來合理（「尺度要一致」），但 0／1 欄位的尺度已經落在其他標準化欄位的合理範圍內，硬做標準化反而會讓「有／沒有」這個二元意義變成不好解讀的正負數。
-
-**考的觀念**：縮放是為了讓尺度可比，本來就可比的欄位不必再動。
+**教材依據**：L5 p24。
 :::
 
 #### 選擇題 8
@@ -1118,8 +1133,8 @@ k 近鄰是懶惰學習者，訓練時只把資料記住，預測時才要跟每
 
 #### 選擇題 11
 
-> 為什麼 $L_1$ 正則化常產生稀疏解，而 $L_2$ 不會？
-> :en[Why does $L_1$ regularization often produce sparse solutions while $L_2$ does not?]
+> 從講義的二維約束區域幾何圖來看，為什麼 $L_1$ 常產生稀疏解？
+> :en[From the two-dimensional constraint geometry in the slides, why does $L_1$ often produce sparse solutions?]
 
 :::choices{answer="D"}
 - 因為 $L_1$ 的懲罰強度天生比 $L_2$ 更重 :en[Because the $L_1$ penalty is inherently heavier than the $L_2$ one]
@@ -1212,22 +1227,20 @@ scikit-learn 的慣例是：`fit()` 學到的結果一律放在**結尾帶底線
 
 #### 選擇題 15
 
-> 下列關於「哪些模型需要特徵縮放」的敘述，哪一項正確？
-> :en[Which statement about which models need feature scaling is correct?]
+> ColumnTransformer 中的 passthrough 代表什麼？
+> :en[What does passthrough mean in a ColumnTransformer?]
 
-:::choices{answer="B"}
-- 決策樹與隨機森林都必須先標準化，否則切分點會錯 :en[Decision trees and random forests must be standardized first or their split points go wrong]
-- KNN 與 SVM 依賴距離或間隔，應該先縮放 :en[KNN and SVM rely on distances or margins, so features should be scaled first]
-- 邏輯迴歸不受特徵尺度影響，不必縮放 :en[Logistic regression is unaffected by feature scale, so no scaling is needed]
-- 所有模型都一樣，縮放只是為了讓訓練跑快一點 :en[All models are the same; scaling only makes training faster]
+:::choices{answer="D"}
+- 刪除該欄 :en[Drops the column]
+- 對該欄自動標準化 :en[Automatically standardizes the column]
+- 對該欄獨熱編碼 :en[One-hot encodes the column]
+- 讓指定欄位原樣通過 :en[Keeps the selected columns unchanged]
 :::
 
 :::tip{collapsible title="詳解"}
-凡是靠距離或靠梯度的模型都怕尺度不一：KNN 算距離時，數值大的特徵會主導結果；SVM 的間隔同樣以距離衡量；邏輯迴歸靠梯度下降，尺度差太多會收斂很慢，加上正則化時也會不公平地懲罰權重。
+ColumnTransformer 可分欄套用不同轉換；passthrough 保留原值，drop 才是刪除。tuple 順序為名稱、轉換器、欄位。
 
-選 (A) 最誘人但弄反了：樹模型每次只拿一個特徵比大小決定切在哪，縮放不會改變排序，所以不需要。(C) 忽略了梯度下降與正則化。(D) 低估了縮放的影響：對 KNN 而言，縮放會改變預測結果本身，不只是速度。
-
-**考的觀念**：距離與梯度類模型要縮放，樹模型不需要。
+**教材依據**：L5 p54。
 :::
 
 #### 選擇題 16
@@ -1254,6 +1267,42 @@ X_train, X_test, y_train, y_test = train_test_split(
 (A) 是 `random_state=1` 的作用；(B) 是 `test_size=0.3` 的作用。這兩個參數就在同一行，最容易張冠李戴。(C) 剛好相反：依類別排序後切段，正是 Iris 那種「按類別排好」的資料最怕的事。
 
 **考的觀念**：`train_test_split` 各參數的功能。
+:::
+
+#### 選擇題 17
+
+> LabelEncoder 的 transform 與 inverse_transform 分別做什麼？
+> :en[What do LabelEncoder.transform and inverse_transform do, respectively?]
+
+:::choices{answer="A"}
+- 標籤轉編號、編號還原標籤 :en[Encode labels as integers and decode integers back into labels]
+- 標準化、反標準化 :en[Standardize and reverse standardization]
+- 刪欄、補欄 :en[Drop and restore columns]
+- 轉機率、轉類別 :en[Convert to probabilities and convert to classes]
+:::
+
+:::tip{collapsible title="詳解"}
+LabelEncoder 用於目標 y 的類別編碼，inverse_transform 可還原對應標籤。
+
+**教材依據**：L5 p51。
+:::
+
+#### 選擇題 18
+
+> SequentialFeatureSelector 設 direction="backward" 的意義為何？
+> :en[What does direction="backward" mean in SequentialFeatureSelector?]
+
+:::choices{answer="B"}
+- 從空集合逐欄加入 :en[Starts with no features and adds them one at a time]
+- 從特徵全集逐欄刪除 :en[Starts with all features and removes them one at a time]
+- 將每欄乘負1 :en[Multiplies every feature by -1]
+- 逆序排列所有樣本 :en[Reverses the order of all samples]
+:::
+
+:::tip{collapsible title="詳解"}
+Backward 對應 SBS，以判準評估逐步移除特徵；屬於貪婪搜尋，不保證全域最佳。
+
+**教材依據**：L5 p28–29、p55。
 :::
 
 ### 概念辨析題
@@ -1423,3 +1472,47 @@ $$
 $$
 
 **考的觀念**：210 對 45 的差距在 $d = 10$ 時還不算懸殊，但窮舉的成本隨 $d$ 呈組合爆炸，而 SBS 只呈多項式成長——這就是貪婪法用「可能不是最好」換來的東西。
+
+## 延伸練習（不納入期中題庫）
+
+以下保留原有補充題作自學用途。Lectures 1–6 未直接教授這些細節，不納入期中線上與列印題庫；不要視為教授指定考點。
+
+#### 延伸題（原 W6-2）
+
+> 關於 k 近鄰與 RBF 核支援向量機的計算成本，下列哪一項正確？
+> :en[Which of the following is correct about the computational cost of k-nearest neighbours and of an RBF-kernel support vector machine?]
+
+:::choices{answer="B"}
+- 兩者都是訓練昂貴、預測便宜，差別只在準確率 :en[Both are expensive to train and cheap to predict; only accuracy differs]
+- k 近鄰訓練幾乎免費但預測昂貴，核支援向量機相反 :en[k-NN is almost free to train but expensive to predict; the kernel SVM is the reverse]
+- k 近鄰訓練昂貴但預測便宜，核支援向量機相反 :en[k-NN is expensive to train but cheap to predict; the kernel SVM is the reverse]
+- 兩者的訓練與預測都便宜，成本差異可以忽略 :en[Both are cheap to train and to predict; the cost difference is negligible]
+:::
+
+:::tip{collapsible title="詳解"}
+k 近鄰是懶惰學習者，訓練時只把資料記住，預測時才要跟每一個樣本比距離；核支援向量機的訓練要解二次規劃（昂貴），但預測時只跟少數支援向量比（便宜）。
+
+第三項剛好把兩者對調，也是最容易記反的地方。實務上的差別很直接：上百萬筆資料時核支援向量機的訓練成本會爆掉，要改用支援 `partial_fit` 的隨機梯度下降；k 近鄰則相反，訓練免費但每次預測都要翻過全部資料。
+
+**考的觀念**：成本會從哪一端付出去，決定模型適不適合你的場景。
+:::
+
+#### 延伸題（原 W6-15）
+
+> 下列關於「哪些模型需要特徵縮放」的敘述，哪一項正確？
+> :en[Which statement about which models need feature scaling is correct?]
+
+:::choices{answer="B"}
+- 決策樹與隨機森林都必須先標準化，否則切分點會錯 :en[Decision trees and random forests must be standardized first or their split points go wrong]
+- KNN 與 SVM 依賴距離或間隔，應該先縮放 :en[KNN and SVM rely on distances or margins, so features should be scaled first]
+- 邏輯迴歸不受特徵尺度影響，不必縮放 :en[Logistic regression is unaffected by feature scale, so no scaling is needed]
+- 所有模型都一樣，縮放只是為了讓訓練跑快一點 :en[All models are the same; scaling only makes training faster]
+:::
+
+:::tip{collapsible title="詳解"}
+凡是靠距離或靠梯度的模型都怕尺度不一：KNN 算距離時，數值大的特徵會主導結果；SVM 的間隔同樣以距離衡量；邏輯迴歸靠梯度下降，尺度差太多會收斂很慢，加上正則化時也會不公平地懲罰權重。
+
+選 (A) 最誘人但弄反了：樹模型每次只拿一個特徵比大小決定切在哪，縮放不會改變排序，所以不需要。(C) 忽略了梯度下降與正則化。(D) 低估了縮放的影響：對 KNN 而言，縮放會改變預測結果本身，不只是速度。
+
+**考的觀念**：距離與梯度類模型要縮放，樹模型不需要。
+:::

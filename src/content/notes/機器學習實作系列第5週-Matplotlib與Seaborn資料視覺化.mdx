@@ -8,6 +8,8 @@ updatedAt: "2026-10-12"
 
 # 第 5 週：邏輯迴歸、Matplotlib 與 Seaborn
 
+> 期中題庫以 Lectures 1–6 投影片為準；本週新增題的詳解標有教材頁碼。文中的延伸閱讀及文末「延伸練習」不屬於指定投影片範圍。
+
 *Logistic Regression & Data Visualization in Python*
 
 import PdfRefChip from '@/components/islands/PdfRefChip.tsx'
@@ -1029,102 +1031,92 @@ Figure 是整張畫布，一張 Figure 可以包含多個 Axes；每個 Axes 是
 
 #### 選擇題 8
 
-> `plt.plot` 與 `plt.scatter` 的關鍵差別是什麼？
-> :en[What is the key difference between `plt.plot` and `plt.scatter`?]
+> 哪組寫法使用 Matplotlib 的物件導向介面？
+> :en[Which code uses the object-oriented interface of Matplotlib?]
 
-:::choices{answer="D"}
-- 前者只能畫折線，後者只能畫散點 :en[The former draws only lines, the latter only points]
-- 前者用於連續資料，後者用於離散資料 :en[The former is for continuous data, the latter for discrete data]
-- 前者較慢，後者較快 :en[The former is slower, the latter faster]
-- 後者能逐點指定大小、顏色與透明度 :en[The latter can set size, colour and transparency point by point]
+:::choices{answer="B"}
+- `plt.plot(x,y); plt.title("t")` :en[`plt.plot(x,y); plt.title("t")`]
+- `fig,ax=plt.subplots(); ax.plot(x,y); ax.set_title("t")` :en[`fig,ax=plt.subplots(); ax.plot(x,y); ax.set_title("t")`]
+- `plt.show()` :en[`plt.show()`]
+- `plt.style.use("default")` :en[`plt.style.use("default")`]
 :::
 
 :::tip{collapsible title="詳解"}
-`plt.plot` 加上標記參數一樣能畫散佈圖，所以差別不在圖形外觀。真正的差別是 `plt.scatter` 允許**每個點長得不一樣**：`s` 控制大小、`c` 控制顏色、`alpha` 控制透明度，因此一張二維圖能塞進四個變數。
+明確建立 Figure 與 Axes，再對指定 Axes 呼叫方法，不依賴目前作用中的圖。
 
-代價是速度：`plt.plot` 全部共用一組樣式，畫十萬個點很快；`plt.scatter` 點多時明顯較慢。所以第三項恰好講反了。
-
-**考的觀念**：能不能逐點變化，是兩者的分界。
+**教材依據**：L4 p28–30。
 :::
 
 #### 選擇題 9
 
-> 直方圖的箱寬（bin width）設得太寬，會發生什麼？
-> :en[What happens when the bin width of a histogram is set too wide?]
+> 要檢視單一數值特徵的資料分布，應使用哪個函式？
+> :en[Which function should be used to inspect the distribution of a single numerical feature?]
 
 :::choices{answer="A"}
-- 可能把雙峰分布壓成單峰，掩蓋結構 :en[A bimodal distribution may be flattened into one peak, hiding the structure]
-- 整張圖變成雜訊，看不出趨勢 :en[The whole plot turns to noise and no trend is visible]
-- 樣本總數被改變 :en[The total number of samples is changed]
-- 不影響圖形，只影響顯示速度 :en[The plot is unaffected; only the rendering speed changes]
+- `plt.hist(x)` :en[`plt.hist(x)`]
+- `plt.pie(x)` :en[`plt.pie(x)`]
+- `plt.bar(names,x)` :en[`plt.bar(names,x)`]
+- `plt.savefig(x)` :en[`plt.savefig(x)`]
 :::
 
 :::tip{collapsible title="詳解"}
-箱寬是直方圖最關鍵的旋鈕。太寬會把相鄰的細節合併進同一格，雙峰因此被抹平成單峰，讀者看到的是一個不存在的結論；太窄則每格樣本太少，整張圖都是抖動——那是第二項描述的情況。
+直方圖用於觀察分布；bar 比較類別數值，pie 表示占比。
 
-第三項不對：分箱只改變統計的分組方式，樣本總數始終不變。實務上該做的是換幾個箱寬看看結論穩不穩定。
-
-**考的觀念**：箱寬太寬抹掉結構，太窄放大雜訊。
+**教材依據**：L4 p32。
 :::
 
 #### 選擇題 10
 
-> 要用顏色編碼「溫度距平」這種有意義中點的量，該選哪一類色盤？
-> :en[To colour-code a quantity with a meaningful midpoint, such as a temperature anomaly, which kind of palette should be chosen?]
+> plt.tight_layout() 的主要作用為何？
+> :en[What is the main purpose of plt.tight_layout()?]
 
 :::choices{answer="C"}
-- 質性（qualitative）色盤 :en[A qualitative palette]
-- 連續（sequential）色盤 :en[A sequential palette]
-- 發散（divergent）色盤 :en[A divergent palette]
-- 彩虹型色盤 :en[A rainbow palette]
+- 改變訓練資料大小 :en[Changes the training-set size]
+- 刪除所有子圖 :en[Deletes all subplots]
+- 調整子圖內外的間距 :en[Adjusts spacing within and around subplots]
+- 將圖片存成 PDF :en[Saves the figure as a PDF]
 :::
 
 :::tip{collapsible title="詳解"}
-發散型色盤從中點往兩側各用一種色系加深，正好對應「高於或低於某個基準」的資料（溫度距平、盈虧、殘差）。連續型適合單向遞增的量，質性色盤用於無序類別。
+tight_layout 調整間距，降低標題、標籤與子圖互相擠壓的情況。
 
-第四項要特別避開：彩虹型色盤（如 jet）的亮度起伏不單調，轉成灰階後順序整個亂掉，對色覺障礙讀者也不友善。挑完色盤轉灰階檢查一次是個好習慣。
-
-**考的觀念**：色盤類型要對應資料的結構，而不是好不好看。
+**教材依據**：L4 p33。
 :::
 
 #### 選擇題 11
 
-> 用 `plt.text` 標註時，把座標系指定為 `transAxes` 代表什麼？
-> :en[When annotating with `plt.text`, what does setting the coordinate system to `transAxes` mean?]
+> 哪一行會把目前的圖存成 PNG 檔？
+> :en[Which line saves the current figure as a PNG file?]
 
 :::choices{answer="B"}
-- 文字位置跟著資料座標跑 :en[The text position follows the data coordinates]
-- 用子圖內 0 到 1 的相對位置定位 :en[The text is placed by relative position from 0 to 1 within the subplot]
-- 相對整張畫布定位 :en[The text is placed relative to the whole canvas]
-- 文字永遠置中於圖形正中央 :en[The text is always centred in the middle of the plot]
+- `plt.show("result.png")` :en[`plt.show("result.png")`]
+- `plt.savefig("result.png")` :en[`plt.savefig("result.png")`]
+- `plt.title("result.png")` :en[`plt.title("result.png")`]
+- `plt.tight_layout("result.png")` :en[`plt.tight_layout("result.png")`]
 :::
 
 :::tip{collapsible title="詳解"}
-`transAxes` 用的是子圖內部的相對座標：$(0,0)$ 是左下角、$(1,1)$ 是右上角，因此不論資料範圍怎麼變，文字都待在同一個相對位置——想把說明固定貼在角落時用它。
+savefig 儲存圖片；show 顯示圖形，title 設標題。
 
-`transData`（第一項）用資料座標，文字會跟著資料跑，適合指向特定資料點；`transFigure`（第三項）則相對整張畫布，用於跨子圖的標註。
-
-**考的觀念**：先決定「文字要跟著誰動」，再選座標系。
+**教材依據**：L4 p33。
 :::
 
 #### 選擇題 12
 
-> 什麼時候該用 Seaborn、什麼時候該回到 Matplotlib？
-> :en[When should Seaborn be used, and when is it time to go back to Matplotlib?]
+> 比較不同產品的銷售數量，與呈現各產品占總銷售的比例，分別適合什麼圖？
+> :en[Which plots are suitable for comparing product sales counts and showing each product share of total sales, respectively?]
 
 :::choices{answer="D"}
-- Seaborn 功能較強，應該全程使用 :en[Seaborn is more capable and should be used throughout]
-- Matplotlib 較精確，應該全程使用 :en[Matplotlib is more precise and should be used throughout]
-- 依資料量決定，大資料用 Seaborn :en[It depends on data size; large data calls for Seaborn]
-- 探索階段用 Seaborn，溝通階段用 Matplotlib :en[Seaborn for exploration, Matplotlib for communication]
+- 折線圖、散點圖 :en[Line plot and scatter plot]
+- 散點圖、直方圖 :en[Scatter plot and histogram]
+- 圓餅圖、直方圖 :en[Pie chart and histogram]
+- 長條圖、圓餅圖 :en[Bar chart and pie chart]
 :::
 
 :::tip{collapsible title="詳解"}
-Seaborn 架在 Matplotlib 之上，API 更高階、原生吃 DataFrame、還把統計動作包了進去——剛拿到資料想快速掃過分布與相關性時，一行 `pairplot` 的產值遠高於自己刻迴圈。等圖要進報告、需要精準控制標註位置、色條刻度與子圖對齊時，就回到 Matplotlib 的 Axes 物件慢慢調。
+bar 比較不同類別的值，pie 顯示占整體的比例。
 
-兩者不是取代關係：Seaborn 畫完也回傳 Axes，可以無縫接手。這也對應視覺化的兩種角色——探索式畫給自己看，要快、要多、丟得掉；解釋式畫給別人看，一張圖只准講一件事。
-
-**考的觀念**：判準是「這張圖畫給誰看」。
+**教材依據**：L4 p32。
 :::
 
 #### 選擇題 13
@@ -1205,6 +1197,47 @@ MSE 只看 $z$ 與標籤差多少，不管方向對不對。$z=5$ 離標籤 1 �
 選 (B) 最誘人：softmax 把所有類別的機率綁成總和 1，最大的那一類必然壓低其他類，適合「多選一」的互斥類別，不適合「可能同時有好幾種」。(C)、(D) 都只能輸出一類。
 
 **考的觀念**：多類別（多選一）用 softmax，多標籤只能用 OvR。
+:::
+
+#### 選擇題 17
+
+> 辨認這個 loss：它對應哪個模型與損失？
+> :en[Which model and loss function does the following code represent?]
+
+```python
+p = 1 / (1 + np.exp(-z))
+loss = -(y*np.log(p)+(1-y)*np.log(1-p)).mean()
+```
+
+:::choices{answer="C"}
+- PLA、誤判次數 :en[PLA and misclassification count]
+- Adaline、MSE :en[Adaline and MSE]
+- Logistic、BCE :en[Logistic regression and BCE]
+- Logistic、MSE :en[Logistic regression and MSE]
+:::
+
+:::tip{collapsible title="詳解"}
+同時有 y*log(p) 與 (1-y)*log(1-p)，是二元交叉熵；p 為 sigmoid 機率。
+
+**教材依據**：L4 p17、p36–37。
+:::
+
+#### 選擇題 18
+
+> 對概似取 log 的理由，哪項正確？
+> :en[Which statement correctly explains why the logarithm of the likelihood is used?]
+
+:::choices{answer="D"}
+- 使所有機率變成1 :en[It makes all probabilities equal to 1]
+- 把分類改成迴歸 :en[It changes classification into regression]
+- 取代 sigmoid 做預測 :en[It replaces the sigmoid function for prediction]
+- 把連乘改連加，並降低數值下溢風險 :en[It turns products into sums and reduces the risk of numerical underflow]
+:::
+
+:::tip{collapsible title="詳解"}
+最大化概似與最大化 log 概似等價；最小化負 log 概似則符合 loss 最小化慣例。
+
+**教材依據**：L4 p15–17。
 :::
 
 ### 概念辨析題
@@ -1421,3 +1454,107 @@ $$
 **在做什麼**：從基本折線圖/散佈圖開始，到誤差棒、密度圖、直方圖、圖例與色條客製化、多子圖排版，最後介紹 Seaborn 這個統計繪圖導向、比 Matplotlib 更高階的套件。
 
 **關鍵概念**：`plt.plot`/`plt.scatter`、errorbar、density & contour plot、histogram/binning、legend/colorbar 客製化、subplots、annotation、Seaborn 統計繪圖
+
+## 延伸練習（不納入期中題庫）
+
+以下保留原有補充題作自學用途。Lectures 1–6 未直接教授這些細節，不納入期中線上與列印題庫；不要視為教授指定考點。
+
+#### 延伸題（原 W5-8）
+
+> `plt.plot` 與 `plt.scatter` 的關鍵差別是什麼？
+> :en[What is the key difference between `plt.plot` and `plt.scatter`?]
+
+:::choices{answer="D"}
+- 前者只能畫折線，後者只能畫散點 :en[The former draws only lines, the latter only points]
+- 前者用於連續資料，後者用於離散資料 :en[The former is for continuous data, the latter for discrete data]
+- 前者較慢，後者較快 :en[The former is slower, the latter faster]
+- 後者能逐點指定大小、顏色與透明度 :en[The latter can set size, colour and transparency point by point]
+:::
+
+:::tip{collapsible title="詳解"}
+`plt.plot` 加上標記參數一樣能畫散佈圖，所以差別不在圖形外觀。真正的差別是 `plt.scatter` 允許**每個點長得不一樣**：`s` 控制大小、`c` 控制顏色、`alpha` 控制透明度，因此一張二維圖能塞進四個變數。
+
+代價是速度：`plt.plot` 全部共用一組樣式，畫十萬個點很快；`plt.scatter` 點多時明顯較慢。所以第三項恰好講反了。
+
+**考的觀念**：能不能逐點變化，是兩者的分界。
+:::
+
+#### 延伸題（原 W5-9）
+
+> 直方圖的箱寬（bin width）設得太寬，會發生什麼？
+> :en[What happens when the bin width of a histogram is set too wide?]
+
+:::choices{answer="A"}
+- 可能把雙峰分布壓成單峰，掩蓋結構 :en[A bimodal distribution may be flattened into one peak, hiding the structure]
+- 整張圖變成雜訊，看不出趨勢 :en[The whole plot turns to noise and no trend is visible]
+- 樣本總數被改變 :en[The total number of samples is changed]
+- 不影響圖形，只影響顯示速度 :en[The plot is unaffected; only the rendering speed changes]
+:::
+
+:::tip{collapsible title="詳解"}
+箱寬是直方圖最關鍵的旋鈕。太寬會把相鄰的細節合併進同一格，雙峰因此被抹平成單峰，讀者看到的是一個不存在的結論；太窄則每格樣本太少，整張圖都是抖動——那是第二項描述的情況。
+
+第三項不對：分箱只改變統計的分組方式，樣本總數始終不變。實務上該做的是換幾個箱寬看看結論穩不穩定。
+
+**考的觀念**：箱寬太寬抹掉結構，太窄放大雜訊。
+:::
+
+#### 延伸題（原 W5-10）
+
+> 要用顏色編碼「溫度距平」這種有意義中點的量，該選哪一類色盤？
+> :en[To colour-code a quantity with a meaningful midpoint, such as a temperature anomaly, which kind of palette should be chosen?]
+
+:::choices{answer="C"}
+- 質性（qualitative）色盤 :en[A qualitative palette]
+- 連續（sequential）色盤 :en[A sequential palette]
+- 發散（divergent）色盤 :en[A divergent palette]
+- 彩虹型色盤 :en[A rainbow palette]
+:::
+
+:::tip{collapsible title="詳解"}
+發散型色盤從中點往兩側各用一種色系加深，正好對應「高於或低於某個基準」的資料（溫度距平、盈虧、殘差）。連續型適合單向遞增的量，質性色盤用於無序類別。
+
+第四項要特別避開：彩虹型色盤（如 jet）的亮度起伏不單調，轉成灰階後順序整個亂掉，對色覺障礙讀者也不友善。挑完色盤轉灰階檢查一次是個好習慣。
+
+**考的觀念**：色盤類型要對應資料的結構，而不是好不好看。
+:::
+
+#### 延伸題（原 W5-11）
+
+> 用 `plt.text` 標註時，把座標系指定為 `transAxes` 代表什麼？
+> :en[When annotating with `plt.text`, what does setting the coordinate system to `transAxes` mean?]
+
+:::choices{answer="B"}
+- 文字位置跟著資料座標跑 :en[The text position follows the data coordinates]
+- 用子圖內 0 到 1 的相對位置定位 :en[The text is placed by relative position from 0 to 1 within the subplot]
+- 相對整張畫布定位 :en[The text is placed relative to the whole canvas]
+- 文字永遠置中於圖形正中央 :en[The text is always centred in the middle of the plot]
+:::
+
+:::tip{collapsible title="詳解"}
+`transAxes` 用的是子圖內部的相對座標：$(0,0)$ 是左下角、$(1,1)$ 是右上角，因此不論資料範圍怎麼變，文字都待在同一個相對位置——想把說明固定貼在角落時用它。
+
+`transData`（第一項）用資料座標，文字會跟著資料跑，適合指向特定資料點；`transFigure`（第三項）則相對整張畫布，用於跨子圖的標註。
+
+**考的觀念**：先決定「文字要跟著誰動」，再選座標系。
+:::
+
+#### 延伸題（原 W5-12）
+
+> 什麼時候該用 Seaborn、什麼時候該回到 Matplotlib？
+> :en[When should Seaborn be used, and when is it time to go back to Matplotlib?]
+
+:::choices{answer="D"}
+- Seaborn 功能較強，應該全程使用 :en[Seaborn is more capable and should be used throughout]
+- Matplotlib 較精確，應該全程使用 :en[Matplotlib is more precise and should be used throughout]
+- 依資料量決定，大資料用 Seaborn :en[It depends on data size; large data calls for Seaborn]
+- 探索階段用 Seaborn，溝通階段用 Matplotlib :en[Seaborn for exploration, Matplotlib for communication]
+:::
+
+:::tip{collapsible title="詳解"}
+Seaborn 架在 Matplotlib 之上，API 更高階、原生吃 DataFrame、還把統計動作包了進去——剛拿到資料想快速掃過分布與相關性時，一行 `pairplot` 的產值遠高於自己刻迴圈。等圖要進報告、需要精準控制標註位置、色條刻度與子圖對齊時，就回到 Matplotlib 的 Axes 物件慢慢調。
+
+兩者不是取代關係：Seaborn 畫完也回傳 Axes，可以無縫接手。這也對應視覺化的兩種角色——探索式畫給自己看，要快、要多、丟得掉；解釋式畫給別人看，一張圖只准講一件事。
+
+**考的觀念**：判準是「這張圖畫給誰看」。
+:::

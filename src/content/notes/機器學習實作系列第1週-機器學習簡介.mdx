@@ -755,82 +755,74 @@ total = (1 + n) * n // 2
 
 #### 選擇題 9
 
-> 反向傳播（backpropagation）做的是什麼事？
-> :en[What does backpropagation do?]
+> Iris 資料表中一朵花的紀錄、花瓣長度欄、花的種類，依序是什麼？
+> :en[In an Iris table, what are one flower record, the petal-length column, and the flower species, respectively?]
 
 :::choices{answer="A"}
-- 用連鎖律逐層計算損失對每個參數的梯度 :en[It computes the gradient of the loss with respect to each parameter layer by layer, via the chain rule]
-- 直接決定每個參數的最佳值 :en[It determines the optimal value of each parameter directly]
-- 把輸入資料逐層往前傳遞算出預測值 :en[It passes the input data forward layer by layer to produce a prediction]
-- 調整學習率使訓練更快收斂 :en[It tunes the learning rate so that training converges faster]
+- 樣本、特徵、標籤 :en[Sample, feature, label]
+- 特徵、標籤、樣本 :en[Feature, label, sample]
+- 標籤、樣本、特徵 :en[Label, sample, feature]
+- 三者都是特徵 :en[All three are features]
 :::
 
 :::tip{collapsible title="詳解"}
-反向傳播是一套**計算梯度**的演算法：用連鎖律，從輸出層往輸入層逐層求出損失對每個參數的偏微分。拿到梯度之後怎麼更新參數，那是最佳化器（梯度下降等）的工作。
+Sample 為一筆觀測，feature 為輸入屬性，target／label 為預測答案。
 
-第二項是最常見的誤解，把「算梯度」直接當成「找到最佳解」。第三項描述的是前向傳播，方向剛好相反。
-
-**考的觀念**：反向傳播只負責算梯度，不負責更新。
+**教材依據**：L1 p23–24、p31。
 :::
 
 #### 選擇題 10
 
-> 神經網路裡激活函數的作用是什麼？
-> :en[What is the role of an activation function in a neural network?]
+> S、M、L 衣服尺寸屬於哪種資料？
+> :en[What type of data are clothing sizes S, M, and L?]
 
 :::choices{answer="C"}
-- 把輸出正規化到 $[0,1]$ 之間 :en[It normalizes the output into the range $[0,1]$]
-- 防止梯度在訓練中消失 :en[It stops gradients from vanishing during training]
-- 引入非線性，讓網路能表達非線性關係 :en[It introduces non-linearity, letting the network express non-linear relations]
-- 決定每一層要使用多少個神經元 :en[It decides how many neurons each layer uses]
+- 連續數值 :en[Continuous numerical data]
+- 無序的名義類別 :en[Unordered nominal categories]
+- 有順序的類別 :en[Ordered categories]
+- 無標籤影像 :en[Unlabeled images]
 :::
 
 :::tip{collapsible title="詳解"}
-沒有激活函數的話，不論疊幾層，線性運算的合成仍然是線性的，整個網路等價於一層——激活函數提供的非線性才是深度有意義的前提。
+尺寸有順序，屬 ordinal；顏色、血型等無大小關係者是 nominal。
 
-第一項只描述了某些激活函數（例如 sigmoid）的副作用，不是它存在的理由；ReLU 的輸出就沒有上界。第二項的因果甚至相反：sigmoid 這類激活函數本身就是梯度消失的來源之一。
-
-**考的觀念**：沒有非線性，疊再多層也只是一層。
+**教材依據**：L1 p22。
 :::
 
 #### 選擇題 11
 
-> 資料含有明顯離群值時，正規化與標準化該怎麼選？
-> :en[When the data contains clear outliers, should normalization or standardization be chosen?]
+> 依課堂比較，為何 min-max 縮放可能讓其他資料擠在很小區間？
+> :en[According to the classroom comparison, why can min-max scaling compress most observations into a very small interval?]
 
 :::choices{answer="B"}
-- 選正規化，它對離群值較穩健 :en[Normalization, because it is more robust to outliers]
-- 選標準化，它對離群值較穩健 :en[Standardization, because it is more robust to outliers]
-- 兩者受離群值影響相同 :en[Outliers affect both of them equally]
-- 兩者都不適用，必須先刪除離群值 :en[Neither applies; the outliers must be removed first]
+- 會先移除所有離群值 :en[It removes all outliers first]
+- 極端最大／最小值會拉大縮放的分母 :en[Extreme minimum or maximum values enlarge the denominator]
+- 它會自動變成常態分布 :en[It automatically produces a normal distribution]
+- 它與特徵數無關，所以必然失敗 :en[It must fail because it is independent of the feature count]
 :::
 
 :::tip{collapsible title="詳解"}
-正規化 $x' = \dfrac{x - \min}{\max - \min}$ 的分母是極差，單一個極端值就能把其餘資料擠進極小的區間；標準化 $x' = \dfrac{x - \text{mean}}{\text{std}}$ 用平均與標準差，受單點影響小得多，因此較穩健。
+Min-max 分母為 max-min，極端值可壓縮其餘資料。標準化也受離群值影響，不應把 StandardScaler 說成普遍抗離群值的方法。
 
-第四項把手段當成前提——離群值不一定是錯誤資料，醫療與金融場景中它往往正是最重要的樣本，不能為了縮放方便就刪掉。
-
-**考的觀念**：看分母用了什麼統計量，就知道它對極值敏不敏感。
+**教材依據**：L5 p24–26。
 :::
 
 #### 選擇題 12
 
-> 從函式的觀點看，機器學習的「模型」必須滿足什麼條件？
-> :en[Seen as a function, what condition must a machine learning "model" satisfy?]
+> 依監督式學習工作流程，哪個敘述正確？
+> :en[Which statement follows the supervised-learning workflow?]
 
 :::choices{answer="D"}
-- 必須是連續且可微分的 :en[It must be continuous and differentiable]
-- 必須能用一條數學公式明確寫出來 :en[It must be expressible as an explicit mathematical formula]
-- 輸出必須落在有限的範圍內 :en[Its output must fall within a bounded range]
-- 同一個輸入只能對應一個輸出 :en[One input may map to one output only]
+- 先看測試分數再決定所有資料處理 :en[Use test scores to decide every preprocessing step]
+- 選演算法後不必再評估 :en[No evaluation is needed after choosing an algorithm]
+- 訓練集分數最高就一定是最適合的模型 :en[The highest training score always identifies the best model]
+- 選擇效能指標、訓練、評估，再依結果調整設定 :en[Choose a metric, train, evaluate, and adjust the settings]
 :::
 
 :::tip{collapsible title="詳解"}
-模型就是待求的函式 $f(\cdot)$，函式的定義要求給定輸入 $x$ 唯一對應一個輸出 $f(x)$——同一個 $x$ 不能對應兩個不同的結果。
+工作流程反覆進行模型選擇與驗證；測試集留給最後獨立評估，不用來反覆調整。
 
-第一項與第二項描述的是某些模型恰好具備的性質，不是函式的必要條件：決策樹既不連續也不可微，隨機森林更沒有一條簡潔的公式，它們仍然是合格的模型。
-
-**考的觀念**：模型的本質是「輸入到輸出的唯一對應」。
+**教材依據**：L1 p32–33、L5 p62。
 :::
 
 ### 概念辨析題
@@ -952,3 +944,71 @@ x' = \frac{x-\mu}{\sigma} = \frac{85-70}{10} = 1.5
 $$
 
 $x'=1.5$ 代表這個樣本值比平均高出 1.5 個標準差；跟正規化不同，標準化不設固定上下限，對離群值較穩健，是深度學習與多數線性模型更常用的做法。
+
+## 延伸練習（非投影片重點題）
+
+反向傳播與激活函數在L1 p5僅列術語；以下保留原題及較深入解說供自學，函式唯一輸出的抽象討論也移到這裡，不納入期中練習題庫。
+
+#### 延伸題（原 W1-9）
+
+> 反向傳播（backpropagation）做的是什麼事？
+> :en[What does backpropagation do?]
+
+:::choices{answer="A"}
+- 用連鎖律逐層計算損失對每個參數的梯度 :en[It computes the gradient of the loss with respect to each parameter layer by layer, via the chain rule]
+- 直接決定每個參數的最佳值 :en[It determines the optimal value of each parameter directly]
+- 把輸入資料逐層往前傳遞算出預測值 :en[It passes the input data forward layer by layer to produce a prediction]
+- 調整學習率使訓練更快收斂 :en[It tunes the learning rate so that training converges faster]
+:::
+
+:::tip{collapsible title="詳解"}
+反向傳播是一套**計算梯度**的演算法：用連鎖律，從輸出層往輸入層逐層求出損失對每個參數的偏微分。拿到梯度之後怎麼更新參數，那是最佳化器（梯度下降等）的工作。
+
+第二項是最常見的誤解，把「算梯度」直接當成「找到最佳解」。第三項描述的是前向傳播，方向剛好相反。
+
+**考的觀念**：反向傳播只負責算梯度，不負責更新。
+
+**範圍提醒**：L1 p5 列出此術語，本題僅作基本名詞辨識，不延伸到神經網路反傳推導。
+:::
+
+#### 延伸題（原 W1-10）
+
+> 神經網路裡激活函數的作用是什麼？
+> :en[What is the role of an activation function in a neural network?]
+
+:::choices{answer="C"}
+- 把輸出正規化到 $[0,1]$ 之間 :en[It normalizes the output into the range $[0,1]$]
+- 防止梯度在訓練中消失 :en[It stops gradients from vanishing during training]
+- 引入非線性，讓網路能表達非線性關係 :en[It introduces non-linearity, letting the network express non-linear relations]
+- 決定每一層要使用多少個神經元 :en[It decides how many neurons each layer uses]
+:::
+
+:::tip{collapsible title="詳解"}
+沒有激活函數的話，不論疊幾層，線性運算的合成仍然是線性的，整個網路等價於一層——激活函數提供的非線性才是深度有意義的前提。
+
+第一項只描述了某些激活函數（例如 sigmoid）的副作用，不是它存在的理由；ReLU 的輸出就沒有上界。第二項的因果甚至相反：sigmoid 這類激活函數本身就是梯度消失的來源之一。
+
+**考的觀念**：非線性激活可增加表達能力；但 Adaline 的 identity 也稱激活函數，不能說所有激活都非線性。
+
+**範圍提醒**：L1 p5 為術語總覽；ReLU、梯度消失等詳解例子僅為延伸說明，不列為本次考試必背。
+:::
+
+#### 延伸題（原 W1-12）
+
+> 從函式的觀點看，機器學習的「模型」必須滿足什麼條件？
+> :en[Seen as a function, what condition must a machine learning "model" satisfy?]
+
+:::choices{answer="D"}
+- 必須是連續且可微分的 :en[It must be continuous and differentiable]
+- 必須能用一條數學公式明確寫出來 :en[It must be expressible as an explicit mathematical formula]
+- 輸出必須落在有限的範圍內 :en[Its output must fall within a bounded range]
+- 同一個輸入只能對應一個輸出 :en[One input may map to one output only]
+:::
+
+:::tip{collapsible title="詳解"}
+模型就是待求的函式 $f(\cdot)$，函式的定義要求給定輸入 $x$ 唯一對應一個輸出 $f(x)$——同一個 $x$ 不能對應兩個不同的結果。
+
+第一項與第二項描述的是某些模型恰好具備的性質，不是函式的必要條件：決策樹既不連續也不可微，隨機森林更沒有一條簡潔的公式，它們仍然是合格的模型。
+
+**考的觀念**：模型的本質是「輸入到輸出的唯一對應」。
+:::

@@ -94,13 +94,15 @@ code { font-family: "SF Mono", Menlo, monospace; font-size: .92em; }
   <label class="toggle" id="onlyWrongWrap" hidden><input type="checkbox" id="onlyWrong">只看答錯／未答</label>
 </div></div>
 <main>
+  <p>範圍：Lectures 1–6 投影片。教材校正版共106題；延伸題保留於各週筆記，不納入此練習。新版作答與舊版分開記錄。</p>
   <div class="result" id="result" hidden></div>
   {{QUESTIONS}}
 </main>
 <script>
 (() => {
   // 作答紀錄只存在這台電腦的瀏覽器；按「重新答題」才會清掉目前範圍的紀錄
-  const KEY = "nc-ml-mcq-quiz-v1";
+  // 教材範圍修訂版：題號被替換，不沿用舊版作答，以免套錯答案。
+  const KEY = "nc-ml-mcq-quiz-lectures1-6-v2";
   const VIEW_KEY = "nc-ml-mcq-quiz-view";
   const qs = [...document.querySelectorAll(".q")];
   const weeks = [...new Set(qs.map((q) => q.dataset.week))];
