@@ -95,8 +95,8 @@
   }
 
 .concepts {font-size:6.5pt;line-height:1.20}
-.programs {font-size:5.82pt;line-height:1.14}
-.programs pre {font-size:5.18pt;line-height:1.12}
+.programs {font-size:5.72pt;line-height:1.14}
+.programs pre {font-size:5.1pt;line-height:1.12}
 h2 {font-size:7pt} code {font-size:5.65pt}
 .page.programs .cols.fixed-cols {display:block;column-count:3;column-gap:2.5mm;column-fill:auto;column-rule:.4pt solid var(--line)}
 .page.programs .study-col {display:contents}
@@ -505,6 +505,7 @@ x[:,np.newaxis].shape <span class="r">→ (4,1)</span> <span class="c"># 變直�
 <pre>df = pd.read_csv("x.csv") <span class="c"># 讀成 DataFrame</span>
 s = pd.Series([10,20,30], index=['a','b','c'])
 <span class="c"># Series＝帶索引標籤的一維；多個共用索引的 Series 組成 DataFrame</span>
+s.to_numpy() <span class="r">→ [10 20 30]</span> <span class="c"># 只取值，索引標籤不帶走</span>
 df['col'] <span class="r">→ Series</span> <span class="c"># 一個中括號＝一維</span>
 df[['col']] <span class="r">→ DataFrame</span> <span class="c"># 兩個中括號＝二維</span>
 df['col'].to_numpy() <span class="r">→ ndarray</span> <span class="c"># 轉成 NumPy 才能餵模型</span>
@@ -513,8 +514,12 @@ y_raw = df['target'].to_numpy()
 <span class="c"># LabelEncoder 轉完用 classes_ 看對照（B→0、M→1）</span>
 df.isnull().sum() <span class="c"># 每欄缺值數；NaN/None/NaT 算，空字串不算</span>
 df.dropna() <span class="c"># 預設刪「列」；axis=1 才是刪欄</span>
-df.fillna(v) <span class="c"># 補值</span>
-pd.get_dummies(df, drop_first=True) <span class="c"># 獨熱並去冗餘 → k−1 欄</span></pre>
+df.dropna(how='all') <span class="c"># 整列全 NaN 才刪</span>
+df.dropna(thresh=4) <span class="c"># 實數值不足 4 個的列才刪</span>
+df.dropna(subset=['C']) <span class="c"># 只看 C 欄</span>
+df.fillna(v) <span class="c"># 補值（平均、最頻繁值、KNN）</span>
+pd.get_dummies(df, drop_first=True) <span class="r">→ k−1 欄</span>
+<span class="c"># 只轉「字串」欄；去掉一欄不失資訊（其餘全 0 即該類）</span></pre>
   </section>
 
 <section><h2>補強 B｜搜尋、回傳值與評估</h2><table>
@@ -588,7 +593,7 @@ eta=0.1; target=1; pred=0
 u=eta*(target-pred) <span class="r">→ 0.1</span> <span class="c"># .1×(1−0)；分對時差為 0 就不更新</span>
 w+u*X[0] <span class="r">→ [1.1,-0.8]</span> <span class="c"># [1,−1]+.1×[1,2]</span>
 b+u <span class="r">→ 0.1</span> <span class="c"># 0+.1</span></pre>
-    <p class="muted">題目要機率就回 <code>p</code>、要類別才回 <code>pred</code>，別混用。MSE 代入例：$y{=}[1,0]$、$a{=}[.8,.3]$ → $e{=}[.2,-.3]$、$\frac{.04+.09}{2}=.065$。</p>
+    <p class="muted">MSE 代入例：$y{=}[1,0]$、$a{=}[.8,.3]$ → $e{=}[.2,-.3]$、$\frac{.04+.09}{2}=.065$。</p>
     <div class="trap"><b>更新係數別硬背，先看損失定義。</b>Adaline 損失是 $\frac1n\sum e^2$ 時 <code>w += eta*2*(X.T@e)/len(y)</code>、<code>b += eta*2*e.mean()</code>；題目若寫 $\frac1{2n}\sum e^2$ 就<b>少一個 2</b>。邏輯迴歸 BCE 改成 <code>e = y - p</code> 且<b>沒有那個 2</b>。</div>
     <h3>BCE 實作：防 <code>log(0)</code> 的兩種等價寫法</h3>
 <pre>p = np.clip(p, 1e-15, 1-1e-15)
@@ -613,7 +618,7 @@ sc=StandardScaler().fit([[0.],[2.]])
 sc.mean_ <span class="r">→ [1.]</span> <span class="c"># μ=(0+2)/2</span>
 sc.transform([[3.]]) <span class="r">→ [[2.]]</span> <span class="c"># σ=1 → (3−1)/1=2</span></pre>
     <ul>
-      <li>100 筆、<code>test_size=.3</code> → 訓練 70、測試 30；回傳順序 <code>X_train,X_test,y_train,y_test</code>。</li>
+      <li><code>train_test_split</code> 回傳順序 <code>X_train,X_test,y_train,y_test</code>；100 筆、<code>test_size=.3</code> <span class="r">→ 70／30</span></li>
       <li><code>stratify=y</code> 保持類別比例；<code>random_state</code> 固定切分的隨機性，不保證分數更高。</li>
       <li><code>confusion_matrix</code> 的列＝真實、欄＝預測；labels=[0,1] 時為 <code>[[TN,FP],[FN,TP]]</code>，與上面混淆矩陣的排列相反。</li>
       <li>更新 <code>w</code> 之後，<b>先前算好的 <code>output</code>／<code>e</code> 不會自動重算</b>；<code>errors</code> 這類計數器須事先初始化。</li>
