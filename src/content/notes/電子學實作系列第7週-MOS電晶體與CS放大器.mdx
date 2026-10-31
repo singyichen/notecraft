@@ -3,7 +3,7 @@ title: "電子學實作系列：第 7 週 - MOS 電晶體與 CS 放大器"
 description: "Razavi CH6 逐頁精讀：從 MOS 電容、反轉層與夾止，推出三極管區與飽和區的電流方程式、轉導三式、通道長度調變與體效應，再到大／小訊號模型、PMOS 與 CMOS，並與 BJT 逐項對照。"
 tags: ["電子學實作系列"]
 createdAt: "2026-10-24"
-updatedAt: "2026-10-29"
+updatedAt: "2026-10-31"
 ---
 
 import PdfRefChip from '@/components/islands/PdfRefChip.tsx'
@@ -22,13 +22,13 @@ import EcWeek7CsLoads from '@/components/generated/ec-week7-cs-loads'
 
 ### MOS 的起點是一顆電容，不是一個接面
 
-BJT 的核心是 PN 接面；MOSFET 的核心是**一顆平行板電容**。上板是閘極（現代製程用複晶矽），介電質是二氧化矽，下板是矽基板。這個結構叫 MOS 電容，整顆元件的行為都是從它推出來的。
+BJT 的核心是 PN 接面；MOSFET 的核心是**一顆平行板電容**。上板是導電閘極（教材中的傳統平面製程常畫成低電阻複晶矽；現代製程也常見金屬閘極），介電質是絕緣層，下板是矽基板。這個結構叫 MOS 電容，整顆元件的行為都是從它推出來的。
 
 在 P 型基板上加正閘極電壓，會依序發生兩件事：先是**電洞被推開**，留下帶負電的受體離子形成空乏區；電壓再高一些，**電子被吸引到氧化層界面**，形成一層薄薄的電子層——這層電子叫**反轉層（inversion layer）**，因為原本是 P 型的區域表面變成了 N 型。
 
 在基板兩側各做一個重摻雜 N 區當**源極（source）與汲極（drain）**，反轉層就把兩者連起來。**閘極電壓控制通道有沒有形成、以及有多濃**——這就是場效電晶體。
 
-順帶一提，源極與汲極在結構上是對稱的，**哪一邊是源極取決於電位高低而不是版圖**，這跟 BJT 刻意不對稱的設計非常不同。
+在本章採用的理想基本結構裡，兩側源／汲極摻雜相同，可視為對稱，**哪一邊是源極取決於偏壓而不是圖面左右**；實際元件仍可能因製程、接觸與高電壓設計而不完全對稱。這跟 BJT 刻意把射極、基極與集極做成不同摻雜與幾何的設計很不一樣。
 
 ### 先把它想成一顆可變電阻
 
@@ -45,7 +45,7 @@ BJT 的核心是 PN 接面；MOSFET 的核心是**一顆平行板電容**。上�
 
 汲極電壓開始上升後，事情變得有趣。因為通道本身有電阻，通道電位從源極往汲極逐漸升高，於是**閘極與通道之間的電壓差從源極往汲極逐漸變小**——靠近汲極那一端的通道最稀薄。
 
-當汲極電壓比閘極電壓高出一個臨界電壓時，汲極端的通道**完全夾止（pinch-off）**。再往上升，夾止點只是往源極方向微微移動，**汲極電流幾乎不再增加**。
+當汲極端的閘汲電壓降到臨界電壓，也就是 $V_{GD}=V_{TH}$（等價於 $V_{DS}=V_{GS}-V_{TH}$）時，汲極端的通道**剛好夾止（pinch-off）**。再提高 $V_{DS}$，夾止點只是往源極方向微微移動，**汲極電流只會小幅增加**。
 
 這就分出了兩個工作區：
 
@@ -198,6 +198,8 @@ excerpt: Operation of MOSFETs: MOS Structure, Operation in Triode Region, Operat
 - **章節架構（Contents）**：第 2 頁列出六節：6.1 MOSFET 的結構、6.2 MOSFET 的操作、6.3 MOS 元件模型、6.4 PMOS 電晶體、6.5 CMOS 技術、6.6 雙極性與 CMOS 元件的比較。本週上課範圍是整章。
 - **全章路線（outline）**：第 3 頁把推理順序排成三欄——先把 MOSFET 的操作弄清楚（結構 → 三極管區 → 飽和區 → 電流電壓特性），再把它濃縮成模型（大訊號、小訊號），最後把極性反過來得到 PMOS。這條線跟第 4 週 BJT 那一章一模一樣：**終點永遠是一組可以手算的等效元件**，中間所有物理都是為了算出那組元件的參數。
 
+本次課堂的學習目標是能把 PN 接面、BJT 與 MOS 的**基本結構、偏壓、特性曲線及應用**串起來；完整推導是理解公式來源的工具，不必把每一步都當成當堂必須背完的要求。後續課程會延續特性曲線量測，但課堂說明本身沒有給定新的日期或截止期限。
+
 ![第 6 章路線圖：Operation of MOSFETs（MOS Structure、Operation in Triode Region、Operation in Saturation、I/V Characteristics）、MOS Device Models（Large-Signal Model、Small-Signal Model）、PMOS Devices（Structure、Models）三欄並列](/note-images/ec-week7-ch6/00-chapter-outline.png)
 
 *三欄就是本章的三段路：先懂元件怎麼動，再把它換成模型，最後把極性翻過來。*
@@ -253,14 +255,17 @@ excerpt: Structure of MOSFET, side view, circuit symbol. This device is symmetri
 - **源極與汲極（source / drain）**：在 P 型基板上做兩個重摻雜的 $n^+$ 區，就是投影片 (a)(b) 的兩個端點。中間被閘極蓋住的那段基板表面，就是將來要形成通道的地方。
 - **閘極（gate）**：疊在絕緣層上的導電板，對應第 4 頁的上板。
 - **基板（p-substrate）**：整顆元件坐落的 P 型矽，也叫本體（body 或 bulk），是第四隻腳。
-- **結構對稱（symmetric）**：投影片直接寫「這個元件是對稱的，兩個 $n^+$ 區哪一個當源極、哪一個當汲極都可以」。**哪一邊是源極由電位決定，不是由版圖決定**——NMOS 以電位較低的那一端為源極（因為源極的字面意義是「電子的來源」）。這跟 BJT 刻意把射極重摻雜、基極做薄的不對稱設計完全相反。
+- **結構對稱（symmetric）**：在本章的理想基本結構中，兩個 $n^+$ 區摻雜相同，可互換源極與汲極；NMOS 正常偏壓時以電位較低的一端作為源極。這是建立模型用的對稱性，**不能泛化成所有實際 MOS 都完全對稱**；製程、接觸與高電壓結構都可能刻意打破對稱。
 - **電路符號（circuit symbol）**：投影片 (c) 是三端簡化符號，閘極畫成與通道分離的一條短線——**那道縫隙就是氧化層，代表閘極不吃直流電流**，是 MOS 與 BJT 最重要的符號差異。
+- **載子與電流方向**：NMOS 通道中的電子由源極移向汲極；傳統電流方向相反，定義為由汲極流向源極。畫箭頭或列 KCL 時要先確認說的是哪一種方向。
+
+從製程直覺看，MOS 把「導電閘極／絕緣層／半導體」疊成可在晶圓表面重複製作的平面結構。佈線即使在投影上交叉，也必須靠氧化層等**真正的絕緣層**隔開；不能因為兩條線材質不同就假設接觸後不導通。
 
 ![NMOS 的結構與符號：(a) 立體圖，P 型基板上兩個 n+ 區分別為源極與汲極，閘極與絕緣層疊在中間；(b) 側視圖標出 S、G、D；(c) 三端電路符號](/note-images/ec-week7-ch6/02-mosfet-structure-and-symbol.png)
 
 *符號上閘極與通道之間那道縫就是氧化層：它的存在等於宣告「這隻腳不流直流電流」。*
 
-### 現代製程的實際尺寸（第 6 頁）
+### 教材中的平面製程與尺寸例子（第 6 頁）
 
 {/* @ai-reference
 id: ch6-state-of-the-art
@@ -271,10 +276,10 @@ excerpt: The gate is formed by low-resistivity polysilicon (or simply poly), and
 */}
 <PdfRefChip file="_references/電子學實作系列/第七週/Ch 6 - Physics of MOS Transistors.pdf" page={6} status="suggested" excerpt={"The gate is formed by low-resistivity polysilicon (or simply poly), and the insulator by silicon dioxide (or simply oxide). The dielectric layer sandwiched between the gate and the substrate plays a critical role in the performance of transistors."} client:visible />
 
-- **複晶矽閘極（polysilicon gate，簡稱 poly）**：現代製程的閘極不是金屬而是低電阻率的複晶矽，雖然名字裡還留著 MOS 的「M」（metal）。
+- **複晶矽閘極（polysilicon gate，簡稱 poly）**：教材這張傳統平面 MOS 圖使用低電阻率複晶矽；poly 通常要經過摻雜才具有良好導電性。這不是「現今所有閘極一律使用 poly」的結論，現代製程也常採用金屬閘極。
 - **二氧化矽（silicon dioxide，簡稱 oxide）**：絕緣層的材料。投影片標出厚度 $18\ \text{Å} = 1.8\ \text{nm}$——大約只有六到七層原子。
 - **氧化層–矽界面（oxide-silicon interface）**：通道就長在這個界面上，所以界面的平整度與缺陷密度直接決定元件品質。
-- **通道長度（length）**：投影片標 $90\ \text{nm}$，指的是源極與汲極之間、被閘極蓋住的那段距離。這是製程世代的命名依據。
+- **通道長度（length）**：投影片標 $90\ \text{nm}$，指的是圖中源極與汲極之間、被閘極蓋住的那段距離。不要把這個圖例延伸成「現代節點名稱就等於實際通道長度」；節點命名與元件的實際／有效 $L$ 並不是永遠一一對應。
 - **源汲極擴散區（S/D diffusion）**：兩個 $n^+$ 區與 P 型基板各自形成一個 PN 接面（圖上畫了兩顆二極體符號）。**正常操作時這兩個接面都保持逆偏**，所以它們只是寄生元件，不參與導通——這是 MOS 與 BJT 的又一個根本差異：BJT 靠接面工作，MOS 要求接面都別導通。
 
 ![現代 MOSFET 的剖面：複晶矽閘極、18 Å 厚的氧化層、90 nm 的通道長度，兩側 n+ 源汲極擴散區與基板各形成一顆逆偏二極體](/note-images/ec-week7-ch6/03-state-of-the-art-mosfet.png)
@@ -338,6 +343,14 @@ excerpt: The MOS characteristics are measured by varying VG while keeping VD con
 
 *同一顆元件、兩種掃法：掃閘極看見的是開關門檻，掃汲極看見的是一顆被閘極控制的電阻。*
 
+#### 實驗量測的取點策略
+
+量測前先依儀器操作熟悉度，估算「每點需要多久」與總可用時間，再決定掃描密度。先讓每一組閘極偏壓都取得足以辨認的基本曲線，避免第一條量得很細、後面的曲線卻來不及完成。
+
+- **轉折或斜率快速變化處密集取點**：例如接近 $V_{TH}$ 或 $V_{DS}\approx V_{GS}-V_{TH}$ 的區域，少量點可能會錯過曲線形狀。
+- **截止或近似平坦處稀疏取點**：變化已很小時不必平均塞入同樣多的點。
+- **先輪廓、再回補**：所有曲線都有基本資料後，再用剩餘時間補強轉折區或可疑點。課堂提到的曲線數、點數與分鐘數只是說明如何分配時間，並非固定作業規格。
+
 ### 幾何尺寸的影響：$L$、$t_{ox}$ 與 $W$（第 9–10 頁）
 
 {/* @ai-reference
@@ -360,6 +373,7 @@ excerpt: Small gate length (L) and oxide thickness (tox) yield low channel resis
 - **第 9 頁的四格**：(a)(c) 是 $I_D$–$V_G$，分別用小圖示標出通道變短與氧化層變薄的元件；(b) 是 $I_D$–$V_D$，標註「短（short）」的直線比「長（long）」的陡；(d) 是 $t_{ox}$ 增加時整束直線往下倒。四格講的是同一件事：**讓電子更容易被控制、路更短，電流就更大**。
 - **第 10 頁的寬度**：投影片 (a) 把 $W$、$L$、$t_{ox}$ 三個尺寸一次標在立體圖上；(b) 顯示 $W$ 增加時兩種曲線都往上抬；(c) 畫出「加寬等於兩顆元件並聯」的等價圖——源極接源極、閘極接閘極、汲極接汲極。
 - **速度的代價**：投影片特別寫「然而閘極電容也跟著增加，因而限制電路速度」。閘極電容 $C = W L C_{ox}$ 與 $W$ 成正比，前一級要推動的電容變大，上升時間就變長。**所以 $W$ 不是越大越好，它是類比設計裡「電流 vs 速度」的那一根調節桿。**
+- **製程最小尺寸不是唯一可用尺寸**：課堂用早期 $10/5/3/2\ \mu\text{m}$ 製程說明設計規則時，數字代表當時能做到的最小尺度，設計者仍可把 $W$ 或 $L$ 畫得更大。這些歷史例子不能直接當成現代節點名稱，也不能據此認定實際有效通道長度必然等於該數字。
 
 ![通道長度與氧化層厚度的影響：(a)(c) 短通道與薄氧化層讓 ID–VG 曲線更陡；(b) 短通道的 ID–VD 直線比長通道陡；(d) 氧化層變厚時整束 ID–VD 直線往下倒](/note-images/ec-week7-ch6/06-gate-length-and-oxide-thickness.png)
 
@@ -531,6 +545,14 @@ $$
 - **這條公式的頂點恰好是夾止條件**：$V_{DS} = V_{GS}-V_{TH}$ 等價於 $V_{GD} = V_{TH}$，正是第 12 頁說的「汲極端剛好夾止」。**數學上的極值點與物理上的夾止點是同一件事**，這不是巧合——超過這點之後，多出來的 $V_{DS}$ 全部落在夾止區，積分上限被卡在 $V_{GS}-V_{TH}$，所以電流不再變化。
 - **製程轉導參數（process transconductance parameter）**：$\mu_n C_{ox}$ 常被當成一個整體，單位 $\text{A/V}^2$，由製程決定；題目通常直接給（第 23 頁給 $100\ \mu\text{A/V}^2$）。
 
+課堂用**配方法**說明頂點，不一定要先微分。先看 $y=-\left(x-1\right)^2+1$：平方項不可能小於零，所以 $x=1$ 時 $y$ 最大。一般化後
+
+$$
+2ax-x^2=a^2-(x-a)^2
+$$
+
+因此最大值在 $x=a$。令 $a=V_{GS}-V_{TH}$、$x=V_{DS}$，就直接得到轉折點 $V_{DS}=V_{GS}-V_{TH}$。這個三極管區公式只適用到頂點；右側向下的支線只是代數延伸，不能拿來描述真實元件。
+
 **因次檢查**：$\mu_n$ 的單位 $\text{cm}^2/(\text{V}\cdot\text{s})$、$C_{ox}$ 的單位 $\text{F/cm}^2$，相乘得 $\text{F}/(\text{V}\cdot\text{s})$；$\frac{W}{L}$ 無因次；再乘上 $\text{V}^2$ 得到 $\frac{\text{F}\cdot\text{V}}{\text{s}} = \frac{\text{C}}{\text{s}} = \text{A}$。確實是電流。
 
 **一題自測**：$\frac{W}{L}$ 加倍、過驅動電壓減半，飽和電流變成原來的幾倍？
@@ -585,6 +607,7 @@ R_{on} &\triangleq \frac{V_{DS}}{I_D} = \frac{1}{\mu_n C_{ox}\dfrac{W}{L}(V_{GS}
 $$
 
 - **導通電阻（on-resistance，$R_{on}$）**：$I_D$ 與 $V_{DS}$ 成正比，比例常數的倒數就是電阻——而且這顆電阻的阻值由閘極電壓決定。第 18 頁右邊那個放大鏡就是在說明：把原點附近放大，三條曲線都是直線。
+- **線性近似的範圍**：只有 $V_{DS}$ 遠小於過驅動電壓 $V_{GS}-V_{TH}$ 時，$V_{DS}^2$ 項才可安全忽略。整個三極管區並不是一顆固定線性電阻；靠近夾止邊界時，曲率已經不可忽略。
 - **電子開關（electronic switch）**：閘極電壓拉高 $\Rightarrow$ $R_{on}$ 小 $\Rightarrow$ 開關閉合；閘極電壓低於 $V_{TH}$ $\Rightarrow$ 沒有通道 $\Rightarrow$ 開關斷開。數位電路的每一顆電晶體都工作在這個模式。
 - **應用：天線收發切換（第 19 頁）**：無線電話只有一支天線，要輪流接到接收機（receiver）與發射機（transmitter），中間那顆切換器就是用 MOS 開關做的。
 - **導通電阻的代價（第 20 頁）**：投影片把開關換成 $R_{on}$，與天線的 $50\ \Omega$ 內阻 $R_{ant}$ 串成一個分壓器：
@@ -620,17 +643,22 @@ excerpt: VGD < VTH (saturation region): When the potential difference between ga
 
 第 21 頁把真實的特性曲線畫完整：拋物線上升到頂點之後**變成一條水平線**，分界點是 $V_{DS} = V_{GS}-V_{TH}$，左邊標「三極管區（triode region）」、右邊標「飽和區（saturation region）」，上方各放一張通道示意圖（左邊通道完整、右邊汲極端夾止）。
 
-第 22 頁給出判斷工作區的操作型準則，並在曲線上方用四個偏壓符號標出 $V_{GD}$ 由大到小的變化：
+先把三個端電壓寫清楚：$V_{GS}=V_G-V_S$、$V_{GD}=V_G-V_D$、$V_{DS}=V_D-V_S$，所以
+
+$$
+V_{GD}=V_{GS}-V_{DS},\qquad V_{DS}=V_{GS}-V_{GD}.
+$$
+
+判斷區域前要先確認 $V_{GS}>V_{TH}$，也就是通道確實形成。對已導通且 $V_{DS}\ge 0$ 的 NMOS，第 22 頁的準則可整理成：
 
 | 條件（第 22 頁寫法） | 等價寫法 | 工作區 | 通道狀態 |
 | --- | --- | --- | --- |
 | $V_{GD} > V_{TH}$ | $V_{DS} < V_{GS}-V_{TH}$ | 三極管區 | 完整，汲極端較薄 |
-| $V_{GD} = V_{TH}$ | $V_{DS} = V_{GS}-V_{TH}$ | 邊緣 | 汲極端剛好夾止 |
-| $V_{GD} < V_{TH}$ | $V_{DS} > V_{GS}-V_{TH}$ | 飽和區 | 汲極端已夾止 |
+| $V_{GD} \le V_{TH}$ | $V_{DS} \ge V_{GS}-V_{TH}$ | 飽和區（含邊界） | 等號時剛好夾止；超過後夾止點往源極移動 |
 
-- **兩種寫法等價**：$V_{GD} = V_{GS}-V_{DS}$，把它代進 $V_{GD} < V_{TH}$ 立刻得到 $V_{DS} > V_{GS}-V_{TH}$。**考試與解題時用哪一種都行，但同一題要從頭到尾只用一種，混用最容易把不等號方向弄反。**
+- **比較對象是 $V_{TH}$**：判斷夾止要比較 $V_{GD}$ 與臨界電壓，不是把 $V_{GD}$ 拿去跟 $V_{GS}$ 比；進入飽和也不要求 $V_{GD}<0$。理想模型下，若 $V_{GS}\le V_{TH}$ 則先判為截止，不能跳過導通條件只看 $V_{GD}$。
 - **與 BJT 的詞義陷阱**：MOS 的飽和區對應 BJT 的順向主動區（放大器要用的區），而 BJT 的飽和區對應 MOS 的深三極管區（開關閉合）。**同一個「飽和」在兩種元件上意思相反**，第 37 頁的比較表會再列一次。
-- **解題流程**：與第 4 週 BJT 的分情況驗證完全相同——先假設工作區、用該區的公式解出電壓電流、再回代檢查 $V_{GD}$ 與 $V_{TH}$ 的大小關係。矛盾就換另一區重解。第 23 頁的 Example 6-6 就是標準示範。
+- **解題流程**：先假設工作區，再用該區公式配合電路求偏壓與電流；接著把答案回代，逐一驗證 $V_{GS}$ 的導通條件、$V_{DS}$ 的方向及該工作區不等式。若方程式出現多個根，只保留同時符合偏壓與區域條件的根；若全部不符，就換另一區重算。第 23 頁的 Example 6-6 就是標準示範。
 
 ![三極管區與飽和區的分界：ID–VDS 曲線在 VDS 等於 VGS 減 VTH 之前是拋物線上升，之後是水平線；左右各配一張通道示意圖，左邊通道完整、右邊汲極端夾止](/note-images/ec-week7-ch6/18-triode-and-saturation-regions.png)
 
@@ -669,7 +697,7 @@ V_{GD} &= V_{GS}-V_{DS} = 1-0.8 = 0.2\ \text{V}
 \end{aligned}
 $$
 
-因為 $V_{GD} = 0.2\ \text{V} < V_{TH} = 0.4\ \text{V}$，假設成立，$M_1$ 確實在飽和區。
+因為本題已先確認 $V_{GS}=1\ \text{V}>V_{TH}=0.4\ \text{V}$，且 $V_{GD}=0.2\ \text{V}<V_{TH}$，假設成立，$M_1$ 確實在飽和區。注意 $0.2\ \text{V}$ 只是在驗證這一題給定的 $V_{TH}$，不是可套用到其他元件的固定門檻。
 
 **第二步（第 25 頁）：把閘極電壓改成 $1.01\ \text{V}$ 重算一次。**
 
@@ -712,14 +740,14 @@ $$
 
 $\lambda$ 是**通道長度調變係數（channel-length modulation coefficient）**，單位 $\text{V}^{-1}$。
 
-- **與爾利效應的對應**：形式與第 4 週 BJT 的 $\left(1+\frac{V_{CE}}{V_A}\right)$ 完全平行，$\lambda$ 扮演 $\frac{1}{V_A}$ 的角色。兩者的物理也對應：**都是「輸出端電壓改變了有效的基極／通道長度」**。
+- **與爾利效應的對應**：形式與第 4 週 BJT 的 $\left(1+\frac{V_{CE}}{V_A}\right)$ 平行，$\lambda$ 扮演 $\frac{1}{V_A}$ 的角色，兩者都讓輸出特性曲線微微上翹；BJT 對應的是 $I_C$–$V_{CE}$ 曲線，不是 $I_C$–$V_{BE}$。但物理成因要分開：BJT 是基極寬度調變，MOS 則是夾止點移動造成有效通道縮短。
 - **設計者可控（第 27 頁）**：投影片特別強調「與 BJT 的爾利電壓不同，通道長度調變係數可以被電路設計者控制」。因為夾止點移動的絕對距離 $\Delta L$ 大致與 $L$ 無關，相對變化 $\frac{\Delta L}{L}$ 就與 $L$ 成反比，於是
 
 $$
 \lambda \propto \frac{1}{L}
 $$
 
-投影片的結論是「長通道的通道長度調變效應比短通道弱」，圖上左右並排兩顆元件：左邊 $L$ 短、斜線上揚明顯；右邊 $L$ 長、斜線接近水平。
+投影片的結論是「長通道的通道長度調變效應比短通道弱」，圖上左右並排兩顆元件：左邊 $L$ 短、斜線上揚明顯；右邊 $L$ 長、斜線接近水平。這裡的 $\lambda\propto 1/L$ 是長通道模型下的設計直覺；實際 $\lambda$ 還受製程與偏壓影響，不能當成跨所有元件都精確成立的定律。
 
 - **但加長 $L$ 不是免費的**：第 27 頁同時寫出 $I_D \propto \frac{1}{L_1}$——$L$ 變長，電流與轉導都下降。本週摘要提到的「CS 放大器最大增益大約只正比於通道長度的平方根」就是這兩個效應相抵的結果：$g_m \propto \sqrt{\frac{W}{L}I_D}$ 隨 $L$ 下降、$r_o \propto \frac{1}{\lambda I_D} \propto L$ 隨 $L$ 上升，乘起來只剩 $\sqrt{L}$。
 
@@ -794,7 +822,7 @@ $$
 
 $V_{TH0}$ 是 $V_{SB} = 0$ 時的臨界電壓，$\gamma$ 是**體效應係數（body-effect coefficient）**（投影片寫成 $\rho$），$\varphi_F$ 是與基板摻雜濃度有關的費米電位。投影片的結論一行話：$V_{SB} \uparrow \Rightarrow V_{TH} \uparrow$。
 
-- **什麼時候會踩到**：第 29 頁下方並排兩個偏壓電路就是在示範——左邊源極直接接地，$V_{SB} = 0$，沒有體效應；右邊源極與地之間插了一顆源極電阻 $R_S$（紅框），源極電位被抬高，$V_{SB} > 0$，臨界電壓上升、電流比沒有體效應時小。**本週摘要提到的「源極退化」就是右邊這個電路，所以源極退化的 CS 級一定要把體效應算進去。**
+- **什麼時候會踩到**：第 29 頁下方並排兩個偏壓電路就是在示範——左邊源極與本體同電位，$V_{SB}=0$；右邊本體電位固定、源極經 $R_S$ 被抬高，$V_{SB}>0$，臨界電壓上升、電流比沒有體效應時小。這只是造成 $V_{SB}$ 的一種例子，不是唯一來源；本體也不一定永遠接地。分析源極退化 CS 級時，應先看本體如何連接，再決定是否必須納入體效應。
 - **一個常見誤解**：體效應改變的是 $V_{TH}$，不是 $\mu_n C_{ox}$ 或 $\frac{W}{L}$；在飽和區電流式裡它只影響括號裡的過驅動電壓。
 
 ![體效應的兩種情形：左邊 VSB 等於 0 時空乏區較薄、反轉層電子較多；右邊 VSB 大於 0 時空乏區變厚、反轉層電子變稀疏；下方並排兩個偏壓電路，右邊在源極與地之間多了一顆源極電阻](/note-images/ec-week7-ch6/23-body-effect-vsb.png)
@@ -820,7 +848,7 @@ excerpt: Based on the value of VDS, MOSFET can be represented with different lar
 
 | 投影片 | 條件 | 等效元件 | 公式 |
 | --- | --- | --- | --- |
-| (a) 飽和區 | $V_{GS} > V_{TH}$ 且 $V_{DS} > V_{GS}-V_{TH}$ | 閘極開路、汲源之間一個受控電流源 | $I_D = \frac{1}{2}\mu_n C_{ox}\frac{W}{L}(V_{GS}-V_{TH})^2(1+\lambda V_{DS})$ |
+| (a) 飽和區 | $V_{GS} > V_{TH}$ 且 $V_{DS} \ge V_{GS}-V_{TH}$ | 閘極開路、汲源之間一個受控電流源 | $I_D = \frac{1}{2}\mu_n C_{ox}\frac{W}{L}(V_{GS}-V_{TH})^2(1+\lambda V_{DS})$ |
 | (b) 三極管區 | $V_{GS} > V_{TH}$ 且 $V_{DS} < V_{GS}-V_{TH}$ | 同樣是受控電流源，但電流由兩項的式子決定 | $I_D = \frac{1}{2}\mu_n C_{ox}\frac{W}{L}\left[2(V_{GS}-V_{TH})V_{DS}-V_{DS}^2\right]$ |
 | (c) 深三極管區 | $V_{GS} > V_{TH}$ 且 $V_{DS} \ll 2(V_{GS}-V_{TH})$ | 一顆電壓控制電阻（voltage-controlled resistor） | $R_{on} = \frac{1}{\mu_n C_{ox}\frac{W}{L}(V_{GS}-V_{TH})}$ |
 
@@ -1062,20 +1090,20 @@ $$
 | 空乏區（depletion region） | 電洞被推開後留下的固定負受體離子區；形成反轉層之前的中間階段，也是體效應的來源。 |
 | 臨界電壓（threshold voltage，$V_{TH}$） | 讓反轉層剛好成形所需的閘極–源極電壓；投影片給典型值 $300$–$500\ \text{mV}$。 |
 | 過驅動電壓（overdrive voltage） | $V_{GS}-V_{TH}$；真正用來產生通道電荷的那一部分電壓，所有電流與轉導公式的核心變數。 |
-| 源極與汲極（source / drain） | 兩個重摻雜區，結構對稱；NMOS 以電位較低者為源極，由偏壓決定而非版圖決定。 |
+| 源極與汲極（source / drain） | 理想基本結構中的兩個同型重摻雜區，可依偏壓互換；NMOS 通常以電位較低者為源極。實際元件不一定完全對稱。 |
 | 寬長比（aspect ratio，$\frac{W}{L}$） | 設計者唯一可以自由選擇的幾何自由度；$I_D \propto \frac{W}{L}$，但閘極電容 $\propto W L$。 |
 | 夾止（pinch-off） | 汲極端的閘極–通道電位差降到 $V_{TH}$ 以下、反轉層在該端消失；元件仍導通，電子由夾止區的強電場掃入汲極。 |
-| 三極管區（triode region） | $V_{DS} < V_{GS}-V_{TH}$（等價於 $V_{GD} > V_{TH}$）；通道完整，元件像一顆電壓控制電阻。 |
+| 三極管區（triode region） | 先滿足 $V_{GS}>V_{TH}$，再有 $V_{DS} < V_{GS}-V_{TH}$（等價於 $V_{GD} > V_{TH}$）；通道完整，元件像一顆電壓控制電阻。 |
 | 深三極管區（deep triode region） | $V_{DS} \ll 2(V_{GS}-V_{TH})$；電流與 $V_{DS}$ 成正比，元件就是阻值 $R_{on}$ 的線性電阻，用於電子開關。 |
-| 飽和區（saturation region） | $V_{DS} > V_{GS}-V_{TH}$（等價於 $V_{GD} < V_{TH}$）；通道已夾止，電流幾乎與 $V_{DS}$ 無關。**放大器要用的區域，與 BJT 的「飽和區」意思相反。** |
+| 飽和區（saturation region） | 先滿足 $V_{GS}>V_{TH}$，再有 $V_{DS} \ge V_{GS}-V_{TH}$（等價於 $V_{GD}\le V_{TH}$）；等號為剛好夾止。**放大器要用的區域，與 BJT 的「飽和區」意思相反。** |
 | 平方律（square-law） | 飽和區電流與過驅動電壓的平方成正比；相對於 BJT 的指數關係弱得多，這是 MOS 轉導較小的根源。 |
 | 製程轉導參數（$\mu_n C_{ox}$） | 遷移率乘上單位面積閘極電容，單位 $\text{A/V}^2$，由製程決定；題目通常直接給定。 |
 | 轉導（transconductance，$g_m$） | 飽和區電流對 $V_{GS}$ 的偏導數；三種等價寫法見下節公式，分別在「固定寬長比」「固定過驅動電壓」「固定電流」三種題型好用。 |
 | 通道長度調變（channel-length modulation） | 汲極電壓升高使夾止點往源極移動、有效通道變短、電流微升；以因子 $(1+\lambda V_{DS})$ 表示，對應 BJT 的爾利效應。 |
-| 通道長度調變係數（$\lambda$） | 單位 $\text{V}^{-1}$，大致與通道長度成反比；**與爾利電壓不同，它可以由設計者透過 $L$ 來控制。** |
+| 通道長度調變係數（$\lambda$） | 單位 $\text{V}^{-1}$；短通道通常較大、長通道通常較小，但也受製程與偏壓影響。設計者可透過 $L$ 改變其趨勢。 |
 | 輸出電阻（output resistance，$r_o$） | $r_o \approx \frac{1}{\lambda I_D}$；通道長度調變在小訊號模型中的表現，與負載並聯而限制增益。 |
 | 本質增益（intrinsic gain） | $g_m r_o = \frac{2}{\lambda(V_{GS}-V_{TH})}$；單顆元件能提供的最大電壓增益，與偏壓電流無關。 |
-| 體效應（body effect） | 源極電位高於基板時空乏區變厚，臨界電壓上升；$V_{SB}\uparrow \Rightarrow V_{TH}\uparrow$。源極退化電路一定要考慮。 |
+| 體效應（body effect） | NMOS 的 $V_{SB}$ 增加時，源極–本體接面反偏加大、空乏區變厚，臨界電壓上升；是否顯著取決於本體與源極的實際連接。 |
 | 二極體連接元件（diode-connected device） | 閘極與汲極短接的 MOS；看進去的電阻為 $\frac{1}{g_m}\parallel r_o \approx \frac{1}{g_m}$，當負載時增益只由兩個寬長比的比值決定。 |
 | PMOS 電晶體 | 極性全部反轉的 MOS：N 型基板、$p^+$ 源汲極、電洞導電、需負的閘源電壓；$\mu_p < \mu_n$，同尺寸電流較小；小訊號模型與 NMOS 完全相同。 |
 | CMOS 技術 | 在 P 型基板上挖 N 型井放置 PMOS，使兩種極性的元件共存於同一片晶圓；今日數位與多數類比 IC 的基礎。 |
@@ -1088,11 +1116,11 @@ $$
 - 電流與電荷密度：$I = Q\cdot v$，漂移速度 $v = \mu_n \dfrac{dV}{dx}$。
 - 三極管區電流：$I_D = \dfrac{1}{2}\mu_n C_{ox}\dfrac{W}{L}\left[2(V_{GS}-V_{TH})V_{DS}-V_{DS}^2\right]$。
 - 飽和區電流：$I_D = \dfrac{1}{2}\mu_n C_{ox}\dfrac{W}{L}(V_{GS}-V_{TH})^2$；含通道長度調變時再乘 $(1+\lambda V_{DS})$。
-- 工作區判準：$V_{GD} > V_{TH}$（即 $V_{DS} < V_{GS}-V_{TH}$）為三極管區；$V_{GD} < V_{TH}$（即 $V_{DS} > V_{GS}-V_{TH}$）為飽和區；$V_{GS} < V_{TH}$ 為截止區。
+- 工作區判準（理想 NMOS、$V_{DS}\ge0$）：先檢查 $V_{GS}>V_{TH}$；導通後，$V_{GD}>V_{TH}$（即 $V_{DS}<V_{GS}-V_{TH}$）為三極管區，$V_{GD}\le V_{TH}$（即 $V_{DS}\ge V_{GS}-V_{TH}$）為飽和區；$V_{GS}\le V_{TH}$ 為截止區。
 - 導通電阻：$R_{on} = \dfrac{1}{\mu_n C_{ox}\dfrac{W}{L}(V_{GS}-V_{TH})}$（深三極管區）。
 - 開關造成的衰減：$\dfrac{V_{out}}{V_{in}} = \dfrac{R_{ant}}{R_{ant}+R_{on}}$；衰減器版本為 $\dfrac{V_{out}}{V_{in}} = \dfrac{R_1}{R_1+R_M}$。
 - 轉導三式：$g_m = \mu_n C_{ox}\dfrac{W}{L}(V_{GS}-V_{TH}) = \sqrt{2\mu_n C_{ox}\dfrac{W}{L}I_D} = \dfrac{2I_D}{V_{GS}-V_{TH}}$。
-- 輸出電阻與本質增益：$r_o \approx \dfrac{1}{\lambda I_D}$、$g_m r_o = \dfrac{2}{\lambda(V_{GS}-V_{TH})}$，且 $\lambda \propto \dfrac{1}{L}$。
+- 輸出電阻與本質增益：$r_o \approx \dfrac{1}{\lambda I_D}$、$g_m r_o = \dfrac{2}{\lambda(V_{GS}-V_{TH})}$；在長通道設計直覺下，$L$ 增加通常使 $\lambda$ 下降，但不是跨製程的精確 $\lambda\propto 1/L$ 定律。
 - 體效應：$V_{TH} = V_{TH0} + \gamma\left(\sqrt{2\varphi_F+V_{SB}}-\sqrt{2\varphi_F}\right)$，$V_{SB} = V_S - V_B$。
 - 二極體連接元件的阻值：$R = \dfrac{1}{g_m}\,\parallel\,r_o \approx \dfrac{1}{g_m}$。
 - PMOS（絕對值寫法）：$I_{D,sat} = \dfrac{1}{2}\mu_p C_{ox}\dfrac{W}{L}\left(|V_{GS}|-|V_{TH}|\right)^2\left(1+\lambda|V_{DS}|\right)$。
