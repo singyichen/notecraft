@@ -377,9 +377,9 @@ table{table-layout:fixed} td,th{overflow-wrap:anywhere} </style>
       <tr><td>分類器</td><td><code>fit(X,y)</code> → <code>predict(X)</code></td><td><code>LogisticRegression</code>、<code>Perceptron</code></td></tr>
     </table>
 <pre>sc = StandardScaler()
-X_tr = sc.fit_transform(X_train)  <span class="o"># ✔ 只 fit 訓練</span>
-X_te = sc.transform(X_test)       <span class="o"># ✔ 沿用訓練的 μ、σ</span>
-sc.fit_transform(X_test)          <span class="o"># ✘ 重估測試統計量</span></pre>
+X_tr = sc.fit_transform(X_train) <span class="o"># ✔ 只 fit 訓練</span>
+X_te = sc.transform(X_test) <span class="o"># ✔ 沿用訓練的 μ、σ</span>
+sc.fit_transform(X_test) <span class="o"># ✘ 重估測試統計量</span></pre>
     <ul>
       <li>學到的參數結尾帶底線：<code>coef_</code> 權重、<code>intercept_</code> 偏差；建構子給的是超參數</li>
       <li><code>transform</code> 的特徵數須與 <code>fit</code> 時相同</li>
@@ -396,14 +396,14 @@ sc.fit_transform(X_test)          <span class="o"># ✘ 重估測試統計量</s
   <div class="study-col">
   <section>
     <h2><span class="n">14</span>Python 基礎（猜輸出）</h2>
-<pre>7/2 <span class="o">→ 3.5</span>  <span class="o"># / 永遠回 float</span>
+<pre>7/2 <span class="o">→ 3.5</span> <span class="o"># / 永遠回 float</span>
 7//2 <span class="o">→ 3</span>   -7//2 <span class="o">→ -4</span> <span class="o"># 往負無窮取整，不是砍小數</span>
-7%3 <span class="o">→ 1</span>    -7%2 <span class="o">→ 1</span>  <span class="o"># 餘數符號跟除數走</span>
-2**3 <span class="o">→ 8</span>  <span class="o"># ** 是次方（^ 才是 XOR）</span>
+7%3 <span class="o">→ 1</span>    -7%2 <span class="o">→ 1</span> <span class="o"># 餘數符號跟除數走</span>
+2**3 <span class="o">→ 8</span> <span class="o"># ** 是次方（^ 才是 XOR）</span>
 "3"*3 <span class="o">→ '333'</span> <span class="o"># str×int＝把字串重複 3 次再接起來</span>
 [1,2]*2 <span class="o">→ [1,2,1,2]</span> <span class="o"># list 整串重複，不是逐元素乘</span>
 "3"+3 <span class="o">→ TypeError</span> <span class="o"># 不自動轉型</span>
-a=[0,1,2,3,4,5]  <span class="o"># a[start:stop:step] 含頭不含尾</span>
+a=[0,1,2,3,4,5] <span class="o"># a[start:stop:step] 含頭不含尾</span>
 a[1:4] <span class="o">→ [1,2,3]</span>  a[-2:] <span class="o">→ [4,5]</span> <span class="o"># -1 是最後一個</span>
 a[::2] <span class="o">→ [0,2,4]</span>  a[::-1] <span class="o">→ [5,4,3,2,1,0]</span> <span class="o"># 反轉</span>
 list(range(1,10,3)) <span class="o">→ [1,4,7]</span> <span class="o"># 1→4→7，10 已達 stop</span>
@@ -442,23 +442,23 @@ f(1); print(f(2)) <span class="o">→ [1, 2]</span>
     <h2><span class="n">15</span>NumPy</h2>
 <pre><span class="o"># .shape 是「每一維長度」組成的 tuple；由最外層往內數</span>
 np.array([1,2,3]).shape <span class="o">→ (3,)</span>
-<span class="o">  # 一層括號3個元素。一維就是一維，非行也非列向量</span>
+<span class="o"># 一層括號3個元素。一維就是一維，非行也非列向量</span>
 np.array([[1],[2],[3]]).shape <span class="o">→ (3,1)</span>
-<span class="o">  # 外層3個、每個內層1個 → 3列1欄的直欄</span>
+<span class="o"># 外層3個、每個內層1個 → 3列1欄的直欄</span>
 np.array([[[1],[2]]]).shape <span class="o">→ (1,2,1)</span>
-<span class="o">  # ndim=中括號層數；最外1、中間2、最內1</span>
+<span class="o"># ndim=中括號層數；最外1、中間2、最內1</span>
 np.zeros((2,3))<span class="o">：全0</span>；np.ones((2,3))<span class="o">：全1</span>
-<span class="o">  # 傳進去的 tuple 直接就是 shape</span>
+<span class="o"># 傳進去的 tuple 直接就是 shape</span>
 np.eye(3)<span class="o">：單位矩陣 # 對角線1、其餘0</span>
 (10,3,4)@(4,5) <span class="o">→ (10,3,5)</span>
-<span class="o">  # 只有末兩維做矩陣乘 (3,4)@(4,5)=(3,5)，10 當批次帶著走</span>
-A=np.array([[1,2],[3,4]])  <span class="o"># 兩個 2×2 方陣</span>
+<span class="o"># 只有末兩維做矩陣乘 (3,4)@(4,5)=(3,5)，10 當批次帶著走</span>
+A=np.array([[1,2],[3,4]]) <span class="o"># 兩個 2×2 方陣</span>
 B=np.array([[5,6],[7,8]])
 A*B <span class="o">→ [[5,12],[21,32]]</span> <span class="o"># 逐元素：1×5、2×6、3×7、4×8</span>
-A@B <span class="o">→ [[19,22],[43,50]]</span>  <span class="o"># =np.matmul；列點乘欄 1×5+2×7=19</span>
+A@B <span class="o">→ [[19,22],[43,50]]</span> <span class="o"># =np.matmul；列點乘欄 1×5+2×7=19</span>
 np.dot([1,2,3],[4,5,6]) <span class="o">→ 32</span> <span class="o"># 一維即內積 1×4+2×5+3×6</span>
 M=np.arange(6).reshape(2,3)
-<span class="o">  # arange(6)=[0..5] 共6個，再排成2列3欄 [[0,1,2],[3,4,5]]</span>
+<span class="o"># arange(6)=[0..5] 共6個，再排成2列3欄 [[0,1,2],[3,4,5]]</span>
 M.sum(axis=0) <span class="o">→ [3,5,7]</span> <span class="o"># axis=被壓掉那維；同欄 0+3,1+4,2+5</span>
 M.sum(axis=1) <span class="o">→ [3,12]</span> <span class="o"># 同列 0+1+2, 3+4+5</span>
 x=np.array([1,5,3,8])
@@ -559,8 +559,8 @@ b += eta * errors.mean()</pre>
     </table>
 <pre>X=np.array([[1.,2.],[3.,4.]])
 w=np.array([1.,-1.]); b=0.
-z=X@w+b <span class="o">→ [-1.,-1.]</span>  <span class="o"># X@w 算完要加 b 才是 z</span>
-(z&gt;=0).astype(int) <span class="o">→ [0,0]</span>  <span class="o"># True→1、False→0</span>
+z=X@w+b <span class="o">→ [-1.,-1.]</span> <span class="o"># X@w 算完要加 b 才是 z</span>
+(z&gt;=0).astype(int) <span class="o">→ [0,0]</span> <span class="o"># True→1、False→0</span>
 <span class="o"># 同一筆換 b=1.：z=[0,0]</span>
 p=1/(1+np.exp(-z)) <span class="o">→ [.5,.5]</span>
 pred=(p&gt;=.5).astype(int) <span class="o">→ [1,1]</span>
