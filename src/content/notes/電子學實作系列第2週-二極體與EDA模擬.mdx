@@ -367,7 +367,7 @@ status: confirmed
 
 *理想二極體的符號、等效電路與水管類比：閥門只往一個方向開。*
 
-- **Example 3-1（第 6 頁）**：跟其他二端元件一樣，二極體可以串聯或並聯，問題是圖中哪些接法能導通。投影片結論：二極體不能隨意串聯，只有 (a) 能讓電流從 A 流到 C——判斷方法是逐顆問「這顆現在被推向順偏還是逆偏」，只要串聯路徑上有一顆逆偏，整條就不通。
+- **Example 3-1（第 6 頁）**：跟其他二端元件一樣，二極體可以串聯或並聯，問題是圖中哪些接法能導通。投影片結論：二極體不能隨意串聯，只有 (a) 能讓電流從 A 流到 C——判斷方法是逐顆問「這顆現在被推向順偏還是逆偏」，只要串聯路徑上有一顆逆偏，整條就不通。 :en[As with other two-terminal devices, diodes can be placed in series (or in parallel). Determine which one of the configurations in the figure can conduct current.]
 
 ![Example 3-1 三種串聯組態 A–D1–B–D2–C：(a) 兩顆同向；(b) D2 反向；(c) D1 反向](/note-images/ec-week2-ch3/04-example-3-1-series-diodes.png)
 
@@ -507,7 +507,7 @@ status: confirmed
 */}
 <PdfRefChip file="_references/電子學實作系列/第二週/Ch 3 - Diode Models and Circuits.pdf" page={15} status="confirmed" client:visible />
 
-- **Example 3-13：指數模型（exponential model）**：假設 $D_1$、$D_2$ 截面積不同、其他完全相同，求各自流過的電流。投影片指出必須用指數方程式，因為理想與定電壓模型都不含元件面積這個變數。兩顆並聯、跨壓相同，由指數式得到電流比等於飽和電流比：
+- **Example 3-13：指數模型（exponential model）**：假設 $D_1$、$D_2$ 截面積不同、其他完全相同，求各自流過的電流。投影片指出必須用指數方程式，因為理想與定電壓模型都不含元件面積這個變數。兩顆並聯、跨壓相同，由指數式得到電流比等於飽和電流比： :en[Assume $D_1$ and $D_2$ have different cross section areas but are otherwise identical. Determine the current flowing through each diode.]
 
 $$
 \begin{aligned}
@@ -600,7 +600,7 @@ $$
 
 *把工作點附近放大：曲線在夠小的範圍內就是直線，斜率是 ID1/VT。*
 
-- **Example 3-18（第 19 頁）**：一顆二極體偏壓在 $I_{D1} = 1\text{ mA}$。(a) 若 $V_D$ 改變 1 mV，電流改變多少？(b) 若 $I_D$ 改變 10%，電壓改變多少？取 $V_T = 26\text{ mV}$：
+- **Example 3-18（第 19 頁）**：一顆二極體偏壓在 $I_{D1} = 1\text{ mA}$。(a) 若 $V_D$ 改變 1 mV，電流改變多少？(b) 若 $I_D$ 改變 10%，電壓改變多少？取 $V_T = 26\text{ mV}$： :en[A diode is biased at a current of 1 mA. (a) Determine the current change if $V_D$ changes by 1 mV. (b) Determine the voltage change if $I_D$ changes by 10%.]
 
 $$
 \begin{aligned}
@@ -633,7 +633,7 @@ $$
 
 *同一顆二極體的兩個模型：算偏壓時是 VD,on 電池，算訊號時是電阻 rd。*
 
-- **Example 3-19：小訊號分析（第 21–22 頁）**：一個峰值 $V_p$、直流值 $V_0$ 的正弦訊號 $V(t) = V_0 + V_p\cos\omega t$ 加在二極體上，且 $V_p \ll V_T$，求二極體的交流電流。投影片先問，加小振幅正弦電壓，電流也會是繞著直流值的小正弦嗎？**Method #1** 直接從指數式展開：
+- **Example 3-19：小訊號分析（第 21–22 頁）**：一個峰值 $V_p$、直流值 $V_0$ 的正弦訊號 $V(t) = V_0 + V_p\cos\omega t$ 加在二極體上，且 $V_p \ll V_T$，求二極體的交流電流。投影片先問，加小振幅正弦電壓，電流也會是繞著直流值的小正弦嗎？**Method #1** 直接從指數式展開： :en[A sinusoidal signal having a peak amplitude of $V_p$ and a DC value of $V_0$ can be expressed as $V(t) = V_0 + V_p\cos\omega t$. If this signal is applied across a diode and $V_p \ll V_T$, determine the resulting AC current of the diode.]
 
 $$
 \begin{aligned}
@@ -747,7 +747,7 @@ $$
 
 這條 $V_R \approx \frac{I_L}{C_1 f_{in}}$ 是整流器設計的核心公式：負載電流越大、電容越小、頻率越低，漣波越大。推導中把放電時間近似成整個週期 $T_{in}$（因為充電只佔一小段時間）。
 
-- **Example 3-27（第 31 頁）**：變壓器把 110 V、60 Hz 市電降到峰對峰 9 V，接半波整流器供電給 Example 3-25 的筆電（$R_L = 0.436\ \Omega$），求讓漣波低於 0.1 V 的最小濾波電容，$V_{D,on} = 0.8\text{ V}$：
+- **Example 3-27（第 31 頁）**：變壓器把 110 V、60 Hz 市電降到峰對峰 9 V，接半波整流器供電給 Example 3-25 的筆電（$R_L = 0.436\ \Omega$），求讓漣波低於 0.1 V 的最小濾波電容，$V_{D,on} = 0.8\text{ V}$： :en[A transformer converts the 110-V, 60-Hz line voltage to a peak-to-peak swing of 9 V. A half-wave rectifier follows the transformer to supply the power to the laptop computer of Example 3-25 ($R_L = 0.436\ \Omega$). Determine the minimum value of the filter capacitor that maintains the ripple below 0.1 V. Assume $V_{D,on} = 0.8\ \text{V}$.]
 
 $$
 \begin{aligned}
@@ -829,7 +829,7 @@ $$
 
 峰值電流是負載電流的 $1 + 2\pi\sqrt{\frac{2V_p}{V_R}}$ 倍——漣波要求越嚴（$V_R$ 越小），二極體被迫在越短的時間內灌入同樣的電荷，峰值電流就越大。
 
-- **Example 3-28（第 35 頁）**：求 Example 3-27 的峰值二極體電流，$V_{D,on} \approx 0.8\text{ V}$、$C_1 = 1.417\text{ F}$（投影片註明課本寫 $V_{D,on} \approx 0$ 是筆誤）。已知 $V_p = 4.5\text{ V}$、$R_L = 0.436\ \Omega$、$f_{in} = 60\text{ Hz}$：
+- **Example 3-28（第 35 頁）**：求 Example 3-27 的峰值二極體電流，$V_{D,on} \approx 0.8\text{ V}$、$C_1 = 1.417\text{ F}$（投影片註明課本寫 $V_{D,on} \approx 0$ 是筆誤）。已知 $V_p = 4.5\text{ V}$、$R_L = 0.436\ \Omega$、$f_{in} = 60\text{ Hz}$： :en[Determine the peak diode current in Example 3-27 assuming $V_{D,on} \approx 0.8\ \text{V}$ and $C_1 = 1.417\ \text{F}$.]
 
 $$
 \begin{aligned}
@@ -912,7 +912,7 @@ $$
 
 *半波與全波並排：多兩顆二極體換到一半的漣波與一半的逆向耐壓需求。*
 
-- **Example 3-31（第 41 頁）**：設計一個全波整流器，供應 2 W 平均功率給 3.6 V 的手機，漣波 0.2 V，$V_{D,on} = 0.8\text{ V}$。先求需要的輸入擺幅（輸出加兩顆二極體壓降），再由漣波公式求電容：
+- **Example 3-31（第 41 頁）**：設計一個全波整流器，供應 2 W 平均功率給 3.6 V 的手機，漣波 0.2 V，$V_{D,on} = 0.8\text{ V}$。先求需要的輸入擺幅（輸出加兩顆二極體壓降），再由漣波公式求電容： :en[Design a full-wave rectifier to deliver an average power of 2 W to a cellphone with a voltage of 3.6 V and a ripple of 0.2 V. Assume $V_{D,on} = 0.8\ \text{V}$.]
 
 $$
 \begin{aligned}
@@ -994,7 +994,7 @@ $$
 
 *兩個穩壓指標：線調整率看輸入變動、負載調整率看負載電流變動。*
 
-- **Example 3-33（第 45–46 頁）**：上頁電路中 $V_{in}$ 標稱 5 V、$R_1 = 100\ \Omega$，$D_2$ 的逆向崩潰電壓 2.7 V、小訊號電阻 $5\ \Omega$，$D_1$ 的 $V_{D,on} \approx 0.8\text{ V}$，求線調整率與負載調整率。先算 $D_1$ 的偏壓電流與小訊號電阻：
+- **Example 3-33（第 45–46 頁）**：上頁電路中 $V_{in}$ 標稱 5 V、$R_1 = 100\ \Omega$，$D_2$ 的逆向崩潰電壓 2.7 V、小訊號電阻 $5\ \Omega$，$D_1$ 的 $V_{D,on} \approx 0.8\text{ V}$，求線調整率與負載調整率。先算 $D_1$ 的偏壓電流與小訊號電阻： :en[The circuit in the previous page: $V_{in}$ has a nominal value of 5 V, $R_1 = 100\ \Omega$, and $D_2$ has a reverse breakdown of 2.7 V and a small-signal resistance of 5 Ω. Assuming $V_{D,on} \approx 0.8\ \text{V}$ for $D_1$, determine the line and load regulation of the circuit.]
 
 $$
 \begin{aligned}
