@@ -34,7 +34,11 @@ BANDS_1K = ["棕", "黑", "黑", "棕", "棕"]
 BANDS_100 = ["棕", "黑", "黑", "黑", "棕"]
 
 # 儀器與板子之間的水平走廊（面板端子在 y≈286／290，板子上緣 420）
-LANE_CH2P, LANE_GND, LANE_GND2, LANE_CH1P = 306, 324, 342, 360
+# 線道：CH1 兩條往左、CH2 兩條往右，左右各自「外側端子走上層、內側端子走下層」就不交叉。
+# CH2− 不往左回第 12 欄，而是越過 CH2+ 的落點（第 44 欄）夾在第 46 欄的 −軌。
+LANE_CH1P, LANE_GND = 306, 324        # CH1+（最左）走上層、CH1− 走下層，都往左
+LANE_CH2M, LANE_CH2P = 306, 324       # CH2−（最右）走上層、CH2+ 走下層，都往右
+C_CH2M = 46                           # CH2− 夾在 −軌 的這一欄
 LANE_MRED, LANE_MBLK = 380, 398
 
 LED_RED = (214, 52, 52)
@@ -100,7 +104,7 @@ def supply3(d, x, y, ch2_label="CH2 = V_DS"):
         bb.text(d, (x + 170, yy + 18), lab, size=15, fill=bb.INK2, anchor="lm")
     posts = {}
     order = [("ch1+", "CH1+", (200, 60, 60)), ("ch1-", "CH1−", (50, 50, 50)),
-             ("ch2-", "CH2−", (50, 50, 50)), ("ch2+", "CH2+", (200, 60, 60))]
+             ("ch2+", "CH2+", (200, 60, 60)), ("ch2-", "CH2−", (50, 50, 50))]
     for i, (key, lab, col) in enumerate(order):
         px = x + 54 + i * 90
         d.ellipse([px - 11, y + h - 11, px + 11, y + h + 11], fill=col,
@@ -112,13 +116,13 @@ def supply3(d, x, y, ch2_label="CH2 = V_DS"):
 
 def rails(d, ch2_label="CH2 = V_DS"):
     """兩台電源：CH1 = V_GS 走 ＋軌，CH2 = V_DS 用一條鬆線直接進 C_SUP 欄，
-    兩台的 − 共接 −軌。面板端子由左到右是 CH1+ CH1− CH2− CH2+。"""
+    CH1− 夾第 10 欄、CH2− 夾第 46 欄，同一條 −軌＝共地。面板端子由左到右是 CH1+ CH1− CH2+ CH2−（GPE-3323 實機是紅黑紅黑）。"""
     posts = supply3(d, 470, 120, ch2_label)
     x1, y1 = bb.hole(6, "+")
     bb.wire(d, [posts["ch1+"], (posts["ch1+"][0], LANE_CH1P), (x1, LANE_CH1P), (x1, y1)],
             bb.WIRE_RED, width=5)
     bb.plug(d, (x1, y1))
-    for key, col, lane in (("ch1-", 10, LANE_GND), ("ch2-", 12, LANE_GND2)):
+    for key, col, lane in (("ch1-", 10, LANE_GND), ("ch2-", C_CH2M, LANE_CH2M)):
         xx, yy = bb.hole(col, "-")
         bb.wire(d, [posts[key], (posts[key][0], lane), (xx, lane), (xx, yy)],
                 bb.WIRE_BLACK, width=5)

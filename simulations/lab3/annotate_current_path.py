@@ -5,7 +5,7 @@
   綠實線 = 電流走的路、綠虛線 = 封裝內部看不到的那一段、
   紅三角 = 方向、紅底白字圓圈 = 下方逐步說明的列、藍虛線 = 電壓表量測線（不分流）。
 
-用法：simulations/lab1/.venv/bin/python simulations/lab3/annotate_current_path.py
+用法：~/.local/bin/uv run -q --with pillow python -I simulations/lab3/annotate_current_path.py
 """
 from __future__ import annotations
 
@@ -27,9 +27,10 @@ DIR = os.path.join(HERE, "..", "..", "public", "note-images", "ec-week9-breadboa
 C_S, C_G, C_D, C_GND, C_SUP, C_BLK = 30, 31, 32, 16, 44, 54
 Y = {r: bb.hole(1, r)[1] for r in "jihgfedcba"}
 RAIL_M = bb.hole(1, "-")[1]
-POST_CH2P = (470 + 54 + 3 * 90, 120 + 158 + 8)
-POST_CH2M = (470 + 54 + 2 * 90, 120 + 158 + 8)
-LANE_CH2P, LANE_GND2 = 306, 324
+POST_CH2P = (470 + 54 + 2 * 90, 120 + 158 + 8)
+POST_CH2M = (470 + 54 + 3 * 90, 120 + 158 + 8)
+LANE_CH2M, LANE_CH2P = 306, 324     # 與 draw_breadboard.py 同步
+C_CH2M = 46                          # CH2− 夾在 −軌 的欄
 METER_RED = (1450 + 72, 140 + 132 + 8)
 METER_BLK = (1450 + 244 - 72, 140 + 132 + 8)
 LANE_MRED, LANE_MBLK = 380, 398
@@ -73,8 +74,8 @@ def supply_return(d, col_gnd):
     """接地端 → −軌 → 電源 CH2−，回到電源負端，把迴路閉上。"""
     xg = h(col_gnd, "j")[0]
     path(d, [h(col_gnd, "j"), (xg - 14, 508), (xg, RAIL_M)], w=13)
-    path(d, [(xg, RAIL_M), (h(12, "-")[0], RAIL_M)], w=13)
-    path(d, [h(12, "-"), (h(12, "-")[0], LANE_GND2), (POST_CH2M[0], LANE_GND2), POST_CH2M],
+    path(d, [(xg, RAIL_M), (h(C_CH2M, "-")[0], RAIL_M)], w=13)
+    path(d, [h(C_CH2M, "-"), (h(C_CH2M, "-")[0], LANE_CH2M), (POST_CH2M[0], LANE_CH2M), POST_CH2M],
          w=11)
 
 
@@ -126,9 +127,9 @@ def exp1(canvas, d, T):
     voltmeter(d, C_S, "g")
 
     for i, xy in enumerate([
-        (xsu, 306), (xsu, (Y["j"] + Y["h"]) / 2), ((xsu + xd) / 2, Y["h"] - 9),
+        (xsu, LANE_CH2P), (xsu, (Y["j"] + Y["h"]) / 2), ((xsu + xd) / 2, Y["h"] - 9),
         (xd + 26, Y["f"] + 30), (mid + 110, Y["i"] - 10), (xg - 7, 508),
-        (h(12, "-")[0], LANE_GND2),
+        (h(C_CH2M, "-")[0], (LANE_CH2M + RAIL_M) / 2),
     ]):
         badge(d, xy, str(i + 1), fn)
 
@@ -154,9 +155,9 @@ def exp2(canvas, d, T):
     voltmeter(d, C_D, "h")
 
     for i, xy in enumerate([
-        (xsu, 306), (mid2 + 110, Y["i"] - 10), (xd, (Y["h"] + Y["f"]) / 2),
+        (xsu, LANE_CH2P), (mid2 + 110, Y["i"] - 10), (xd, (Y["h"] + Y["f"]) / 2),
         (h(C_D, "f")[0] + 26, Y["f"] + 30), (xs, (Y["g"] + Y["j"]) / 2),
-        (xs - 7, 508), (h(12, "-")[0], LANE_GND2),
+        (xs - 7, 508), (h(C_CH2M, "-")[0], (LANE_CH2M + RAIL_M) / 2),
     ]):
         badge(d, xy, str(i + 1), fn)
 
@@ -192,9 +193,9 @@ def exp4(canvas, d, T):
     voltmeter(d, C_S, "g")
 
     for i, xy in enumerate([
-        (xsu, 306), ((xsu + xa) / 2, Y["g"] - 9), (mled + 70, Y["h"] - 12),
+        (xsu, LANE_CH2P), ((xsu + xa) / 2, Y["g"] - 9), (mled + 70, Y["h"] - 12),
         (xd, (Y["h"] + Y["f"]) / 2), (h(C_D, "f")[0] + 26, Y["f"] + 30),
-        (midr + 110, Y["i"] - 10), (h(12, "-")[0], LANE_GND2),
+        (midr + 110, Y["i"] - 10), (h(C_CH2M, "-")[0], (LANE_CH2M + RAIL_M) / 2),
     ]):
         badge(d, xy, str(i + 1), fn)
 

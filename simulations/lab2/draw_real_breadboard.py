@@ -307,10 +307,10 @@ def supply(d, x, y, ch1, ch2):
                             fill=(26, 34, 30), outline=(92, 92, 92))
         text(d, (x + 87, yy + 18), val, size=19, fill=(118, 238, 168), anchor="mm")
         text(d, (x + 170, yy + 18), lab, size=15, fill=INK2, anchor="lm")
-    # 四個端子，由左到右：CH1+ CH1− CH2− CH2+
+    # 四個端子，由左到右：CH1+ CH1− CH2+ CH2−（GPE-3323 實機是紅黑紅黑）
     posts = {}
     order = [("ch1+", "CH1+", (200, 60, 60)), ("ch1-", "CH1−", (50, 50, 50)),
-             ("ch2-", "CH2−", (50, 50, 50)), ("ch2+", "CH2+", (200, 60, 60))]
+             ("ch2+", "CH2+", (200, 60, 60)), ("ch2-", "CH2−", (50, 50, 50))]
     for i, (key, lab, col) in enumerate(order):
         px = x + 54 + i * 90
         d.ellipse([px - 11, y + h - 11, px + 11, y + h + 11], fill=col,
@@ -362,6 +362,7 @@ C_VBB = 18        # V_BB 從 ＋軌 跳進板上的欄
 C_E, C_B, C_C = 30, 31, 32
 C_R2G = 42        # R2 下端接地的欄
 C_VCC = 45        # V_CC 進線的欄（R_C 另一端）
+C_G2 = 48         # CH2− 夾在 −軌 的這一欄（在 j45 右邊，線才不會和 CH2+ 交叉）
 C_BLK = 56        # 電表黑線固定夾在 −軌 的這一欄
 
 BANDS_10K = ["棕", "黑", "黑", "紅", "棕"]
@@ -428,25 +429,28 @@ def fig_wiring():
     draw_circuit(d)
     node_marks(d)
 
-    # 電源四條線：端子由左到右、目標也由左到右，彼此不交叉
-    targets = [
-        ("ch1+", hole(7, "+"), WIRE_RED, "CH1+ → ＋軌"),
-        ("ch1-", hole(10, "-"), WIRE_BLACK, "CH1− → −軌"),
-        ("ch2-", hole(13, "-"), WIRE_BLACK, "CH2− → −軌"),
-    ]
-    for i, (key, tgt, col, lab) in enumerate(targets):
+    # 電源四條線。實機端子由左到右是 CH1+ CH1− CH2+ CH2−：
+    # CH1 兩條往左下進電源軌；CH2+ 走 362 這條線道往右到 j45，
+    # CH2− 走更高的 340 往右、越過第 45 欄後才下到「−」軌（第 48 欄），四條線都不交叉。
+    for key, tgt, col in (("ch1+", hole(7, "+"), WIRE_RED),
+                          ("ch1-", hole(10, "-"), WIRE_BLACK)):
         px, py = posts[key]
-        lane = 372 + i * 0
-        wire(d, [(px, py), (px, lane), (tgt[0], lane + 14), tgt], col, width=6)
+        wire(d, [(px, py), (px, 372), (tgt[0], 386), tgt], col, width=6)
         plug(d, tgt)
     px, py = posts["ch2+"]
-    wire(d, [(px, py), (px, 392), (cx(C_VCC) - 18, 392), hole(C_VCC, "j")], WIRE_RED, width=6)
+    wire(d, [(px, py), (px, 362), (cx(C_VCC) - 18, 362), hole(C_VCC, "j")], WIRE_RED, width=6)
     plug(d, hole(C_VCC, "j"))
+    px, py = posts["ch2-"]
+    xg, yg = hole(C_G2, "-")
+    wire(d, [(px, py), (px, 340), (xg, 340), (xg, yg)], WIRE_BLACK, width=6)
+    plug(d, (xg, yg))
 
     text(d, (cx(7) - 20, 410), "CH1+ 進「＋」軌＝V_BB", size=14, fill=CALL, anchor="rm")
-    text(d, (cx(13) + 20, 410), "CH1− 與 CH2− 一起夾「−」軌＝共地", size=14, fill=CALL, anchor="lm")
-    text(d, (cx(C_VCC) - 28, 376), "CH2+ 直接進 j45（RC 的另一端）＝V_CC",
+    text(d, (cx(10) + 20, 410), "CH1− 夾「−」軌＝共地", size=14, fill=CALL, anchor="lm")
+    text(d, (cx(C_VCC) - 28, 380), "CH2+ 直接進 j45（RC 的另一端）＝V_CC",
          size=14, fill=CALL, anchor="rm")
+    text(d, (cx(C_G2) + 14, 410), "CH2− 也夾「−」軌（第 48 欄）＝共地",
+         size=14, fill=CALL, anchor="lm")
 
     callout(d, (980, 168),
             "為什麼 V_CC 不也走電源軌？\n"
@@ -469,7 +473,7 @@ def fig_wiring():
           ["", "插什麼", "為什麼"],
           [40, 400, 420],
           [(str(i + 1), a, b) for i, (a, b) in enumerate([
-              ("CH1− 與 CH2− 兩條線都夾進上方「−」軌", "共地。漏掉這條整個電路不會動"),
+              ("CH1− 夾第 10 欄、CH2− 夾第 48 欄，都在上方「−」軌", "共地。漏掉這條整個電路不會動"),
               ("CH1+ 夾進上方「＋」軌", "這一路是 V_BB"),
               ("黃跳線：＋軌 → j18", "把 V_BB 帶到板上"),
               ("R1 10 kΩ 橫插 i18 → i31", "分壓上臂"),
