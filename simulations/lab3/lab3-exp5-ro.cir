@@ -1,0 +1,12 @@
+* 第二部分工作點上的小訊號輸出電阻 r_o：同一個工作點，數值微分 dI_D/dV_DS
+VS s 0 2.96712
+VG g 0 5.0
+VD d 0 6.09880
+M1 d g s s BS170
+.model BS170 NMOS (Level=3 W=200u L=1u Tox=0.05u Vto=2.14 Kp=4e-4 Vmax=0 Uo=700
++ Phi=0.6 NSUB=1e15 NFS=9e11 Gamma=0.1 Delta=0 Eta=0 Theta=0 Kappa=0.005
++ Rg=0 Rs=0 Rd=0.0 Rb=0 Rds=50e9 Cgso=140n Cgdo=10n Cgbo=10n Cbd=100p
++ Cj=2e-4 Cjsw=1n Is=10f N=1 Pb=.8)
+.dc VD 5.6 6.6 0.01
+.backanno
+.end

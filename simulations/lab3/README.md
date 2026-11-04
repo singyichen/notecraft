@@ -26,6 +26,8 @@ LTspice 網表與圖。LTspice 全部用內建元件庫的 **BS170** 模型（`.
 | `lab3-exp5-ac.cir` | 中頻增益；`.step` 比較「有／沒有」跨接在 R6 上的旁路電容（講義問題 3） | `.ac` + `.meas` |
 | `lab3-exp5-vth-sens.cir`／`-op.cir` | 工作點與增益對 V_th 的敏感度（掃 0.8→3.0 V，即規格書全範圍） | `.ac`／`.op` + `.step` |
 | `lab3-q4-r3.cir`／`-op.cir` | 講義問題 4：R3 300 kΩ → 1 MΩ | `.ac`／`.op` + `.step` |
+| `lab3-q4-r3-sweep.cir`／`-op.cir` | Bonus 1：掃 R3 100 k→1 MΩ，找工作點真正離開飽和區的位置（手算的 409 kΩ 是固定 I_D 的估算，模型自洽解出的崩潰點在 405 kΩ 附近） | `.ac` + `.meas`／`.op` + `.step` |
+| `lab3-exp5-gm.cir`／`lab3-exp5-ro.cir` | 第二部分工作點上的小訊號 g_m 與 r_o：把三個節點電位釘在 `.op` 的解上做數值微分（g_m = 0.364 mA/V、r_o = 1.26 MΩ）。**這才是模型的 g_m**；由增益回推的 0.295 mA/V 是有效值 | `.dc` |
 | `lab3-q5-r1.cir`／`-op.cir` | 講義問題 5：R1 100 kΩ → 1 MΩ | `.ac`／`.op` + `.step` |
 | `lab3-bonus-r7-sweep.cir` | Bonus：掃 R7 找 \|A_v\| > 10 的範圍 | `.ac` + `.meas` |
 | `lab3-bonus-design.cir`／`-ac.cir`／`-op.cir` | Bonus 定案（R7 = 10 kΩ）的時域、增益與工作點，並掃 V_th 看耐受度 | `.tran`／`.ac`／`.op` |
@@ -33,7 +35,7 @@ LTspice 網表與圖。LTspice 全部用內建元件庫的 **BS170** 模型（`.
 | `draw_breadboard.py` | 從零畫實體麵包板接線圖（三張）到 `public/note-images/ec-week9-breadboard/` | — |
 | `annotate_current_path.py` | 在上面三張接線圖疊電流分析（輸出加 `-current`） | — |
 | `annotate_schematic.py` | 在講義第 19 頁的原理圖上疊直流偏壓與交流訊號兩種電流路徑 | — |
-| `build_record_xlsx.py` | 產生當天填數據用的 `measured/Lab3-數據記錄.xlsx`（四個分頁、三張圖，預報欄讀 `.raw`） | — |
+| `build_record_xlsx.py` | 產生當天填數據用的 `measured/Lab3-數據記錄.xlsx`（七個分頁、七張圖，預報欄讀 `.raw`）。必做的實驗一、二是 0～5 V 每 0.5 V 共 11 點，選做的三張表維持講義版面 | — |
 
 ## 跑法
 
@@ -44,7 +46,9 @@ cd simulations/lab3
 ../lab1/.venv/bin/python draw_breadboard.py
 ../lab1/.venv/bin/python annotate_current_path.py
 ../lab1/.venv/bin/python annotate_schematic.py
-../lab1/.venv/bin/python build_record_xlsx.py        # 已存在不覆蓋，要重產加 --force
+../lab1/.venv/bin/python build_record_xlsx.py          # 已存在就不動它
+../lab1/.venv/bin/python build_record_xlsx.py --update # 保留已填的黃底格後重產（按分頁＋欄組＋電壓＋欄名對應，不按列號）
+../lab1/.venv/bin/python build_record_xlsx.py --force  # 丟掉舊檔重產
 node ../../.claude/skills/lab-workflow/scripts/circuitjs-link.mjs circuitjs/*.txt   # 印 CircuitJS 連結
 ```
 
@@ -67,3 +71,16 @@ node ../../.claude/skills/lab-workflow/scripts/circuitjs-link.mjs circuitjs/*.tx
    換成 50 kΩ 增益會從 8.7 掉到 6.3。
 3. **第 10 頁的模擬圖 y 軸是 0.0014 V**（換算 R_on = 0.14 Ω），任何 2N7000 都做不到。
    LTspice 在 V_GS = 5 V、I_D = 10 mA 下是 44 mV → 4.4 Ω，才符合規格書。
+
+## 記錄簿的量測級距
+
+講義第 7／9 頁每組只印了一兩列、其餘留白，那是版面不是點數上限。必做的兩個實驗照
+Lab 1／Lab 2 記錄簿的慣例加密：
+
+| | 級距 | 點數 | 上限為什麼停在這裡 |
+| --- | --- | --- | --- |
+| 實驗一 | V_DS 電源 0～5 V，每 0.5 V | 11 × 4 組 | 講義給的掃描範圍；V_GS = 6 V 那條到 3.5 V 就轉平，5 V 已涵蓋飽和段。R1 1 kΩ 把電流鎖在 5 mA 以內，不是元件限制 |
+| 實驗二 | V_GS 電源 0～5 V，每 0.5 V | 11 × 3 組 | V_DS = 5 V 那組的平台已有 48 mA，R1 100 Ω 要吃 0.23 W，而零件表給的是 1/4 W。再往上只是讓電阻更燙、曲線沒有新資訊 |
+| 實驗二加密段 | 抬頭段 0.05～0.1 V | 24 列 | 求 V_th 的平方根外插要兩個以上落在平方律直線上的點；粗掃在抬頭段只落得到一個點。預填 1.90～3.05 V 是 BS170 的範圍，當天照自己的元件整欄改掉 |
+
+實驗三、四與第二部分是選做，維持講義版面的點數，`build_record_xlsx.py` 沒有加密它們。
