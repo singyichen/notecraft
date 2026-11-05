@@ -46,7 +46,7 @@ cd simulations/lab3
 ../lab1/.venv/bin/python draw_breadboard.py
 ../lab1/.venv/bin/python annotate_current_path.py
 ../lab1/.venv/bin/python annotate_schematic.py
-../lab1/.venv/bin/python build_record_xlsx.py          # 已存在就不動它
+../lab1/.venv/bin/python build_record_xlsx.py          # 已存在就不動它（寫檔前會自檢公式括號）
 ../lab1/.venv/bin/python build_record_xlsx.py --update # 保留已填的黃底格後重產（按分頁＋欄組＋電壓＋欄名對應，不按列號）
 ../lab1/.venv/bin/python build_record_xlsx.py --force  # 丟掉舊檔重產
 node ../../.claude/skills/lab-workflow/scripts/circuitjs-link.mjs circuitjs/*.txt   # 印 CircuitJS 連結
@@ -85,3 +85,17 @@ Lab 1／Lab 2 記錄簿的慣例加密：
 
 所以實驗一是 31 列（和 Lab 2 的 V_CC 掃描同樣密度）、實驗二是 11 + 24 = 35 列。
 實驗三、四與第二部分是選做，維持講義版面的點數，`build_record_xlsx.py` 沒有加密它們。
+
+## 一個踩過的坑：只用 LibreOffice 驗算抓不到壞公式
+
+`build_record_xlsx.py` 寫檔前會跑 `check_formulas()`，把每一條公式的字串常值剝掉後
+檢查括號與引號是否成對，不過就直接中止、不寫檔。
+
+原因是 2026-11-05 實際踩到的一次：V_th 兩點外插那條七層巢狀 `IF` ＋ `IFERROR` 的
+公式**少了一個右括號**。LibreOffice 會自動把它補齊、照常算出正確的值，所以用
+`soffice --convert-to` 重算驗證時一切正常；但 Excel 在載入時會判定檔案毀損，跳出
+「我們發現……的部分內容有問題。您要我們盡可能嘗試復原嗎？」並把那一格丟掉。
+
+**結論：改了公式之後，不能只用 LibreOffice 重算當作驗證。** 現在這件事由
+`check_formulas()` 把關（Lab 1、Lab 2 的記錄簿目前都沒有這個問題，但它們的產生
+腳本還沒加同樣的自檢）。

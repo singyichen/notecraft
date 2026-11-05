@@ -29,6 +29,7 @@ LED 開關）與第二部分的共源級放大器，另附一張照講義版面�
 """
 import json
 import os
+import re
 import shutil
 import sys
 
@@ -821,7 +822,9 @@ put(ws2, RG, 4,
     f'IF({g1}={g2},"兩點的 V_GS 不可相同",'
     f'IF({i1}={i2},"兩點的 I_D 相同，算不出斜率（級距要拉開）",'
     f'IF(({g2}-{g1})*({i2}-{i1})<0,"順序不對：V_GS 較大的點電流必須較大",'
-    f'IFERROR({g1}-({g2}-{g1})/(SQRT({i2})-SQRT({i1}))*SQRT({i1}),"算不出來，請檢查兩點")))))))',
+    # 七層 IF ＋ IFERROR：結尾要 8 個右括號（IFERROR 自己一個、七層 IF 各一個）。
+    # 少一個時 LibreOffice 會自動補上照算，Excel 則判定檔案毀損並要求「修復」。
+    f'IFERROR({g1}-({g2}-{g1})/(SQRT({i2})-SQRT({i1}))*SQRT({i1}),"算不出來，請檢查兩點"))))))))',
     fmt='0.000')
 note(ws2, RG, '← 兩點外插：V_th = V_GS1 − (V_GS2−V_GS1)/(√I_D2−√I_D1) × √I_D1', col=5)
 
@@ -1393,6 +1396,33 @@ printable(ws6, 8, r + 5, landscape=False)
 wb.calculation.calcMode = 'auto'
 wb.calculation.fullCalcOnLoad = True
 wb.calculation.forceFullCalc = True
+
+# ── 寫檔前的自檢：公式括號與引號必須成對 ──────────────────────────────────────
+# Excel 會在載入時解析每一條公式，少一個右括號就跳「部分內容有問題，是否修復」並
+# 把那格丟掉；LibreOffice 反而會自動補齊照算，所以只用 LO 驗算抓不到這種錯。
+def check_formulas(workbook):
+    bad = []
+    for sheet in workbook:
+        for row_ in sheet.iter_rows():
+            for cell in row_:
+                v = cell.value
+                if not (isinstance(v, str) and v.startswith('=')):
+                    continue
+                body = v[1:]
+                # 先把字串常值換掉，裡面的括號不算
+                stripped = re.sub(r'"(?:[^"]|"")*"', 'S', body)
+                if (body.count('"') - body.count('""') * 2) % 2:
+                    bad.append((sheet.title, cell.coordinate, '引號不成對', v))
+                elif stripped.count('(') != stripped.count(')'):
+                    bad.append((sheet.title, cell.coordinate,
+                                f"括號不平衡（左 {stripped.count('(')}、右 {stripped.count(')')}）", v))
+    if bad:
+        for t, coord, why, v in bad:
+            print(f'公式有問題　{t}!{coord}　{why}\n  {v}', file=sys.stderr)
+        sys.exit(f'{len(bad)} 條公式不合法，沒有寫檔。')
+
+
+check_formulas(wb)
 
 os.makedirs(os.path.dirname(OUT), exist_ok=True)
 exists = os.path.exists(OUT)
