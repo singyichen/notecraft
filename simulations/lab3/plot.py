@@ -60,9 +60,10 @@ f, (a, b) = fig(11.4, 4.4, 2)
 for k, (s, c) in enumerate(zip(st, [INK2, S3, S1, S2])):
     a.plot(s['VDS'], -s['I(VDS)'] * 1e3, color=c, label=f'電源 $V_{{GS}}$ = {VGS_LIST[k]} V')
 a.plot([0, 4], [0, 4], color=S4, lw=1.4, ls='--', label='$I_D = V_{DS}/R_1$（1 kΩ 的負載線）')
+a.set_xlim(0, 15)
 a.set_xlabel('電源讀數 $V_{DS}$ (V)'), a.set_ylabel('$I_D$ (mA)')
 a.set_title('講義原電路：R₁ 1 kΩ 串在源極')
-a.legend(fontsize=9.5)
+a.legend(fontsize=9.5, loc='center right')
 for k, (s, c) in enumerate(zip(st2, [INK2, S3, S1, S2])):
     b.plot(s['VDS'], -s['I(VDS)'] * 1e3, color=c, label=f'$V_{{GS}}$ = {VGS_LIST[k]} V')
 b.set_xlabel('元件端點 $V_{DS}$ (V)'), b.set_ylabel('$I_D$ (mA)')
@@ -72,11 +73,20 @@ b.legend(fontsize=9.5)
 save(f, 'lab3-exp1-curves')
 
 print('── 實驗一 預報（BS170，R1 1 kΩ 在源極；單位 mA）')
-print('  電源 V_DS →   1 V     2 V     3 V     4 V     5 V')
+EXP1_PTS = (1, 2, 3, 4, 5, 8, 10, 15)
+print('  電源 V_DS →' + ''.join(f'{x:>5} V ' for x in EXP1_PTS))
 for k, s in enumerate(st):
     v, i = s['VDS'], -s['I(VDS)'] * 1e3
-    row = '  '.join(f'{np.interp(x, v, i):6.3f}' for x in (1, 2, 3, 4, 5))
+    row = ' '.join(f'{np.interp(x, v, i):6.3f}' for x in EXP1_PTS)
     print(f'  V_GS = {VGS_LIST[k]} V : {row}')
+# 平台到底多平：這是「掃到 15 V」才看得出來的東西。
+# 注意斜率對應的是「整個電路」的輸出電阻（元件的 r_o 被源極退化放大 1 + g_m R_1 倍），
+# 不是元件自己的 r_o，數值大到三用電表幾乎量不出來——重點是「平」這件事本身。
+for k, s in enumerate(st[2:], start=2):
+    v, i = s['VDS'], -s['I(VDS)'] * 1e3
+    i8, i15 = np.interp(8, v, i), np.interp(15, v, i)
+    print(f'  V_GS = {VGS_LIST[k]} V 平台：8→15 V 電流 {i8:.3f}→{i15:.3f} mA '
+          f'（7 V 只多 {(i15 - i8) * 1e3:.0f} µA，+{(i15 / i8 - 1) * 100:.1f}%）')
 print('  對照（源極接地、無 R1）V_DS = 5 V 時：',
       '  '.join(f'V_GS={VGS_LIST[k]}V→{-s["I(VDS)"][-1]*1e3:.1f} mA' for k, s in enumerate(st2)))
 
