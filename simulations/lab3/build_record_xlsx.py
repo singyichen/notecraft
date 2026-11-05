@@ -958,9 +958,16 @@ note(ws3, r + 4, 'V_R1 應該恆為 1 V 左右（10 mA × 100 Ω），不隨 V_G
                  'V_DS 量到伏特等級代表元件還沒完全導通或電源沒進 CC 模式。')
 note(ws3, r + 5, '講義第 10 頁圖上的 0.0014 V（= 0.14 Ω）任何 2N7000 都做不到；規格書是 V_GS = 10 V 時典型 1.2 Ω、'
                  '上限 5.3 Ω，和 LTspice 同一個量級。')
+# 圖表用的 #N/A 欄：沒量到的 V_GS 不能被畫成 R_on = 0（放在列印範圍外）
+H3 = 26
+col_head(ws3, 6, H3, '圖用 R_on（公式，不要填）', width=20)
+for i in range(len(RON_VGS)):
+    rr = RON0 + i                     # 不要用 r：下面的檢查表還要用它
+    put(ws3, rr, H3, f'=IF(E{rr}="",NA(),F{rr})', fmt='0.00')
+
 ch = scatter('R_on - V_GS（I_D 固定 10 mA）', 'V_GS (V)', 'R_on (Ω)', h=9)
 xs = Reference(ws3, min_col=1, min_row=RON0, max_row=RONN)
-ch.series.append(dot_series(Reference(ws3, min_col=6, min_row=RON0, max_row=RONN), xs, '實測'))
+ch.series.append(dot_series(Reference(ws3, min_col=H3, min_row=RON0, max_row=RONN), xs, '實測'))
 ch.series.append(dot_series(Reference(ws3, min_col=8, min_row=RON0, max_row=RONN), xs, 'LTspice',
                             color='F28C28', symbol='triangle'))
 ws3.add_chart(ch, f'L{RON0}')
@@ -1048,11 +1055,21 @@ for k, (lab, f, lt, memo) in enumerate(pairs):
     put(ws4, rr, 5, memo, font=NOTE)
 ws4.column_dimensions['A'].width = 30
 r = r + 2 + len(pairs) + 1
+# 圖表用的 #N/A 欄：沒量到的 V_GS 不能被畫成 I_D = 0（放在列印範圍外）
+H4 = 32
+group_head(ws4, HDR, H4, 2, '圖表用（公式，不要填）')
+col_head(ws4, SUB, H4, '圖 I_D（100 Ω）', width=15)
+col_head(ws4, SUB, H4 + 1, '圖 I_D（200 Ω）', width=15)
+for i in range(len(SW_VGS)):
+    rr = SW0 + i                      # 不要用 r：下面的檢查表還要用它
+    put(ws4, rr, H4, f'=IF(B{rr}="",NA(),D{rr})', fmt='0.00')
+    put(ws4, rr, H4 + 1, f'=IF(K{rr}="",NA(),M{rr})', fmt='0.00')
+
 ch = scatter(f'LED 電流 I_D - V_GS（V_DD = {SW_VDD:g} V）', 'V_GS 設定 (V)', 'I_D (mA)')
 xs = Reference(ws4, min_col=1, min_row=SW0, max_row=SWN)
-ch.series.append(dot_series(Reference(ws4, min_col=4, min_row=SW0, max_row=SWN), xs, '實測 R1 = 100 Ω'))
+ch.series.append(dot_series(Reference(ws4, min_col=H4, min_row=SW0, max_row=SWN), xs, '實測 R1 = 100 Ω'))
 ch.series.append(line_series(Reference(ws4, min_col=9, min_row=SW0, max_row=SWN), xs, 'LTspice R1 = 100 Ω'))
-ch.series.append(dot_series(Reference(ws4, min_col=13, min_row=SW0, max_row=SWN), xs, '實測 R1 = 200 Ω',
+ch.series.append(dot_series(Reference(ws4, min_col=H4 + 1, min_row=SW0, max_row=SWN), xs, '實測 R1 = 200 Ω',
                             color=MARK2, symbol='triangle'))
 ch.series.append(line_series(Reference(ws4, min_col=15, min_row=SW0, max_row=SWN), xs, 'LTspice R1 = 200 Ω'))
 ws4.add_chart(ch, f'R{HDR}')
