@@ -34,7 +34,8 @@ model: sonnet
    拆分時每個新標記的 prompt 用**列舉式**寫（明確列出有哪些狀態、哪些問題、哪些答案、哪些旋鈕，以及明確的視覺要求），不要寫成敘述段落——敘述段落會讓 component-generator 自行發揮版面，列舉式才能讓它照著排。
 6. **判斷技術方案**：依 content-visualize-skill 的決策樹（已調整為互動優先），為方案決定：
    - 主要呈現形式（互動元件 / 手寫 SVG / 圖表 / 時間軸 / 表格 / motion / 組合）
-   - 使用的函式庫（react、motion、recharts、d3 之一或組合）
+   - 使用的函式庫（react、motion、recharts、d3、three 之一或組合）
+   - **`three` 只在「空間關係本身是重點」時選**（層疊、拓撲遠近與包含、需要轉角度才看得清的結構）。選了 three 的規劃必須多寫一欄 **Why not SVG**：說明畫成等角 SVG 會損失什麼資訊；寫不出來就改回 SVG。流程、比較、數值、時間軸、狀態機一律不用 three
    - Astro client directive（含互動或動畫一律 `client:visible`；純靜態才省略）
    - 元件結構：子區塊、**互動觸發點（slider / button / tab）**、狀態（useState 管什麼）、動畫節點
 7. **挑色票與排版**：依 `notecraft-design` 挑出本元件要用的 2–3 色 token、字級、間距、圓角
@@ -57,6 +58,7 @@ model: sonnet
 **Libraries**: react, motion
 **Client directive**: client:visible
 **Type override**: 無 / type: diagram → type: motion，理由：改採可拖曳時間軸
+**Why not SVG**:（僅 Libraries 含 three 時出現）畫成等角 SVG 會損失的資訊
 
 **Component structure**:
 - 外層 `<figure>` 容器，承載標題與互動區

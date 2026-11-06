@@ -1,7 +1,7 @@
 {
   "name": "notecraftapp",
   "type": "module",
-  "version": "1.7.0",
+  "version": "1.15.0",
   "description": "由 AI 生成視覺化與動態互動元件、嵌入筆記的個人筆記 Web App。用 npx 一行指令在任何 md/mdx 資料夾啟動漂亮 UI。",
   "keywords": [
     "notecraft",
@@ -33,7 +33,6 @@
   },
   "files": [
     "bin/",
-    "plugins/",
     "public/favicon.svg",
     "src/components/*.astro",
     "src/components/islands/",
@@ -49,10 +48,12 @@
     "src/pages/",
     "src/styles/",
     "skill-template/",
+    "schemas/",
     "astro.config.mjs",
     "tailwind.config.mjs",
     "tsconfig.json",
     "README.md",
+    "CHANGELOG.md",
     "LICENSE"
   ],
   "scripts": {
@@ -68,7 +69,10 @@
     "test": "node --experimental-strip-types --test src/lib/*.test.ts src/lib/*.test.mjs",
     "check:er": "node --experimental-strip-types --disable-warning=ExperimentalWarning scripts/checks/er-derive.mjs && node --experimental-strip-types --disable-warning=ExperimentalWarning scripts/checks/er-markdown.mjs && node --experimental-strip-types --disable-warning=ExperimentalWarning scripts/checks/er-styles.mjs && node --experimental-strip-types --disable-warning=ExperimentalWarning scripts/checks/app-strip-markdown.mjs && node --experimental-strip-types --disable-warning=ExperimentalWarning scripts/checks/app-plugin-meta.mjs",
     "check:oar": "node --experimental-strip-types --disable-warning=ExperimentalWarning scripts/checks/oar-derive.mjs && node --experimental-strip-types --disable-warning=ExperimentalWarning scripts/checks/oar-examples.mjs && node --experimental-strip-types --disable-warning=ExperimentalWarning scripts/checks/oar-markdown.mjs && node --experimental-strip-types --disable-warning=ExperimentalWarning scripts/checks/oar-styles.mjs",
-    "check:wb": "node --experimental-strip-types --disable-warning=ExperimentalWarning scripts/checks/wb-dashboard.mjs && node --experimental-strip-types --disable-warning=ExperimentalWarning scripts/checks/wb-calendar.mjs && node --experimental-strip-types --disable-warning=ExperimentalWarning scripts/checks/wb-tabs.mjs",
+    "check:wb": "node --experimental-strip-types --disable-warning=ExperimentalWarning scripts/checks/wb-dashboard.mjs && node --experimental-strip-types --disable-warning=ExperimentalWarning scripts/checks/wb-calendar.mjs && node --experimental-strip-types --disable-warning=ExperimentalWarning scripts/checks/wb-tabs.mjs && node --experimental-strip-types --disable-warning=ExperimentalWarning scripts/checks/wb-nav.mjs && node --experimental-strip-types --disable-warning=ExperimentalWarning scripts/checks/wb-tabs-prepaint.mjs && node --experimental-strip-types --disable-warning=ExperimentalWarning scripts/checks/note-theme-prepaint.mjs && node --experimental-strip-types --disable-warning=ExperimentalWarning scripts/checks/note-page-remark.mjs && node --experimental-strip-types --disable-warning=ExperimentalWarning scripts/checks/app-note-text.mjs && node --experimental-strip-types --disable-warning=ExperimentalWarning scripts/checks/wb-plugin-env.mjs && node --experimental-strip-types --disable-warning=ExperimentalWarning scripts/checks/wb-graph.mjs && node scripts/checks/wb-critical-css.mjs",
+    "check:ignore": "node scripts/checks/notes-ignore.mjs",
+    "check:defs": "node --experimental-strip-types --disable-warning=ExperimentalWarning scripts/checks/defs.mjs",
+    "check:upd": "node --experimental-strip-types --disable-warning=ExperimentalWarning scripts/checks/upd-derive.mjs && node --experimental-strip-types --disable-warning=ExperimentalWarning scripts/checks/upd-changelog.mjs && node --experimental-strip-types --disable-warning=ExperimentalWarning scripts/checks/upd-prepaint.mjs",
     "prepublishOnly": "npm run sync-skill && npm run check-plugins",
     "viewer:view": "node bin/notecraftapp.mjs view",
     "viewer:build": "node bin/notecraftapp.mjs build",
@@ -87,8 +91,10 @@
     "d3": "^7.9.0",
     "docx-preview": "^0.4.1",
     "fflate": "^0.8.3",
+    "github-slugger": "^2.0.0",
     "gray-matter": "^4.0.3",
     "html-to-image": "^1.11.13",
+    "ignore": "^7.0.12",
     "katex": "^0.18.7",
     "lucide-react": "^0.469.0",
     "motion": "^11.15.0",
@@ -103,7 +109,8 @@
     "remark-directive": "^4.0.0",
     "remark-math": "^6.0.0",
     "tailwind-merge": "^2.5.5",
-    "tailwindcss": "^3.4.17"
+    "tailwindcss": "^3.4.17",
+    "three": "~0.187.0"
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.10",
@@ -112,6 +119,7 @@
     "@types/picomatch": "^4.0.3",
     "@types/react": "^18.3.18",
     "@types/react-dom": "^18.3.5",
+    "@types/three": "~0.187.0",
     "lz-string": "^1.5.0",
     "typescript": "^5.7.2"
   },

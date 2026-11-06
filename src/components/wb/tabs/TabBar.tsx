@@ -3,7 +3,7 @@
 //
 // MPA 下頁籤是存在 localStorage 的已開啟清單：每次換頁由這個 island 重畫、ensure 目前頁面，
 // idle 時以 /wb-index.json 校正快照並清掉已不存在的頁籤；也負責 ⌥ 快捷鍵與 #nc-scroll 的捲動記錄／還原。
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import {
   close,
@@ -31,6 +31,7 @@ import type { TabStoreHandle } from "@/lib/wb-tabs-store";
 import { loadWbIndex } from "@/components/wb/useWbIndex";
 import { markerCounts } from "@/lib/wb-types";
 import { toast } from "@/lib/toast";
+import { writeClipboard } from "@/lib/clipboard";
 import { useTabStore } from "./useTabStore";
 import TabStrip from "./TabStrip";
 import TabMenu from "./TabMenu";
@@ -179,6 +180,10 @@ export default function TabBar({ self = null, workspace = "" }: TabBarProps) {
     const target = handle.get().tabs.find((t) => t.key === key)?.scroll ?? 0;
     // 還原期間不記錄：內容還沒撐開時 scrollTop 會被夾住，記下來會蓋掉真正的位置
     let restoring = !location.hash && target > 0;
+    // layout 的 inline script 已在第一次繪製前還原過（loading-transitions §7）：
+    // 位置已和它設的值不同，代表 hydrate 前使用者自己捲過 → 不再搶回；相同則照舊等 load 後補設
+    const pre = el.getAttribute("data-nc-restored");
+    if (restoring && pre !== null && Math.abs(el.scrollTop - Number(pre)) > 2) restoring = false;
     let timer = 0;
 
     const save = () => handle.update((s) => setScroll(s, key, el.scrollTop));
@@ -211,8 +216,10 @@ export default function TabBar({ self = null, workspace = "" }: TabBarProps) {
     };
 
     if (restoring) {
-      apply();
-      requestAnimationFrame(apply);
+      if (pre === null) {
+        apply();
+        requestAnimationFrame(apply);
+      }
       window.addEventListener("wheel", stop, { passive: true });
       window.addEventListener("touchstart", stop, { passive: true });
       window.addEventListener("keydown", onKeyStop);
@@ -292,6 +299,16 @@ export default function TabBar({ self = null, workspace = "" }: TabBarProps) {
   }, []);
 
   const tabs = store ? store.tabs : null;
+
+  // 預繪層交接（loading-transitions §6.3）：清單已含目前頁面時移除 layout 的 #nt-pre，與這一輪的繪製同一個 frame。
+  // 還沒 ensure 完（清單裡沒有目前頁面）就先不拿掉，否則 active 頁籤會閃一下
+  const ready = tabs !== null && (activeKey === null || tabs.some((t) => t.key === activeKey));
+  useLayoutEffect(() => {
+    if (!ready) return;
+    document.getElementById("nt-pre")?.remove();
+    if (slot) document.querySelectorAll(".nt-count-pre").forEach((n) => n.remove());
+  }, [ready, slot]);
+
   const menuTab = pop?.kind === "menu" ? tabs?.find((t) => t.key === pop.key) : undefined;
 
   return (
@@ -313,10 +330,7 @@ export default function TabBar({ self = null, workspace = "" }: TabBarProps) {
             pin: (k) => handle.update((s) => togglePin(s, k)),
             copy: (t) => {
               const url = location.origin + hrefOf(t);
-              navigator.clipboard
-                .writeText(url)
-                .then(() => toast("已複製連結", "check"))
-                .catch(() => toast("無法複製連結", "x"));
+              void writeClipboard(url).then((ok) => (ok ? toast("已複製連結", "check") : toast("無法複製連結", "x")));
             },
             newWindow: (t) => {
               window.open(hrefOf(t), "_blank", "noopener");

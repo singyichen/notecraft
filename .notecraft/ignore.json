@@ -1,0 +1,11 @@
+{
+  "ignore": [
+    "# 上游隨 notecraftapp 附的範例筆記，不上本站（拿掉對應的行即可恢復）",
+    "/annual-leave-spec.mdx",
+    "/md-advanced.mdx",
+    "/md-basics.mdx",
+    "/md-viz.mdx",
+    "/testing/define-ref/",
+    "/private/"
+  ]
+}

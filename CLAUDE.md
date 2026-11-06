@@ -12,6 +12,8 @@
 - **原始講義檢視**：側邊抽屜是「副檔名 → 檢視器」註冊表（`src/lib/reference-kinds.ts` 管 build 期掃描，`src/components/islands/reference-viewers/` 管 client 端渲染）。PDF 用 `pdfjs-dist`（另有 Node legacy build 供 subagent 抽取頁面文字）、Word 用 `docx-preview`、Excel 用 `read-excel-file`（值）＋ `fflate` 與 `src/lib/xlsx-styles.ts`（底色／合併／欄寬，自寫）、CSV 用 `src/lib/csv-parse.ts`（自寫，無依賴）、PowerPoint（只收 `.pptx`，`.ppt` 比照 `.doc` 不收）用 `@aiden0z/pptx-renderer`（Apache-2.0，HTML／SVG DOM，一次只畫 `page` 那一張；張數在 build 期由 `src/lib/pptx-slide-count.ts` 以 `fflate` 只解 `presentation.xml` 算出；渲染器 1.3.0 對 `normAutofit` 文字框會縮成「一行放得下」的比例，`src/lib/pptx-autofit-fix.ts` 在每張畫完後改成「高度剛好放得下」，升級渲染器時先看上游 CHANGELOG 的 autofit 條目再決定要不要拿掉）。**不要用 LibreOffice 轉 PDF 當 pptx 的替代路徑**：2026-10-01 實測微軟正黑體會被替代成不含 CJK 字形的字型，中文整段靜默消失。**不要改用 `exceljs`**：它遇到含圖表的活頁簿會在 `reconcile` 拋 `undefined.anchors`，實驗記錄簿就是這種檔。
   **筆記正文裡指向資料檔的連結也走同一個抽屜**：`src/lib/remark-notecraft-data-links.ts` 會把副檔名落在 `REFERENCE_KINDS` 的連結標上 `data-nc-datafile`，由 `WorkbenchLayout` 的委派 click handler dispatch `nc-ref-open`。路徑先以 MDX 所在目錄為基準、找不到再退回專案根（`simulations/` 這種實驗工作區就是這樣命中的），解析規則與各種結果見 `src/lib/data-file-links.ts`。notesDir 底下的檔案 dev / 正式站都開得起來；`simulations/` 底下的只有 dev 開得起來，正式 build 自動改指 GitHub 的同一個檔（`blob/HEAD`），不會在 dist 裡留下 `/local-assets/` 連結。
   新增一種格式要動的地方（2026-10-01 加 pptx 時實際盤點）：`reference-kinds.ts` 的副檔名表與 `REFERENCE_KIND_LABEL`、新的 `reference-viewers/<Kind>Renderer.tsx`、`ReferenceViewerDrawer` 的 `REFERENCE_VIEWERS`、`astro.config.mjs` 的 `optimizeDeps.include`（漏這處的症狀是 dev 首次開啟顯示「載入失敗」，實為 504 Outdated Optimize Dep；`viewer-optimize-deps.test.ts` 會把關）、`ReferencesLibrary.tsx` 的 `KIND_ICON`／`KIND_COLOR`／`metaLabel`、`src/dev-api/handlers.mjs` 的 MIME 表；有頁數概念的格式再動 `references.ts` 的 `numPages`
+- **3D**：`three`（~0.187.0，只用於「空間關係本身是重點」的生成元件；等角 Orthographic + OrbitControls，v1.15.0，[docs/notecraft-generated-three.md](docs/notecraft-generated-three.md)）
+- **數學公式**：`remark-math` + `rehype-katex`（筆記內文的 `$…$`／`$$…$$`；KaTeX CSS 只在筆記頁載入，v1.14.0）
 - **搜尋**：`pagefind`（build 階段索引）
 - **部署**：Netlify 靜態部署，**無 Function、無執行時 API**
 - **Node ^22.x、TypeScript**
@@ -26,6 +28,9 @@ src/
 ├── components/wb/               Workbench 工作台的殼與各頁 island（Rail／Sidebar／Header／NotesWorkbench／Drawer／Palette…）
 ├── components/wb/dashboard/     Dashboard「總覽」的七張卡＋「更新月曆」的 Calendar／CalCell／CalDot／CalNote（不是獨立 island，由 DashboardWorkbench 渲染）
 ├── components/wb/tabs/          筆記頁籤：TabBar（island 入口，layout 每頁掛）＋TabStrip／TabMenu／TabAll／TabSheet／TabPop
+├── components/wb/update/        檢查更新：UpdateHost（island 入口，layout 每頁掛）＋UpdateBlock／UpdateDrawer／UpdateChangelog／UpdateToast／UpdateParts
+├── components/wb/graph/         /notes 的 Graph 檢視：GraphView（React.lazy 的入口，整個資料夾另外分包）＋GraphCanvas／GraphToolbar／GrColorMenu／GrOverlays／GrStates／useGraphViewport；窄畫面說明與骨架在 wb/GraphStatic.tsx（不進 lazy chunk）
+├── components/wb/plugins/       /plugins 的空狀態：PluginEmpty（PlInstallEmpty／PlDataEmpty／PlHint／PlCmd／PlSnippet）＋PluginEmptyArt（6 張插圖）；複製鈕狀態在 wb/useCopyState.ts（與檢查更新共用）
 ├── components/islands/          其他 React island（TagEditor、Toc、PluginHost、SeriesNav…）
 ├── layouts/WorkbenchLayout.astro  三欄工作台的殼，所有頁面共用（簡報頁例外）
 ├── lib/workbench.ts             工作台索引（build 期、模組層快取）；client-safe 型別在 lib/wb-types.ts
@@ -33,6 +38,20 @@ src/
 ├── lib/wb-calendar.ts           更新月曆的純函式（月格／日曆週／翻頁／標題）；同樣只能 import type、不 import wb-time.ts，scripts/checks/wb-calendar.mjs 斷言
 ├── lib/wb-tabs.ts               頁籤清單的純函式（ensure／close／固定／移動／LRU／鄰居／重開）；只能 import type、不碰 window，scripts/checks/wb-tabs.mjs 斷言
 ├── lib/wb-tabs-store.ts         頁籤的 localStorage 讀寫（每次寫入先重讀、storage 事件同步）；lib/toast.ts 是 ToastHost 掛載前的提示佇列
+├── lib/wb-nav.ts                換頁轉場分類（peer／drill／section）；lib/wb-tabs-prepaint.ts、lib/series-progress-pure.ts 是殼的預繪。三者都以 toString() 內嵌進 inline script：函式必須自足、只能 import type，check:wb 斷言
+├── lib/wb-plugin-env.ts          /plugins 的情境判定（derivePluginEnv／pluginRowState）；lib/official-plugins.ts 是官方外掛清單與安裝指令。兩者只能 import type，scripts/checks/wb-plugin-env.mjs 斷言（併入 check:wb）
+├── lib/update-check.ts          檢查更新的純函式（semver／落後版數／Node 需求／快取／toast 條件）；lib/changelog-parse.ts 解析 CHANGELOG。兩者只能 import type，scripts/checks/upd-*.mjs 斷言（npm run check:upd）
+├── lib/update-store.ts          檢查更新的狀態（模組單例、localStorage、fetch）；lib/update-prepaint.ts 是 Rail 圓點預繪（toString() 內嵌）；lib/update-env.ts 是 build 期環境
+├── lib/wb-graph.ts              Graph 檢視的純函式（buildGraphEdges／deriveGraph／標籤樞紐／著色分組／高亮集合＋JS 端的數值常數）；lib/wb-graph-layout.ts 是佈局（力導向、群聚、符合視窗、邊的幾何）。兩者只能 import type、不碰 window，scripts/checks/wb-graph.mjs 斷言（併入 check:wb）
+├── lib/wb-graph-worker.ts       佈局的 Web Worker（節點超過 150 時用；只能由 new Worker(new URL(…)) 載入）；lib/wb-graph-prefs.ts 是 Graph 偏好的 localStorage 讀寫
+├── lib/note-theme-prepaint.ts     筆記頁主題（np-d／np-o）與字級（--md-fs）的預繪；toString() 內嵌進 #nc-scroll 開頭的 inline script，必須自足，scripts/checks/note-theme-prepaint.mjs 斷言（併入 check:wb）
+├── lib/remark-notecraft-mark.ts   `==螢光==` → <mark>；lib/remark-notecraft-ai-markers.ts 把待生成／失敗的 @ai-visualize 標記在原位畫成提示卡。兩者由 scripts/checks/note-page-remark.mjs 斷言
+├── lib/links-scan.mjs            站內連結的掃描器（原始碼 → 連結的原始 URL 與行號）；只 import defs-scan.mjs、**不可碰 Node API**，由 defs-index.mjs 在同一次讀檔裡呼叫（結果在 DefNote.links），scripts/checks/defs.mjs 斷言
+├── lib/defs-scan.mjs             定義與引用的掃描器（原始碼 → define／include／ref 的 id 與位置）；零 import 的 .mjs，Astro、dev-api、CLI 共用，scripts/checks/defs.mjs 斷言（npm run check:defs）
+├── lib/defs-index.mjs            定義索引的純計算（buildDefIndex、slug、相對路徑改寫）；只 import github-slugger 與 defs-scan.mjs，**不可碰 Node API**：官網的「筆記頁」示範在瀏覽器裡也用它
+├── lib/defs-state.mjs            定義索引單例（globalThis；讀檔、gray-matter、git-ignored warn）；remark plugin、workbench.ts、dev-api 共用。lib/defs-integration.mjs 處理 dev 跨檔失效
+├── lib/remark-notecraft-defs-core.ts  define／include／ref 的 remark 核心，索引與路徑由呼叫端注入（app：remark-notecraft-defs.ts 接 defs-state；官網：site/src/lib/nc-render.ts 的 renderNoteSet）
+├── lib/notes-ignore.mjs          .notecraft/ignore.json 的比對、走訪（walkNotes）與 .notecraft 位置解析（resolveNotecraftDir）；.mjs 是因為 Astro、dev-api、CLI 三種環境共用，scripts/checks/notes-ignore.mjs 斷言（npm run check:ignore）；build／dev 期單例在 lib/notes-ignore-state.mjs
 ├── styles/workbench.css         工作台樣式（--wb-* token；規則裡不出現色碼字面值）
 ├── dev-api/                     dev-only API（handlers.mjs 供 astro dev 與 CLI 共用）
 ├── pages/
@@ -106,7 +125,8 @@ excerpt: 如圖 3-2 所示的偏壓電路
 
 ### 元件白名單
 
-允許 import：`react`、`motion`、`recharts`、`d3`、`clsx`、`tailwind-merge`、`lucide-react`（圖示）、專案內相對路徑。其他套件**先在對話中徵詢作者**。
+允許 import：`react`、`react-dom`、`motion`、`recharts`、`d3`、`clsx`、`tailwind-merge`、`lucide-react`（圖示）、`three`（含 `three/addons/...`）、專案內相對路徑。其他套件**先在對話中徵詢作者**。
+唯一來源是 `src/lib/generated-component-whitelist.ts`（只放 root package，子路徑以 root package 比對）；改完跑 `npm run sync-skill`。**`skill-template/` 是 sync 的產物，不要手改**——Skill／Agent 的規範一律改 `.claude/` 再 sync，改了內容要升 `sync-skill-template.mjs` 的 `VERSION`（`init-skill --check` 靠它判斷過期）。
 
 ### 視覺化選型（決策樹要點）
 
@@ -118,6 +138,7 @@ excerpt: 如圖 3-2 所示的偏壓電路
 | 時間軸 / Gantt | 手寫 SVG |
 | 含豐富欄位的比較表 | Tailwind `<table>`，不要做成 SVG |
 | 動畫 / 互動 / scroll-driven | `motion`（Framer Motion） |
+| 空間關係本身是重點（層疊、拓撲遠近） | `three` 等角 3D（規範與骨架在 content-visualize SKILL.md「3D 元件（three）」；先問「畫成等角 SVG 會不會損失資訊」） |
 | 複合需求 | 組合上述，不要二選一 |
 
 ### 草稿輔助 Skill（`diagram-design` / `archify`）
@@ -144,7 +165,10 @@ excerpt: 如圖 3-2 所示的偏壓電路
   格狀的小目標（標籤分布 treemap 方塊、月曆的 14px 色塊）例外：純 `<button>` 走 `rowHandlers`、無常駐開啟連結（Dashboard §6.4、Calendar Q2）；
   單擊即導覽的列（系列、標籤、資料檔）整列是 `<a>`
 - **資料夾與顯示用路徑一律來自真實檔案路徑**（`WbNoteRow.path`），不是會被 slug 化的 `entry.id`；`?folder=` 的值也是真實路徑。slug 只用於 `/notes/<slug>` 與 localStorage key
-- **本機絕對路徑不得出現在任何輸出的 HTML／JSON**（`/wb-index.json` 序列化後若含 cwd 會直接 throw）。唯一例外是 dev-only 的 `vscode://` 連結
+- **本機絕對路徑不得出現在任何輸出的 HTML／JSON**（`/wb-index.json` 序列化後若含 cwd 會直接 throw）。唯一例外是 dev-only 的 `vscode://` 連結。
+  build 完由 `src/lib/no-local-path-integration.mjs` 掃整個產物的 `.html`／`.json` 兜底（含 island props）；要給 dev 用的路徑（如 `rendererPath`）一律 `isDev &&` 守衛
+- **`astro build --outDir` 必須在 astro 的 cwd（app 根）底下**：否則 Astro 5 經 `<cwd>/.astro/` 中轉、把 content layer 的 `data-store.json`（筆記原文＋本機路徑）等整包複製進產物，並在 build 後刪掉 `.astro/`。
+  CLI 一律 build 到 `node_modules/.notecraft-build/<hash>/` 再搬進快取（`runAstroBuild` 會斷言）；`src/lib/content-layer-guard-integration.mjs` 在產物端兜底，`node scripts/fixtures/content-layer-leak.mjs [--app <另一磁碟的 app>]` 是整合驗證（1.10.1）
 - **相對於「今天」的量在瀏覽器算**（`lib/wb-time.ts`，當地時區），SSR 以「—」佔位；靠 localStorage 的東西（閱讀進度、收藏、偏好）SSR 一律當作沒有
 - 篩選全在 query string（`?folder=`、`?series=`、`?tag=`、`?pending=1`、`?fav=1`、`?view=`），island 內切換用 `history.replaceState`；分組與搜尋字串不進網址
 - `Escape` 走 `lib/wb-escape.ts` 的共用堆疊（Palette → Modal → Drawer → Sidebar 抽屜），浮層不要各自掛 keydown
@@ -158,6 +182,38 @@ excerpt: 如圖 3-2 所示的偏壓電路
 - **講義頁籤**（v1.8.0，issue #3）：講義庫的列是 `<a>` 指向 `/references/doc/<relPath>`（`hrefOf({kind:"ref"})` 逐段 encode），識別碼是完整相對路徑；頁碼／縮放存在頁籤的 `doc` 欄位（`setDocState`），捲動由 `ReferenceDocView` 自己還原（內容在 `load` 之後才畫出來，TabBar 的通用還原會撲空），TabBar 對 `ref:` 頁籤略過捲動 effect。
   **筆記內的引用（`nc-ref-open`、`PdfRefChip`、資料檔連結）一律仍開右側抽屜**，不要改成開頁籤；抽屜與頁籤共用 `reference-viewers/registry.ts` 與 `ReferenceToolbar`，狀態各自獨立。
   `/wb-index.json` 的 `refDocs` 供 idle prune 與標題快照，dev-only 的 `_outputs/`、`simulations/` 只在 `import.meta.env.DEV` 時列入（`getStaticPaths` 同理）；索引沒有 `refDocs`（舊快取）時一律視為存在，不清頁籤
+- **Loading 與轉場**（v1.8.0，[docs/notecraft-workbench-loading-transitions.md](docs/notecraft-workbench-loading-transitions.md)）：跨文件 View Transitions，只有 `.nc-main-pane` 命名 `nc-main`，Rail／Sidebar／頁籤列不動；
+  **`@view-transition` 必須在 head 的 inline `<style>`**（只放外部 CSS 時，快速就緒的頁面會被 Chrome 中止轉場），與 `workbench.css` 的同名規則由 `check:wb` 對照；head 固定 `rel=expect` 主區開頭的 `#nc-pane-start`（否則新頁快照沒有主區）。
+  頁籤列與 Sidebar 系列進度由 inline script 在第一次繪製前預繪，頁籤畫在**島外**的 `#nt-pre`（**不可改 island 自己的 DOM**，React 18 會 hydration mismatch），TabBar 清單含目前頁面時移除；`.nt-ind` 的 `view-transition-name` 同一份文件只能有一個。
+  捲動還原在主區結尾的 inline script（`data-nc-restored`）；`.nc-main-pane` 不設 position（Drawer 以 `.wb-main` 為定位基準）。骨架外層不用 `.wb-host` class（`Toc.tsx` 以它量寬度）。新 token 一律 `--wb-*`，每條動畫要有 reduced-motion 對應
+- **檢查更新**（v1.9.0，[docs/notecraft-workbench-update-check.md](docs/notecraft-workbench-update-check.md)）：瀏覽器端直接查 `registry.npmjs.org/notecraftapp`，**部署站也提示**（dev-only 原則的刻意例外），**不分 viewer／部署站、只有一套文案**。
+  結果存 `nc-update-v1`（**`cur` 與目前版本不同就整份作廢**）、30 分鐘節流；自動檢查失敗零痕跡（不顯示、不寫 `at`、不印錯誤），只有手動失敗顯示一行字。
+  layout 每頁掛 `wb/update/UpdateHost client:idle`（toast、Drawer portal 進 `#nc-main`）；Rail「設定與關於」的圓點由 Rail 之後的 inline script 以 `lib/update-prepaint.ts` 的 `railHint` 預繪（`toString()` 內嵌，必須自足）。
+  store 是 `lib/update-store.ts` 模組單例，`UpdateHost`／`SettingsView`／`Palette` 共用。CHANGELOG 由 jsDelivr `notecraftapp@<latest>/CHANGELOG.md` 取、GitHub raw 備援，所以 **`CHANGELOG.md` 必須留在 `package.json` 的 `files`**；
+  只列 npm 上發佈過的版本（沒單獨發佈的段落不列）、「內部」類別不顯示；版本標題必須是 `## [x.y.z] - YYYY-MM-DD`，`npm run check:upd` 以真實 CHANGELOG 斷言（含與官網 `readReleases()` 對照）
+- **Plugin 頁空狀態**（v1.11.0，[docs/notecraft-workbench-plugin-empty-states.md](docs/notecraft-workbench-plugin-empty-states.md)）：情境只由 `lib/wb-plugin-env.ts` 的 `derivePluginEnv` 判定，**只看啟用中外掛**，UI 不自己數規則或外掛；切換啟用狀態到重載前不重算（啟用後命中哪些檔要 build 才知道），只收起提示。
+  官方外掛清單與安裝指令只從 `lib/official-plugins.ts` 讀。**正式環境不出現任何 `npx` 指令**、plugins.json 範例或設定提示（「安裝新外掛」說明框也是 dev-only）；Sidebar 0 檔時 dev 留「尚無資料檔」入口、正式整段不畫。class 沿用 handoff 的 `pl-`，標題／說明／按鈕沿用 `pt-empty-*`
+- **定義與引用**（v1.12.0，[docs/notecraft-workbench-define-ref.md](docs/notecraft-workbench-define-ref.md)）：`::::define{id label?}`、`::include{id}`、`:ref[文字]{id}`。**引用只寫 id**（全域唯一、可用中文；`{#a.b}` 簡寫遇到 `.` 會變 class，一律寫 `id="…"`）；define 只能放最上層、不可巢狀、裡面不能有 `import`／`export`。
+  `remarkNotecraftDefs` **排在 `remarkDirective` 之後、`remarkNotecraftDirectives` 之前**，嵌入的子樹以 `this.parse()` 解析後走同一條管線；引用數、反向連結、錯誤只由 `defs-state.mjs` 的索引計算，UI 不自己數。
+  嵌入處與預覽卡**不渲染元件**（需要 import 的 JSX、`{…}` 運算式一律 placeholder），來源頁照常；嵌入的標題相對化、id 為 `inc-<defId>-<slug>[-n]` 並進 TOC。
+  預覽內容放在文末 `div[hidden][data-pagefind-ignore][data-nc-def-templates]`，**不可改用 `<template>`**（hast 的 template 內容在 `content`，MDX 會輸出空的 template）；`RefLayer` 複製時要先清掉 `data-enhanced`。include 也帶 `data-pagefind-ignore`。
+  「被 N 篇引用」與筆記頁的反向連結 Drawer 用 build 期 props，不抓 `/wb-index.json`；NoteDrawer 與 Palette 用 `/wb-index.json` 的 `defs`。`.ts` 端不碰 `node:*`／`process`（放 `defs-state.mjs`，避免 tsc 錯誤增加）。
+  樣式放在 `global.css` 的筆記內文區段（`prose styles for MDX note bodies` 與 `unstyled button reset` 之間），官網 `site/scripts/sync-nc-prose.mjs` 才抽得到（`:root` 在官網改成 `.ncp`，另帶 workbench.css 的 `:root` token）。
+  改了 remark plugin 或 dev-api 要**重啟 dev server**（它們在 astro.config 載入）；整合驗證 `node scripts/fixtures/define-ref-html.mjs`（先 build）、`node scripts/fixtures/define-ref-scale.mjs --build`
+- **Graph 檢視**（v1.13.0，[docs/notecraft-workbench-notes-graph.md](docs/notecraft-workbench-notes-graph.md)）：`/notes?view=graph`，文件模式（力導向）與標籤模式（群聚）。
+  **邊只由 `lib/wb-graph.ts` 的 `buildGraphEdges` 在 build 期計算**（`WbIndex.graph.edges`，同時是 `/notes` 的 island props）；連入數、級距、孤島只由 `deriveGraph` 計算，UI 不自己數。四種邊：`ref`／`inc`（每個不同的定義 id 算 1）、`link`（每出現一次算 1；含 `/notes/…`、`/view/…`、相對連結、`<PluginView src>`、資料檔的 `meta.backTo`）、`seq`（系列相鄰章節）；方向一律是「來源 → 被參照的一方」，目標不存在的直接略過。
+  佈局是固定種子的純函式、算完即靜止，`check:wb` 斷言的是**性質**（確定性、不重疊…）不是座標快照；斥力是 O(n²)，節點 > 150（`GR_DENSE`）改由 Web Worker 算、先畫骨架、模式切換不做移動動畫。
+  **SSR 不輸出任何節點**（build 期看不到 `?view=`，SSR 永遠是 List）；`GraphView` 以 `React.lazy` 另外分包，窄畫面（≤ 860）不下載它。island 自己輸出的 Body 仍要帶 `id="nc-scroll"`。
+  渲染的四條規矩：平移縮放只改 `.gr-world` 的 `transform` 與 `--k`（標題字級、熱區寬度寫成 `calc(… / var(--k))`）；淡出用根元素的 `.is-dimming` 加元素的 `.hot`、一律 `fill-opacity`／`stroke-opacity`，**不對群組設 `opacity`**；標題顯示門檻由根元素的 `data-labels`／`data-near`／`.dense` 決定；模式切換的動畫直接改 DOM 屬性、不經過 React。
+  換頁的目標（資料檔節點、標籤樞紐、「清除篩選」）是真的連結（Sidebar 的高亮是載入時畫的，island 內改網址不會更新它）；筆記節點是 `role="button"`，單擊走 `rowHandlers`、Enter／Space 等同單擊。標籤樞紐取全站前 8 個（＋篩選中的標籤），著色超過 8 組的歸灰色「其他」。
+  偏好存 `nc-graph-prefs-v1`（模式、著色、邊的開關、孤島、圖例），不進網址。token 一律 `--wb-gr-*`、只寫亮色，`gr-` 規則必須在 860px 媒體規則之前；JS 也要用的數值（半徑、縮放門檻、淡出值、移動時長）在 `wb-graph.ts` 有同名常數，`check:wb` 對照兩邊。
+  改了 `links-scan.mjs` 要**重啟 dev server**。整合驗證 `node scripts/fixtures/notes-graph-sample.mjs --build`（約 65 篇，邊與產生器記下的逐條比對；另有 `--n 300`、`--no-links`、`--out <dir>`）
+- **筆記閱讀頁**（v1.14.0，[docs/notecraft-workbench-note-page.md](docs/notecraft-workbench-note-page.md)）：`#nc-scroll` 帶 `np-scroll` 與主題 class（**`np-d` 品牌、預設**／`np-o` 經典），字級倍率寫成 `--md-fs`（16px × 0.9／1／1.1／1.2／1.25）；偏好是 `nc-workbench-prefs-v1` 的 `noteTheme`／`noteFontScale`，由 `lib/note-theme-prepaint.ts` 在第一次繪製前套上（必須在主區結尾的捲動還原之前）。
+  版面是 `.np-host`（container）＞ `.np-page`（內文＋目錄欄），斷點用 container query 量內容寬（≥ 900 目錄 220、720–900 目錄 184、< 720 單欄），不看視窗寬；H1／描述／資訊列在文內（`.md-head`），殼的頁首標題加 `titleReveal`、捲過文內 H1 才出現。
+  **內文樣式全部在 `global.css` 的 prose 區段、尺寸一律 em**（跟著 `--md-fs`）；共用規則不加前綴、主題差異以 `.np-d`／`.np-o` 前綴寫在區段最後；**沿用 `nc-*` class，不改成 handoff 的 `md-*`**。頁面殼、目錄、系列導覽在 `workbench.css` 結尾。
+  語法**不加 handoff 的別名**（`warning` 不是 `warn`、`{collapsible open}` 不是 `fold`、`<PluginView src>`）。新語法：`:::code-group`（分頁名取 `title=`）、`:::details[問題]{open}`（連續的包成 `.nc-dets`）、`:::figures`、`:::dl`（每項以粗體開頭）、`==螢光==`、` ```diff `（`lang=ts` 指定內容語言）、`$…$`；步驟多 `err`／`skip`，寫了 `status` 才有狀態 pill（`.is-set`）。
+  `.nc-viz`（GeneratedFrame）裡的標題屬於元件，不套品牌的底線與金線、不插錨點；**放大檢視（VizZoom）與「複製提示詞」維持原樣**。待生成標記在原位畫（`data-pagefind-ignore`），文首不再列。目錄**維持 H1–H3**。不做暗色模式。
+  改了 remark plugin 要重啟 dev server；驗收 fixture `node scripts/fixtures/note-page-sample.mjs --out tmp/note-page-ws`（再用 launch.json 的 `note-page-fixture-win`）或 `--build`
 - **空狀態插圖**（v1.5.1，[docs/notecraft-workbench-empty-states.md](docs/notecraft-workbench-empty-states.md)）：只有更新日誌與 AI 佇列用 `wb/EmptyState.tsx`（class 沿用 prototype 的 `pt-empty*`），其他空狀態仍是 `wb-empty`／`dv-empty` 單行字；插圖 SVG 的顏色用 `style` 寫 `--wb-*` 變數（presentation attribute 在部分瀏覽器不解析）、不新增 token；更新日誌空時清單加 `is-empty`（不捲），矮視窗（≤820 高）規則縮插圖
 
 ## Plugin System（v0.6.0）
@@ -169,6 +225,7 @@ excerpt: 如圖 3-2 所示的偏壓電路
 
 ```
 <專案根>/.notecraft/
+├── ignore.json                     排除檔案（類 .gitignore，見下方「排除檔案」）
 ├── plugins.json                    映射：哪些檔案交給哪個 plugin
 └── plugins/
     ├── _types.d.ts                 安裝時產生，供 renderer 取 PluginRendererProps
@@ -180,6 +237,8 @@ excerpt: 如圖 3-2 所示的偏壓電路
 
 ### 幾條不會變的規則
 
+- **`plugins/`（官方 store）不隨 npm 發佈**（v1.11.0）：app 根目錄的 `/plugins/*/renderer.tsx` glob 只給主 repo 用（Q17）；放進 `package.json` 的 `files` 會讓每個 viewer 工作區都「內建」官方外掛。`check-plugins` 以 `npm pack --dry-run` 把關。同 id 撞名時以 `.notecraft/plugins/` 為準（`PLUGIN_ROOTS` 與兩條 glob 的**順序即優先序**）。
+  驗證 viewer 行為要用 `npm pack` 出的套件並設 `NOTECRAFTAPP_DEV=1`，否則 CLI 會 re-exec 到 `~/.notecraft/app-<version>/` 的舊副本；`node scripts/fixtures/plugin-empty-states.mjs [--build]` 已包好
 - **`plugins.json` 頂層 `disabled: string[]`**（v1.0.0）：停用的 plugin 其所有規則在比對前就略過、等同不存在，也不參與安裝檢查（壞掉的 plugin 先停用，站仍 build 得出來）。停用不是解除安裝，renderer 仍在 client chunk
 - **`meta.backTo` 是 app 層約定的第三個 meta 欄位**（與 `meta.title`、`meta.description` 並列）：「回到來源筆記」的站內路徑，只接受單一 `/` 開頭，不符者忽略並 warn
 - **manifest 的 `meta`（v1.6.0）以 JSON Pointer 改指上述三個欄位的來源**（例：OpenAPI 的 `/info/title`、`/x-notecraft-back-to`），給資料格式不是自己定的 plugin 用；省略的鍵退回 `meta.<鍵>`。取值在 `src/lib/plugin-meta.ts`，之後的清理（去 Markdown、backTo 驗證）與 `meta.*` 相同
@@ -230,6 +289,18 @@ repo 根目錄的 `plugins/`，隨 GitHub 發佈 —— **推上預設分支就�
 - CSS 變數是 `--oar-*`（不是 handoff 的 `--wb-oa-*`，`--wb-*` 是 app 的命名空間）；斷點一律 container query
 - 與 ER **不共用模組**（各自安裝）：`markdown-text.ts` 各持一份，由 `oar-markdown.mjs` 對照兩邊輸出；骨架樣式以相同數值對齊
 
+## 排除檔案 `.notecraft/ignore.json`（v1.10.0）
+
+[docs/notecraft-ignore-config.md](docs/notecraft-ignore-config.md)。`{ "ignore": [...] }`，語法同 `.gitignore`（`ignore` 套件），基準是 notesDir；被排除的檔**一律不讀**（筆記、plugin 資料檔、附件都算）。
+
+- **走訪 notesDir 一律經 `walkNotes()`／`walkNotesAsync()`**（`lib/notes-ignore.mjs`），不要再自寫 `readdir` 遞迴；`.notecraft/` 的位置只由 `resolveNotecraftDir()` 決定（plugins.json、ignore.json、`@notes` alias 同一處，只讀一份）
+- **內建排除**（`.` 開頭、`node_modules/`、`dist/`）加在使用者規則之後，`!` 解除不了
+- 筆記 collection 用 `lib/ignoring-loader.ts` 包 `glob()`：**`glob()` 的 pattern 不可放使用者的負向 pattern**（Astro dev watcher 以 `picomatch.isMatch(陣列)` 判斷，負向 pattern 會讓被排除的筆記冒出來、甚至把 .json 當筆記）。初次載入用 `walkNotes()` 算出的字面負向 pattern，dev watcher 與 `store.set` 另外過濾
+- `ignore.json` 格式錯誤一律 build fail；dev 期間它一變動就重啟 dev server（`lib/notes-ignore-integration.mjs`），`serve` 換新比對器並 rebuild
+- 被排除 = 不出現在任何產物：`lib/ignore-guard-integration.mjs` 在 build 後掃 `notes-assets/` 與 `/wb-index.json`，違反直接 throw
+- 刪筆記判斷孤兒元件時**連被排除的筆記一起看**（它們還在硬碟上）
+- 整合驗證：`node scripts/fixtures/ignore-sample.mjs`（build）、`node scripts/fixtures/ignore-dev.mjs`（dev API、dev 重啟、CLI 快取與 serve watcher），各要幾分鐘，不在 `check-plugins` 裡
+
 ## dev-only API（僅 `astro dev` 期間存在，build 時不輸出）
 
 - `POST /api/notes` — 新增筆記（建檔 + 預設 frontmatter + AI 標記範本）
@@ -237,11 +308,12 @@ repo 根目錄的 `plugins/`，隨 GitHub 發佈 —— **推上預設分支就�
 - `PUT /api/tags/:old` — 重新命名標籤（合併語意：若新名稱已存在則自動去重）
 - `DELETE /api/tags/:tag` — 從所有 MDX 移除該標籤
 - `PUT /api/notes/:slug/tags` — 替換單篇筆記標籤
-- `DELETE /api/notes/:slug` — 刪除筆記（連帶處理未被其他筆記引用的生成元件）
+- `DELETE /api/notes/:slug` — 刪除筆記（連帶處理未被其他筆記引用的生成元件）；刪除計畫（`GET …/delete-plan`）另列出引用本篇定義的筆記（`referencedBy`，只提醒、不擋）
 - `GET /api/folders` — notesDir 底下所有層的資料夾（遞迴），供新增筆記的下拉選單
 - `PUT /api/plugins/:id` body `{ enabled }` — 增刪 `.notecraft/plugins.json` 頂層 `disabled` 陣列的元素；只動這個鍵、保留作者排版
 
 **所有 endpoint 僅綁定 `localhost`**。寫入後受影響 MDX 的 `updatedAt` 都要更新。
+被 `.notecraft/ignore.json` 排除的檔對所有 endpoint 都不存在（標籤統計／改名／刪除不碰、slug 查找 404、資料夾不列、`/notes-assets/*` 404、新增到被排除的位置 400）。
 
 ### 標籤字串規範
 
@@ -262,6 +334,8 @@ trim 前後空白 → 過濾空字串 → 同篇內不分大小寫去重（保�
 判定方式：`import.meta.env.DEV`。（舊文件提到的 `LOCAL_EDIT=1` build 旗標在程式碼裡並不存在，2026-09-22 更正。）
 
 ## 工作慣例
+
+- **範例筆記**（2026-11-06 合併上游 1.15.0 時決定）：上游隨 repo 附的範例筆記（`md-basics`、`md-advanced`、`md-viz`、`annual-leave-spec`、`testing/define-ref/`）在本專案由 `.notecraft/ignore.json` 排除，本站只顯示作者自己的筆記；`series.registry.ts` 維持本專案的系列，**不採用**上游的 `ARCHIVED_SERIES`。之後再合併上游時，這兩個檔要逐項看過：上游改的是它自己範例站的內容，`series.registry.ts` 不一定會出現衝突，會靜默把本專案的系列搬走
 
 - AI 視覺化**不在 CI 階段執行**，僅由作者於本機 Claude Code 對話觸發，產出隨原始碼一起 commit
 - Dashboard 統計於 `astro build` 階段透過 Content Collections 預計算為 JSON，**無執行時 API**

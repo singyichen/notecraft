@@ -12,10 +12,20 @@
  * 直覺跟 GitHub / VS Code 一致（點 .md/.mdx 檔就跳到那頁），不用作者記得手寫 `/notes/<slug>`。
  * 只認 .md / .mdx 副檔名；query / hash 會保留。落在 notesDir 外的連結不動。
  *
- * URL 提供端見 `src/dev-api/integration.ts` 的 `handleNotesAsset`。
+ * URL 提供端：view／serve 期間由 `src/dev-api/handlers.mjs` 的 `handleNotesAsset` 即時送出；
+ * build 時由 `src/lib/notes-assets-integration.ts` 把產物引用到的檔案複製進 `<outDir>/notes-assets/`。
  */
 
 import path from "node:path";
+import { getNotesIgnore } from "./notes-ignore-state.mjs";
+
+function decodeSafe(s: string): string {
+  try {
+    return decodeURI(s);
+  } catch {
+    return s;
+  }
+}
 
 interface MdNode {
   type: string;
@@ -42,12 +52,36 @@ function splitUrl(url: string): { pathPart: string; suffix: string } {
   return { pathPart: m?.[1] ?? url, suffix: m?.[2] ?? "" };
 }
 
+// 同一組（來源, 目標）只 warn 一次：dev 下同一篇會被重複 transform
+const warned = new Set<string>();
+function warnOnce(key: string, msg: string): void {
+  if (warned.has(key)) return;
+  warned.add(key);
+  console.warn(msg);
+}
+
+/** .notecraft/ignore.json（docs/notecraft-ignore-config.md §5.5）：rel 為 / 分隔、相對 notesDir。 */
+function ignoredRel(rel: string): boolean {
+  try {
+    return getNotesIgnore().ignores(rel);
+  } catch {
+    return false; // 含 . 片段等怪路徑：交給原本的流程
+  }
+}
+
 function walk(node: MdNode, notesDir: string, mdxAbsPath: string) {
+  const from = () => path.relative(notesDir, mdxAbsPath).split(path.sep).join("/");
   if (node.type === "image" && isRewritable(node.url)) {
     const imgAbs = path.resolve(path.dirname(mdxAbsPath), node.url!);
     const rel = path.relative(notesDir, imgAbs);
     if (rel && !rel.startsWith("..") && !path.isAbsolute(rel)) {
-      node.url = `/notes-assets/${rel.split(path.sep).join("/")}`;
+      const posix = rel.split(path.sep).join("/");
+      if (ignoredRel(decodeSafe(splitUrl(posix).pathPart))) {
+        // 被排除的檔不改寫、不複製（隱私保證，規格 §6）；連結維持原樣，在產物裡是壞圖
+        warnOnce(`img:${from()}>${posix}`, `[ignore] ${from()} 引用被排除的 ${posix}，不會出現在產物`);
+      } else {
+        node.url = `/notes-assets/${posix}`;
+      }
     }
   }
   if (node.type === "link" && isRewritable(node.url)) {
@@ -56,7 +90,12 @@ function walk(node: MdNode, notesDir: string, mdxAbsPath: string) {
       const linkAbs = path.resolve(path.dirname(mdxAbsPath), pathPart);
       const rel = path.relative(notesDir, linkAbs);
       if (rel && !rel.startsWith("..") && !path.isAbsolute(rel)) {
-        const slug = rel.replace(/\.mdx?$/i, "").split(path.sep).join("/");
+        const posix = rel.split(path.sep).join("/");
+        const slug = posix.replace(/\.mdx?$/i, "");
+        // 被排除的筆記照樣改寫（不改寫也是壞連結），但讓作者知道會 404
+        if (ignoredRel(decodeSafe(posix))) {
+          warnOnce(`link:${from()}>${posix}`, `[ignore] ${from()} 連到被排除的 ${posix}，該連結會 404`);
+        }
         node.url = `/notes/${slug}${suffix}`;
       }
     }

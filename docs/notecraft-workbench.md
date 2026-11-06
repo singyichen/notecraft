@@ -138,6 +138,8 @@ Prototype 是一棵 React tree，但正式版**不照搬成 SPA**。理由：
 
 代價是換頁會整頁重載，Sidebar 的展開狀態與捲動位置必須自己保存（§4.4）。
 
+v1.8.0 起換頁走瀏覽器原生的跨文件 View Transitions：只有主區（`.nc-main-pane`）淡入，Rail、Sidebar、頁籤列不動；頁籤列與系列進度由 inline script 在第一次繪製前預繪。見 [notecraft-workbench-loading-transitions.md](notecraft-workbench-loading-transitions.md)。
+
 ### 4.2 `WorkbenchLayout.astro`
 
 取代 `BaseLayout.astro`，由各頁傳入頁首資料：
@@ -166,13 +168,18 @@ Prototype 是一棵 React tree，但正式版**不照搬成 SPA**。理由：
   <Sidebar />                   靜態 .astro + 一個小 island
   <div class="wb-main">
     <TabBar client:load />      頁籤列 34px（v1.7.0 起，見 notecraft-workbench-note-tabs.md）
-    <Header />                  靜態 .astro（互動型 Tab 例外，見 §4.3）
-    <slot name="toolbar" />
-    <div id="nc-scroll" class="wb-body"> <slot /> </div>
+    <div id="nt-pre" />         頁籤列預繪層（v1.8.0；inline script 畫、TabBar 畫好後移除）
+    <div class="nc-main-pane">  換頁時唯一轉場的區塊（view-transition-name: nc-main，v1.8.0）
+      <Header />                靜態 .astro（互動型 Tab 例外，見 §4.3）
+      <slot name="toolbar" />
+      <div id="nc-scroll" class="wb-body"> <slot /> </div>
+    </div>
   </div>
 </div>
-<Palette client:idle />  <ToastHost client:idle />  {isDev && <NewNoteModal client:idle />}
+<Palette client:idle />  <ToastHost client:idle />  <UpdateHost client:idle />  {isDev && <NewNoteModal client:idle />}
 ```
+
+`UpdateHost`（v1.9.0）：檢查更新的 host，開頁自動查 npm、渲染發現新版的 toast 與更新內容 Drawer；Rail「設定與關於」上的更新圓點由 Rail 之後的 inline script 預繪。見 [notecraft-workbench-update-check.md](notecraft-workbench-update-check.md)。
 
 `id="nc-scroll"` **刻意保留**在新的捲動容器上：`Toc.tsx` 與 `notes/[...slug].astro` 的 inline script 共 4 處靠它找捲動容器，保留 id 就不必改它們。
 
@@ -189,6 +196,7 @@ Prototype 是一棵 React tree，但正式版**不照搬成 SPA**。理由：
 | `/notes`、Dashboard、`/plugins` 的 Header Tab + Toolbar + Body + Drawer | **同一個 island** | Tab 切換、篩選、選取是同一份 state；拆開就要跨 island 同步 |
 | Palette | island，`client:idle` | 每頁都要有；資料延遲載入（§5.3） |
 | 頁籤列（v1.7.0） | island，`client:load` | 清單在 localStorage；SSR 只輸出 34px 空列。見 [notecraft-workbench-note-tabs.md](notecraft-workbench-note-tabs.md) |
+| 檢查更新（v1.9.0） | island `UpdateHost`，`client:idle`；Rail 圓點是 inline script 預繪 | 結果在 localStorage、查詢在瀏覽器端；見 [notecraft-workbench-update-check.md](notecraft-workbench-update-check.md) |
 
 因此 `/notes` 這類頁面的 Header 會由 island 自己渲染（island 內含一份 React 版 `WbHeader`），`.astro` 版與 React 版共用同一份 CSS class，視覺一致由 `workbench.css` 保證。
 
@@ -204,6 +212,7 @@ Prototype 是一棵 React tree，但正式版**不照搬成 SPA**。理由：
 | Drawer 選取 | island state，不進 URL | 換頁即關 |
 | 閱讀進度、收藏 | 既有 key 不動 | `nc-reading-progress-v1`、`nc:favorites` |
 | 已開啟的頁籤（v1.7.0） | `localStorage["nc-tabs-v1:<workspaceLabel>"]` | 依工作區分開；含標題快照與每個頁籤的捲動位置（note-tabs §4） |
+| 檢查更新的結果（v1.9.0） | `localStorage["nc-update-v1"]` | 30 分鐘內不重查；目前版本不同就整份作廢；含已跳過 toast 與略過的版本（update-check §4.5） |
 
 ### 4.5 z-index 階梯
 
@@ -214,11 +223,12 @@ Prototype 是一棵 React tree，但正式版**不照搬成 SPA**。理由：
 | Sidebar 抽屜（平板／手機）與其 scrim | 500 / 490 |
 | Drawer 與其 scrim | 600 / 590 |
 | 手機底部 Tab bar | 650 |
+| 發現新版 toast（v1.9.0，`--wb-z-upd-toast`） | 700 |
 | `VizZoom` 放大檢視（既有） | 900 |
 | Palette、`NewNoteModal`、`ConfirmDialog`、Toast（既有 1000 級） | 1000 |
 | 頁籤右鍵選單、全部頁籤下拉、手機頁籤抽屜（v1.7.0） | 1000 |
 
-`Escape` 的關閉順序由上而下：Palette → Modal → Drawer → Sidebar 抽屜。頁籤的選單、下拉與手機抽屜（v1.7.0）也走同一個堆疊，後開的先關。
+`Escape` 的關閉順序由上而下：Palette → Modal → Drawer → Sidebar 抽屜。頁籤的選單、下拉與手機抽屜（v1.7.0）也走同一個堆疊，後開的先關。發現新版的 toast 與更新內容 Drawer（v1.9.0）同樣登記在堆疊上：Drawer 開著時 Esc 只關 Drawer。
 
 ---
 
@@ -356,7 +366,7 @@ export async function getWorkbenchIndex(): Promise<WbIndex>   // 模組層快取
 | `/notes?series=<id>`、`?tag=<名稱>` | 系列／標籤篩選 |
 | `/notes?pending=1` | AI 標記佇列（Rail 的 sparkle） |
 | `/notes?fav=1`、`?hasAi=1`、`?nofm=1` | 其餘篩選 chip：只看收藏（Q11）、含 AI 標記、無 frontmatter。可彼此組合，也可與 `folder`／`series`／`tag` 組合 |
-| `/notes?view=list\|board\|table\|timeline` | view Tab（Q3 已定案）。值一律小寫；未帶或值無效時用設定頁的預設 view；手機忽略此參數、一律 List。可與篩選參數組合，例 `?folder=a/b&view=table` |
+| `/notes?view=list\|board\|table\|timeline\|graph` | view Tab（Q3 已定案）。值一律小寫；未帶或值無效時用設定頁的預設 view；手機忽略此參數、一律 List（**例外**：`graph` 在手機上留在 Graph，顯示「需要較寬的畫面」）。`graph` 是 v1.13.0 新增的第五個檢視，見 [notecraft-workbench-notes-graph.md](./notecraft-workbench-notes-graph.md)。可與篩選參數組合，例 `?folder=a/b&view=table` |
 | `/notes/<slug>` | 筆記內文（不變） |
 | `/series`、`/series/<id>` | 不變 |
 | `/tags` | 不變 |
@@ -561,6 +571,8 @@ Prototype 的色碼絕大多數**本來就是 DS 的值**，只是寫成了 hex�
 
 ### 8.3 筆記內文 `/notes/[...slug]`（Q12 已定案）
 
+> 定義與引用（v1.12.0）在筆記頁加了頁首「被引用 N」入口、meta 列入口與反向連結 Drawer，內文的 define／include／ref 與預覽卡見 [notecraft-workbench-define-ref.md](./notecraft-workbench-define-ref.md) §5–§8。
+
 README §5.3 說「隱藏 NoteView 自帶 header」，但 prototype 的 CSS 實際只對 `.wb-viewhost`（資料檔頁）做了 `header{display:none}`；筆記頁的標籤編輯、h1、描述、meta 列、動作列在 prototype 裡全部都還在，標題因此出現兩次。Codebase 的筆記頁也沒有 `<header>` 元素，這些東西直接寫在 `.astro` 裡。定案：**頁首接手「標題 + 動作」，其餘留在內文**。
 
 ```
@@ -647,12 +659,14 @@ README §5.3 說「隱藏 NoteView 自帶 header」，但 prototype 的 CSS 實�
 
 ### 8.6 Plugin `/plugins`
 
+> 沒有外掛、沒有資料檔、裝了卻沒在用時的畫面（Header 徽章、Toolbar、Sidebar、兩個頁籤的空狀態與提示）見 [notecraft-workbench-plugin-empty-states.md](./notecraft-workbench-plugin-empty-states.md)（v1.11.0）。
+
 資料來源全是 build 期已知的：`getPlugins()`（manifest）、`.notecraft/plugins.json`（映射與 options）、`getDataFiles()`（命中的檔）、`.installed.json`（來源與 commit）、plugin 資料夾的檔案清單。
 
 | Prototype 欄位 | 正式版來源 |
 | :-- | :-- |
 | 標題／版本／作者／描述／homepage／engines／dataSchema／example | `notecraft-plugin.json` |
-| 來源（本機／npm／git） | `.installed.json`；主 repo 的官方 store 沒有這個檔 → 顯示「內建」 |
+| 來源（本機／npm／git） | `.installed.json`；主 repo 的官方 store 沒有這個檔 → 顯示「內建 ・ 主 repo 官方 store」（官方 store 不隨 npm 發佈，viewer 不會出現「內建」，v1.11.0）。本機來源顯示 `local:<資料夾名>`，不輸出絕對路徑（v1.8.5） |
 | 映射規則 glob、設定覆寫 JSON | `plugins.json` 裡所有指向該 plugin 的 mapping（可能不只一條） |
 | 命中的資料檔 | `getDataFiles()` 依 `pluginId` 過濾。不在 client 重算 glob |
 | 外掛檔案列表 | build 期 `fs.readdirSync` |
@@ -757,7 +771,7 @@ README §5.3 說「隱藏 NoteView 自帶 header」，但 prototype 的 CSS 實�
 
   | 項目 | 選項 | 預設 | 作用 |
   | :-- | :-- | :-- | :-- |
-  | 預設 view | List／Board／Table／Timeline | List | 進 `/notes` 且網址沒帶 `?view=` 時用哪一種（Q3）；手機一律 List |
+  | 預設 view | List／Board／Table／Timeline／Graph（v1.13.0） | List | 進 `/notes` 且網址沒帶 `?view=` 時用哪一種（Q3）；手機一律 List |
   | List 預設分組 | 資料夾／系列／標籤／月份 | 資料夾 | List 一開始的分組方式。在 Toolbar 切換分組時也會回寫這個值（prototype 如此） |
   | 目錄預設狀態 | 全部收合／全部展開 | 全部收合 | 開啟筆記時目錄子項目的初始狀態；SSR 一律收合，掛載後才套用。目錄標頭的按鈕仍可隨時切換，但不回寫設定 |
 
@@ -767,6 +781,8 @@ README §5.3 說「隱藏 NoteView 自帶 header」，但 prototype 的 CSS 實�
 - 流程列與技術選型文案照抄 `PT_FLOW`／`PT_STACK`
 
 ### 8.9 Palette ⌘K（Q13 已定案）
+
+> v1.12.0 起有輸入時最上方多一個「定義」分區（以 id 或定義名稱比對，Enter 前往定義並標示），見 [notecraft-workbench-define-ref.md](./notecraft-workbench-define-ref.md) §8.3。筆記 Drawer 的「被引用／本篇定義／引用的定義」三段見同文件 §8.2。
 
 新設計有**兩個**搜尋入口，職責不同：
 

@@ -5,7 +5,19 @@ import { promises as fs } from "node:fs";
 import { createRequire } from "node:module";
 import fsSync from "node:fs";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 import matter from "gray-matter";
+import { slug as githubSlug } from "github-slugger";
+import { buildDefIndex } from "../lib/defs-state.mjs";
+import {
+  createNotesIgnore,
+  IGNORED_LOCATION_MESSAGE,
+  loadNotesIgnore,
+  resolveNotecraftDir as resolveNotecraftDirFromEnv,
+  toNotesRel,
+  walkNotesAsync,
+} from "../lib/notes-ignore.mjs";
+import { toVscodeHref } from "../lib/vscode-href.mjs";
 
 // pdfjs-dist 的 cmaps/ 與 standard_fonts/ 是解析 PDF（CJK CMap、非嵌入標準字型）必要的靜態
 // 資料，跟 notesRoot 無關，是這個 app 自己（不是使用者 notesDir）的一部分，所以不用
@@ -30,14 +42,45 @@ export function isViewerMode() {
   return Boolean(process.env.NOTECRAFT_NOTES_DIR);
 }
 
-/** .notecraft/ 的位置：與 astro.config.mjs、src/lib/plugins.ts 同一套優先序（USER_CWD > NOTES_DIR > cwd）。 */
+/** .notecraft/ 的位置：唯一實作在 src/lib/notes-ignore.mjs（USER_CWD > NOTES_DIR > cwd）。 */
 export function resolveNotecraftDir(cwd) {
-  const userCwd = process.env.NOTECRAFT_USER_CWD;
-  if (userCwd) return path.join(path.resolve(userCwd), ".notecraft");
-  const notesDir = process.env.NOTECRAFT_NOTES_DIR;
-  if (notesDir) return path.join(path.resolve(cwd, notesDir), ".notecraft");
-  return path.join(cwd, ".notecraft");
+  const env = { ...process.env };
+  if (env.NOTECRAFT_NOTES_DIR) env.NOTECRAFT_NOTES_DIR = path.resolve(cwd, env.NOTECRAFT_NOTES_DIR);
+  return resolveNotecraftDirFromEnv(env, cwd);
 }
+
+// ── .notecraft/ignore.json（docs/notecraft-ignore-config.md §5.3）─────────────────
+// 被排除的檔不讀也不寫：標籤統計／改名／刪除、資料夾下拉、slug 查找、notes-assets 都看不到它。
+// 依 notecraftDir 快取一份；astro dev 由 notes-ignore-integration 重啟前 reset，CLI serve 換新比對器時 reset。
+// 格式錯誤時 throw，由各分派入口的 catch 回 500（訊息不含本機絕對路徑）。
+
+const ignoreCache = new Map();
+
+function ignoreFor(cwd) {
+  const dir = resolveNotecraftDir(cwd);
+  let ig = ignoreCache.get(dir);
+  if (!ig) {
+    ig = loadNotesIgnore(dir);
+    ignoreCache.set(dir, ig);
+  }
+  return ig;
+}
+
+export function resetHandlersIgnore() {
+  ignoreCache.clear();
+}
+
+/** 絕對路徑（或資料夾）是否被排除；落在 notesRoot 外 → false（由 assertSafePath 另外擋）。 */
+function isIgnored(ig, notesRoot, abs, isDir = false) {
+  const rel = toNotesRel(notesRoot, abs);
+  if (!rel) return false;
+  try {
+    return ig.ignores(isDir ? `${rel}/` : rel);
+  } catch {
+    return false;
+  }
+}
+
 
 export async function assertSafePath(candidate, notesRoot) {
   const abs = path.resolve(candidate);
@@ -45,15 +88,71 @@ export async function assertSafePath(candidate, notesRoot) {
   if (!abs.startsWith(rootWithSep) && abs !== notesRoot) {
     throw new Error(`path outside notesRoot: ${abs}`);
   }
+  // 目標還不存在（新增筆記、要 mkdir 的資料夾）時，realpath 往上找最近一層存在的祖先：
+  // 否則 notesRoot 內指向外面的 symlink 資料夾，會讓尚未建立的檔案繞過檢查。
+  // notesRoot 本身可能在 symlink 底下（macOS 的 /tmp），所以兩邊都比對 realpath。
+  let realRoot = notesRoot;
   try {
-    const real = await fs.realpath(abs);
-    if (!real.startsWith(rootWithSep) && real !== notesRoot) {
-      throw new Error(`symlink target outside notesRoot: ${real}`);
+    realRoot = await fs.realpath(notesRoot);
+  } catch {}
+  const realRootWithSep = realRoot.endsWith(path.sep) ? realRoot : realRoot + path.sep;
+  let probe = abs;
+  for (;;) {
+    try {
+      const real = await fs.realpath(probe);
+      const inside =
+        real === notesRoot || real.startsWith(rootWithSep) || real === realRoot || real.startsWith(realRootWithSep);
+      if (!inside) throw new Error(`symlink target outside notesRoot: ${real}`);
+      break;
+    } catch (e) {
+      if (!e || e.code !== "ENOENT") throw e;
+      const parent = path.dirname(probe);
+      if (probe === notesRoot || parent === probe) break;
+      probe = parent;
     }
-  } catch (e) {
-    if (e && e.code !== "ENOENT") throw e;
   }
   return abs;
+}
+
+/**
+ * GET /api/folders 回傳的每一項都以這個字串開頭：notesRoot 在 cwd 底下時是相對路徑
+ * （主專案 "src/content/notes/"），否則是 notesRoot 絕對路徑加分隔符（viewer 的筆記資料夾通常不在 package root 底下）。
+ */
+function folderDisplayRoot(cwd, notesRoot) {
+  const rel = path.relative(cwd, notesRoot);
+  if (!rel || rel.startsWith("..") || path.isAbsolute(rel)) {
+    return notesRoot.endsWith(path.sep) ? notesRoot : notesRoot + path.sep;
+  }
+  return rel.split(path.sep).join("/") + "/";
+}
+
+/**
+ * 新增筆記表單的 folder 值 → notesRoot 底下的絕對資料夾路徑。
+ * 接受 /api/folders 的原樣（含上面的顯示前綴）或相對 notesRoot 的路徑；空值＝notesRoot。
+ * 其餘絕對路徑、含 ".." 的路徑一律拒絕；symlink 逃脫由 assertSafePath 擋。
+ */
+async function resolveNoteFolder(cwd, notesRoot, raw) {
+  let folder = typeof raw === "string" ? raw.trim().replace(/\\/g, "/") : "";
+  const displayRoot = folderDisplayRoot(cwd, notesRoot).replace(/\\/g, "/");
+  const displayBare = displayRoot.replace(/\/+$/, "");
+  if (folder === displayBare || folder.startsWith(displayRoot)) {
+    folder = folder.slice(displayRoot.length);
+  } else if (folder.startsWith("/") || /^[A-Za-z]:/.test(folder)) {
+    throw new Error("folder must be inside notesRoot");
+  }
+  const segments = folder.split("/").filter((s) => s && s !== ".");
+  if (segments.includes("..")) throw new Error("folder must not contain ..");
+  return assertSafePath(path.join(notesRoot, ...segments), notesRoot);
+}
+
+/** 檔案路徑 → Content Layer glob loader 的 entry id（逐段 github-slugger、去掉結尾 /index）。 */
+function noteIdFromFile(notesRoot, abs) {
+  const rel = path.relative(notesRoot, abs).replace(/\.(mdx|md)$/i, "");
+  return rel
+    .split(path.sep)
+    .map((s) => githubSlug(s))
+    .join("/")
+    .replace(/\/index$/, "");
 }
 
 // ── 小工具 ────────────────────────────────────────────────
@@ -101,27 +200,19 @@ function json(res, status, body) {
   res.end(JSON.stringify(body));
 }
 
-async function listMdx(root) {
+/** notesRoot 底下所有沒被排除的 .md／.mdx（絕對路徑）。 */
+async function listMdx(root, ig) {
   const out = [];
-  async function walk(dir) {
-    let ents;
-    try {
-      ents = await fs.readdir(dir, { withFileTypes: true });
-    } catch {
-      return;
-    }
-    for (const e of ents) {
-      const p = path.join(dir, e.name);
-      if (e.isDirectory()) {
-        if (e.name.startsWith(".")) continue;
-        await walk(p);
-      } else if (e.name.endsWith(".mdx") || e.name.endsWith(".md")) {
-        out.push(p);
-      }
-    }
-  }
-  await walk(root);
+  await walkNotesAsync(root, ig, ({ rel, abs }) => {
+    if (rel.endsWith(".mdx") || rel.endsWith(".md")) out.push(abs);
+  });
   return out;
+}
+
+/** API 用的 slug 查找：被排除的筆記當作不存在（舊頁籤或書籤對它改標籤、刪除都是 404）。 */
+async function findVisibleNoteFile(notesRoot, slug, ig) {
+  const file = await findNoteFile(notesRoot, slug);
+  return file && !isIgnored(ig, notesRoot, file) ? file : null;
 }
 
 // slug 對應到 <notesRoot>/<slug>.mdx 或 .md（slug 對齊 Content Layer glob 的 entry.id，
@@ -220,7 +311,7 @@ const MIME_MAP = {
 // `/notes-assets/*`（root = notesRoot）與 dev-only 的 `/local-assets/*`（root = 專案 cwd）
 // 共用同一個實作：差別只有 URL 前綴與 root，逃逸與 symlink 檢查都由 assertSafePath 依 root
 // 判定，不需要各寫一套。
-async function handleRootedAsset(root, prefix, urlPath, res) {
+async function handleRootedAsset(root, prefix, urlPath, res, ig = null) {
   const raw = urlPath.slice(prefix.length).split("?")[0].split("#")[0];
   let relPath;
   try {
@@ -235,6 +326,11 @@ async function handleRootedAsset(root, prefix, urlPath, res) {
   } catch (e) {
     res.statusCode = 400;
     return res.end(e.message);
+  }
+  // 路徑防護之後才看排除（順序不可反：逃逸路徑要是 400 而不是 404）
+  if (ig && isIgnored(ig, root, abs)) {
+    res.statusCode = 404;
+    return res.end("ignored");
   }
   try {
     const stat = await fs.stat(abs);
@@ -289,9 +385,113 @@ async function handlePdfjsStaticAsset(baseDir, prefix, urlPath, res) {
   }
 }
 
+// ── build 產物的 notes-assets/ ────────────────────────────────────────
+// build 完掃輸出的 HTML，把裡面出現的 `<base>/notes-assets/<路徑>` 對應的檔案從筆記資料夾複製到
+// `<outDir>/notes-assets/<路徑>`。看的是「產物實際引用的網址」而不是 remark 階段收集：
+// - 作者手寫的 `/notes-assets/specs/v2.pdf` 連結（一般連結不會被 remark 改寫）也涵蓋
+// - Astro 會快取 .md 的渲染結果，快取命中時 remark 外掛根本不會跑，收集清單會缺
+// 只複製 MIME_MAP 內的副檔名、路徑要通過 assertSafePath（拒絕 `..` 與 symlink 逃脫）。
+// 找不到或被拒的只回報，不讓 build 失敗（與 view／serve 執行期 404 的行為一致）。
+
+/** 從一段 HTML 抽出 notes-assets 的相對路徑（已 decode、去掉 query／hash）。純函式，不碰檔案系統。 */
+export function extractNotesAssetPaths(html, base = "") {
+  const prefix = `${base.replace(/\/+$/, "")}/notes-assets/`;
+  const escaped = prefix.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const re = new RegExp(`${escaped}([^"'\\s<>()?#]+)`, "g");
+  const out = new Set();
+  for (const m of html.matchAll(re)) {
+    // 屬性值裡的 & 會是 &amp;；其他實體在檔名裡極少見，不處理
+    let raw = m[1].replace(/&amp;/g, "&");
+    try {
+      raw = decodeURIComponent(raw);
+    } catch {
+      continue;
+    }
+    out.add(raw);
+  }
+  return out;
+}
+
+export async function copyReferencedNotesAssets(notesRoot, outDir, base = "", ig = null) {
+  const refs = new Set();
+  async function walk(dir) {
+    let ents;
+    try {
+      ents = await fs.readdir(dir, { withFileTypes: true });
+    } catch {
+      return;
+    }
+    for (const e of ents) {
+      const abs = path.join(dir, e.name);
+      if (e.isDirectory()) await walk(abs);
+      else if (e.isFile() && e.name.endsWith(".html")) {
+        for (const p of extractNotesAssetPaths(await fs.readFile(abs, "utf-8"), base)) refs.add(p);
+      }
+    }
+  }
+  await walk(outDir);
+
+  const destRoot = path.join(outDir, "notes-assets");
+  const copied = [];
+  const missing = [];
+  const rejected = [];
+  const ignored = [];
+  for (const rel of [...refs].sort()) {
+    if (!MIME_MAP[path.extname(rel).toLowerCase()]) {
+      rejected.push(rel);
+      continue;
+    }
+    const src = path.resolve(notesRoot, rel);
+    try {
+      await assertSafePath(src, notesRoot);
+    } catch {
+      rejected.push(rel);
+      continue;
+    }
+    // 被 ignore.json 排除的檔不進產物，即使有筆記（或手寫連結）引用它（規格 §6）
+    if (ig && isIgnored(ig, notesRoot, src)) {
+      ignored.push(rel);
+      continue;
+    }
+    try {
+      if (!(await fs.stat(src)).isFile()) throw new Error("not a file");
+    } catch {
+      missing.push(rel);
+      continue;
+    }
+    // 目的地用 notesRoot 相對路徑重組，保證落在 destRoot 內
+    const dest = path.join(destRoot, path.relative(notesRoot, src));
+    await fs.mkdir(path.dirname(dest), { recursive: true });
+    await fs.copyFile(src, dest);
+    copied.push(rel);
+  }
+  return { copied, missing, rejected, ignored };
+}
+
+/**
+ * astro:build:done 用：viewer 模式才動作，base 取自 NOTECRAFT_BASE（與 remark-notecraft-base 同一套正規化）。
+ * HTML 裡是 `/base/notes-assets/...`，產物仍放 `<outDir>/notes-assets/...`（outDir 對應站台根 base）。
+ * log 只印筆記資料夾相對路徑，不輸出本機絕對路徑。
+ */
+export async function copyNotesAssetsAfterBuild(outDirUrl, logger) {
+  if (!isViewerMode()) return;
+  const raw = process.env.NOTECRAFT_BASE ?? "";
+  const base = raw === "/" ? "" : raw.replace(/\/+$/, "");
+  const { copied, missing, rejected, ignored } = await copyReferencedNotesAssets(
+    resolveNotesRoot(process.cwd()),
+    fileURLToPath(outDirUrl),
+    base,
+    ignoreFor(process.cwd()),
+  );
+  if (copied.length) logger.info(`複製 ${copied.length} 個筆記附件到 notes-assets/`);
+  for (const p of ignored) logger.warn(`略過被 .notecraft/ignore.json 排除的附件：notes-assets/${p}`);
+  for (const p of missing) logger.warn(`筆記引用的附件不存在：notes-assets/${p}`);
+  for (const p of rejected) logger.warn(`略過不支援的格式或筆記資料夾外的路徑：notes-assets/${p}`);
+}
+
 // ── API handlers ────────────────────────────────────────────────
 
-async function handleCreateNote(cwd, notesRoot, req, res) {
+async function handleCreateNote(cwd, notesRoot, req, res, ig) {
   const raw = await readBody(req);
   let payload;
   try {
@@ -302,35 +502,35 @@ async function handleCreateNote(cwd, notesRoot, req, res) {
   const title = (payload.title || "").trim();
   if (!title) return json(res, 400, { error: "title required" });
   const tags = normalizeTagList(payload.tags);
-  const slug = slugify(title);
-  const existing = await findNoteFile(notesRoot, slug);
-  if (existing) return json(res, 409, { error: "slug already exists", slug });
-
-  let targetDir = notesRoot;
-  if (!isViewerMode()) {
-    const folder = (payload.folder || "src/content/notes").replace(/^\/+/, "");
-    if (folder.startsWith("src/content/notes")) {
-      targetDir = path.resolve(cwd, folder);
-    }
-  }
+  const base = slugify(title);
 
   try {
-    const abs = await assertSafePath(path.join(targetDir, `${slug}.mdx`), notesRoot);
+    // 主專案與 viewer 同一套：folder 是 /api/folders 給的真實資料夾路徑
+    const targetDir = await resolveNoteFolder(cwd, notesRoot, payload.folder);
+    const abs = await assertSafePath(path.join(targetDir, `${base}.mdx`), notesRoot);
+    if (isIgnored(ig, notesRoot, abs)) return json(res, 400, { error: IGNORED_LOCATION_MESSAGE });
+    const slug = noteIdFromFile(notesRoot, abs);
+    // 同資料夾已有同名檔（.mdx 或 .md）、或別的檔案已經對應到同一個 entry id（例如資料夾大小寫不同）都算重複
+    const sibling = await findNoteFile(targetDir, base);
+    if (sibling || (await findNoteFile(notesRoot, slug))) {
+      return json(res, 409, { error: "slug already exists", slug });
+    }
     await fs.mkdir(path.dirname(abs), { recursive: true });
     const tagsYaml = `[${tags.map((t) => JSON.stringify(t)).join(", ")}]`;
     await writeFileAtomic(abs, TEMPLATE(title, tagsYaml, !isViewerMode()));
     return json(res, 200, {
       slug,
-      path: path.relative(cwd, abs),
-      vscode: `vscode://file/${abs.replace(/\\/g, "/").replace(/^\/+/, "")}`,
+      // 與 /api/folders 同一套前綴：主專案仍是 src/content/notes/…，viewer 不會冒出 ../../ 的 package root 相對路徑
+      path: folderDisplayRoot(cwd, notesRoot) + path.relative(notesRoot, abs).split(path.sep).join("/"),
+      vscode: toVscodeHref(abs),
     });
   } catch (e) {
     return json(res, 400, { error: e.message });
   }
 }
 
-async function handleSetNoteTags(notesRoot, slug, req, res) {
-  const file = await findNoteFile(notesRoot, slug);
+async function handleSetNoteTags(notesRoot, slug, req, res, ig) {
+  const file = await findVisibleNoteFile(notesRoot, slug, ig);
   if (!file) return json(res, 404, { error: "note not found" });
   try {
     await assertSafePath(file, notesRoot);
@@ -352,8 +552,8 @@ async function handleSetNoteTags(notesRoot, slug, req, res) {
   return json(res, 200, { ok: true, tags });
 }
 
-async function collectTagStats(notesRoot) {
-  const files = await listMdx(notesRoot);
+async function collectTagStats(notesRoot, ig) {
+  const files = await listMdx(notesRoot, ig);
   const stats = new Map();
   for (const f of files) {
     const { data } = await readNote(f);
@@ -370,8 +570,8 @@ async function collectTagStats(notesRoot) {
   return stats;
 }
 
-async function handleTagList(notesRoot, res) {
-  const stats = await collectTagStats(notesRoot);
+async function handleTagList(notesRoot, res, ig) {
+  const stats = await collectTagStats(notesRoot, ig);
   const list = Array.from(stats.entries()).map(([name, v]) => ({
     name,
     count: v.count,
@@ -380,14 +580,11 @@ async function handleTagList(notesRoot, res) {
   return json(res, 200, { tags: list });
 }
 
-async function handleFolderList(cwd, notesRoot, res) {
-  const rel = path.relative(cwd, notesRoot);
-  const displayRoot = !rel || rel.startsWith("..")
-    ? notesRoot.endsWith(path.sep) ? notesRoot : notesRoot + path.sep
-    : rel + "/";
+async function handleFolderList(cwd, notesRoot, res, ig) {
+  const displayRoot = folderDisplayRoot(cwd, notesRoot);
   // 遞迴列出所有層（Workbench 的資料夾樹不限層數，新增筆記要能選到子資料夾）。
   // 回傳格式不變：字串陣列、以 / 結尾；父層恆排在子層之前。
-  const SKIP = new Set(["node_modules", "dist"]);
+  // 被 ignore.json 排除的資料夾（含內建的 . 開頭、node_modules/、dist/）不列。
   const folders = [displayRoot];
   const walk = async (absDir, relPrefix) => {
     let ents;
@@ -397,7 +594,7 @@ async function handleFolderList(cwd, notesRoot, res) {
       return;
     }
     const dirs = ents
-      .filter((e) => e.isDirectory() && !e.name.startsWith(".") && !SKIP.has(e.name))
+      .filter((e) => e.isDirectory() && !ig.ignores(`${relPrefix}${e.name}/`))
       .sort((a, b) => a.name.localeCompare(b.name, "zh-Hant"));
     for (const e of dirs) {
       const rel = `${relPrefix}${e.name}/`;
@@ -409,7 +606,7 @@ async function handleFolderList(cwd, notesRoot, res) {
   return json(res, 200, { folders });
 }
 
-async function handleRenameTag(notesRoot, oldName, req, res) {
+async function handleRenameTag(notesRoot, oldName, req, res, ig) {
   const raw = await readBody(req);
   let payload;
   try {
@@ -419,7 +616,7 @@ async function handleRenameTag(notesRoot, oldName, req, res) {
   }
   const newName = (payload.newName || "").trim();
   if (!newName) return json(res, 400, { error: "newName required" });
-  const stats = await collectTagStats(notesRoot);
+  const stats = await collectTagStats(notesRoot, ig);
   const target = stats.get(oldName);
   if (!target) return json(res, 404, { error: "tag not found" });
   const merged = stats.has(newName);
@@ -442,8 +639,8 @@ async function handleRenameTag(notesRoot, oldName, req, res) {
   return json(res, 200, { ok: true, done, failed, affected: target.files.length, merged, newName });
 }
 
-async function handleDeleteTag(notesRoot, name, res) {
-  const stats = await collectTagStats(notesRoot);
+async function handleDeleteTag(notesRoot, name, res, ig) {
+  const stats = await collectTagStats(notesRoot, ig);
   const target = stats.get(name);
   if (!target) return json(res, 404, { error: "tag not found" });
   let done = 0;
@@ -473,54 +670,150 @@ function markerIds(content) {
   return out;
 }
 
-async function handleDeleteNote(cwd, notesRoot, slug, res) {
-  const file = await findNoteFile(notesRoot, slug);
-  if (!file) return json(res, 404, { error: "note not found" });
-  try {
-    await assertSafePath(file, notesRoot);
-  } catch (e) {
-    return json(res, 400, { error: e.message });
-  }
-
+/**
+ * AI 生成元件所在的資料夾：主專案是 src/components/generated/；viewer 模式是使用者專案的
+ * .notecraft/components/（與 astro.config.mjs 的 @notes alias 同一套優先序，見 resolveNotecraftDir）。
+ * label 是顯示用的相對路徑，回給對話框用，不含本機絕對路徑。
+ */
+export function resolveComponentsDir(cwd) {
   if (isViewerMode()) {
-    await fs.unlink(file);
-    return json(res, 200, {
-      deletedNote: path.relative(cwd, file),
-      deletedComponents: [],
-      keptShared: [],
-      failed: [],
-    });
+    return { dir: path.join(resolveNotecraftDir(cwd), "components"), label: ".notecraft/components" };
   }
+  return { dir: path.join(cwd, "src/components/generated"), label: "src/components/generated" };
+}
 
-  const { content } = await readNote(file);
-  const ids = markerIds(content);
-  const others = (await listMdx(notesRoot)).filter((f) => f !== file);
+async function isFile(abs) {
+  try {
+    return (await fs.stat(abs)).isFile();
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * 刪除這篇筆記會連帶刪掉哪些生成元件。對話框（GET …/delete-plan）與實際刪除（DELETE）共用這一份判斷，
+ * 確認對話框列出的就是會刪的檔（CLAUDE.md：孤兒元件的刪除要作者明確同意，對話框就是那個同意點）。
+ * - 只列元件檔真的存在的 id（pending／failed 的標記沒有檔，不列）
+ * - 其他筆記也有同一個 id 的標記 → keptShared，保留
+ * - 元件路徑一律經 assertSafePath 限制在元件資料夾底下
+ */
+async function planNoteDeletion(cwd, notesRoot, file) {
+  const { dir, label } = resolveComponentsDir(cwd);
+  const ids = Array.from(new Set(markerIds((await readNote(file)).content)));
+  // 刻意連被 ignore.json 排除的筆記一起看（只套內建排除）：被排除的筆記仍在硬碟上，
+  // 它引用的元件被當成孤兒刪掉的話，日後取消排除就壞了
+  const others = (await listMdx(notesRoot, createNotesIgnore([]))).filter((f) => f !== file);
   const referencedElsewhere = new Set();
   for (const f of others) {
+    if (referencedElsewhere.size === ids.length) break;
     const otherIds = new Set(markerIds((await readNote(f)).content));
     for (const id of ids) if (otherIds.has(id)) referencedElsewhere.add(id);
   }
-  const deletedComponents = [];
+  const toDelete = [];
   const keptShared = [];
-  const failed = [];
   for (const id of ids) {
-    if (referencedElsewhere.has(id)) {
-      keptShared.push(`${id}.tsx`);
+    let abs;
+    try {
+      abs = await assertSafePath(path.join(dir, `${id}.tsx`), dir);
+    } catch {
       continue;
     }
-    const comp = path.join(cwd, "src/components/generated", `${id}.tsx`);
+    if (!(await isFile(abs))) continue;
+    (referencedElsewhere.has(id) ? keptShared : toDelete).push(`${id}.tsx`);
+  }
+  return { dir, componentsDir: label, toDelete, keptShared };
+}
+
+async function resolveNoteForDelete(notesRoot, slug, res, ig) {
+  const file = await findVisibleNoteFile(notesRoot, slug, ig);
+  if (!file) {
+    json(res, 404, { error: "note not found" });
+    return null;
+  }
+  try {
+    await assertSafePath(file, notesRoot);
+  } catch (e) {
+    json(res, 400, { error: e.message });
+    return null;
+  }
+  return file;
+}
+
+/**
+ * 刪掉這篇後會壞掉的引用（docs/notecraft-workbench-define-ref.md §13、Q11）：引用本篇任一 define 的筆記。
+ * 只用來提醒、不擋刪除（依靠 git 復原）；刪除後 build 會失敗並指出要改哪裡。
+ * 只看沒被排除的筆記（被排除的不會進 build，引用它也不會壞）；只回傳相對資訊。
+ */
+async function referencedByOf(notesRoot, file, ig) {
+  const files = [];
+  for (const abs of await listMdx(notesRoot, ig)) {
+    files.push({ rel: path.relative(notesRoot, abs).split(path.sep).join("/"), source: await fs.readFile(abs, "utf-8") });
+  }
+  const index = buildDefIndex(files, { frontmatter: (t) => matter(t).data ?? {} });
+  const rel = path.relative(notesRoot, file).split(path.sep).join("/");
+  const me = [...index.notes.values()].find((n) => n.rel === rel);
+  if (!me) return [];
+  const by = new Map();
+  for (const id of me.defines) {
+    for (const r of index.defs.get(id)?.refs ?? []) {
+      const n = index.notes.get(r.slug);
+      const row = by.get(r.slug) ?? { slug: r.slug, title: n?.title ?? r.slug, ids: [] };
+      row.ids.push(id);
+      by.set(r.slug, row);
+    }
+  }
+  return [...by.values()];
+}
+
+async function handleDeletePlan(cwd, notesRoot, slug, res) {
+  const ig = ignoreFor(cwd);
+  const file = await resolveNoteForDelete(notesRoot, slug, res, ig);
+  if (!file) return;
+  const { componentsDir, toDelete, keptShared } = await planNoteDeletion(cwd, notesRoot, file);
+  const referencedBy = await referencedByOf(notesRoot, file, ig);
+  return json(res, 200, { componentsDir, toDelete, keptShared, referencedBy });
+}
+
+async function handleDeleteNote(cwd, notesRoot, slug, req, res) {
+  const file = await resolveNoteForDelete(notesRoot, slug, res, ignoreFor(cwd));
+  if (!file) return;
+
+  // body `{ components: string[] }` 是對話框上作者看過、同意的清單：只刪「計畫內 ∩ 同意過」的檔，
+  // 對話框開著的期間別篇筆記改了也不會多刪。沒帶 body（舊呼叫端）就照計畫刪。
+  let consented = null;
+  try {
+    const raw = await readBody(req);
+    if (raw) {
+      const body = JSON.parse(raw);
+      if (Array.isArray(body?.components)) consented = new Set(body.components.map(String));
+    }
+  } catch {
+    return json(res, 400, { error: "invalid JSON body" });
+  }
+
+  const plan = await planNoteDeletion(cwd, notesRoot, file);
+  const deletedComponents = [];
+  const skipped = [];
+  const failed = [];
+  for (const name of plan.toDelete) {
+    if (consented && !consented.has(name)) {
+      skipped.push(name);
+      continue;
+    }
     try {
-      await fs.unlink(comp);
-      deletedComponents.push(`${id}.tsx`);
+      await fs.unlink(await assertSafePath(path.join(plan.dir, name), plan.dir));
+      deletedComponents.push(name);
     } catch (e) {
-      if (e && e.code !== "ENOENT") failed.push(`${id}.tsx`);
+      if (e && e.code !== "ENOENT") failed.push(name);
     }
   }
   await fs.unlink(file);
   return json(res, 200, {
     deletedNote: path.relative(cwd, file),
+    componentsDir: plan.componentsDir,
     deletedComponents,
-    keptShared,
+    keptShared: plan.keptShared,
+    skipped,
     failed,
   });
 }
@@ -663,7 +956,7 @@ export async function tryHandleAssetsRequest(cwd, notesRoot, req, res) {
     return true;
   }
   try {
-    await handleRootedAsset(rooted.root, rooted.prefix, url, res);
+    await handleRootedAsset(rooted.root, rooted.prefix, url, res, rooted.root === notesRoot ? ignoreFor(cwd) : null);
   } catch (e) {
     res.statusCode = 500;
     res.end(e && e.message ? e.message : "internal error");
@@ -682,15 +975,15 @@ export async function tryHandleApiRequest(cwd, notesRoot, req, res) {
     const u = new URL(url, "http://127.0.0.1");
     const parts = u.pathname.split("/").filter(Boolean);
     if (parts.length === 2 && parts[1] === "notes" && req.method === "POST") {
-      await handleCreateNote(cwd, notesRoot, req, res);
+      await handleCreateNote(cwd, notesRoot, req, res, ignoreFor(cwd));
       return true;
     }
     if (parts.length === 2 && parts[1] === "tags" && req.method === "GET") {
-      await handleTagList(notesRoot, res);
+      await handleTagList(notesRoot, res, ignoreFor(cwd));
       return true;
     }
     if (parts.length === 2 && parts[1] === "folders" && req.method === "GET") {
-      await handleFolderList(cwd, notesRoot, res);
+      await handleFolderList(cwd, notesRoot, res, ignoreFor(cwd));
       return true;
     }
     if (parts.length === 3 && parts[1] === "plugins" && req.method === "PUT") {
@@ -700,23 +993,28 @@ export async function tryHandleApiRequest(cwd, notesRoot, req, res) {
     if (parts.length === 3 && parts[1] === "tags") {
       const name = decodeURIComponent(parts[2]);
       if (req.method === "PUT") {
-        await handleRenameTag(notesRoot, name, req, res);
+        await handleRenameTag(notesRoot, name, req, res, ignoreFor(cwd));
         return true;
       }
       if (req.method === "DELETE") {
-        await handleDeleteTag(notesRoot, name, res);
+        await handleDeleteTag(notesRoot, name, res, ignoreFor(cwd));
         return true;
       }
     }
     // 巢狀 slug 支援：/api/notes/a/b/c/tags PUT、/api/notes/a/b/c DELETE
     if (parts.length >= 4 && parts[1] === "notes" && parts[parts.length - 1] === "tags" && req.method === "PUT") {
       const slug = parts.slice(2, -1).map(decodeURIComponent).join("/");
-      await handleSetNoteTags(notesRoot, slug, req, res);
+      await handleSetNoteTags(notesRoot, slug, req, res, ignoreFor(cwd));
+      return true;
+    }
+    if (parts.length >= 4 && parts[1] === "notes" && parts[parts.length - 1] === "delete-plan" && req.method === "GET") {
+      const slug = parts.slice(2, -1).map(decodeURIComponent).join("/");
+      await handleDeletePlan(cwd, notesRoot, slug, res);
       return true;
     }
     if (parts.length >= 3 && parts[1] === "notes" && req.method === "DELETE") {
       const slug = parts.slice(2).map(decodeURIComponent).join("/");
-      await handleDeleteNote(cwd, notesRoot, slug, res);
+      await handleDeleteNote(cwd, notesRoot, slug, req, res);
       return true;
     }
     json(res, 404, { error: "not found" });

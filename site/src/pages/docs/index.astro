@@ -1,0 +1,27 @@
+---
+// /docs/ 沒有獨立的目錄頁：直接進第一節（書脊本身就是完整目錄）。
+// 不用 Astro.redirect：靜態輸出時它會先顯示「Redirecting…」兩秒。
+import { getCollection } from "astro:content";
+import { buildNav, flatPages } from "../../lib/docs";
+
+const base = import.meta.env.BASE_URL.replace(/\/?$/, "/");
+const entries = await getCollection("docs");
+const first = flatPages(buildNav(new Set(entries.map((e) => e.id))))[0];
+const to = `${base}docs/${first.slug}/`;
+const canonical = new URL(to, Astro.site);
+---
+
+<!doctype html>
+<html lang="zh-Hant-TW">
+  <head>
+    <meta charset="utf-8" />
+    <title>NoteCraftApp 使用文件</title>
+    <meta http-equiv="refresh" content={`0;url=${to}`} />
+    <meta name="robots" content="noindex" />
+    <link rel="canonical" href={canonical} />
+    <script is:inline define:vars={{ to }}>location.replace(to + location.hash);</script>
+  </head>
+  <body>
+    <a href={to}>前往 NoteCraftApp 使用文件</a>
+  </body>
+</html>

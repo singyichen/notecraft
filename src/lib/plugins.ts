@@ -16,6 +16,8 @@ import path from "node:path";
 import picomatch from "picomatch";
 import { stripMarkdownAll, stripMarkdownFirst } from "./strip-markdown";
 import { pickMeta } from "./plugin-meta";
+import { walkNotes } from "./notes-ignore.mjs";
+import { getNotecraftDir, getNotesDir, getNotesIgnore } from "./notes-ignore-state.mjs";
 import Ajv2020Module from "ajv/dist/2020.js";
 import type { ValidateFunction } from "ajv";
 import type {
@@ -37,28 +39,21 @@ const Ajv2020 = ((Ajv2020Module as unknown as { default?: Ajv2020Ctor }).default
 
 // ── 路徑解析 ──────────────────────────────────────────────
 //
-// 與 astro.config.mjs 的 notecraftDir 同一套優先序（NOTECRAFT_USER_CWD > NOTECRAFT_NOTES_DIR
-// > cwd）。必須一致：renderer 是透過 `@notes/plugins/*` 這個 alias 被找到的，
+// notecraftDir 只由 notes-ignore.mjs 的 resolveNotecraftDir() 決定（astro.config.mjs 的 @notes alias 同一份）：
+// renderer 是透過 `@notes/plugins/*` 這個 alias 被找到的，
 // 若 plugins.json 從另一個 .notecraft 讀進來，就會出現「設定在 A、渲染器在 B」的錯位。
 
-const notesDir = process.env.NOTECRAFT_NOTES_DIR
-  ? path.resolve(process.env.NOTECRAFT_NOTES_DIR)
-  : path.resolve(process.cwd(), "src/content/notes");
+const notesDir = getNotesDir();
+const notecraftDir = getNotecraftDir();
 
-const userCwd = process.env.NOTECRAFT_USER_CWD
-  ? path.resolve(process.env.NOTECRAFT_USER_CWD)
-  : null;
-
-const notecraftDir = userCwd
-  ? path.join(userCwd, ".notecraft")
-  : process.env.NOTECRAFT_NOTES_DIR
-    ? path.join(notesDir, ".notecraft")
-    : path.join(process.cwd(), ".notecraft");
-
-/** plugin 套件可能落腳的兩個根：主專案的官方 store、使用者專案的安裝目錄。 */
+/**
+ * plugin 套件可能落腳的兩個根，**順序即優先序**：使用者安裝的在前，主專案的官方 store 在後。
+ * 官方 store（repo 根的 plugins/）不隨 npm 發佈（Task 121），viewer 只會有前者；
+ * 主 repo 兩者都有時，同 id 以使用者安裝為準，manifest／schema 才會與 renderer 來自同一份。
+ */
 const PLUGIN_ROOTS = [
-  path.resolve(process.cwd(), "plugins"),
   path.join(notecraftDir, "plugins"),
+  path.resolve(process.cwd(), "plugins"),
 ];
 
 const CONFIG_PATH = path.join(notecraftDir, "plugins.json");
@@ -76,6 +71,8 @@ function warn(msg: string): void {
 // 兩條 glob：主專案的 plugins/（讓官方 plugin 有地方能真的 build、能跑 CI，Q17）
 // 與使用者專案的 .notecraft/plugins/。`@notes` alias 恆有定義，指向不存在的目錄時
 // glob 命中 0 筆、不報錯（見 astro.config.mjs 的註解）。
+// 主專案的 plugins/ 不隨 npm 發佈（Task 121），所以 viewer 只有第二條會命中。
+// **順序即優先序**：同 id 時後展開的 `@notes` 勝（與 PLUGIN_ROOTS、PluginHost.tsx 一致），不要調換。
 
 type RendererModule = { default?: unknown };
 
@@ -126,9 +123,14 @@ let pluginsCache: Map<string, PluginRecord> | null = null;
 export function getPlugins(): Map<string, PluginRecord> {
   if (pluginsCache) return pluginsCache;
   const out = new Map<string, PluginRecord>();
+  const seen = new Set<string>();
   for (const [key, mod] of Object.entries(rendererModules)) {
     const id = pluginIdFromKey(key);
     if (!id) continue;
+    if (seen.has(id)) {
+      warn(`plugin "${id}" 同時存在於 plugins/ 與 .notecraft/plugins/，採用 .notecraft/plugins/ 的版本`);
+    }
+    seen.add(id);
     if (!mod?.default) {
       fail(`plugin "${id}" 的 renderer.tsx 沒有 default export`);
     }
@@ -187,10 +189,8 @@ function validateMapping(m: PluginMapping, i: number): void {
 
 // ── notesDir 走訪 ─────────────────────────────────────────
 //
-// 自己走而不用現成的 glob 套件：走訪本來就要順手收 mtime 與檔案數給快取失效判斷用
-// （Task 56），用 tinyglobby 之類的還得再 stat 一輪。形狀比照 CLI 的 walkMdx。
-
-const SKIP_DIRS = new Set(["node_modules", "dist", ".git"]);
+// 走訪一律經 walkNotes()：.notecraft/ignore.json 與內建排除（. 開頭、node_modules/、dist/）在這裡就套用，
+// 被排除的檔對 plugins.json 的規則等同不存在（ignore 先、files／exclude 後，docs/notecraft-ignore-config.md §5.2）。
 
 interface ScannedFile {
   relPath: string;
@@ -198,26 +198,38 @@ interface ScannedFile {
   mtimeMs: number;
 }
 
-function walk(dir: string, base: string, out: ScannedFile[]): void {
-  let entries: fs.Dirent[];
-  try {
-    entries = fs.readdirSync(dir, { withFileTypes: true });
-  } catch {
-    return; // 權限或競態；當作沒有檔案，不中斷 build
-  }
-  for (const e of entries) {
-    if (e.name.startsWith(".") || SKIP_DIRS.has(e.name)) continue;
-    const abs = path.join(dir, e.name);
-    if (e.isDirectory()) {
-      walk(abs, base, out);
-    } else if (e.isFile()) {
-      out.push({
-        relPath: path.relative(base, abs).split(path.sep).join("/"),
-        absPath: abs,
-        mtimeMs: fs.statSync(abs).mtimeMs,
-      });
-    }
-  }
+interface Scan {
+  files: ScannedFile[];
+  /** 被使用者規則排除的檔（含被剪枝資料夾內的，延遲計算）；只給「規則命中 0 檔」的訊息用。 */
+  userIgnored: () => string[];
+}
+
+function scanNotesDir(): Scan {
+  const ig = getNotesIgnore();
+  const files: ScannedFile[] = [];
+  const { prunedDirs, ignoredFiles } = walkNotes(notesDir, ig, ({ rel, abs }) => {
+    files.push({ relPath: rel, absPath: abs, mtimeMs: fs.statSync(abs).mtimeMs });
+  });
+  let cache: string[] | null = null;
+  const userIgnored = (): string[] => {
+    if (cache) return cache;
+    cache = ignoredFiles.filter((f) => ig.ignoresByUser(f));
+    const deep = (dir: string, prefix: string): void => {
+      let ents: fs.Dirent[];
+      try {
+        ents = fs.readdirSync(dir, { withFileTypes: true });
+      } catch {
+        return;
+      }
+      for (const e of ents) {
+        if (e.isDirectory()) deep(path.join(dir, e.name), `${prefix}${e.name}/`);
+        else if (e.isFile()) cache!.push(`${prefix}${e.name}`);
+      }
+    };
+    for (const d of prunedDirs.filter((x) => ig.ignoresByUser(x))) deep(path.join(notesDir, d), d);
+    return cache;
+  };
+  return { files, userIgnored };
 }
 
 // ── 資料驗證 ──────────────────────────────────────────────
@@ -331,8 +343,8 @@ function resolve(): Resolved {
     }
   }
 
-  const scanned: ScannedFile[] = [];
-  walk(notesDir, notesDir, scanned);
+  const scan = scanNotesDir();
+  const scanned = scan.files;
 
   // 每條規則預編譯一組 matcher，避免在檔案迴圈裡重複編譯。
   const matchers = activeMappings.map((m) => ({
@@ -445,9 +457,12 @@ function resolve(): Resolved {
   for (const x of matchers) {
     if (x.won > 0) continue;
     if (x.matched === 0) {
+      // 沒比對到常常是因為檔被 ignore.json 排除了，講出來免得作者去修一個沒問題的 glob
+      const hidden = scan.userIgnored().filter((f) => x.isMatch(f) && !x.isExcluded(f)).length;
       warn(
         `plugins.json 第 ${x.no} 條（${x.mapping.plugin}）沒有比對到任何檔案` +
-          `（files: ${x.mapping.files.join("、")}）`,
+          `（files: ${x.mapping.files.join("、")}）` +
+          (hidden ? `（另有 ${hidden} 個檔被 .notecraft/ignore.json 排除）` : ""),
       );
     } else {
       warn(

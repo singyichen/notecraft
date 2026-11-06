@@ -1,7 +1,9 @@
 // 指令面板 ⌘K：全站跳轉 + pagefind 全文（規格 §8.9）。由 WorkbenchLayout 以 client:idle 全站掛一次。
 // 平時不渲染任何 DOM、也不抓任何資料；第一次開啟才載入 /wb-index.json 與 pagefind。
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
-import { FileText, Search, Tag } from "lucide-react";
+import { FileText, Hash, RefreshCw, Search, Tag } from "lucide-react";
+import { openDrawer, requestCheckOnSettings } from "@/lib/update-store";
+import { useUpd } from "./update/useUpd";
 import type { WbDataFile, WbNoteRow, WbSeries, WbTagStat } from "@/lib/wb-types";
 import { seriesProgress } from "@/lib/reading-progress";
 import { pushEscape } from "@/lib/wb-escape";
@@ -61,13 +63,20 @@ function slugFromUrl(url: string): string | null {
   }
 }
 
-type Item = { key: string; href: string; node: ReactNode };
+/** href = 導覽；run = 動作（「指令」分組，docs/notecraft-workbench-update-check.md §6.6） */
+type Item = { key: string; href?: string; run?: () => void; node: ReactNode };
+
+// 「指令」分組：比對對象是關鍵字字串（小寫包含）
+const CMD_CHECK_KW = "檢查更新 版本 check update npm 升級";
+const CMD_OPEN_KW = "更新內容 changelog 版本 升級 update";
 type Group = { label: string; items: Item[] };
 
 const has = (hay: string, q: string) => hay.toLowerCase().includes(q);
 
 /** 「已開啟的頁籤」分區：無查詢列前 N 筆、有查詢比對標題＋路徑（規格 docs/notecraft-workbench-note-tabs.md §8.1） */
 const TAB_GROUP_MAX = 6;
+/** 「定義」分區（docs/notecraft-workbench-define-ref.md §8.3）：有輸入才出現、排最上方，Enter 優先前往第一個定義 */
+const DEF_GROUP_MAX = 6;
 const TAB_GROUP_MAX_Q = 4;
 
 export default function Palette({ workspace = "" }: { workspace?: string }) {
@@ -76,6 +85,7 @@ export default function Palette({ workspace = "" }: { workspace?: string }) {
   const [sel, setSel] = useState(0);
   const [hits, setHits] = useState<PagefindHit[]>([]);
   const { index, loading, load } = useWbIndex();
+  const upd = useUpd();
   const inputRef = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
   const lastFocus = useRef<HTMLElement | null>(null);
@@ -167,7 +177,29 @@ export default function Palette({ workspace = "" }: { workspace?: string }) {
           .slice(0, 5)
       : [];
 
+    const titleOf = new Map(index.notes.map((r) => [r.slug, r.title]));
+    const defs = ql
+      ? (index.defs ?? []).filter((d) => has(d.id, ql) || has(d.label, ql)).slice(0, DEF_GROUP_MAX)
+      : [];
+
     const out: Group[] = [
+      {
+        label: "定義",
+        items: defs.map((d) => ({
+          key: "def:" + d.id,
+          href: withBase(`/notes/${d.slug}#def-${d.id}`),
+          node: (
+            <>
+              <Ic icon={Hash} size={13} color="var(--wb-blue-l)" />
+              <span className="wb-row-t wb-pal-defid">{d.id}</span>
+              <span className="wb-row-p">
+                {d.label} ・ {titleOf.get(d.slug) ?? d.slug}
+              </span>
+              <Pill tone="muted">{d.refs.length ? `被 ${d.refs.length} 篇引用` : "未被引用"}</Pill>
+            </>
+          ),
+        })),
+      },
       {
         label: "筆記",
         items: notes.map((r) => ({
@@ -277,7 +309,44 @@ export default function Palette({ workspace = "" }: { workspace?: string }) {
     };
   }, [open, term, workspace]);
 
-  const allGroups = useMemo(() => (tabGroup ? [tabGroup, ...groups] : groups), [tabGroup, groups]);
+  // 「指令」：不依賴 /wb-index.json，索引載入中或失敗時照樣可用
+  const cmdGroup = useMemo<Group | null>(() => {
+    if (!open) return null;
+    const ql = term.toLowerCase();
+    const items: Item[] = [];
+    if (!ql || has(CMD_CHECK_KW, ql))
+      items.push({
+        key: "cmd:check",
+        run: requestCheckOnSettings,
+        node: (
+          <>
+            <Ic icon={RefreshCw} size={13} color="var(--wb-blue-l)" />
+            <span className="wb-row-t">檢查更新</span>
+            <span className="wb-row-p">向 npm 查詢 notecraftapp 最新版</span>
+          </>
+        ),
+      });
+    if (upd.res && (!ql || has(CMD_OPEN_KW, ql)))
+      items.push({
+        key: "cmd:open",
+        run: openDrawer,
+        node: (
+          <>
+            <Ic icon={FileText} size={13} color="var(--wb-blue-l)" />
+            <span className="wb-row-t">查看更新內容</span>
+            <span className="wb-row-p">版本的 CHANGELOG</span>
+            <Pill>v{upd.res.latest}</Pill>
+          </>
+        ),
+      });
+    return items.length ? { label: "指令", items } : null;
+  }, [open, term, upd.res]);
+
+  const allGroups = useMemo(() => {
+    const defGroup = groups.filter((g) => g.label === "定義");
+    const rest = groups.filter((g) => g.label !== "定義");
+    return [...defGroup, ...(tabGroup ? [tabGroup] : []), ...rest, ...(cmdGroup ? [cmdGroup] : [])];
+  }, [tabGroup, groups, cmdGroup]);
   const flat = useMemo(() => allGroups.flatMap((g) => g.items), [allGroups]);
   const active = Math.min(sel, Math.max(flat.length - 1, 0));
 
@@ -288,9 +357,15 @@ export default function Palette({ workspace = "" }: { workspace?: string }) {
 
   if (!open) return null;
 
-  const go = (href: string, newTab: boolean) => {
-    if (newTab) window.open(href, "_blank", "noopener");
-    else window.location.href = href;
+  const go = (it: Item, newTab: boolean) => {
+    if (it.run) {
+      close();
+      it.run();
+      return;
+    }
+    if (!it.href) return;
+    if (newTab) window.open(it.href, "_blank", "noopener");
+    else window.location.href = it.href;
   };
 
   let n = -1;
@@ -321,7 +396,7 @@ export default function Palette({ workspace = "" }: { workspace?: string }) {
                 setSel(Math.max(active - 1, 0));
               } else if (e.key === "Enter" && flat[active]) {
                 e.preventDefault();
-                go(flat[active].href, e.metaKey || e.ctrlKey);
+                go(flat[active], e.metaKey || e.ctrlKey);
               }
             }}
           />
@@ -335,7 +410,7 @@ export default function Palette({ workspace = "" }: { workspace?: string }) {
               <div className="wb-row wb-skel" aria-hidden="true" />
             </>
           ) : null}
-          {!index && !loading ? <div className="wb-pal-empty">索引載入失敗，請重新整理後再試。</div> : null}
+          {!index && !loading && flat.length === 0 ? <div className="wb-pal-empty">索引載入失敗，請重新整理後再試。</div> : null}
           {index && flat.length === 0 ? <div className="wb-pal-empty">找不到相符的項目</div> : null}
           {allGroups.map((g) => (
             <div key={g.label} role="group" aria-label={g.label}>
@@ -343,7 +418,20 @@ export default function Palette({ workspace = "" }: { workspace?: string }) {
               {g.items.map((it) => {
                 n += 1;
                 const i = n;
-                return (
+                return it.run ? (
+                  <div
+                    key={it.key}
+                    id={"wb-pal-" + i}
+                    role="option"
+                    aria-selected={i === active}
+                    className={"wb-row" + (i === active ? " sel" : "")}
+                    style={{ cursor: "pointer" }}
+                    onClick={() => go(it, false)}
+                    onMouseMove={() => (i === active ? undefined : setSel(i))}
+                  >
+                    {it.node}
+                  </div>
+                ) : (
                   <a
                     key={it.key}
                     id={"wb-pal-" + i}
@@ -359,6 +447,9 @@ export default function Palette({ workspace = "" }: { workspace?: string }) {
               })}
             </div>
           ))}
+          {!term && index?.defs?.length ? (
+            <div className="wb-pal-hint">輸入 id 的任一段（hr.、role-admin）或定義名稱，可直接跳到定義所在處。</div>
+          ) : null}
         </div>
       </div>
     </div>

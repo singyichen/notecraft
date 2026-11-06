@@ -2,7 +2,7 @@
 // NoteCraftApp CLI（P6 / 三命令版）
 // - view <dir>：spawn astro dev，HMR、新增/編輯/刪除筆記即時反映
 // - build <dir>：astro build → ~/.notecraft/cache/<hash>/dist/（給 CI 或 serve 用）
-// - serve <dir>：Node HTTP 服務快取的 dist；純靜態、唯讀；仍掛 /notes-assets/* 讓外部圖片可見
+// - serve <dir>：Node HTTP 服務快取的 dist；純靜態、唯讀；本機連線的 /notes-assets/* 仍從筆記資料夾即時送出
 //
 // 「能寫」與否天然對齊 astro 的 dev/build 兩態，不再需要額外旗標。
 
@@ -16,8 +16,42 @@ import crypto from "node:crypto";
 import readline from "node:readline";
 import { fileURLToPath } from "node:url";
 import chokidar from "chokidar";
-import { tryHandleAssetsRequest } from "../src/dev-api/handlers.mjs";
+import { localhostOnly, resetHandlersIgnore, tryHandleAssetsRequest } from "../src/dev-api/handlers.mjs";
+import { createNotesIgnore, IGNORE_FILE, loadNotesIgnore, toNotesRel, walkNotesAsync } from "../src/lib/notes-ignore.mjs";
 import { installPlugin, listStore, removePlugin } from "./install-plugin.mjs";
+
+// ── .notecraft/ignore.json（docs/notecraft-ignore-config.md §5.4）────────────────
+// 快取失效判斷與 serve 的 watcher 都只看沒被排除的檔：被排除的檔改了不觸發 rebuild、不計入檔數。
+// notecraftDir 與 astro 子行程同一套（子行程收到 NOTECRAFT_USER_CWD，見 src/lib/notes-ignore.mjs 的 resolveNotecraftDir）。
+// ignore.json 壞掉時這裡退回只套內建排除：它的 mtime 一變就會 rebuild，由 build 以清楚的訊息失敗（Q4）。
+
+function cliNotecraftDir(notesDir, userCwd) {
+  return path.join(userCwd || notesDir, ".notecraft");
+}
+
+function cliIgnore(notesDir, userCwd) {
+  try {
+    return loadNotesIgnore(cliNotecraftDir(notesDir, userCwd));
+  } catch {
+    return createNotesIgnore([]);
+  }
+}
+
+const MDX_RE = /\.mdx?$/;
+const JSON_RE = /\.json$/;
+
+/** notesDir 底下沒被排除的檔；ext 為副檔名正規式。回傳 { count, latest: { mtime, path } }。 */
+async function scanNotes(notesDir, ig, ext) {
+  let count = 0;
+  let latest = { mtime: 0, path: "" };
+  await walkNotesAsync(notesDir, ig, ({ rel, abs }) => {
+    if (!ext.test(rel)) return;
+    count += 1;
+    const m = statSync(abs).mtimeMs;
+    if (m > latest.mtime) latest = { mtime: m, path: abs };
+  });
+  return { count, latest };
+}
 
 const __filename = fileURLToPath(import.meta.url);
 const packageRoot = path.resolve(path.dirname(__filename), "..");
@@ -107,6 +141,8 @@ const STATIC_MIME = {
   ".gif": "image/gif",
   ".webp": "image/webp",
   ".ico": "image/x-icon",
+  ".avif": "image/avif",
+  ".pdf": "application/pdf",
   ".woff": "font/woff",
   ".woff2": "font/woff2",
   ".txt": "text/plain; charset=utf-8",
@@ -131,8 +167,32 @@ function resolveNotesDirArg(dirArg) {
   return notesDir;
 }
 
+// ── build 指紋：筆記以外、也會改變 build 產物的輸入 ────────────────────
+// - tool：notecraftapp 版本。升級後沿用舊快取會看不到新版的修正與功能。
+//   dev 源碼（isDevSource）再附 git HEAD：改程式碼不會動版號，commit 後就失效；
+//   未 commit 的改動不納入（每次算整個 repo 的雜湊太貴），要看效果仍用 --rebuild。
+// - base：NOTECRAFT_BASE 會改寫站內所有連結與資產路徑。
+// - userCwd：.notecraft/（plugins.json、系列、元件）從這裡讀；快取 key 只看 notesDir，
+//   從不同資料夾執行同一個 notesDir 會拿到另一份設定。
+let devHeadMemo;
+function devGitHead() {
+  if (devHeadMemo !== undefined) return devHeadMemo;
+  const r = spawnSync("git", ["rev-parse", "--short", "HEAD"], { cwd: packageRoot, encoding: "utf-8" });
+  devHeadMemo = r.status === 0 ? r.stdout.trim() : "";
+  return devHeadMemo;
+}
+
+function buildFingerprint(userCwd) {
+  const head = isDevSource() ? devGitHead() : "";
+  return {
+    tool: `notecraftapp@${pkgJson.version}${head ? `+${head}` : ""}`,
+    base: process.env.NOTECRAFT_BASE || "",
+    userCwd: userCwd ? path.resolve(userCwd) : "",
+  };
+}
+
 // ── 快取失效偵測（§8.1、P7）────────────────────────────────────────
-// 三條路徑：
+// 0) build 指紋（版本、NOTECRAFT_BASE、userCwd）與上次不同
 // 1) md/mdx 內容變動：遞迴掃 notesDir、跳過 . 開頭子資料夾、取最大 mtime + 檔案數
 // 2) .notecraft/*.json 設定變動：series.json 之類的東西，series 用來 build 系列頁
 // 3) 檔案數量變動：新增/刪除筆記（mtime 不見得會變）
@@ -150,57 +210,31 @@ async function shouldRebuild(cacheDir, notesDir, force, userCwd) {
   } catch {
     return { should: true, why: "meta.json 壞掉" };
   }
+  // Pass 0：build 指紋。缺欄位的是更舊版本寫的 meta，一律重建
+  const fp = buildFingerprint(userCwd);
+  if (meta.tool !== fp.tool) {
+    return {
+      should: true,
+      why: meta.tool ? `notecraftapp 版本從 ${meta.tool} 變成 ${fp.tool}` : `快取由舊版 notecraftapp 建立（現在是 ${fp.tool}）`,
+    };
+  }
+  if (meta.base === undefined || meta.base !== fp.base) {
+    const show = (b) => (b ? ` ${b} ` : "（未設定）");
+    return { should: true, why: `NOTECRAFT_BASE 從${show(meta.base)}變成${show(fp.base)}`.trimEnd() };
+  }
+  if (meta.userCwd === undefined || meta.userCwd !== fp.userCwd) {
+    return { should: true, why: `執行資料夾從 ${meta.userCwd || "（未記錄）"} 變成 ${fp.userCwd}（.notecraft/ 設定從這裡讀）` };
+  }
   const lastBuildMs = new Date(meta.lastBuildAt).getTime();
 
-  // Pass 1：md/mdx 內容檔
-  let mdxCount = 0;
-  let latestMdx = { mtime: 0, path: "" };
-  async function walkMdx(dir) {
-    let ents;
-    try {
-      ents = await fs.readdir(dir, { withFileTypes: true });
-    } catch {
-      return;
-    }
-    for (const e of ents) {
-      if (e.isDirectory()) {
-        if (e.name.startsWith(".")) continue;
-        await walkMdx(path.join(dir, e.name));
-      } else if (e.name.endsWith(".mdx") || e.name.endsWith(".md")) {
-        mdxCount += 1;
-        const p = path.join(dir, e.name);
-        const s = statSync(p);
-        if (s.mtimeMs > latestMdx.mtime) latestMdx = { mtime: s.mtimeMs, path: p };
-      }
-    }
-  }
-  await walkMdx(notesDir);
+  // Pass 1：md/mdx 內容檔（被 ignore.json 與內建排除的不算）
+  const ig = cliIgnore(notesDir, userCwd);
+  const { count: mdxCount, latest: latestMdx } = await scanNotes(notesDir, ig, MDX_RE);
 
   // Pass 1.5（Task 56）：被 plugin 渲染的資料檔。
   // 與 md/mdx 同一趟走訪會更省，但這支函式的結構是一 pass 一件事，
   // 維持一致比省幾毫秒重要。
-  let jsonCount = 0;
-  let latestJson = { mtime: 0, path: "" };
-  async function walkJson(dir) {
-    let ents;
-    try {
-      ents = await fs.readdir(dir, { withFileTypes: true });
-    } catch {
-      return;
-    }
-    for (const e of ents) {
-      if (e.isDirectory()) {
-        if (e.name.startsWith(".") || e.name === "node_modules") continue;
-        await walkJson(path.join(dir, e.name));
-      } else if (e.name.endsWith(".json")) {
-        jsonCount += 1;
-        const p = path.join(dir, e.name);
-        const st = statSync(p);
-        if (st.mtimeMs > latestJson.mtime) latestJson = { mtime: st.mtimeMs, path: p };
-      }
-    }
-  }
-  await walkJson(notesDir);
+  const { count: jsonCount, latest: latestJson } = await scanNotes(notesDir, ig, JSON_RE);
 
   // Pass 1.6（Task 56）：已安裝的 plugin 套件
   let pluginFileCount = 0;
@@ -269,17 +303,47 @@ async function shouldRebuild(cacheDir, notesDir, force, userCwd) {
   if (meta.pluginFileCount !== undefined && pluginFileCount !== meta.pluginFileCount) {
     return { should: true, why: `plugin 檔案數量從 ${meta.pluginFileCount} 變成 ${pluginFileCount}` };
   }
+  // Pass 4：上次複製進 dist/notes-assets/ 的附件，來源改過或刪了就重 build（只改圖片時 md/mdx 的 mtime 不會動）。
+  // 新引用的附件一定伴隨 md/mdx 變動，上面已經會重 build。
+  const assetsDir = path.join(distDir, "notes-assets");
+  let staleAsset = null;
+  async function walkAssets(dir) {
+    let ents;
+    try {
+      ents = await fs.readdir(dir, { withFileTypes: true });
+    } catch {
+      return;
+    }
+    for (const e of ents) {
+      if (staleAsset) return;
+      const p = path.join(dir, e.name);
+      if (e.isDirectory()) {
+        await walkAssets(p);
+        continue;
+      }
+      const rel = path.relative(assetsDir, p);
+      try {
+        if (statSync(path.join(notesDir, rel)).mtimeMs > lastBuildMs) staleAsset = rel;
+      } catch {
+        staleAsset = rel;
+      }
+    }
+  }
+  await walkAssets(assetsDir);
+  if (staleAsset) {
+    return { should: true, why: `筆記附件有變動（${staleAsset.split(path.sep).join("/")}）` };
+  }
   return { should: false, meta: { fileCount: mdxCount, jsonCount, pluginFileCount } };
 }
 
-async function writeMeta(cacheDir, notesDir, fileCount, extra = {}) {
+async function writeMeta(cacheDir, notesDir, userCwd, fileCount, extra = {}) {
   const metaPath = path.join(cacheDir, "meta.json");
   const meta = {
     notesDir,
     lastBuildAt: new Date().toISOString(),
     fileCount,
     ...extra,
-    tool: `notecraftapp@${pkgJson.version}`,
+    ...buildFingerprint(userCwd),
   };
   await fs.mkdir(cacheDir, { recursive: true });
   await fs.writeFile(metaPath, JSON.stringify(meta, null, 2), "utf-8");
@@ -288,24 +352,10 @@ async function writeMeta(cacheDir, notesDir, fileCount, extra = {}) {
 }
 
 // Task 56：快取失效要比對的兩個新計數 —— 資料檔與 plugin 檔案。
-// 與 shouldRebuild 的 walkJson / walkPlugins 規則保持一致（跳過 . 開頭與 node_modules）。
+// 與 shouldRebuild 的規則保持一致（資料檔經 scanNotes 套用 ignore.json 與內建排除）。
 async function countPluginInputs(notesDir, userCwd) {
-  let jsonCount = 0;
+  const { count: jsonCount } = await scanNotes(notesDir, cliIgnore(notesDir, userCwd), JSON_RE);
   let pluginFileCount = 0;
-  async function walkJson(dir) {
-    let ents;
-    try {
-      ents = await fs.readdir(dir, { withFileTypes: true });
-    } catch {
-      return;
-    }
-    for (const e of ents) {
-      if (e.isDirectory()) {
-        if (e.name.startsWith(".") || e.name === "node_modules") continue;
-        await walkJson(path.join(dir, e.name));
-      } else if (e.name.endsWith(".json")) jsonCount += 1;
-    }
-  }
   async function walkPlugins(dir) {
     let ents;
     try {
@@ -318,34 +368,26 @@ async function countPluginInputs(notesDir, userCwd) {
       else if (/\.(tsx|ts|json)$/.test(e.name)) pluginFileCount += 1;
     }
   }
-  await walkJson(notesDir);
   for (const base of [userCwd, notesDir].filter(Boolean)) {
     await walkPlugins(path.join(base, ".notecraft", "plugins"));
   }
   return { jsonCount, pluginFileCount };
 }
 
-async function countMdx(dir) {
-  let count = 0;
-  async function walk(d) {
-    let ents;
-    try {
-      ents = await fs.readdir(d, { withFileTypes: true });
-    } catch {
-      return;
-    }
-    for (const e of ents) {
-      if (e.isDirectory()) {
-        if (e.name.startsWith(".")) continue;
-        await walk(path.join(d, e.name));
-      } else if (e.name.endsWith(".mdx") || e.name.endsWith(".md")) count += 1;
-    }
-  }
-  await walk(dir);
-  return count;
+async function countMdx(notesDir, userCwd) {
+  return (await scanNotes(notesDir, cliIgnore(notesDir, userCwd), MDX_RE)).count;
 }
 
+// outDir 必須在 cwd（app 根）底下。Astro 5 的 static build 遇到 cwd 外的 outDir 時，SSR 中間產物改寫到
+// <cwd>/.astro/，最後整包 cp 進 outDir 再刪掉（core/build/common.js 的 getOutDirWithinCwd）；
+// 但 <cwd>/.astro/ 同時是 content layer 的 dotAstroDir，data-store.json（每篇筆記的原文與本機路徑）、
+// content-assets.mjs、content-modules.mjs、collections/ 會跟著進產物（1.10.1 修正）。
+// 所以先 build 到 buildStageDir()，再由 moveDir() 搬到快取。
 async function runAstroBuild(cwd, notesDir, outDir, userCwd) {
+  const rel = path.relative(cwd, outDir);
+  if (!rel || rel.startsWith("..") || path.isAbsolute(rel)) {
+    throw new Error(`outDir 必須在 app 根（${cwd}）底下，否則 Astro 會把 .astro/ 的內部檔帶進產物：${outDir}`);
+  }
   return new Promise((resolve, reject) => {
     const astroBin = path.join(cwd, "node_modules", "astro", "astro.js");
     const proc = spawn(process.execPath, [astroBin, "build", "--outDir", outDir], {
@@ -526,17 +568,42 @@ function sseSend(res, payload) {
 }
 
 // ── v2: 原子 rebuild（build 到 dist.next → rename 交換） ─────────────
+// 實際的 astro build 輸出在 app 根底下的 staging 目錄（見 runAstroBuild 上方說明），
+// 放 node_modules/ 裡：git、npm pack、tsc、tailwind 都不會掃到。以快取 hash 命名，不同筆記資料夾可並行。
+function buildStageDir(cwd, cacheDir) {
+  return path.join(cwd, "node_modules", ".notecraft-build", path.basename(cacheDir));
+}
+
+// 同磁碟 rename；app 與快取在不同磁碟（dev 源碼在 D:、家目錄在 C:）時 rename 會 EXDEV，退回複製後刪除
+async function moveDir(src, dest) {
+  try {
+    await fs.rename(src, dest);
+  } catch (err) {
+    if (err?.code !== "EXDEV") throw err;
+    await fs.cp(src, dest, { recursive: true });
+    await fs.rm(src, { recursive: true, force: true });
+  }
+}
+
 async function atomicRebuild(cwd, notesDir, cacheDir, userCwd) {
   const distDir = path.join(cacheDir, "dist");
   const nextDir = path.join(cacheDir, "dist.next");
   const prevDir = path.join(cacheDir, "dist.prev");
+  const stageDir = buildStageDir(cwd, cacheDir);
 
-  // 清 next 與 prev 殘留
+  // 清 staging、next 與 prev 殘留
+  await fs.rm(stageDir, { recursive: true, force: true });
   await fs.rm(nextDir, { recursive: true, force: true });
   await fs.rm(prevDir, { recursive: true, force: true });
 
-  // build 到 dist.next；失敗直接 throw，caller 保留舊 dist
-  await runAstroBuild(cwd, notesDir, nextDir, userCwd);
+  // build 到 staging 再搬成 dist.next；失敗直接 throw，caller 保留舊 dist
+  try {
+    await runAstroBuild(cwd, notesDir, stageDir, userCwd);
+  } catch (err) {
+    await fs.rm(stageDir, { recursive: true, force: true }).catch(() => {});
+    throw err;
+  }
+  await moveDir(stageDir, nextDir);
 
   // 原子交換：舊 dist → prev，next → dist。rename 在同一 filesystem 內原子
   if (existsSync(distDir)) {
@@ -545,8 +612,8 @@ async function atomicRebuild(cwd, notesDir, cacheDir, userCwd) {
   await fs.rename(nextDir, distDir);
 
   // meta + 背景清理 prev（不 await，失敗也不影響 UX）
-  const count = await countMdx(notesDir);
-  await writeMeta(cacheDir, notesDir, count, await countPluginInputs(notesDir, userCwd));
+  const count = await countMdx(notesDir, userCwd);
+  await writeMeta(cacheDir, notesDir, userCwd, count, await countPluginInputs(notesDir, userCwd));
   fs.rm(prevDir, { recursive: true, force: true }).catch(() => {});
 }
 
@@ -567,9 +634,14 @@ async function startStaticServer(cwd, notesDir, distDir, port, host, openBrowser
         req.on("close", () => subscribers.delete(res));
         return;
       }
-      // 只掛 assets，不掛寫入 API（serve = 唯讀靜態）
-      const handled = await tryHandleAssetsRequest(cwd, notesDir, req, res);
-      if (handled) return;
+      // 只掛 assets，不掛寫入 API（serve = 唯讀靜態）。
+      // 本機連線走即時送出：改圖或剛加的圖不必等 rebuild（改圖片本身也不會觸發 rebuild）。
+      // 其他連線（--host 0.0.0.0 的區網）落到下面的 serveStatic，拿 build 時複製進 dist/notes-assets/ 的那份：
+      // 只有被筆記引用的檔、內容停在上次 build，和部署到靜態主機看到的一樣；即時路徑仍維持 localhost-only。
+      if (localhostOnly(req)) {
+        const handled = await tryHandleAssetsRequest(cwd, notesDir, req, res);
+        if (handled) return;
+      }
 
       // v2: dist 無 index.html（首次 build 失敗、或 notesDir 剛建、沒任何 mdx）→ fallback 頁
       if (!hasServableDist(distDir)) {
@@ -722,6 +794,10 @@ const serveCmd = defineCommand({
     const cacheDir = cacheDirFor(notesDir);
     const userCwd = process.cwd();
     const watch = args.watch;
+    // 本行程的 /notes-assets/* 由 handlers.mjs 送出，它以這兩個變數找 notesDir 與 .notecraft/ignore.json
+    //（與 astro 子行程收到的值相同；cwd 參數是 packageRoot，不是使用者專案）
+    process.env.NOTECRAFT_NOTES_DIR = notesDir;
+    process.env.NOTECRAFT_USER_CWD = userCwd;
     log(`notes dir  : ${notesDir}`);
     log(`cache dir  : ${cacheDir}`);
     log(`watch mode : ${watch ? "on（chokidar + SSE + atomic rebuild）" : "off"}`);
@@ -761,7 +837,7 @@ const serveCmd = defineCommand({
 //
 // v2 修正：.notecraft/ 現在放在 userCwd（見 astro.config.mjs 註解），
 // 所以 watcher 要同時看 notesDir（md/mdx）與 userCwd/.notecraft/（tsx / json）。
-function isWatchedFile(notesDir, userCwd, filePath) {
+function isWatchedFile(notesDir, userCwd, filePath, ig) {
   const ncRoot = path.join(userCwd || notesDir, ".notecraft");
   const relToNc = path.relative(ncRoot, filePath);
   if (!relToNc.startsWith("..") && !path.isAbsolute(relToNc)) {
@@ -777,6 +853,8 @@ function isWatchedFile(notesDir, userCwd, filePath) {
   if (rel.startsWith("..") || path.isAbsolute(rel)) return false;
   const parts = rel.split(path.sep);
   if (parts.some((p) => p.startsWith("."))) return false;
+  // 被 .notecraft/ignore.json 排除的檔改了不 rebuild
+  if (ig && ig.ignores(parts.join("/"))) return false;
   // 資料檔用副檔名粗篩就好：這裡只決定「要不要重 build」，
   // 真正命中哪些檔是 src/lib/plugins.ts 的事，在這裡重算一次 glob 只會有兩份真相。
   return filePath.endsWith(".md") || filePath.endsWith(".mdx") || filePath.endsWith(".json");
@@ -790,15 +868,27 @@ function startBackgroundRebuild({ cwd, notesDir, cacheDir, userCwd, broadcast, s
     // userCwd 與 notesDir 不同層時才多加；否則單一 anchor 就涵蓋
     watchPaths.push(ncDir);
   }
+  // ignore.json 的比對器；檔案變動時換新（格式錯誤則保留舊的，讓 rebuild 照常失敗並顯示訊息）
+  const ignorePath = path.join(cliNotecraftDir(notesDir, userCwd), IGNORE_FILE);
+  let ig = cliIgnore(notesDir, userCwd);
   const watcher = chokidar.watch(watchPaths, {
     ignoreInitial: true,
     awaitWriteFinish: { stabilityThreshold: 200, pollInterval: 50 },
-    ignored: (p) => {
+    ignored: (p, stats) => {
       // 相對 notesDir 判斷；userCwd/.notecraft/ 底下的檔會走這條返回 false，pass
       const rel = path.relative(notesDir, p);
       const parts = rel.split(path.sep);
       // 只 skip notesDir 底下 .* 開頭子目錄（.git 等）；`.notecraft` 例外允許
       if (parts.length === 1 && parts[0].startsWith(".") && parts[0] !== ".notecraft") return true;
+      // 被排除的資料夾整棵不 watch（大型 vendor 資料夾省下 watch 成本）。
+      // 啟動時排除的資料夾之後取消排除，要重開 serve 才會被 watch。
+      if (stats?.isDirectory() && rel && !rel.startsWith("..") && !path.isAbsolute(rel) && parts[0] !== ".notecraft") {
+        try {
+          return ig.ignores(`${parts.join("/")}/`);
+        } catch {
+          return false;
+        }
+      }
       return false;
     },
   });
@@ -843,9 +933,17 @@ function startBackgroundRebuild({ cwd, notesDir, cacheDir, userCwd, broadcast, s
   }
 
   watcher.on("all", (event, filePath) => {
-    // 只吃 md/mdx、.notecraft/components/*.tsx、.notecraft/*.json
+    if (path.resolve(filePath) === ignorePath) {
+      try {
+        ig = loadNotesIgnore(path.dirname(ignorePath));
+      } catch {
+        /* 格式錯誤：保留舊比對器，rebuild 會以 ignore.json 的錯誤訊息失敗 */
+      }
+      resetHandlersIgnore();
+    }
+    // 只吃 md/mdx、.notecraft/components/*.tsx、.notecraft/*.json（含 ignore.json）；被 ignore.json 排除的不算
     // 目錄 add/unlink 事件也會來，用 isWatchedFile 過濾
-    if (!isWatchedFile(notesDir, userCwd, filePath)) return;
+    if (!isWatchedFile(notesDir, userCwd, filePath, ig)) return;
     // 顯示相對路徑取比較短的那個 anchor
     const relN = path.relative(notesDir, filePath);
     const relU = userCwd ? path.relative(userCwd, filePath) : relN;

@@ -1,7 +1,7 @@
 ---
 Project Name: NoteCraft
 文件類型: Project Requirement Document (PRD)
-文件版本: v1.21.0
+文件版本: v1.27.0
 開發模式: Waterfall
 技術選型: 確定
 技術架構: 確定
@@ -10,7 +10,7 @@ Project Name: NoteCraft
 文件作者: 建宇
 審核人: 建宇
 建立日期: 2026-06-12
-更新日期: 2026-10-02
+更新日期: 2026-11-06
 ---
 
 # NoteCraft — AI 互動筆記 Web App
@@ -89,6 +89,10 @@ Project Name: NoteCraft
 27. \* 讓筆記正文裡**指向資料檔的連結**（`.xlsx` / `.csv` / `.pdf` / `.docx` / `.pptx`）在既有的講義檢視抽屜就地開啟，而不是交給瀏覽器下載：副檔名判定沿用講義庫的「副檔名 → 檢視器」註冊表，路徑先以 MDX 所在目錄為基準、找不到再退回專案根，因此筆記裡的實驗數據記錄簿、作業資料集與元件 datasheet 都點得開。notesDir 底下的檔案 dev 與正式環境皆可用；專案根底下的實驗工作區（`simulations/`）僅 dev 可開，正式 build 自動改指 GitHub 上的同一個檔。設計見 `docs/superpowers/specs/2026-09-12-pdf-reference-viewer-design.md` §7.4
 28. \* 講義檢視抽屜與講義庫支援 **PowerPoint（`.pptx`）**：以 `@aiden0z/pptx-renderer`（Apache-2.0）在瀏覽器端把投影片畫成 HTML／SVG，與 PDF 同樣有翻頁與縮放、一次只畫一張並依抽屜寬度縮放；講義庫列出張數（build 期只解壓 `presentation.xml` 計算）、筆記正文的 `.pptx` 連結同樣就地開啟。只收 `.pptx`，舊版二進位 `.ppt` 比照 `.doc` 不收；不支援動畫、轉場、3D 圖表與任意 EMF／WMF 向量圖。選型與 PoC 紀錄見 GitHub issue #2——LibreOffice 轉 PDF 的備案在實測中會把微軟正黑體替代成不含 CJK 字形的字型、中文靜默消失，故不採用
 29. \* 從講義庫開啟的講義改成**工作台頁籤**（`/references/doc/<完整相對路徑>`）在主區閱讀，不再開右側抽屜：可同時開多份、與筆記／資料檔頁籤並存，沿用頁籤的關閉／固定／移動／全部頁籤／重開最近關閉／快捷鍵與 20 個上限；頁籤識別碼是完整相對路徑（不同資料夾的同名檔是兩個頁籤），標題顯示檔名、圖示依格式區分、滑過顯示完整路徑；每個頁籤各自保存頁碼、縮放與捲動位置，切換或重新整理後還原；關掉最後一個講義頁籤回講義庫。筆記內的引用（`@ai-reference` 的 `p.N`、資料檔連結）仍開右側抽屜、不建立也不切換頁籤，兩邊狀態互不影響。「我的產出」「實驗數據」兩個 dev-only 分區同樣走頁籤，但正式 build 不產生這兩區的頁面。需求見 GitHub issue #3
+30. \* 提供 [定義與引用](#phase-427--定義區塊嵌入行內引用與反向連結v1230-追加)：以 `::::define{id}` 把一段內容標成可被引用的定義，其他筆記以 `::include{id}` 原樣嵌入、以 `:ref[文字]{id}` 行內引用並預覽，來源處看得到被哪些筆記引用；引用只寫 id、錯誤一律 build 失敗，dev 與正式環境皆可用
+31. \* 提供 [筆記關聯圖（Graph 檢視）](#phase-428--筆記頁-graph-檢視文件關聯與標籤關聯v1240-追加)：在筆記列表以圖呈現筆記之間的關聯。文件模式畫出定義引用、定義嵌入、站內連結、系列順序四種有方向的邊；標籤模式以標籤為樞紐把筆記聚成團。可看出樞紐與孤島，點節點預覽，dev 與正式環境皆可用
+32. \* 提供 [改版的筆記閱讀頁](#phase-429--筆記閱讀頁改版品牌經典主題語法補齊目錄與外框v1250-追加)：「品牌」與「經典」兩種頁面主題（設定頁切換）、筆記字級倍率、文內 H1 與資訊列；補齊 Markdown 與擴充語法的樣式，並新增程式碼分頁、摺疊問答、並排圖片、定義清單、數學公式、螢光標記與 diff；待生成的 AI 標記在原位顯示
+33. \* 讓 [Generated 元件](#generated-元件) 可以做 [3D 場景](#phase-430--ai-生成元件支援-threejsv1260-追加)：「空間關係本身是重點」的視覺化（架構分層、平台拓撲）可用 three.js 做成等角、可旋轉、可點選的元件；滾輪不攔截頁面捲動、可只用按鈕操作、尊重減少動態，dev 與正式環境皆可用
 
 ### 4.2 非目標（Out of Scope）
 
@@ -102,7 +106,7 @@ Project Name: NoteCraft
 ## 5. Site Map（網站地圖）
 
 ```
-NoteCraft（v1.13.0 起為三欄工作台殼：Rail + 檔案樹 Sidebar + 主區，見 Phase 4.16；v1.14.0 儀表板總覽改版，見 Phase 4.18；v1.15.0 首頁「更新月曆」頁籤，見 Phase 4.19；v1.16.0 空狀態插圖，見 Phase 4.20；v1.18.0 筆記頁籤，見 Phase 4.22）
+NoteCraft（v1.13.0 起為三欄工作台殼：Rail + 檔案樹 Sidebar + 主區，見 Phase 4.16；v1.14.0 儀表板總覽改版，見 Phase 4.18；v1.15.0 首頁「更新月曆」頁籤，見 Phase 4.19；v1.16.0 空狀態插圖，見 Phase 4.20；v1.18.0 筆記頁籤，見 Phase 4.22；v1.19.0 Loading 與轉場，見 Phase 4.23）
 ├── /                       Dashboard（widget grid + 總覽／本週／AI 佇列三個 Tab）
 ├── /notes                  筆記列表（List／Board／Table／Timeline 四種 view + Drawer；篩選在 query string）
 ├── /notes/[slug]           筆記檢視頁面（頁首接手標題與動作；dev 動作收進「⋯」選單）
@@ -795,16 +799,17 @@ flowchart TD
 - 互動流程：
   - 點擊後彈出二次確認 Modal，顯示：
     - 將刪除的筆記標題與 MDX 路徑
-    - **連帶刪除的 Generated 元件清單**（解析該筆記所有 `@ai-visualize` 標記 id，比對 `src/components/generated/<id>.tsx`）
+    - **連帶刪除的 Generated 元件清單**（解析該筆記所有 `@ai-visualize` 標記 id，比對元件資料夾內實際存在的 `<id>.tsx`）
     - 標示「將被保留」的共用元件（若某元件同時被其他筆記引用）
-  - 確認後呼叫 `DELETE /api/notes/:slug`
+    - 清單由 `GET /api/notes/:slug/delete-plan` 取得，與 DELETE 共用同一份判斷；取得前不能確認
+  - 確認後呼叫 `DELETE /api/notes/:slug`，body `{ components: string[] }` 帶上對話框列出的清單，API 只刪「計畫內 ∩ 清單內」的檔
   - 成功後：關閉 Modal、toast 提示、導回 [筆記列表頁面](#筆記列表頁面)（若刪的是當前檢視中的筆記）
 - API 行為（`DELETE /api/notes/:slug`，dev-only）：
   1. 定位該 slug 的 MDX 檔；不存在回 404
   2. 解析該 MDX 內所有 `@ai-visualize` 標記的 `id`
-  3. 對每個 id，掃描**其他所有 MDX** 是否仍引用該 id；**僅刪除沒有被其他筆記引用**的 `src/components/generated/<id>.tsx`（共用元件保留）
+  3. 對每個 id，掃描**其他所有 MDX** 是否仍引用該 id；**僅刪除沒有被其他筆記引用**的 `<元件資料夾>/<id>.tsx`（共用元件保留）。元件資料夾：主專案 `src/components/generated/`、viewer 模式（`notecraftapp view`）使用者專案的 `.notecraft/components/`；路徑經 `assertSafePath` 限制在該資料夾底下
   4. 刪除該 MDX 檔
-  5. 回傳 `{ deletedNote: string, deletedComponents: string[], keptShared: string[] }`
+  5. 回傳 `{ deletedNote: string, componentsDir: string, deletedComponents: string[], keptShared: string[], skipped: string[], failed: string[] }`
 - 與既有 [孤兒元件政策](#ai-標記區塊規格) 的關係：孤兒政策禁止的是「自動 / 未經同意」刪除；本功能是作者在 UI 上的**明確、具範圍且二次確認**的刪除動作，屬「明確指示」，與該政策不衝突
 
 ## 卡控機制
@@ -2822,6 +2827,105 @@ model: haiku
 - **不做**：預覽頁籤（斜體暫時頁籤，單擊列已是 Drawer 預覽）、頁籤上的狀態小點、深色模式
 - 對應實作 Task 105–108；完整設計見 [notecraft-workbench-note-tabs.md](./notecraft-workbench-note-tabs.md)（5 題定案紀錄在其 §16，實作後回填在 §17）
 
+#### Phase 4.23 — Loading 與轉場（v1.19.0 追加）
+
+**目標：第一次進站與切換筆記時不再有空白的瞬間**
+
+- 換頁走瀏覽器原生的跨文件 View Transitions：Rail、Sidebar、頁籤列不動，只有主區淡入；筆記之間（peer，上移 4px／240ms）、從列表進入（drill，8px／280ms）、回到頂層頁面（section，純淡入 200ms）三種，重新整理與簡報頁不轉場
+- 頁籤列與 Sidebar 系列進度在第一次繪製前就是真值（inline script 預繪），頁籤的藍色指示器跨頁滑到新頁籤；切回頁籤時捲動位置在第一次繪製前還原
+- 骨架只在等待超過 150ms 時出現：筆記與資料檔頁的 Body 骨架、`/notes` 有篩選時的列表骨架；Dashboard 的「—」換成真值時淡入、不改寬度
+- 點連結超過 150ms 還沒換頁時，主區頂端出現 2px 進度線；Google Fonts 改非阻塞載入（Fast 4G 冷啟動首次繪製約 712ms → 430ms）
+- 生成元件要在 SSR 就輸出最終高度（不以 `inView`／`mounted` 讓內容晚出現），content-visualize skill 與 component-generator 已加規則
+- 尊重 `prefers-reduced-motion`；不支援跨文件轉場的瀏覽器（Firefox）直接整頁切換
+- **不做**：啟動 splash、標題共享元素轉場、深色模式
+- 對應實作 Task 109–112；完整設計見 [notecraft-workbench-loading-transitions.md](./notecraft-workbench-loading-transitions.md)（5 題定案紀錄在其 §21，實作後回填在 §22）
+
+#### Phase 4.24 — 檢查更新（v1.20.0 追加）
+
+**目標：npm 上有新版時讓使用者知道，並看得到錯過了什麼**
+
+- 瀏覽器端直接查 `registry.npmjs.org/notecraftapp`（允許 CORS），無後端；結果存 `localStorage["nc-update-v1"]`，30 分鐘內不重查，另有手動「檢查更新」。目前版本與快取不同就整份作廢
+- **部署站也提示**（dev-only 原則的刻意例外），**不分 viewer／部署站**，只有一套文案與升級指令（`npx notecraftapp@latest view`、`npm i -g notecraftapp@latest`）
+- 自動檢查失敗零痕跡（不顯示、不寫入、不印錯誤）；只有手動檢查失敗顯示一行字
+- 接觸點由低到高：Rail「設定與關於」圓點、「關於」頁籤落後版數徽章、「關於」最上方的「版本與更新」區塊、更新內容 Drawer、發現新版時的一次性 toast（可「略過這一版」，已棄用的版本不能略過）；⌘K 多一組「指令」
+- 更新內容 Drawer 列出錯過的 CHANGELOG：從 jsDelivr 讀 `notecraftapp@<latest>/CHANGELOG.md`（`CHANGELOG.md` 因此加入 `files`），GitHub raw 為備援；只列 npm 上發佈過的版本、「內部」類別不顯示；目前版本比 npm 新時標「尚未發佈的版本」
+- 版本推導與 CHANGELOG 解析是純函式，`npm run check:upd` 以 repo 的真實 CHANGELOG 斷言（並與官網版本清單對照）
+- **不做**：「稍後提醒」、部署站關閉提醒的 build 選項、深色模式
+- 對應實作 Task 113–116；完整設計見 [notecraft-workbench-update-check.md](./notecraft-workbench-update-check.md)（4 題定案紀錄在其 §16，實作後回填在 §17）
+
+#### Phase 4.25 — 排除檔案 `.notecraft/ignore.json`（v1.21.0 追加）
+
+**目標：筆記資料夾裡不想讓 NoteCraft 讀的檔案，可以像 `.gitignore` 一樣排除**
+
+- 設定檔 `.notecraft/ignore.json`，形狀 `{ "ignore": [...] }`，與 `plugins.json` 同一個 `.notecraft/`、只讀一處；規則語法同 `.gitignore`（`ignore` 套件），基準是筆記資料夾
+- 範圍是**所有檔案**：被排除的不成為筆記、不被 plugin 認領、不出現在資料夾樹與新增筆記的選單、附件不複製進產物、改了不觸發 rebuild；dev-only API 也看不到它們
+- 內建排除 `.` 開頭、`node_modules/`、`dist/`，不能用 `!` 解除；`ignore.json` 格式錯誤一律 build fail
+- 改了 `ignore.json` 自動生效（`view` 重啟 dev server、`serve` 重新 build、CLI 快取失效）
+- 隱私保證：build 後檢查產物，出現被排除的檔就 build fail；它不是存取控制（檔案仍在硬碟、仍被 git 追蹤）
+- 所有走訪筆記資料夾的地方收斂到 `src/lib/notes-ignore.mjs`，順帶修正 `node_modules/` 裡的 Markdown 被當成筆記
+- **不做**：讀 `.gitignore`、巢狀 ignore 檔、UI 編輯或顯示規則、依 frontmatter 排除
+- 對應實作 Task 117–120；完整設計見 [notecraft-ignore-config.md](./notecraft-ignore-config.md)（7 題定案紀錄在其 §12，實作後回填在 §13）
+
+#### Phase 4.26 — Plugin 頁空狀態與「內建外掛外洩」修正（v1.22.0 追加）
+
+**目標：沒裝外掛、裝了沒在用時，`/plugins` 說清楚為什麼是空的、下一步做什麼**
+
+- 修正：官方 store `plugins/` 隨 npm 發佈，app 根目錄的 glob 把它當成已安裝，viewer 工作區沒裝任何外掛也列出 ER Diagram 與 API 文件、renderer 打進每個頁面。`plugins/` 移出 `files`（只給主 repo 用，Q17 不變），`check-plugins` 以 `npm pack --dry-run` 把關；同 id 撞名以 `.notecraft/plugins/` 為準
+- 情境由純函式 `derivePluginEnv` 判定，只看啟用中外掛：全新工作區、有 plugins.json 但 0 個外掛、未設定映射、映射無命中、全部停用
+- 兩個頁籤各有插圖空狀態；dev 附可複製的安裝指令、官方外掛清單、plugins.json 範例與排查提示；Header 徽章、Toolbar、Sidebar「Plugin 資料檔」區段同步
+- 正式環境（部署站、`serve`）只顯示安靜版本，**不出現任何 `npx` 指令**；「安裝新外掛」說明框改為 dev-only
+- **不做**：Plugin Store（官方外掛清單先寫成常數，日後換資料來源）、manifest 加預設 glob 欄位、「不相容」「渲染錯誤」pill
+- 對應實作 Task 121–124；完整設計見 [notecraft-workbench-plugin-empty-states.md](./notecraft-workbench-plugin-empty-states.md)（6 題定案紀錄在其 §14，實作後回填在 §15）
+
+#### Phase 4.27 — 定義區塊、嵌入、行內引用與反向連結（v1.23.0 追加）
+
+**目標：同一段說明只寫一次，其他筆記引用它（SSoT）**
+
+- 語法沿用 `remark-directive`：`::::define{id label?}`（容器，只能放最上層）、`::include{id}`（嵌入）、`:ref[文字]{id}`（行內引用）。id 全域唯一、可用中文，引用只寫 id 不寫路徑
+- 嵌入的內容與來源走同一條 remark 管線（提示框、分頁、步驟、程式碼區塊一致）；標題層級相對化並計入目錄；元件只在來源頁渲染，嵌入處與預覽卡顯示 placeholder；嵌入內容不進 pagefind 索引
+- 行內引用：hover／focus 預覽、點擊固定、手機底部 sheet；預覽內容 build 期就輸出在頁面上，沒有載入中狀態
+- 反向連結：define 旁的「被 N 篇引用」、筆記頁頂端入口與 Drawer、工作台列表 Drawer 三段摘要、Palette 以 id 搜尋定義
+- 錯誤（id 不存在、重複、循環、深度、位置、define 內 import）一律 build 失敗；引用 git-ignored 筆記的定義只 warn；dev 期間改來源會一併重新渲染引用處
+- 只做亮色；**不做**：`[[…]]` 語法糖、簡報展開 include、定義總表頁
+- 對應實作 Task 125–130；完整設計見 [notecraft-workbench-define-ref.md](./notecraft-workbench-define-ref.md)（12 題定案紀錄在其 §17，實作後回填在 §18）
+
+#### Phase 4.28 — 筆記頁 Graph 檢視：文件關聯與標籤關聯（v1.24.0 追加）
+
+**目標：一眼看出筆記之間的結構 —— 哪些是樞紐、哪些是孤島、哪些主題聚在一起**
+
+- `/notes` 新增第五個檢視 Graph（`?view=graph`，設定頁可設為預設 view）；沿用 Sidebar 篩選、NoteDrawer、Esc 堆疊
+- 文件模式：力導向圖。邊有四種、都有方向（來源 → 被參照的一方）：定義引用（`:ref`）、定義嵌入（`::include`）、站內連結（`/notes/…`、`/view/…`、相對連結、`<PluginView>`、資料檔的 `meta.backTo`）、系列順序。同一對筆記的多次關聯合成一條、以粗細表示次數；節點大小依被連入的篇數分四級；沒有邊的筆記依著色分組排在外圍
+- 標籤模式：全站筆記數前 8 個標籤是樞紐，另有「其他標籤」「未加標籤」兩團；點樞紐換頁到該標籤的 Graph
+- 邊在 build 期算好、隨頁面送出；佈局是固定種子的純函式，算完即靜止；節點超過 150 時改由 Web Worker 計算
+- Graph 的程式另外分包，只在切到 Graph 時下載；寬度 860px 以下不畫圖，顯示說明
+- 只做亮色；**不做**：筆記頁上的局部圖、斷鏈檢查、拖曳節點
+- 對應實作 Task 131–136；完整設計見 [notecraft-workbench-notes-graph.md](./notecraft-workbench-notes-graph.md)（12 題定案紀錄在其 §20，實作後回填在 §21）
+
+#### Phase 4.29 — 筆記閱讀頁改版：品牌／經典主題、語法補齊、目錄與外框（v1.25.0 追加）
+
+**目標：筆記頁讀起來一致、可調；所有語法都有對應的樣式**
+
+- 兩種頁面主題：品牌（新，預設）與經典（改版前的樣子），在設定頁「筆記 › 頁面主題」切換；字級倍率 5 段（0.9–1.25）。偏好存在瀏覽器，第一次繪製前就套上、不閃
+- 版面：內容滿版＋右側目錄；H1、描述、資訊列（資料夾、更新日期、閱讀時間、系列 n/N、閱讀進度、被引用數）移到文內，殼的頁首標題捲過 H1 才出現
+- 補齊樣式：H1–H6、標題錨點、引言、表格、kbd、圖片與圖說、註腳、可勾選的待辦清單（只改畫面）
+- 新語法：`:::code-group`、`:::details`、`:::figures`、`:::dl`、`$…$`／`$$…$$`（KaTeX）、`==螢光==`、diff 程式碼；步驟新增「需處理」「已略過」兩種狀態與狀態標籤；既有語法不改、不加別名
+- 程式碼區塊、提示框、分頁、程式碼註解、AI 元件與資料檔外框、系列導覽換上新外觀；放大檢視與「複製提示詞」維持原樣
+- 待生成的 `@ai-visualize` 標記改在原位顯示提示卡
+- 目錄維持 H1–H3，新增收合後的子項數、單欄時的一列按鈕
+- **不做**：暗色模式（另開版本）
+- 對應實作 Task 137–144；完整設計見 [notecraft-workbench-note-page.md](./notecraft-workbench-note-page.md)（12 題定案紀錄在其 §14，實作後回填在 §15）
+
+#### Phase 4.30 — AI 生成元件支援 three.js（v1.26.0 追加）
+
+**目標：空間關係本身是重點的內容，可以生成可旋轉、可點選的 3D 元件**
+
+- import 白名單加 `three`（含 `three/addons/...` 子路徑，以套件名比對）；plugin renderer 共用同一份白名單
+- content-visualize Skill 決策樹新增「空間關係本身是重點」一條，並附 3D 寫作規範與最小骨架：SSR 安全、unmount 完整釋放 WebGL、離開畫面停止渲染、寬度跟版面、`role="img"` 與 HTML 資訊面板、按鈕可完成全部操作、減少動態只畫終態、顏色對應 design token、不用後處理與 3D 文字
+- 流程、比較、數值、時間軸維持平面；visualize-planner 選 3D 時必須寫出「為何不是 SVG」
+- 滾輪不縮放（留給頁面捲動），縮放用按鈕；簡報的 custom 頁不寫 3D，既有 3D 元件以 full-visual 沿用
+- 範例筆記 `md-viz` 新增一節 3D 場景
+- 對應實作 Task 145–148；完整設計見 [notecraft-generated-three.md](./notecraft-generated-three.md)（9 題定案紀錄在其 §13）
+
 #### Phase 5 — 部署與收尾
 
 **目標：上線**
@@ -2982,13 +3086,40 @@ gantt
 
 ## 11. Change Log（變更紀錄）
 
-### [1.21.0] - 2026-10-02
+### [1.27.0] - 2026-11-06
+- **Changed**: 合併上游 SteveLin100132/notecraft（notecraftapp v1.15.0：Loading 與轉場、檢查更新、排除檔案、Plugin 頁空狀態、定義與引用、Graph 檢視、筆記閱讀頁改版、three.js）。上游的 `.notecraft/ignore.json` 改為只排除上游範例筆記，本分支既有筆記維持可見；下列 1.19–1.26 是上游版號，本分支同號的紀錄改標 `-fork`
+
+### [1.26.0] - 2026-11-01
+- **Added**: 新增 Phase 4.30 AI 生成元件支援 three.js（3D 場景）；§4.1 目標新增第 28 項
+
+### [1.25.0] - 2026-10-31
+- **Added**: 新增 Phase 4.29 筆記閱讀頁改版（品牌／經典主題、語法補齊、目錄與外框）；§4.1 目標新增第 27 項
+
+### [1.24.0] - 2026-10-10
+- **Added**: 新增 Phase 4.28 筆記頁 Graph 檢視（文件關聯與標籤關聯）；§4.1 目標新增第 26 項
+
+### [1.23.0] - 2026-10-07
+- **Added**: 新增 Phase 4.27 定義區塊、嵌入、行內引用與反向連結；§4.1 目標新增第 25 項
+
+### [1.22.0] - 2026-10-06
+- **Added**: 新增 Phase 4.26 Plugin 頁空狀態與內建外掛外洩修正
+
+### [1.21.0] - 2026-10-04
+- **Added**: 新增 Phase 4.25 排除檔案（`.notecraft/ignore.json`）
+
+### [1.20.0] - 2026-10-03
+- **Added**: 新增 Phase 4.24 檢查更新（npm 新版通知、錯過的 CHANGELOG）
+
+### [1.19.0] - 2026-10-02
+- **Added**: 新增 Workbench Loading 與轉場：換頁轉場、殼預繪、骨架
+
+### [1.21.0-fork] - 2026-10-02
 - **Changed**: 講義庫開啟講義改為工作台頁籤（`/references/doc/*`），每頁籤保存頁碼／縮放／捲動；筆記內引用仍開右側抽屜
 
-### [1.20.0] - 2026-10-01
+### [1.20.0-fork] - 2026-10-01
 - **Added**: 講義檢視抽屜與講義庫支援 PowerPoint（.pptx），筆記正文的 .pptx 連結就地開啟
 
-### [1.19.0] - 2026-10-01
+### [1.19.0-fork] - 2026-10-01
 - **Changed**: 合併上游 SteveLin100132/notecraft（notecraftapp v1.7.0：Dashboard 總覽改版、更新月曆、空狀態插圖、OpenAPI Renderer、筆記頁籤、NOTECRAFT_BASE 子路徑部署、Windows 跨磁碟支援、官網）。本分支的 8 篇公司筆記維持原路徑進版控，不隨上游移入 `private/`；下列 `-fork` 版號是本分支在上游 1.14–1.18 之前各自遞增的紀錄，保留原號不重編
 
 ### [1.16.0-fork] - 2026-09-28

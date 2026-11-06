@@ -93,6 +93,8 @@ Project Name: NoteCraft Plugin System
 │   ├── series.json                     # 既有
 │   ├── components/                     # 既有：@ai-visualize 生成元件、deck
 │   ├── public/                         # 既有
+│   ├── ignore.json                     # v1.10.0：排除檔案（docs/notecraft-ignore-config.md）；被排除的資料檔在
+│   │                                   #   plugins.json 的 files／exclude 比對之前就略過，等同不存在
 │   ├── plugins.json                    # 新增：專案級映射（§5）
 │   └── plugins/                        # 新增：已安裝的 plugin
 │       └── er-diagram-renderer/
@@ -128,6 +130,8 @@ notecraft/
 ```
 
 主專案**自己也消費 `plugins/`**（Q17）：`src/lib/plugins.ts` 多掃一條 `/plugins/*/renderer.tsx`，讓官方 plugin 有地方能真的 build、能跑 CI。成本只有一行 glob。
+
+> **只限主 repo（v1.11.0）**：`plugins/` 不隨 npm 發佈。0.6.0–1.10.1 曾把它放進 `package.json` 的 `files`，結果每個 viewer 工作區都「內建」了官方外掛：沒安裝也列在已安裝、renderer 打進每個頁面、`plugins.json` 引用未安裝的官方外掛也 build 得過。viewer 的官方外掛一律經 `install-plugin` 安裝；同 id 兩處都有時以 `.notecraft/plugins/` 為準。`check-plugins` 以 `npm pack --dry-run` 把關（[notecraft-workbench-plugin-empty-states.md](./notecraft-workbench-plugin-empty-states.md) §2）。
 
 ### 4.3 兩份 JSON 的分工
 
@@ -264,9 +268,9 @@ plugin 隨包附一份標準 `schema.json`（Q7b）。選它而非 zod 的理由
 
 ### 6.4 import 白名單
 
-plugin renderer 與 `@ai-visualize` 生成元件走**同一份白名單**（`src/lib/generated-component-whitelist.ts`）：`react`、`react-dom`、`motion`、`recharts`、`d3`、`lucide-react`、`clsx`、`tailwind-merge` + 相對路徑 + `@notes/*`。
+plugin renderer 與 `@ai-visualize` 生成元件走**同一份白名單**（`src/lib/generated-component-whitelist.ts`）：`react`、`react-dom`、`motion`、`recharts`、`d3`、`lucide-react`、`clsx`、`tailwind-merge`、`three`（app v1.15.0 起）+ 相對路徑 + `@notes/*`。子路徑以 root package 比對（`three/addons/...` → `three`）。
 
-不開放擴充（Q11）。理由是技術現實而非潔癖：外部 tsx 靠 `vite.resolve.dedupe` 從 app 的 `node_modules` 解析，不在清單裡的套件一律 rollup build fail；開放等於每裝一個 plugin 就要動 `~/.notecraft/app-<v>/` 的 `node_modules`。這七個套件已足以畫出 ER 圖這種複雜度。
+不開放擴充（Q11）。理由是技術現實而非潔癖：外部 tsx 靠 `vite.resolve.dedupe` 從 app 的 `node_modules` 解析，不在清單裡的套件一律 rollup build fail；開放等於每裝一個 plugin 就要動 `~/.notecraft/app-<v>/` 的 `node_modules`。這些套件已足以畫出 ER 圖這種複雜度。
 
 白名單外的 import **在安裝時就擋**（§9.6），不拖到 build。
 
@@ -602,6 +606,8 @@ $ npx notecraftapp install-plugin
 **退路：`git clone --depth 1`。** 非 GitHub 來源，或 GitHub API 限流（未認證 60 次/小時）時改走這條。
 
 抓完寫一份 `.installed.json` 記錄來源網址與實際 commit，供日後追溯與升級比對。
+本地來源的 `origin` 只記 `local:<資料夾名>`（v1.8.5）：這個欄位會輸出到 `/wb-index.json` 與 `/plugins` 頁，絕對路徑不得出現在產物裡；
+更早安裝、記著絕對路徑的舊檔由 `src/lib/local-path.ts` 的 `publicPluginOrigin` 在輸出時轉成同樣形式。
 
 ### 9.5 安裝後
 
@@ -631,6 +637,7 @@ $ npx notecraftapp install-plugin
 - 掃所有 `.tsx` / `.ts` 的 import，白名單外的套件 → 列出違規行並拒裝（§6.4）
 - 禁止 `dangerouslySetInnerHTML`
 - 只收 `.tsx` / `.ts` / `.json` / `.md` / `.css` / `.svg` / `.png`；拒絕 `package.json`、`node_modules/`、`*.sh`、`*.mjs` 等可執行內容
+  - 副檔名之外另有檔名拒絕清單（任何層、不分大小寫）：`package.json`、各家 lockfile、`tsconfig.json`／`jsconfig.json`。`.json` 副檔名不是通行證 —— 1.8.4 以前只看副檔名，`package.json` 實際會被放行
 - 路徑安全：拒絕 `../` 逃脫與 symlink（沿用 viewer v1 §7.3）
 - `engines.notecraftapp` 不合 → 擋下並提示升級
 - **不執行任何安裝腳本**
@@ -748,7 +755,7 @@ viewer v2 §7.1 的快取失效條件擴充：
 | Q14 | 自動寫設定 | 預設只印建議片段，`--apply` 才寫 |
 | Q15 | CLI 表面 | 只加 `install-plugin`，列表與移除收在 `--list` / `--remove` |
 | Q16 | 安裝確認 | 一律確認，`--yes` 可略過 |
-| Q17 | 主專案支援 | 要，多一條 `/plugins/*/renderer.tsx` glob 分支 |
+| Q17 | 主專案支援 | 要，多一條 `/plugins/*/renderer.tsx` glob 分支（只限主 repo，`plugins/` 不隨 npm 發佈，v1.11.0） |
 | Q18 | AI 產資料檔 | 架構預留，首版不做 |
 | Q19 | dev HMR | 先實測，不觸發就在 `view` 掛資料檔 watcher |
 | Q20 | `files` 基準 | notesDir（資料檔必須放在筆記資料夾內） |

@@ -119,6 +119,30 @@ for (const p of registry.plugins) {
   if (!existsSync(path.join(storeDir, p.id))) fail(`registry 列了 "${p.id}"，但 plugins/${p.id} 不存在`);
 }
 
+// ── 4.2：官方 store 不可隨 npm 發佈（Task 121）──────────────
+// app 會 glob 自己根目錄的 plugins/*/renderer.tsx（Q17，給主 repo 用）。一旦 plugins/ 進了 npm 套件，
+// 每個 viewer 工作區都會「內建」官方外掛：沒安裝也列在已安裝、renderer 打進 client chunk。
+// 經 npm_execpath 執行 npm（npm run 時恆有），避免 Windows 上 spawnSync("npm") 找不到 npm.cmd。
+{
+  const npmCli = process.env.npm_execpath;
+  const r = npmCli
+    ? spawnSync(process.execPath, [npmCli, "pack", "--dry-run", "--json", "--ignore-scripts"], { cwd: root, stdio: "pipe" })
+    : spawnSync("npm", ["pack", "--dry-run", "--json", "--ignore-scripts"], { cwd: root, stdio: "pipe", shell: process.platform === "win32" });
+  let packed = null;
+  try {
+    packed = JSON.parse(r.stdout?.toString() ?? "")?.[0]?.files?.map((f) => f.path) ?? null;
+  } catch {
+    /* 下面統一回報 */
+  }
+  if (!packed) {
+    fail(`npm pack --dry-run 無法解析打包清單：${(r.stderr?.toString() || r.error?.message || "（無輸出）").trim().split("\n").slice(-3).join(" ")}`);
+  } else {
+    const leaked = packed.filter((p) => p.startsWith("plugins/"));
+    if (leaked.length) fail(`plugins/ 不可隨 npm 發佈（Task 121），打包清單含 ${leaked.length} 個檔，例如 ${leaked[0]}`);
+    else console.log("  ✓ npm 打包清單不含 plugins/");
+  }
+}
+
 // ── 4.5：scripts/checks/*.mjs（plugin 推導、Markdown 等純函式的斷言）──────────
 // 以 Node 原生 strip-types 直接載入 plugin 的 .ts —— 不加 test runner。很快，--skip-build 也照跑。
 if (errors.length === 0) {
@@ -166,17 +190,21 @@ if (!skipBuild && errors.length === 0) {
     );
     await fs.writeFile(path.join(fixture, "docs", "readme.md"), "# fixture\n", "utf-8");
 
-    // 輸出到 fixture 自己的目錄，不要碰 repo 的 dist/ ——
-    // 這支腳本在開發者機器上也會跑（prepublishOnly），清掉人家的產物很沒禮貌。
+    // 不要碰 repo 的 dist/ —— 這支腳本在開發者機器上也會跑（prepublishOnly），清掉人家的產物很沒禮貌。
+    // 但 outDir 也必須在 cwd（repo 根）底下：放在 fixture（系統暫存）時 Astro 會經 <repo>/.astro/ 中轉，
+    // 把 content layer 內部檔帶進產物而被 content-layer-guard 擋下（與 CLI 同一個坑，見 bin/notecraftapp.mjs 的 runAstroBuild）。
     // 直接以 node 執行 astro.js（與 CLI 相同）：Windows 上 spawnSync("npx") 找不到 npx.cmd，
     // 改 shell: true 又會讓含空白的 fixture 路徑（C:\Users\<名字 有空白>\...）被拆開。
+    const outDir = path.join(root, "node_modules", ".notecraft-build", `check-${id}`);
+    await fs.rm(outDir, { recursive: true, force: true });
     const astroBin = path.join(root, "node_modules", "astro", "astro.js");
-    const r = spawnSync(process.execPath, [astroBin, "build", "--outDir", path.join(fixture, "dist")], {
+    const r = spawnSync(process.execPath, [astroBin, "build", "--outDir", outDir], {
       cwd: root,
       env: { ...process.env, NOTECRAFT_NOTES_DIR: path.join(fixture, "docs"), NOTECRAFT_USER_CWD: fixture },
       stdio: "pipe",
     });
     await fs.rm(fixture, { recursive: true, force: true });
+    await fs.rm(outDir, { recursive: true, force: true });
     if (r.status !== 0) {
       const out = r.error?.message ?? (r.stderr?.length ? r.stderr : r.stdout)?.toString() ?? "（無輸出）";
       fail(`[${id}] 配 example 資料 build 失敗：\n${out.split("\n").slice(-12).join("\n")}`);

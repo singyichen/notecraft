@@ -1,9 +1,12 @@
-// /settings（規格 §8.8）：設定（三項，存 localStorage）與關於（build 期資料）。Tab 寫進 ?tab=about。
+// /settings（規格 §8.8）：設定（五項，存 localStorage）與關於（build 期資料）。Tab 寫進 ?tab=about。
 import { useEffect, useState, type ComponentType } from "react";
 import { BookOpen, FileText, Layers, Plus, Search, Sparkles, Tag, type LucideProps } from "lucide-react";
 import {
   DEFAULT_PREFS,
   GROUP_LABEL,
+  NOTE_FONT_SCALES,
+  NOTE_THEME_LABEL,
+  NOTE_THEMES,
   readPrefs,
   TOC_DEFAULT_LABEL,
   VIEW_LABEL,
@@ -15,8 +18,12 @@ import {
 } from "@/lib/wb-prefs";
 import { toast } from "@/lib/prompts";
 import WbHeader from "./WbHeader";
-import { GroupHeader, Ic, Seg, StatStrip } from "./ui";
+import { GroupHeader, Ic, Seg, SetRow, StatStrip } from "./ui";
 import { withBase } from "@/lib/base";
+import { railHintOf } from "@/lib/update-check";
+import type { UpdEnv } from "@/lib/update-store";
+import { useUpd } from "./update/useUpd";
+import UpdateBlock from "./update/UpdateBlock";
 
 type Tab = "settings" | "about";
 
@@ -53,21 +60,19 @@ const STACK: [string, string][] = [
   ["Netlify", "部署"],
 ];
 
-function SetRow({ k, d, children }: { k: string; d?: string; children?: React.ReactNode }) {
-  return (
-    <div className="wb-set">
-      <div className="wb-set-l">
-        <div className="wb-set-k">{k}</div>
-        {d ? <div className="wb-set-d">{d}</div> : null}
-      </div>
-      <div className="wb-set-c">{children}</div>
-    </div>
-  );
-}
-
-export default function SettingsView({ about, isDev = false }: { about: AboutData; isDev?: boolean }) {
+export default function SettingsView({
+  about,
+  isDev = false,
+  upd,
+}: {
+  about: AboutData;
+  isDev?: boolean;
+  /** 檢查更新的 build 期環境（docs/notecraft-workbench-update-check.md §6.2、§6.3） */
+  upd?: UpdEnv;
+}) {
   const [tab, setTab] = useState<Tab>("settings");
   const [prefs, setPrefs] = useState<WbPrefs>(DEFAULT_PREFS); // SSR 用預設值
+  const u = useUpd(upd);
 
   useEffect(() => {
     if (new URLSearchParams(window.location.search).get("tab") === "about") setTab("about");
@@ -77,6 +82,11 @@ export default function SettingsView({ about, isDev = false }: { about: AboutDat
     setTab(t);
     window.history.replaceState(null, "", window.location.pathname + (t === "about" ? "?tab=about" : ""));
   };
+  // Palette 在本頁選「檢查更新」：切到「關於」
+  useEffect(() => {
+    if (u.focusAbout > 0) goTab("about");
+  }, [u.focusAbout]);
+  const hint = railHintOf(u.res, u.skipped);
   const save = (patch: Partial<WbPrefs>) => {
     setPrefs(writePrefs(patch));
     toast("已儲存");
@@ -90,7 +100,7 @@ export default function SettingsView({ about, isDev = false }: { about: AboutDat
     ["標籤", `${about.tags} 個`],
     ["資料檔", `${about.dataFiles} 個`],
     about.viewer ? ["模式", "notecraftapp viewer"] : ["部署", "Netlify ・ 靜態建置"],
-    ["版本", `notecraftapp v${about.appVersion}`],
+    // 「版本」列拿掉：「版本與更新」區塊是版本資訊的唯一完整位置（update-check §6.3）
   ];
 
   return (
@@ -104,6 +114,7 @@ export default function SettingsView({ about, isDev = false }: { about: AboutDat
         ]}
         activeTab={tab}
         onTab={goTab}
+        tabBadges={hint ? { about: hint } : undefined}
         isDev={isDev}
       />
       {tab === "settings" ? (
@@ -119,10 +130,23 @@ export default function SettingsView({ about, isDev = false }: { about: AboutDat
           <SetRow k="目錄預設狀態" d="開啟筆記時，右側目錄的子項目要全部展開或全部收合；目錄標頭的按鈕仍可隨時切換">
             <Seg boxed label="目錄預設狀態" value={prefs.tocDefault} options={WB_TOC_DEFAULTS.map((t) => ({ value: t, label: TOC_DEFAULT_LABEL[t] }))} onChange={(t) => save({ tocDefault: t })} />
           </SetRow>
+          <SetRow k="頁面主題" d="筆記閱讀頁的樣式：品牌是新版，經典保留改版前的樣子">
+            <Seg boxed label="頁面主題" value={prefs.noteTheme} options={NOTE_THEMES.map((t) => ({ value: t, label: NOTE_THEME_LABEL[t] }))} onChange={(t) => save({ noteTheme: t })} />
+          </SetRow>
+          <SetRow k="字級" d="筆記內文的字級倍率；程式碼、表格與圖說會一起縮放">
+            <Seg
+              boxed
+              label="字級"
+              value={String(prefs.noteFontScale)}
+              options={NOTE_FONT_SCALES.map((s) => ({ value: String(s), label: `${s}×` }))}
+              onChange={(s) => save({ noteFontScale: Number(s) })}
+            />
+          </SetRow>
           <p style={{ margin: 0, padding: "12px 18px", fontSize: 11.5, color: "var(--wb-ink-3)" }}>設定儲存在這個瀏覽器，不會同步到其他裝置。</p>
         </div>
       ) : (
         <div id="nc-scroll" className="wb-body flush">
+          <UpdateBlock u={u} cur={about.appVersion} visible={tab === "about"} />
           <StatStrip
             items={[
               { label: "筆記", value: about.notes },

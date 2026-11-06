@@ -578,3 +578,298 @@ MPA 下頁籤是存在 localStorage 的「已開啟清單」，每次換頁由 `
 > - **每次寫 store 都先重讀 localStorage**，不拿 React state 當來源（多個瀏覽器分頁同時開）
 > - 浮層（選單、下拉、手機抽屜）走 `wb-escape` 堆疊；`workbench.css` 規則零色碼；`.nt-*` 規則放在第一個 860px 殼響應式區塊之前
 > - 快捷鍵只用 `⌥`、比對 `event.code`，焦點在輸入元件內不攔截
+
+## v1.19.0 追加功能（§8.1 Phase 4.23）— Loading 與轉場（notecraftapp v1.8.0） ✅ 已完成（2026-10-02）
+
+規格 [notecraft-workbench-loading-transitions.md](../notecraft-workbench-loading-transitions.md)；設計交付 [design_handoff_loading_transitions](../prototype/design_handoff_loading_transitions/)。
+處理兩個空白瞬間：第一次進站、進入或切換筆記。換頁改用跨文件 View Transitions，Rail、Sidebar、頁籤列不動，只有主區依情境淡入；頁籤列、系列進度、捲動位置在第一次繪製前就是真值；骨架只在等待超過 150ms 時出現。
+
+> **規格與設計稿不一致時，一律以規格為準。** 主要偏離：頁籤列畫在島外的預繪層、不改 island 的 DOM（Q1）；
+> 不 inline `window.__NC_INDEX`（頁籤已存標題快照）；key、DOM、抽屜 class 依 codebase 實際值；token 全改 `--wb-*`；不做深色模式；
+> Google Fonts 改非阻塞（Q2）；捲動還原提前到 inline script（Q4）；`VizIsland` 只包實測高度差 > 8px 的元件（Q3）。
+
+| Task | 功能 | 規格 | 主要改動 |
+| --- | --- | --- | --- |
+| [Task 109](task-109-loading-measure-vt-foundation.md) | 地基：Phase 0 量測、字型非阻塞、主區包裝、跨文件轉場、進度線 | §2、§4、§5、§11、§12 | `WorkbenchLayout.astro`（`.nc-main-pane`、head script）、`workbench.css`（token、轉場規則）、`lib/wb-nav.ts`、`scripts/checks/wb-nav.mjs` |
+| [Task 110](task-110-loading-tabs-prepaint-scroll.md) | 殼的預繪：頁籤列、`.nt-ind` 指示器、系列進度、捲動還原提前、`rel=expect` | §4.4、§5.3、§6、§7、§8.2 | `lib/wb-tabs-prepaint.ts`、`lib/series-progress-pure.ts`、`TabStrip.tsx`、`TabBar.tsx`、`WorkbenchLayout.astro` |
+| [Task 111](task-111-loading-skeletons-viz-island.md) | 骨架、`/notes` 首屏、生成元件高度盤點、`VizIsland`、「—」換值 | §8、§9、§10 | `NoteSkeleton.astro`、`ListSkeleton.astro`、`VizIsland.tsx`、`notes/[...slug].astro`、`view/[...path].astro`、content-visualize skill 與兩個 subagent |
+| [Task 112](task-112-loading-a11y-docs-release.md) | reduced motion、響應式、瀏覽器、viewer 實測、文件回填、發版 | §13–§17、§22 | `workbench.css`、CLAUDE.md／workbench.md／note-tabs.md／PRD／CHANGELOG、v1.8.0 |
+
+**順序**：一條直線。
+
+```
+109 ─ 110 ─ 111 ─ 112
+```
+
+> **交付節奏**：全程在 `feat/loading-transitions` 單一分支上，依 Task 逐步 commit，**Task 112 完成後開 PR 併回 main**。
+> 每個 commit 都要能通過 `npx tsc --noEmit && npx astro build`；動到 `wb-nav.ts`／`wb-tabs-prepaint.ts`／`series-progress-pure.ts` 的再跑 `npm run check:wb`。
+>
+> **幾條貫穿整批的規則**：
+> - **Task 109 的量測先做**；結論與規格 §2 的假設差很多時，先停下來跟作者確認後續優先順序
+> - **以 `toString()` 內嵌進 inline script 的函式必須自足**（不引用模組內其他識別碼），且只能 `import type`、無 JSX、不碰 `window`
+> - **inline script 不改 island 內的 DOM**（React 18 hydration mismatch）；預繪一律畫在島外
+> - `view-transition-name` 同一份文件內唯一（尤其 `nc-tab-ind`）
+> - 新 token 一律 `--wb-*`，規則零色碼；每條動畫都要有 reduced-motion 對應
+> - 驗收以 `astro preview` 為準（`astro dev` 下骨架與進度線出現機率高很多）
+
+## v1.20.0 追加功能（§8.1 Phase 4.24）— 檢查更新（notecraftapp v1.9.0） ✅ 已完成（2026-10-03）
+
+> **已完成（2026-10-03）**：Task 113–116 全部實作於 `feat/update-check`。實測結論回填於規格 §17；各 Task 檔末有「實作記錄」。
+
+規格 [notecraft-workbench-update-check.md](../notecraft-workbench-update-check.md)；設計交付 [design_handoff_update_check](../prototype/design_handoff_update_check/)。
+在瀏覽器端直接查 npm registry，比對目前版本與最新版；有新版時以 Rail 圓點、「關於」頁籤徽章、「版本與更新」區塊、更新內容 Drawer（列出錯過的 CHANGELOG）、一次性 toast 低干擾地提醒，⌘K 多一組「指令」。部署站也提示。
+
+> **規格與設計稿不一致時，一律以規格為準。** 主要偏離：CHANGELOG 只列 npm 上發佈過的版本（Q1 = B）、「內部」類別不顯示（Q2）、
+> **不分 viewer／部署站，只用一套文案**（Q3 = D，不移植 `mode` 與 `.upd-deploy`）、目前版本比 npm 新時標「尚未發佈的版本」（Q4）；
+> CHANGELOG 解析認中文類別、續行、巢狀清單、粗體、導言與 `<!-- 重點 -->` 註解；Escape 走 `wb-escape` 堆疊；token 全改 `--wb-*`、localStorage 只用一個 `nc-update-v1`。
+
+| Task | 功能 | 規格 | 主要改動 |
+| --- | --- | --- | --- |
+| [Task 113](task-113-update-pure-functions-changelog.md) | 地基：版本推導、CHANGELOG 解析、Rail 預繪函式、斷言、`files` 加 CHANGELOG | §4.1–§4.4、§7、§12 | `lib/update-check.ts`、`lib/changelog-parse.ts`、`lib/update-prepaint.ts`、`scripts/checks/upd-*.mjs`、`package.json`（`files`、`check:upd`） |
+| [Task 114](task-114-update-store-host-rail-toast.md) | 檢查流程：store、`UpdateHost`、Rail 圓點預繪、發現新版 toast | §3、§4.5、§5、§6.1、§6.5、§7、§9 | `lib/update-store.ts`、`wb/update/UpdateHost.tsx`／`UpdateToast.tsx`、`WorkbenchLayout.astro`、`Rail.astro`、`workbench.css`（token） |
+| [Task 115](task-115-update-about-drawer-palette.md) | 介面：版本與更新區塊、頁籤徽章、更新內容 Drawer、Palette 指令 | §4.3、§6.2–§6.4、§6.6、§8、§10 | `wb/update/UpdateBlock.tsx`／`UpdateDrawer.tsx`／`UpdateChangelog.tsx` 等、`WbHeader.tsx`、`SettingsView.tsx`、`DrawerShell.tsx`、`Palette.tsx` |
+| [Task 116](task-116-update-responsive-docs-release.md) | 響應式、reduced motion、無障礙、viewer／部署實測、文件回填、發版 | §10–§14、§17 | `workbench.css`、CLAUDE.md／workbench.md／PRD／CHANGELOG、v1.9.0 |
+
+**順序**：一條直線。
+
+```
+113 ─ 114 ─ 115 ─ 116
+```
+
+> **交付節奏**：全程在 `feat/update-check` 單一分支上，依 Task 逐步 commit，**Task 116 完成後開 PR 併回 main**。
+> 每個 commit 都要能通過 `npx tsc --noEmit && npx astro build`；動到 `update-check.ts`／`changelog-parse.ts`／`update-prepaint.ts` 或 `CHANGELOG.md` 的再跑 `npm run check:upd`。
+>
+> **幾條貫穿整批的規則**：
+> - **自動檢查失敗零痕跡**：不顯示 UI、不寫 `at`、不在 console 印應用程式錯誤；只有手動檢查失敗會出現一行字
+> - **`nc-update-v1` 的 `cur` 與目前版本不同就整份作廢**；寫入前先重讀
+> - **`railHint` 以 `toString()` 內嵌進 inline script，必須自足**；只能 `import type`、無 JSX、不碰 `window`
+> - inline script 只改 Rail（非 island）的 DOM，不碰任何 island
+> - 行內 Markdown 一律切 token 組 React 節點，**不用 `dangerouslySetInnerHTML`**；連結只放行 `http(s)` 與相對路徑
+> - 新 token 一律 `--wb-*`，規則零色碼；每條動畫都要有 reduced-motion 對應
+> - 驗收以 `astro preview` 為準；registry／CHANGELOG 的情境用 Network overrides 或暫時包 `fetch`，驗完移除
+
+## v1.21.0 追加功能（§8.1 Phase 4.25）— 排除檔案 `.notecraft/ignore.json`（notecraftapp v1.10.0）✅ 已完成（2026-10-04）
+
+> **已完成（2026-10-04）**：Task 117–120 全部實作於 `feat/ignore-config`。實測結論回填於規格 §13；各 Task 檔末有「實作記錄」。
+
+規格 [notecraft-ignore-config.md](../notecraft-ignore-config.md)。
+作者在 `.notecraft/ignore.json` 寫類 `.gitignore` 的規則（`drafts/`、`**/*.test.mdx`、`!archive/keep.mdx`），被命中的檔案與資料夾 NoteCraft 一律不讀：不成為筆記、不被 plugin 認領、不進資料夾樹與新增筆記下拉、不複製進產物、改了也不觸發 rebuild。
+
+> **七題已全數確認（規格 §12）**：比對引擎用 `ignore` 套件（Q1）、檔案形狀 `{ "ignore": [...] }`（Q2）、範圍是所有檔案（Q3）、格式錯誤 build fail（Q4）、
+> 內建排除（`.` 開頭、`node_modules/`、`dist/`）不能用 `!` 解除（Q5）、與 `plugins.json` 同一個 `.notecraft/`、只讀一處（Q6）、第一版不做 UI（Q7）。
+
+| Task | 功能 | 規格 | 主要改動 |
+| --- | --- | --- | --- |
+| [Task 117](task-117-ignore-matcher-foundation.md) | 地基：比對模組、`walkNotes()`、`resolveNotecraftDir()`、斷言、JSON Schema | §3、§4、§7、§9.1 | `lib/notes-ignore.mjs`＋`.d.ts`、`schemas/ignore.schema.json`、`scripts/checks/notes-ignore.mjs`、`package.json`（`ignore`、`check:ignore`、`files`） |
+| [Task 118](task-118-ignore-build-integration.md) | build 期接點：Content Collection、plugin 資料檔、連結／圖片／系列、產物斷言 | §3.4、§5.1、§5.2、§5.5、§6、§7 | `content/config.ts`、`lib/ignoring-loader.ts`、`lib/notes-ignore-state.ts`、`lib/plugins.ts`、`lib/series.ts`、`remark-notecraft-notes-assets.ts`、`lib/ignore-guard-integration.mjs`、`scripts/fixtures/ignore-sample/` |
+| [Task 119](task-119-ignore-dev-api-cli.md) | dev 與 CLI：dev-only API、dev server 重啟、快取失效、`serve` watcher、新增筆記 | §5.3、§5.4、§7 | `dev-api/handlers.mjs`、`lib/notes-ignore-integration.mjs`、`bin/notecraftapp.mjs`、`scripts/new-note.mjs` |
+| [Task 120](task-120-ignore-subagent-docs-release.md) | note-scanner、文件回填、發版 | §5.6、§9.3、§10 | 兩份 `note-scanner.md`、README／CLAUDE.md／plugin-system／npx-viewer-v2／PRD／CHANGELOG、v1.10.0 |
+
+**順序**：一條直線。
+
+```
+117 ─ 118 ─ 119 ─ 120
+```
+
+> **交付節奏**：全程在 `feat/ignore-config` 單一分支上，依 Task 逐步 commit，**Task 120 完成後開 PR 併回 main**。
+> 每個 commit 都要能通過 `npx tsc --noEmit && npx astro build`；動到 `notes-ignore.mjs` 的再跑 `npm run check:ignore`，動到 `plugins.ts` 的再跑 `npm run check-plugins`。
+>
+> **幾條貫穿整批的規則**：
+> - **走訪 notesDir 一律經 `walkNotes()`／`walkNotesAsync()`**，不再自寫 `readdir` 遞迴；`notecraftDir` 只由 `resolveNotecraftDir()` 決定
+> - **內建排除加在使用者規則之後**，`!` 解除不了
+> - Content Collection 的 `glob()` pattern 維持單一字串，**不放負向 pattern**（Astro dev watcher 會失效），排除改由 `ignoringLoader` 攔 `store.set`
+> - 被排除 = 不出現在任何產物：`ignore-guard-integration` 在 build 後兜底，違反直接 throw
+> - 所有 `[ignore]` 訊息與 API 回應只用相對路徑，不得出現本機絕對路徑
+> - 工作區裡 `skill-template/` 有作者尚未提交的修改，**每次 commit 只 add 本 Task 的檔案**
+
+## v1.22.0 追加功能（§8.1 Phase 4.26）— Plugin 頁空狀態與「內建外掛外洩」修正（notecraftapp v1.11.0） ✅ 已完成（2026-10-06）
+
+> **已完成（2026-10-06）**：Task 121–124 全部實作於 `fix/plugin-empty-states`。實測結論回填於規格 §15；各 Task 檔末有「實作記錄」。
+
+規格 [notecraft-workbench-plugin-empty-states.md](../notecraft-workbench-plugin-empty-states.md)；像素級規格 [design_handoff_plugin_empty_states/](../prototype/design_handoff_plugin_empty_states/README.md)。
+npx viewer 沒安裝任何外掛時，`/plugins` 仍列出 ER Diagram 與 API 文件：官方 store `plugins/` 隨 npm 發佈，被 app 根目錄的 glob 當成已安裝。修掉之後「0 個外掛」才會真的出現，再依 handoff 補齊 7 種情境 × dev／正式的空狀態。
+
+> **六題已全數確認（規格 §14）**：情境只看啟用中外掛（Q1）、範例 glob 取官方常數、其餘 `**/*.json`（Q2）、複製失敗沿用「無法複製」（Q3）、
+> 同 id 撞名一起修（Q4）、版號 `1.11.0`（Q5）、停用外掛的檔數顯示「—」（Q6）。
+
+| Task | 功能 | 規格 | 主要改動 |
+| --- | --- | --- | --- |
+| [Task 121](task-121-plugin-store-unbundle.md) | 官方 store 不隨 npm 發佈、同 id 撞名以使用者安裝為準、打包斷言 | §2 | `package.json`（`files`）、`lib/plugins.ts`、`islands/PluginHost.tsx`、`wb/PluginDrawer.tsx`、`scripts/check-plugins.mjs` |
+| [Task 122](task-122-plugin-env-pure-functions.md) | 情境模型 `derivePluginEnv`、列狀態、官方外掛常數、斷言 | §3、§7.1、§7.4 | `lib/wb-plugin-env.ts`、`lib/official-plugins.ts`、`scripts/checks/wb-plugin-env.mjs`、`package.json`（`check:wb`） |
+| [Task 123](task-123-plugin-empty-states-ui.md) | Header、Sidebar、Toolbar、兩個頁籤空狀態、提示區塊、列狀態、Drawer 空文案、插圖、複製 | §4–§10 | `wb/PluginsWorkbench.tsx`、`wb/PluginDrawer.tsx`、`wb/Sidebar.astro`、`wb/plugins/PluginEmpty*.tsx`、`wb/useCopyState.ts`、`wb/update/UpdateParts.tsx`、`workbench.css` |
+| [Task 124](task-124-plugin-empty-states-fixture-docs-release.md) | 情境 fixture、文件回填、發版 | §11、§12、§15 | `scripts/fixtures/plugin-empty-states.mjs`、CLAUDE.md／plugin-system／workbench／PRD／CHANGELOG、v1.11.0 |
+
+**順序**：121 與 122 互不依賴；123 需要兩者；124 的 fixture 可先寫好供 123 驗收。
+
+```
+121 ─┐
+     ├─ 123 ─ 124
+122 ─┘
+```
+
+> **交付節奏**：全程在 `fix/plugin-empty-states` 單一分支上，依 Task 逐步 commit，**Task 124 完成後開 PR 併回 main**。
+> 每個 commit 都要能通過 `npx tsc --noEmit && npx astro build`；動到 `plugins.ts`／`check-plugins.mjs` 的再跑 `npm run check-plugins`，動到 `wb-plugin-env.ts` 的再跑 `npm run check:wb`。
+>
+> **幾條貫穿整批的規則**：
+> - **`plugins/` 不隨 npm 發佈**；app 根目錄的 glob 只給主 repo 用，同 id 以 `.notecraft/plugins/` 為準
+> - 情境判定只有 `derivePluginEnv` 一處，UI 不自己數規則或外掛
+> - **正式環境不出現任何 `npx` 字串**、plugins.json 範例或設定提示；dev 判斷用既有 `isDev` prop 或 `import.meta.env.DEV`
+> - 插圖顏色寫在 `style` 帶 `--wb-*` 變數；`.pl-*` 規則零色碼、不新增 token，860px 規則放在既有媒體規則之前
+> - 路徑只用 `workspaceLabel` 或相對路徑，不得出現本機絕對路徑
+> - `package-lock.json` 在分支建立前就有未提交修改，**每次 commit 只 add 本 Task 的檔案**
+
+## v1.23.0 追加功能（§8.1 Phase 4.27）— 定義區塊、嵌入、行內引用與反向連結（notecraftapp v1.12.0） ✅ 已完成（2026-10-07）
+
+> **已完成（2026-10-07）**：Task 125–130 全部實作於 `feat/define-ref`。實測結論回填於規格 §18；各 Task 檔末有「實作記錄」。
+
+規格 [notecraft-workbench-define-ref.md](../notecraft-workbench-define-ref.md)；像素級規格 [design_handoff_workbench_define_ref/](../prototype/design_handoff_workbench_define_ref/README.md)（與規格衝突時以規格為準，差異見規格 §12）。
+作者寫系統文件時常在多篇筆記重複同一段說明（角色職責、術語），之後要同步改好幾處。以 `::::define{id}`、`::include{id}`、`:ref[文字]{id}` 讓內容「只定義一次，到處引用」，引用只寫 id、不寫文件路徑；來源處看得到被哪些筆記引用。
+
+> **十二題已全數確認（規格 §17）**：只做亮色（Q1）、define 片段先用 `this.parse()` 解析（Q2）、Esc 沿用 LIFO（Q3）、id 允許中文（Q4）、
+> **define 內可放元件，嵌入處顯示 placeholder**（Q5）、選填 `label` 屬性（Q6）、define 只能放最上層（Q7）、引用 git-ignored 筆記的 define 時 warn（Q8）、
+> include 不進 pagefind 索引（Q9）、**範例筆記 3 篇**＋規模 fixture（Q10）、刪除被引用的筆記不擋只提醒（Q11）、版號 `1.12.0`（Q12）。
+
+| Task | 功能 | 規格 | 主要改動 |
+| --- | --- | --- | --- |
+| [Task 125](task-125-define-ref-spike.md) | spike：`this.parse()`、嵌入標題 id、dev 跨檔失效、slug 規則 | §4.3、§4.4、§6 | 只改規格文件（回填結論） |
+| [Task 126](task-126-define-ref-scan-index.md) | 地基：掃描器、索引單例、錯誤與 warn、斷言、範例筆記 3 篇 | §2、§3、§4.1、§4.2、§14.1 | `lib/defs-scan.ts`、`lib/defs-state.mjs`、`scripts/checks/defs-*.mjs`、`package.json`（`check:defs`）、`testing/define-ref/` |
+| [Task 127](task-127-define-ref-remark-output.md) | MDX 輸出：define／include／ref、元件 placeholder、預覽 template、TOC、dev 失效 | §2.5、§4.3、§4.4、§5、§6 | `lib/remark-notecraft-defs.ts`、`lib/defs-integration.mjs`、`astro.config.mjs`、`[...slug].astro`、`Toc.tsx`、`global.css` |
+| [Task 128](task-128-define-ref-reflayer.md) | 閱讀端互動：預覽卡、sheet、define popover、flash、id 複製 | §7 | `islands/RefLayer.tsx`、`lib/nc-tabs.ts`、`lib/nc-tip.ts`、`[...slug].astro`、`global.css` |
+| [Task 129](task-129-define-ref-backlinks.md) | 反向連結：`/wb-index.json`、筆記頁入口與 Drawer、NoteDrawer 三段、Palette 定義群組 | §8、§9 | `wb-types.ts`、`workbench.ts`、`wb/RefBacklinks.tsx`、`wb/NoteDrawer.tsx`、`wb/Palette.tsx`、`workbench.css` |
+| [Task 130](task-130-define-ref-fixture-docs-release.md) | 規模 fixture、刪除提醒、Subagent 說明、文件回填、發版 | §13、§14.1、§15 | `scripts/fixtures/define-ref-scale.mjs`、`dev-api/handlers.mjs`、`DeleteNoteButton.tsx`、CLAUDE.md／PRD／workbench／官網／CHANGELOG、v1.12.0 |
+
+**順序**：125 先做（結論可能改動 126、127 的做法）；129 只依賴 126，可與 127、128 平行。
+
+```
+125 ─ 126 ─┬─ 127 ─ 128 ─┐
+           └─ 129 ───────┴─ 130
+```
+
+> **交付節奏**：全程在 `feat/define-ref` 單一分支上，依 Task 逐步 commit，**Task 130 完成後開 PR 併回 main**。
+> 每個 commit 都要能通過 `npx tsc --noEmit && npx astro build`；動到 `defs-scan.ts`／`defs-state.mjs` 的再跑 `npm run check:defs`，動到 `scripts/checks/` 的再跑 `npm run check-plugins`。
+>
+> **幾條貫穿整批的規則**：
+> - **引用只寫 id**，id 全域唯一；引用數、反向連結、錯誤都只由 `defs-state.mjs` 的索引計算，UI 不自己數
+> - `remarkNotecraftDefs` **排在 `remarkDirective` 之後、`remarkNotecraftDirectives` 之前**，嵌入的內容才會走同一條管線
+> - 嵌入處與預覽卡**不渲染元件**，一律 placeholder；來源頁照常渲染
+> - include 與預覽 template 帶 `data-pagefind-ignore`；template 內不輸出標題與 `def-` id，整頁不得有重複 id
+> - 新 token 一律 `--wb-*`、只寫亮色；每條動畫都要有 reduced-motion 對應
+> - 錯誤訊息、索引、產物只用 notesDir 相對路徑，不得出現本機絕對路徑
+> - **每次 commit 只 add 本 Task 的檔案**
+
+## v1.24.0 追加功能（§8.1 Phase 4.28）— 筆記頁 Graph 檢視：文件關聯與標籤關聯（notecraftapp v1.13.0） ✅ 已完成（2026-10-10）
+
+> **已完成（2026-10-10）**：Task 131–136 全部實作於 `feat/notes-graph`。實測結論回填於規格 §21；各 Task 檔末有「實作記錄」。
+> Task 133–135 的元件互相 import，合併成一筆 commit；spike（131）的結論是大圖的佈局改由 Web Worker 計算。
+
+規格 [notecraft-workbench-notes-graph.md](../notecraft-workbench-notes-graph.md)；像素級規格 [design_handoff_notes_graph/](../prototype/design_handoff_notes_graph/README.md)（與規格衝突時以規格為準，差異見規格 §14）。
+定義與引用上線後，筆記之間有了機器可讀的關聯，但只在「某個定義被誰引用」的清單裡看得到。在 `/notes` 新增第五個檢視 Graph：文件模式以力導向圖畫出定義引用、定義嵌入、站內連結、系列順序四種邊；標籤模式以標籤為樞紐把筆記聚成團。
+
+> **十二題已全數確認（規格 §20）**：`<PluginView>` 與 `meta.backTo` 都算 `link` 邊（Q1）、相對連結一律算（Q2）、標籤樞紐取全站前 8 個＋「其他標籤」（Q3）、
+> 著色前 8 組配色其餘灰色「其他」（Q4）、AI／收藏等篩選照常套用並顯示「已篩選 ✕」（Q5）、偏好存 localStorage 不進網址（Q6）、點樞紐是真的連結換頁（Q7）、
+> 佈局在主執行緒同步算、Worker 視 spike 而定（Q8）、每個節點都是 tab stop（Q9）、**空狀態 B 的方式卡 dev 與正式都顯示**（Q10）、
+> 示範資料用 fixture 產生器（Q11）、版號 `1.13.0`（Q12）。
+
+| Task | 功能 | 規格 | 主要改動 |
+| --- | --- | --- | --- |
+| [Task 131](task-131-notes-graph-spike.md) | spike：佈局耗時、`React.lazy` 分塊、tween 幀率 | §5.2、§5.3、§10 | 只改規格文件（回填結論） |
+| [Task 132](task-132-notes-graph-data-layer.md) | 資料層：連結掃描器、`buildGraphEdges`、`WbIndex.graph`、`deriveGraph`、標籤樞紐與著色分組、斷言 | §4、§6、§13 | `lib/links-scan.mjs`、`lib/wb-graph.ts`、`lib/defs-index.mjs`、`wb-types.ts`、`workbench.ts`、`pages/notes/index.astro`、`scripts/checks/wb-graph.mjs`、`package.json`（`check:wb`） |
+| [Task 133](task-133-notes-graph-layout-canvas.md) | 佈局與靜態渲染：佈局純函式、`GraphView`、畫布、平移縮放、token、`WbView` 加 graph、窄畫面 | §3.1、§5、§7、§10、§12 | `lib/wb-graph-layout.ts`、`wb/graph/GraphView.tsx`／`GraphCanvas.tsx`／`useGraphViewport.ts`／`GrStates.tsx`、`wb/GraphNarrow.tsx`、`wb-prefs.ts`、`NotesWorkbench.tsx`、`workbench.css` |
+| [Task 134](task-134-notes-graph-interactions.md) | 互動與浮層：Toolbar、著色下拉、hover／搜尋高亮、提示框、圖例、統計列、縮放控制、選取、偏好 | §6.1、§7–§9 | `lib/wb-graph-prefs.ts`、`wb/graph/GraphToolbar.tsx`／`GrColorMenu.tsx`／`GrOverlays.tsx`、`wb/ui.tsx`、`workbench.css` |
+| [Task 135](task-135-notes-graph-tag-mode-states.md) | 標籤模式、模式切換動畫、兩種空狀態、reduced-motion | §5.3、§6.2、§8.2、§11 | `wb/graph/*`、`workbench.css` |
+| [Task 136](task-136-notes-graph-fixture-docs-release.md) | 示範與規模 fixture、全狀態驗收、文件回填、發版 | §15、§16.1、§17 | `scripts/fixtures/notes-graph-sample.mjs`、CLAUDE.md／PRD／workbench／官網／CHANGELOG、v1.13.0 |
+
+**順序**：131 與 132 互不依賴，可平行；133 要等兩者（131 的結論決定佈局在哪裡算、是否 lazy）。
+
+```
+131 ─┐
+132 ─┴─ 133 ─ 134 ─ 135 ─ 136
+```
+
+> **交付節奏**：全程在 `feat/notes-graph` 單一分支上，依 Task 逐步 commit，**Task 136 完成後開 PR 併回 main**。
+> 每個 commit 都要能通過 `npx tsc --noEmit && npx astro build`；動到 `wb-graph*.ts` 的再跑 `npm run check:wb`，動到 `links-scan.mjs`／`defs-index.mjs` 的再跑 `npm run check:defs`，動到 `scripts/checks/` 的再跑 `npm run check-plugins`。
+>
+> **幾條貫穿整批的規則**：
+> - **邊只由 `buildGraphEdges` 計算**，連入數、級距、孤島只由 `deriveGraph` 計算，UI 不自己數
+> - `wb-graph.ts`、`wb-graph-layout.ts` 只能 `import type`、不碰 `window`；`links-scan.mjs` 不碰 Node API（官網示範會載入）
+> - 佈局算完即靜止、同樣的輸入每次結果相同；斷言的是性質，不是座標快照
+> - **SSR 不輸出任何節點**；`#nc-scroll` 不可拿掉
+> - 淡出用 `fill-opacity`／`stroke-opacity` 與根元素的 class，不對群組設 `opacity`；縮放只改 `.gr-world` 的 `transform` 與 `--k`
+> - 新 token 一律 `--wb-gr-*`、只寫亮色、規則裡不出現色碼；`gr-` 規則放在 860px 媒體規則之前；每條動畫都要有 reduced-motion 對應
+> - 換頁的目標（資料檔節點、標籤樞紐、清除篩選）是真的連結，`href` 經 `withBase`
+> - 產物只含 slug 與 routePath，不得出現本機絕對路徑
+> - **每次 commit 只 add 本 Task 的檔案**
+
+## v1.25.0 追加功能（§8.1 Phase 4.29）— 筆記閱讀頁改版：品牌／經典主題、語法補齊、目錄與外框（notecraftapp v1.14.0） ✅ 已完成（2026-10-31）
+
+> **已完成（2026-10-31）**：Task 137–144 全部實作於 `feat/note-page-redesign`。與規格不同之處與驗證結果回填於規格 §15。
+> 各 Task 共用 `global.css` 的 prose 區段、`[...slug].astro` 與 remark 外掛，彼此交錯修改，合併成兩筆 commit（實作、文件與發版）。
+
+規格 [notecraft-workbench-note-page.md](../notecraft-workbench-note-page.md)；像素級規格 [design_handoff_note_page/](../prototype/design_handoff_note_page/README.md)（與規格衝突時以規格為準，差異見規格 §11、§14）。
+筆記頁的樣式散在三處、字級是絕對值、主色是橘色。依 handoff 新增「品牌」主題並保留「經典」主題、補齊 Markdown 與擴充語法的樣式、新增 code-group／details／figures／定義清單／數學／螢光／diff，並換上新的程式碼區塊、外框、目錄與響應式。
+
+> **十二題已全數確認（規格 §14）**：暗色模式本版不做（Q1）、語法不加別名（Q2）、Header 標題捲過文內 H1 才顯示（Q3）、數學用 remark-math＋KaTeX（Q4）、
+> 螢光與定義清單自寫（Q5）、待生成標記原位渲染（Q6）、**目錄維持 H1–H3**（Q7）、資訊列保留既有項目（Q8）、**放大與「複製提示詞」維持現況**（Q9）、
+> 字級 5 段（Q10）、官網只用品牌主題（Q11）、版號 `1.14.0`（Q12）。
+
+| Task | 功能 | 規格 | 主要改動 |
+| --- | --- | --- | --- |
+| [Task 137](task-137-note-page-foundation.md) | 基礎：`.np-page` 版面、主題 class、`--md-fs`、偏好與預繪、設定頁、文內標頭、Header 標題 | §3、§4、§10 | `[...slug].astro`、`Header.astro`、`SettingsView.tsx`、`wb-prefs.ts`、`lib/note-theme-prepaint.ts`、`workbench.css` |
+| [Task 138](task-138-note-page-prose-basics.md) | 內文基本樣式：H1–H6、錨點、引言、表格、行內元素、圖片、註腳、待辦、`==螢光==` | §5.1、§5.6、§5.7 | `global.css`、`lib/remark-notecraft-mark.ts` |
+| [Task 139](task-139-note-page-directives-restyle.md) | 既有擴充語法換外觀；步驟補 err／skip | §5、§8 | `remark-notecraft-directives.ts`、`global.css` |
+| [Task 140](task-140-note-page-codeblock.md) | 程式碼區塊：外觀、語法色、diff、註解彈窗、`:::code-group` | §5.3、§5.4 | `remark-notecraft-codeblock.ts`、`code-tokenize.ts`、`global.css` |
+| [Task 141](task-141-note-page-new-syntax.md) | 新語法：details、figures、`:::dl`、數學（KaTeX） | §5.2 | `remark-notecraft-directives.ts`、`astro.config.mjs`、`package.json` |
+| [Task 142](task-142-note-page-frames.md) | 外框：GeneratedFrame、PluginView、待生成標記原位渲染、系列導覽 | §5.5、§7 | `GeneratedFrame.astro`、`PluginView.astro`、`SeriesNav.astro`、remark |
+| [Task 143](task-143-note-page-toc-responsive.md) | 目錄與響應式 | §3.3、§6 | `Toc.tsx`、`workbench.css` |
+| [Task 144](task-144-note-page-fixture-docs-release.md) | 驗收 fixture、官網同步、文件回填、發版 | §10、§12.1 | `scripts/fixtures/note-page-sample.mjs`、官網、CLAUDE.md／PRD／CHANGELOG、v1.14.0 |
+
+**順序**：137 先做；138–142 互不依賴，可任意順序；143 要等 138（標題錨點）；144 最後。
+
+```
+      ┌ 138 ┐
+      ├ 139 ┤
+137 ──┼ 140 ┼── 143 ── 144
+      ├ 141 ┤
+      └ 142 ┘
+```
+
+> **交付節奏**：全程在 `feat/note-page-redesign` 單一分支上，依 Task 逐步 commit，**Task 144 完成後開 PR 併回 main**。
+> 每個 commit 都要能通過 `npx tsc --noEmit && npx astro build`；動到 prepaint 或 `wb-prefs` 的再跑 `npm run check:wb`，動到 `scripts/checks/` 的再跑 `npm run check-plugins`。
+>
+> **幾條貫穿整批的規則**：
+> - **既有語法一律不改、不加別名**；既有筆記 build 不得退化
+> - 沿用 `nc-*` class，不改成 handoff 的 `md-*`（官網同步與 RefLayer 依賴它們）
+> - 內文樣式放在 `global.css` 的 prose 區段（起訖註解不可動）；主題差異以 `.np-d`／`.np-o` 前綴；尺寸一律 em
+> - 規則裡不出現色碼字面值：新色值定義為 `--wb-*` 變數；只寫亮色
+> - `#nc-scroll` 不可拿掉；預繪函式必須自足、在捲動還原之前執行
+> - 每條動畫都要有 reduced-motion 對應；Esc 走 `lib/wb-escape.ts`
+> - **每次 commit 只 add 本 Task 的檔案**
+
+## v1.26.0 追加功能（§8.1 Phase 4.30）— AI 生成元件支援 three.js（notecraftapp v1.15.0）✅ 已完成（2026-11-01）
+
+> **已完成（2026-11-01）**：Task 145–148 全部實作於 `feat/generated-three`。與規格不同之處與驗證結果回填於規格 §14。
+
+規格 [notecraft-generated-three.md](../notecraft-generated-three.md)。
+白名單加 `three`（含 `three/addons/...` 子路徑），讓「空間關係本身是重點」的視覺化可以做成可旋轉、可點選的 3D 元件；Skill／Subagent 補 3D 寫作規範與最小骨架。
+
+> **九題已全數確認（規格 §13）**：規範寫在 `.claude/` 來源、由 sync 帶進 skill-template（Q1）、`three ~0.187.0`（Q2）、接受 npx 多約 21 MB（Q3）、
+> plugin 也可用 three（Q4）、`@types/three` 放 devDependencies（Q5）、範例放 `md-viz`（Q6）、簡報只以 full-visual 沿用（Q7）、
+> **滾輪不縮放、改按鈕**（Q8）、範例元件即「實際生成」的驗收對象（Q9）。
+
+| Task | 功能 | 規格 | 主要改動 |
+| --- | --- | --- | --- |
+| [Task 145](task-145-three-deps-whitelist.md) | 依賴與白名單常數、第一次 sync、主專案子路徑解析 | §3、§4.1–§4.3 | `package.json`、`generated-component-whitelist.ts`、sync 產物 |
+| [Task 146](task-146-three-skill-rules.md) | Skill／Subagent 的 3D 規範、最小骨架、skill 版號、第二次 sync | §4.2、§5、§7.2 | `.claude/skills/content-visualize/SKILL.md`、`.claude/agents/*.md`、`sync-skill-template.mjs` |
+| [Task 147](task-147-three-sample-generated.md) | 以四個 Subagent 實際生成範例元件、放進 md-viz、放大檢視 | §4.4、§6 V3／V5／V8 | `md-viz.mdx`、`src/components/generated/<id>.tsx` |
+| [Task 148](task-148-three-viewer-webgl-docs-release.md) | viewer 三模式 fixture、WebGL context 驗證、文件、發版 | §6 V4／V6／V7、§7 | `scripts/fixtures/three-viewer.mjs`、文件、CHANGELOG、v1.15.0 |
+
+**順序**：嚴格線性 —— 145 → 146 → 147 → 148（147 的生成要讀 146 的規範；148 要有 147 的元件）。
+
+> **交付節奏**：全程在 `feat/generated-three` 單一分支上，依 Task 逐步 commit，**Task 148 完成後開 PR 併回 main**。
+> 每個 commit 都要能通過 `npx tsc --noEmit && npx astro build`；動到白名單或 skill 的再跑 `npm run sync-skill` 並檢查 diff，動到 plugin 相關的再跑 `npm run check-plugins`。
+>
+> **幾條貫穿整批的規則**：
+> - **`skill-template/` 不手改**，一律改 `.claude/` 來源再 sync；LF／CRLF 造成的「modified」不要 add、不要 git stash
+> - 白名單常數只放 root package；three 的禁用子路徑（`webgpu`／`tsl`／`src/*`）是 lint 文字規則
+> - 驗證用的 probe、骨架、暫時 deck **不 commit**
+> - **每次 commit 只 add 本 Task 的檔案**

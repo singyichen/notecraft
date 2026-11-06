@@ -4,36 +4,44 @@ import mdx from "@astrojs/mdx";
 import react from "@astrojs/react";
 import tailwind from "@astrojs/tailwind";
 import remarkDirective from "remark-directive";
-import remarkMath from "remark-math";
-import rehypeKatex from "rehype-katex";
+import remarkNotecraftDefs from "./src/lib/remark-notecraft-defs.ts";
 import remarkNotecraftDirectives from "./src/lib/remark-notecraft-directives.ts";
 import remarkNotecraftCodeblock from "./src/lib/remark-notecraft-codeblock.ts";
 import remarkNotecraftNotesAssets from "./src/lib/remark-notecraft-notes-assets.ts";
 import remarkNotecraftDataLinks from "./src/lib/remark-notecraft-data-links.ts";
 import remarkNotecraftBase from "./src/lib/remark-notecraft-base.ts";
+import remarkNotecraftMark from "./src/lib/remark-notecraft-mark.ts";
+import remarkNotecraftAiMarkers from "./src/lib/remark-notecraft-ai-markers.ts";
+import remarkMath from "remark-math";
+import rehypeKatex from "rehype-katex";
 import { GENERATED_COMPONENT_PACKAGE_WHITELIST } from "./src/lib/generated-component-whitelist.ts";
 import devApi from "./src/dev-api/integration.ts";
 import notesAssetsBuildCopy from "./src/lib/notes-assets-build-copy.ts";
 import { detectGithubRepoHint } from "./src/lib/detect-github-repo.mjs";
+import notesAssets from "./src/lib/notes-assets-integration.ts";
+import noLocalPath from "./src/lib/no-local-path-integration.mjs";
+import contentLayerGuard from "./src/lib/content-layer-guard-integration.mjs";
 import crossDriveContent from "./src/lib/vite-cross-drive-content.ts";
+import ignoreGuard from "./src/lib/ignore-guard-integration.mjs";
+import notesIgnoreWatch from "./src/lib/notes-ignore-integration.mjs";
+import defsWatch from "./src/lib/defs-integration.mjs";
+import { resolveNotecraftDir } from "./src/lib/notes-ignore.mjs";
 
 // v2 Q3 + Bug fix: `.notecraft/` 資料夾**放在 userCwd**（使用者專案根、與 .claude/ 同層），
 // 不放在 notesDir——因為 subagent 從 project root 跑並寫到 cwd 下的 .notecraft/，
 // 若 alias 指向 notesDir/.notecraft 會找不到（例如 serve ./notes 時 notesDir=project/notes/）。
 //
-// 讀取優先序：NOTECRAFT_USER_CWD > NOTECRAFT_NOTES_DIR。CLI 兩者都會設；
+// 讀取優先序：NOTECRAFT_USER_CWD > NOTECRAFT_NOTES_DIR > cwd，唯一實作在 src/lib/notes-ignore.mjs 的
+// resolveNotecraftDir()（plugins.json、ignore.json、@notes alias 都從同一處來）。CLI 兩者都會設；
 // 舊版 CLI 或 npm run astro build 直接跑時可能只有 notesDir，退回舊行為保相容。
+// 主專案 fallback：讓 @notes alias 恆有定義（deck 兩模式 glob 需要）；指向可能不存在的本地 .notecraft，glob 命中 0 筆、不報錯。
 const notesDir = process.env.NOTECRAFT_NOTES_DIR
   ? path.resolve(process.env.NOTECRAFT_NOTES_DIR)
   : null;
 const userCwd = process.env.NOTECRAFT_USER_CWD
   ? path.resolve(process.env.NOTECRAFT_USER_CWD)
   : null;
-const notecraftDir = userCwd
-  ? path.join(userCwd, ".notecraft")
-  : notesDir
-    ? path.join(notesDir, ".notecraft")
-    : path.join(process.cwd(), ".notecraft"); // 主專案 fallback：讓 @notes alias 恆有定義（deck 兩模式 glob 需要）；指向可能不存在的本地 .notecraft，glob 命中 0 筆、不報錯
+const notecraftDir = resolveNotecraftDir(process.env, process.cwd());
 
 // 部署在子路徑時（例：GitHub Pages 的 /notecraft/demo）以 NOTECRAFT_BASE 指定；站內連結經 src/lib/base.ts 的 withBase() 組出。
 const base = process.env.NOTECRAFT_BASE || undefined;
@@ -56,6 +64,18 @@ export default defineConfig({
     tailwind({ applyBaseStyles: false }),
     devApi(),
     notesAssetsBuildCopy(),
+    // viewer 模式 build 完把產物引用的 /notes-assets/* 複製進 outDir（見檔頭說明）
+    notesAssets(),
+    // 護欄：產物根目錄含 content layer 內部檔（data-store.json 等）就 build fail（排在 noLocalPath 之前，訊息才指得出成因）
+    contentLayerGuard(),
+    // 護欄：產物（.html／.json）含本機絕對路徑就 build fail（見 src/lib/no-local-path-integration.mjs）
+    noLocalPath(),
+    // 護欄：被 .notecraft/ignore.json 排除的檔出現在產物就 build fail（排在 notesAssets 之後）
+    ignoreGuard(),
+    // dev：.notecraft/ignore.json 變動時重新啟動 dev server
+    notesIgnoreWatch(),
+    // dev：define 變動時，讓嵌入／引用它的筆記一起重新渲染（docs/notecraft-workbench-define-ref.md §4.4）
+    defsWatch(),
   ],
   vite: {
     define: {
@@ -113,15 +133,35 @@ export default defineConfig({
     // 關閉 Astro 內建 Shiki：圍欄程式碼改由 remarkNotecraftCodeblock 以自寫 build-time
     // tokenizer 渲染成設計定稿的白底程式碼塊（見 src/lib/remark-notecraft-codeblock.ts）。
     syntaxHighlight: false,
-    // 順序固定：remark-directive 先解析指令；directives 處理 admonition/tabs/tooltip/annotate；
+    // 順序固定：remark-directive 先解析指令；defs 把 include 的子樹搬進來、ref 換成連結（嵌入的內容才會走後面同一條管線）；
+    // directives 處理 admonition/tabs/tooltip/annotate；
     // codeblock 最後改寫 code 節點（buildAnnotate 需在 code 仍為原始節點時讀值）。
     // notes-assets 只在 viewer 模式（有 NOTECRAFT_NOTES_DIR）下作用，重寫相對圖片路徑為 /notes-assets/*。
     // data-links 排在 notes-assets 之後：它要看的是「作者寫的 href」與 notes-assets 重寫完的結果兩者皆可，
     // 就不必自己再處理一次 viewer 模式的相對路徑。
     // base 最後跑：有 NOTECRAFT_BASE 時替站內絕對連結補前綴（含 notes-assets 產生的）。
-    // remarkMath 放最前面：先把 $...$ / $$...$$ 解析成 math/inlineMath 節點，
-    // 不影響 codeblock 只處理 code 節點的邏輯；rehypeKatex 在 rehype 階段把這些節點轉成 KaTeX HTML。
-    remarkPlugins: [remarkMath, remarkDirective, remarkNotecraftDirectives, remarkNotecraftCodeblock, remarkNotecraftNotesAssets, remarkNotecraftDataLinks, remarkNotecraftBase],
-    rehypePlugins: [rehypeKatex],
+    // 筆記頁改版（docs/notecraft-workbench-note-page.md §5）：remark-math 要在 directive 之前（`$` 先切成 math 節點，
+    // 不會被當成 directive 的文字）；mark 在 directives 之後只看剩下的 text；ai-markers 在 MDX 註解後插待生成卡片。
+    remarkPlugins: [
+      remarkMath,
+      remarkDirective,
+      remarkNotecraftDefs,
+      remarkNotecraftDirectives,
+      remarkNotecraftMark,
+      remarkNotecraftAiMarkers,
+      remarkNotecraftCodeblock,
+      remarkNotecraftNotesAssets,
+      remarkNotecraftDataLinks,
+      remarkNotecraftBase,
+    ],
+    rehypePlugins: [[rehypeKatex, { strict: false, throwOnError: false }]],
+    // 註腳（§5.6）：標題改成不是 heading 的「註腳」小標，避免進目錄；返回鍵用 ↩
+    remarkRehype: {
+      footnoteLabel: "註腳",
+      footnoteLabelTagName: "p",
+      footnoteLabelProperties: { className: ["nc-fns-h"] },
+      footnoteBackLabel: (i) => `回到內文（註腳 ${i + 1}）`,
+      footnoteBackContent: "↩",
+    },
   },
 });

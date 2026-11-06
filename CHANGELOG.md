@@ -4,6 +4,254 @@
 
 格式依循 [Keep a Changelog 1.1.0](https://keepachangelog.com/zh-TW/1.1.0/)，版號依循 [Semantic Versioning](https://semver.org/lang/zh-TW/)。
 
+## [1.15.0] - 2026-11-01
+
+<!-- 重點：AI 生成的互動元件可以用 three.js 做 3D 場景 -->
+
+### 新增
+
+- AI 生成的互動元件可以使用 three.js 做可旋轉、可點選的 3D 場景（設計文件 `docs/notecraft-generated-three.md`）。只建議用在「空間關係本身是重點」的圖，例如架構分層、平台拓撲；流程、比較、數值與時間軸仍以平面圖表呈現
+- 3D 元件不攔截頁面捲動（滾輪捲頁，縮放用按鈕），有逐步、播放與重設視角的按鈕可以只用鍵盤操作，系統設定「減少動態」時不播放動畫
+- 範例筆記「視覺化互動元件」新增一節 3D 場景
+- 外掛的 renderer 也可以使用 three.js
+
+### 內部
+
+- 新增依賴 `three`（`~0.187.0`）與開發依賴 `@types/three`；import 白名單以套件名比對，`three/addons/...` 子路徑一併允許
+- content-visualize skill 升到 `2.1.0-alpha.1`（新增「3D 元件（three）」規範與最小骨架）、content-present skill 升到 `1.1.1-alpha.1`；已用 `notecraftapp init-skill` 安裝 skill 的工作區，再跑一次即可更新
+- 新增 viewer 整合驗證 `scripts/fixtures/three-viewer.mjs`
+
+## [1.14.0] - 2026-10-31
+
+<!-- 重點：筆記頁改版 —— 新的「品牌」主題、可調字級，所有 Markdown 與擴充語法都有了樣式 -->
+
+### 新增
+
+- 筆記閱讀頁改版（設計文件 `docs/notecraft-workbench-note-page.md`）：新的「品牌」主題為預設，改版前的樣子保留為「經典」主題，在設定頁「筆記 › 頁面主題」切換
+- 設定頁新增筆記字級（0.9×–1.25×），內文、程式碼、表格一起縮放
+- 標題、描述與資訊列移到內文開頭；資訊列多了資料夾、閱讀時間與系列「n/N」。殼的頁首標題捲過文內標題後才出現
+- 新語法：程式碼分頁 `:::code-group`、摺疊問答 `:::details`、並排圖片 `:::figures`、定義清單 `:::dl`、數學公式 `$…$`／`$$…$$`、螢光標記 `==文字==`、diff 程式碼（圍欄的語言寫 `diff`）
+- 步驟新增 `status="err"`（需處理）與 `status="skip"`（已略過），寫了 status 的步驟會顯示狀態標籤
+- 標題滑過時左側出現 `#` 錨點；註腳、待辦清單、kbd、圖片與圖說有了對應樣式，待辦清單可以在閱讀畫面勾選（不寫回檔案）
+- 待生成與生成失敗的 `@ai-visualize` 標記改在原位顯示提示卡
+
+### 變更
+
+- 程式碼區塊、提示框、分頁、程式碼註解、AI 元件與資料檔外框、系列導覽換上新外觀；程式碼註解前會自動補上該語言的註解符號
+- 目錄改為收合後顯示子項數、目前位置在收合段落裡也照樣顯示；單欄時收成一列「目錄＋目前章節」按鈕
+- 系列章節導覽簡化為「上一章／下一章」；完整章節清單在系列頁
+
+### 內部
+
+- 新增依賴 `remark-math`、`rehype-katex`、`katex`（KaTeX 的 CSS 只在筆記頁載入）
+- 主題與字級存在 `nc-workbench-prefs-v1`（`noteTheme`、`noteFontScale`），由 `src/lib/note-theme-prepaint.ts` 在第一次繪製前套上
+- 新增 `src/lib/remark-notecraft-mark.ts`、`src/lib/remark-notecraft-ai-markers.ts`；斷言 `scripts/checks/note-theme-prepaint.mjs`、`scripts/checks/note-page-remark.mjs`（併入 `npm run check:wb`）；驗收 fixture `scripts/fixtures/note-page-sample.mjs`
+
+## [1.13.1] - 2026-10-31
+
+### 修正
+
+- Windows 上 NoteCraftApp 與筆記在不同磁碟機時（例：app 在 C 槽的 `~/.notecraft/app-x.y.z`、筆記在 D 槽，以 `notecraftapp view` 開啟），筆記頁「以 VS Code 編輯」開到 `C:\…\app-x.y.z\D:\…` 這種不存在的路徑
+
+### 內部
+
+- 成因：Content Layer 的 `filePath` 是 `path.relative(cwd, 檔案)`，跨磁碟機時會是絕對路徑，筆記頁卻直接接在 cwd 後面。改用 `path.resolve`，並把「絕對路徑 → `vscode://file/…`」抽成 `src/lib/vscode-href.mjs`（筆記頁、資料檔頁、筆記內嵌資料檔、plugin 錯誤卡片、dev API 的新增筆記共用；前兩處以外原本沒把反斜線轉成正斜線，Windows 上的連結現在也是 `D:/…`）
+- 新增斷言 `scripts/checks/app-vscode-href.mjs`（以 `path.win32`／`path.posix` 驗證同磁碟機、跨磁碟機、POSIX 與 fallback）
+
+## [1.13.0] - 2026-10-10
+
+<!-- 重點：筆記列表多一個 Graph 檢視，看得出哪些筆記是樞紐、哪些是孤島 -->
+
+### 新增
+
+- 筆記列表新增第五個檢視 Graph（設計文件 `docs/notecraft-workbench-notes-graph.md`）：以圖呈現筆記之間的關聯，可平移、縮放、搜尋，點節點開啟預覽。可在設定頁設為預設檢視
+- 文件模式：箭頭由引用的一方指向被參照的一方，四種關聯以線型區分 —— 定義引用（`:ref`）、定義嵌入（`::include`）、站內連結、系列順序。兩篇之間的關聯越多線越粗；被越多篇連入的筆記節點越大；沒有任何關聯的筆記依分組排在外圍
+- 站內連結包含 `/notes/…`、`/view/…`、相對的 `.md`／`.mdx` 連結、筆記內嵌的資料檔（`<PluginView>`）與資料檔的「回到來源筆記」
+- 標籤模式：筆記數最多的 8 個標籤是樞紐，筆記圍著自己的標籤聚成團，帶多個標籤的落在幾團之間；點樞紐只看那個標籤
+- 節點可依資料夾、系列或標籤著色；四種關聯可分別開關、可隱藏沒有關聯的筆記；這些選擇會記住
+- 資料夾、系列、標籤等既有的篩選在 Graph 同樣有效
+- 視窗寬度 860px 以下不畫圖，改顯示說明
+
+### 內部
+
+- 邊在 build 期由 `src/lib/wb-graph.ts` 的 `buildGraphEdges` 計算，寫進 `/wb-index.json` 的 `graph.edges`；站內連結由新的 `src/lib/links-scan.mjs` 掃描，搭定義索引的同一次讀檔
+- 佈局是固定種子的純函式（`src/lib/wb-graph-layout.ts`），節點超過 150 時改由 Web Worker 計算；Graph 的程式另外分包，只在切到 Graph 時下載
+- 斷言 `scripts/checks/wb-graph.mjs`（併入 `npm run check:wb`）；新增 `scripts/fixtures/notes-graph-sample.mjs`（以 `npm pack` 出的套件 build 約 65 篇的工作區，邊與預期逐條比對）
+
+### 修正
+
+- 筆記檔案是 CRLF 換行時，沒有 frontmatter `title` 的筆記抓不到 H1 當標題
+
+## [1.12.0] - 2026-10-07
+
+<!-- 重點：同一段說明只寫一次，其他筆記嵌入或引用它 -->
+
+### 新增
+
+- 定義與引用（設計文件 `docs/notecraft-workbench-define-ref.md`）：以 `::::define{id="…"}` 把一段內容標成可被引用的定義，其他筆記以 `::include{id="…"}` 原樣嵌入、以 `:ref[文字]{id="…"}` 在行文中引用。引用只寫 id、不寫檔案路徑，來源筆記搬移或改名都不會斷
+- 嵌入的內容與來源走同一套渲染（提示框、分頁、步驟、程式碼區塊都一樣），標題配合嵌入位置調整層級並列入目錄；「前往來源」會捲到那段定義並短暫標示
+- 行內引用滑過即可預覽定義，點擊可固定卡片；內容太長時可展開，手機改由底部滑出
+- 反向連結：每段定義旁顯示「被 N 篇引用」並可列出引用的筆記；被引用的筆記頁首有「被引用 N」，打開後可依定義篩選；筆記列表的預覽多了「被引用」「本篇定義」「引用的定義」；指令面板（⌘K）可用 id 或定義名稱直接跳到定義
+- 定義裡可以放 AI 生成元件，來源頁照常顯示；嵌入處與預覽卡改顯示「此處有互動元件，請至原文檢視」
+- `view` 模式刪除筆記時，若它的定義被別篇引用，確認對話框會列出那些筆記（不擋刪除）
+- `view` 模式下，「被 N 篇引用」與「尚未被引用」都能打開清單，複製這段定義的 include 與 ref 語法
+- id 找不到、重複、互相嵌入、嵌入過深、define 放錯位置或裡面有 `import` 時 build 失敗，訊息附檔案、行號與相近的 id；引用被 git 忽略的筆記裡的定義時印出警告
+
+### 內部
+
+- 定義的掃描與索引在 `src/lib/defs-scan.mjs`、`src/lib/defs-state.mjs`（build、dev API、CLI 共用），斷言 `scripts/checks/defs.mjs`（`npm run check:defs`）
+- `remark-notecraft-defs.ts` 排在 `remark-directive` 之後、既有擴充語法之前；dev 期間改了來源定義，嵌入或引用它的筆記會一併重新渲染
+- 新增 `scripts/fixtures/define-ref-html.mjs`（產物斷言）與 `scripts/fixtures/define-ref-scale.mjs`（以 `npm pack` 出的套件驗證 12 篇引用與同頁嵌入兩次）
+
+## [1.11.0] - 2026-10-06
+
+<!-- 重點：/plugins 只列真正安裝的外掛，沒裝、沒在用時告訴你下一步 -->
+
+> **升級注意**：如果 `.notecraft/plugins.json` 引用了官方外掛（`er-diagram-renderer`、`openapi-renderer`），但從沒執行過 `install-plugin`，升級後 build 會失敗。執行 `npx notecraftapp install-plugin <id>` 安裝即可，錯誤訊息裡也附了這行指令。
+
+### 新增
+
+- `/plugins` 的空狀態與引導（設計文件 `docs/notecraft-workbench-plugin-empty-states.md`）：沒安裝外掛、裝了但沒寫映射規則、映射沒有命中任何檔案、外掛全部停用，各有插圖、原因與下一步。`view` 模式附可複製的安裝指令、官方外掛清單、依已安裝外掛產生的 `plugins.json` 範例與排查提示
+- 「已安裝外掛」列上標出「未映射」「無命中」；頁首徽章在沒有資料檔時改說明原因
+- 沒有資料檔時，`view` 模式的側欄保留「Plugin 資料檔 ・ 尚無資料檔」入口
+
+### 修正
+
+- 沒有安裝任何外掛的工作區，「已安裝外掛」仍列出 ER Diagram 與 API 文件。原因是官方外掛跟著 npm 套件一起發佈，被當成已安裝；現在只列 `.notecraft/plugins/` 實際安裝的外掛，沒用到的渲染器也不再打包進頁面（頁面少載入約 200 KB）
+- 同一個外掛同時存在套件內與 `.notecraft/plugins/` 時，渲染器與 manifest 會來自不同版本；現在一律以 `.notecraft/plugins/` 為準，build 時提示一次
+
+### 變更
+
+- 部署站與 `serve` 的 `/plugins` 不再顯示「安裝新外掛」說明框與任何 `npx` 指令（讀者無法安裝外掛）；沒有外掛或資料檔時只顯示一句說明
+- 停用中外掛的檔數顯示「—」（停用的外掛不處理任何檔案），原本會命中的檔案仍列在外掛詳情裡
+- 外掛詳情的「內建」來源改稱「主 repo 官方 store」
+
+### 內部
+
+- `/plugins` 的情境判定收斂到 `src/lib/wb-plugin-env.ts`（只看啟用中外掛），官方外掛清單到 `src/lib/official-plugins.ts`，斷言 `scripts/checks/wb-plugin-env.mjs` 併入 `check:wb`
+- 複製鈕狀態抽成 `useCopyState`，與檢查更新的升級指令共用
+- `check-plugins` 以 `npm pack --dry-run` 斷言打包內容不含 `plugins/`
+- 新增 `scripts/fixtures/plugin-empty-states.mjs`：以 `npm pack` 出的套件建 6 個情境工作區，`--build` 時逐一 build 並斷言產物
+
+## [1.10.1] - 2026-10-04
+
+### 安全
+
+- `notecraftapp build`／`serve` 的產物不再夾帶 Astro 的內部檔 `data-store.json`、`content-assets.mjs`、`content-modules.mjs` 與 `collections/`。其中 `data-store.json` 含每篇筆記的**完整原文**與本機絕對路徑（跑過 `view` 後才會出現），之前的版本部署 `dist/` 時會一起公開；建議以這一版重新 build 後再部署一次，並刪掉已部署站上的 `/data-store.json`
+
+### 修正
+
+- 1.10.0 在 `build`／`serve` 時以「`data-store.json` 的輸出含本機絕對路徑」失敗、一直停在舊產物的問題（1.10.0 的產物檢查開始掃 `.json`，才把上面這個既有的外洩抓出來）
+- `build`／`serve` 不再清掉 app 資料夾裡 Astro 的 `.astro/`（`view` 的內容快取與型別檔）
+
+### 內部
+
+- 成因：outDir 不在 astro 的工作目錄底下時，Astro 5 的 static build 先輸出到 `<工作目錄>/.astro/`、再整包複製進 outDir，而那裡同時是 content layer 的資料夾。CLI 改為 build 到 app 底下的 `node_modules/.notecraft-build/<hash>/`，完成後才搬進 `~/.notecraft/cache/<hash>/`（不同磁碟時改用複製）
+- build 完多一道檢查：產物根目錄出現上述內部檔就讓 build 失敗
+- 新增 `scripts/fixtures/content-layer-leak.mjs`：實際跑 CLI build 並斷言產物乾淨，可用 `--app` 指向另一個磁碟上的 app 驗證跨磁碟
+
+## [1.10.0] - 2026-10-04
+
+<!-- 重點：.notecraft/ignore.json：像 .gitignore 一樣排除不想讓 NoteCraft 讀的檔案 -->
+
+### 新增
+
+- **`.notecraft/ignore.json`**（設計文件 `docs/notecraft-ignore-config.md`）：以 `.gitignore` 的語法排除檔案與資料夾，例如 `drafts/`、`**/*.private.md`、`!archive/keep.mdx`。被排除的檔完全不讀：不成為筆記、不被 plugin 認領、不出現在資料夾樹與新增筆記的選單、圖片不複製進產物、改了也不觸發 rebuild
+- 改了 `ignore.json` 自動生效：`view` 會重新啟動 dev server，`serve` 會重新 build；格式寫錯時 build 失敗並指出是哪一條
+- build log 印出規則數與排除了多少檔；`!` 規則因為父資料夾整個被排除而無效、想用 `!` 解除內建排除、`ignore.json` 放錯 `.notecraft/` 時各有一行提醒；筆記連到或引用被排除的檔時也會提醒
+- 新增筆記（工作台按鈕與 `npm run new-note`）不能建在被排除的位置
+- JSON Schema：`schemas/ignore.schema.json`，可在 `ignore.json` 用 `$schema` 取得編輯器提示
+
+### 修正
+
+- 筆記資料夾裡 `node_modules/`、`dist/` 底下的 Markdown 不再被當成筆記（之前只有 Sidebar 以外的地方會跳過）
+
+### 內部
+
+- 走訪筆記資料夾的地方（筆記、plugin 資料檔、dev API、CLI 的快取判斷與 watcher）改用同一個 `src/lib/notes-ignore.mjs`；`.notecraft/` 位置的解析也收斂到這裡
+- build 完多一道檢查：產物中出現被排除的檔就讓 build 失敗
+- 新增 `npm run check:ignore`（比對語意的斷言，`check-plugins` 一併執行）；`scripts/fixtures/ignore-sample.mjs`、`ignore-dev.mjs` 是實際跑 build／dev／CLI 的整合驗證
+- 新增依賴 `ignore`
+
+## [1.9.0] - 2026-10-03
+
+<!-- 重點：檢查更新：npm 有新版時提醒，並列出錯過的 CHANGELOG -->
+
+### 新增
+
+- 工作台**檢查更新**（設計文件 `docs/notecraft-workbench-update-check.md`）：開頁時在瀏覽器裡向 npm 查詢最新版，30 分鐘內不重查；離線或被擋時什麼都不顯示。部署出去的網站也會提醒
+- 有新版時 Rail 的「設定與關於」出現圓點、「關於」分頁旁顯示落後版數；藍色是一般更新、黃色是主版本更新、紅色是目前版本已被棄用。第一次發現時右下角跳出一次提示，可「略過這一版」
+- 「設定與關於 › 關於」最上方新增「版本與更新」：目前與最新版本、升級前要注意的事（新版需要較新的 Node、主版本可能有破壞性變更）、可一鍵複製的升級指令、手動「檢查更新」
+- 「查看更新內容」列出錯過的每一版的 CHANGELOG，可依安全、移除、變更等類別篩選，版本多時摺疊較早的版本
+- 指令面板（`⌘K`）多一組「指令」：檢查更新、查看更新內容
+
+### 變更
+
+- 「關於」分頁的工作區資訊不再有「版本」列，版本資訊集中在「版本與更新」
+
+### 內部
+
+- `CHANGELOG.md` 加入發佈檔案（`package.json` 的 `files`），「查看更新內容」從 jsDelivr 讀取，GitHub 為備援
+- 新增 `npm run check:upd`：版本推導、CHANGELOG 解析（以這份檔案為輸入，並與官網的版本清單對照）與 Rail 預繪函式的斷言；`check-plugins` 一併執行。CHANGELOG 的版本標題必須維持 `## [x.y.z] - YYYY-MM-DD`
+
+## [1.8.5] - 2026-10-02
+
+### 修正
+
+- 從本機資料夾安裝的 plugin（`install-plugin ./my-plugin`）不再把資料夾的絕對路徑寫進正式產物：`.installed.json` 的 `origin` 改記 `local:<資料夾名>`，`/wb-index.json` 與 `/plugins` 頁的 Drawer 也顯示這個形式。plugin 原始碼放在專案資料夾內時，build 不會再因「/wb-index.json 的輸出含本機絕對路徑」失敗；之前安裝、仍記著絕對路徑的 plugin 不必重裝，輸出時會自動改成同樣的形式
+- 筆記內嵌的資料檔（`<PluginView>`）不再把 renderer 的絕對路徑寫進正式頁面；這個路徑只給 dev 的「以 VS Code 編輯 renderer」用，與 `/view/…` 頁一致
+- build 完會掃描產物的 `.html`／`.json`，含專案、筆記資料夾或 app 的本機絕對路徑就讓 build 失敗並列出檔案，避免日後再漏（dev 專用的 `vscode://` 連結不受影響）
+
+## [1.8.4] - 2026-10-02
+
+### 安全
+
+- `install-plugin` 不再放行 plugin 夾帶的 `package.json`：原本只看副檔名，`.json` 一律通過，與設計文件「拒絕 `package.json`」不符。現在任何層的 `package.json`、lockfile（`package-lock.json`、`npm-shrinkwrap.json`、`yarn.lock`、`pnpm-lock.yaml`、`bun.lockb`、`bun.lock`）都會拒裝並說明原因；安裝本來就不執行任何腳本，這次是把「看起來會裝依賴」的檔案擋在門外
+- `install-plugin` 同時拒收 `tsconfig.json`／`jsconfig.json`：放進 `.notecraft/plugins/<id>/` 會被當成離 renderer 最近的編譯設定，改掉 JSX 等編譯行為
+
+## [1.8.2] - 2026-10-02
+
+### 修正
+
+- 沒寫 frontmatter `title` 的筆記，標題不會再變成程式碼區塊裡的 `# 註解`（bash、Python 等）或 `@ai-visualize` 標記裡的文字，只取內文真正的 `# 標題`；摘要同樣略過 `~~~` 程式碼區塊
+- 用 `http://` 加區網 IP 開啟（例如 `--host 0.0.0.0` 從手機或另一台電腦連進來）時，程式碼區塊的「複製」、複製生成提示、頁籤的「複製連結」改用相容方式真的寫進剪貼簿；仍無法複製時顯示「無法複製，請手動選取」（程式碼區塊會順手選取內容），不再假裝「已複製」
+- `.md` 筆記裡的 `@ai-visualize` 標記不再算成「待生成」：不出現在筆記頁的待生成卡片、AI 標記佇列與儀表板計數（AI 流程只處理 `.mdx`）。build／dev 時會提示把該檔改成 `.mdx`
+
+## [1.8.1] - 2026-10-02
+
+### 修正
+
+- 升級 `notecraftapp` 後，`build`／`serve` 不再沿用舊版建立的快取：版本不同就自動重 build，並印出「版本從 X 變成 Y」。不用再手動加 `--rebuild`
+- 改了 `NOTECRAFT_BASE`（或拿掉）後會自動重 build，不再拿到連結前綴不對的舊快取
+- 從不同資料夾對同一個筆記資料夾執行 `build`／`serve` 時會重 build（`.notecraft/` 的外掛、系列、元件從執行資料夾讀，產物可能不同）
+
+## [1.8.0] - 2026-10-02
+
+### 新增
+
+- 工作台**換頁轉場**（設計文件 `docs/notecraft-workbench-loading-transitions.md`）：Rail、側欄、頁籤列在換頁時不動，只有主區淡入。筆記之間、從列表進入、回到頂層頁面各有一種節奏；重新整理與簡報頁不轉場。不支援的瀏覽器（Firefox）照舊直接切換
+- 頁籤的藍色指示器在切換頁籤時滑到新頁籤
+- 點連結後超過 150ms 還沒換頁，主區頂端出現一條細進度線
+- 慢速網路下，筆記頁與資料檔頁的內容還沒到時顯示骨架（等待不到 150ms 不會出現）
+
+### 變更
+
+- 換頁時頁籤列與側欄的系列進度在第一個畫面就是正確的，不再先空白或閃一下 `0/N`
+- 切回頁籤時，捲動位置在畫面出現前就已還原，轉場中不跳動
+- `/notes` 帶篩選條件開啟時，hydrate 前不再整塊空白，改顯示列表骨架
+- 儀表板的「—」換成數字時淡入
+- Google Fonts 改為非阻塞載入，第一次進站更快畫出畫面（字型可能在載入後換一次）
+
+### 修正
+
+- AI 生成元件 `proposal-summary` 捲到時不再撐開、推動下方內文
+
+### 內部
+
+- 新增 `src/lib/wb-nav.ts`（轉場分類）、`src/lib/wb-tabs-prepaint.ts`（頁籤列預繪）、`src/lib/series-progress-pure.ts`（系列完成數），以原始碼內嵌進 inline script；`check:wb` 串上 `wb-nav`、`wb-tabs-prepaint`、`wb-critical-css` 斷言
+- 新增 `scripts/fixtures/viz-height-audit.mjs`：比對生成元件 SSR 與 hydrate 後的高度
+- content-visualize skill 與 component-generator 新增「SSR 輸出最終高度」規則
+
 ## [1.7.0] - 2026-10-01
 
 ### 新增
@@ -181,6 +429,8 @@
 
 ## [1.0.0] - 2026-09-22
 
+<!-- 重點：Workbench 工作台：Rail＋資料夾樹 Sidebar＋主區的三欄外殼，所有列表頁重寫 -->
+
 **Workbench 工作台** —— 外殼整個換掉：Rail 52 + 檔案樹 Sidebar 240 + 壓縮頁首／工具列／內容，整頁不捲動。
 所有列表頁共用同一套資料列語彙。這是自 v0.1 以來最大的一次改版，殼與每個列表頁都重寫，因此直接進 **1.0.0**。設計見 `docs/notecraft-workbench.md`，像素級規格在 `docs/prototype/design_handoff_workbench/`。
 
@@ -224,6 +474,8 @@
 ---
 
 ## [0.6.0] - 2026-09-18
+
+<!-- 重點：Plugin System：結構化 JSON 資料檔交給可安裝的渲染器畫成頁面 -->
 
 **Plugin System** —— 讓專案裡的結構化 JSON 資料檔，被一個可安裝的渲染器畫成頁面。
 
@@ -306,6 +558,8 @@
 ---
 
 ## [0.4.0] - 2026-08-02
+
+<!-- 重點：簡報原子從 14 個增加到 29 個，內容頁改為挑原子填資料 -->
 
 簡報的品質瓶頸不在提示詞，在**版型存量**。這一版把原子層從 14 個補到 29 個，並把內容頁的預設從「AI 每頁重新設計版面」改成「AI 挑一個設計好的原子、把資料填進去」。
 
@@ -395,6 +649,8 @@
 
 ## [0.2.0] - 2026-07-10
 
+<!-- 重點：AI 視覺化管線可用：`init-skill`，以及 `serve` 的背景 rebuild 與自動重新載入 -->
+
 AI 視覺化管線正式可用的一版。
 
 ### 新增
@@ -419,6 +675,8 @@ AI 視覺化管線正式可用的一版。
 ---
 
 ## [0.1.0] - 2026-07-09
+
+<!-- 重點：首次發佈到 npm：`view`、`build`、`serve` 三個子命令 -->
 
 首次發佈到 npm。把原本只能在自己 repo 跑的 Astro 筆記站，變成一行 `npx` 就能開在任何 md/mdx 資料夾上的工具。
 

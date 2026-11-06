@@ -10,11 +10,12 @@
 // 2. **本機絕對路徑不得出現在輸出裡**
 import fs from "node:fs";
 import path from "node:path";
-import { getAllNotes, parseMarkers, tagStats, type Note } from "@/lib/notes";
+import { getAllNotes, noteMarkers, tagStats, type Note } from "@/lib/notes";
 import { loadSeries, getSeriesChapters } from "@/lib/series";
 import { getDataFiles, getInactiveMatches, getPlugins, getPluginsConfig } from "@/lib/plugins";
 import { hasDeck } from "@/lib/decks";
 import { listReferenceDocs } from "@/lib/references";
+import { publicPluginOrigin } from "@/lib/local-path";
 import type {
   WbChapter,
   WbDataFile,
@@ -27,6 +28,9 @@ import type {
   WbSeries,
 } from "@/lib/wb-types";
 
+import { getDefIndex } from "@/lib/defs-state.mjs";
+import { buildGraphEdges } from "@/lib/wb-graph";
+import { slug as githubSlug } from "github-slugger";
 export type * from "@/lib/wb-types";
 
 const toPosix = (p: string): string => p.split(path.sep).join("/");
@@ -175,7 +179,8 @@ function buildPlugins(): WbPlugin[] {
         const info = JSON.parse(fs.readFileSync(path.join(rec.dir, ".installed.json"), "utf-8")) as Record<string, unknown>;
         source = {
           kind: "installed",
-          ...(typeof info.origin === "string" ? { origin: info.origin } : {}),
+          // 本地安裝在 v1.8.2 以前記的是絕對路徑；輸出一律轉成 `local:<資料夾名>`
+          ...(typeof info.origin === "string" ? { origin: publicPluginOrigin(info.origin) } : {}),
           ...(typeof info.commit === "string" ? { commit: info.commit.slice(0, 7) } : {}),
         };
       } catch {
@@ -245,6 +250,9 @@ async function build(): Promise<WbIndex> {
     });
   }
 
+  // 定義與引用（define-ref §9）：索引與 remark plugin 共用同一份
+  const defIndex = getDefIndex();
+
   const rows: WbNoteRow[] = notes.map((n) => {
     const rel = relPathBySlug.get(n.id) ?? n.id;
     const segs = rel.split("/");
@@ -256,7 +264,7 @@ async function build(): Promise<WbIndex> {
       folder: segs.slice(0, -1),
       tags: n.data.tags,
       // prompt 只用在 Drawer 標記列的 tooltip；截短以免索引被長提示詞撐大
-      markers: parseMarkers(n.body).map((m) => ({
+      markers: noteMarkers(n).map((m) => ({
         id: m.id,
         type: m.type,
         status: m.status,
@@ -268,6 +276,8 @@ async function build(): Promise<WbIndex> {
       hasFrontmatter: hasFrontmatter(n.filePath),
       hasDeck: hasDeck(n.id),
       promptPath: promptPathOf(rel),
+      defines: defIndex.notes.get(n.id)?.defines ?? [],
+      references: defIndex.notes.get(n.id)?.references ?? [],
     };
   });
 
@@ -306,6 +316,27 @@ async function build(): Promise<WbIndex> {
     appVersion: appVersion(),
     pending: { markers: pendingMarkers, notes: pendingNotes },
     workspaceLabel: workspaceLabel(),
+    defs: [...defIndex.defs.values()].map((d) => ({ id: d.id, label: d.label, slug: d.slug, refs: d.refs })),
+    // Graph 檢視的邊（notes-graph §4）：定義索引的 references／links ＋ 系列章節 ＋ 資料檔的 backTo
+    graph: {
+      edges: buildGraphEdges({
+        notes: rows.map((r) => {
+          const dn = defIndex.notes.get(r.slug);
+          return {
+            slug: r.slug,
+            rel: r.path,
+            references: (dn?.references ?? []).flatMap((ref) => {
+              const src = defIndex.defs.get(ref.id)?.slug;
+              return src ? [{ slug: src, kinds: ref.kinds }] : [];
+            }),
+            links: dn?.links ?? [],
+          };
+        }),
+        series: series.map((s) => s.chapters.map((c) => c.ref)),
+        dataFiles: dataFilesRaw.map((f) => ({ routePath: f.routePath, relPath: f.relPath, ...(f.backTo ? { backTo: f.backTo } : {}) })),
+        slugify: (seg) => githubSlug(seg),
+      }),
+    },
   };
 }
 

@@ -4,22 +4,36 @@
   "type": "module",
   "version": "0.1.0",
   "description": "NoteCraftApp 官方網站（GitHub Pages）",
+  "module": "ds-dist/ds/index.js",
+  "types": "ds-dist/ds/index.d.ts",
   "scripts": {
     "dev": "astro dev",
     "build": "astro build",
-    "preview": "astro preview"
+    "preview": "astro preview",
+    "build:ds": "tsc -p tsconfig.ds.json && node scripts/build-ds-css.mjs"
   },
   "engines": {
     "node": ">=22"
   },
   "dependencies": {
+    "@astrojs/mdx": "^4.3.14",
     "@astrojs/react": "^4.4.2",
     "@fontsource-variable/archivo": "^5.3.0",
     "@fontsource-variable/jetbrains-mono": "^5.3.0",
     "@fontsource-variable/noto-sans-tc": "^5.3.0",
+    "@mdx-js/mdx": "^3.1.1",
     "astro": "^5.18.2",
+    "github-slugger": "^2.0.0",
+    "motion": "^11.18.2",
     "react": "^18.3.1",
-    "react-dom": "^18.3.1"
+    "react-dom": "^18.3.1",
+    "rehype-stringify": "^10.0.1",
+    "remark-directive": "^4.0.0",
+    "remark-gfm": "^4.0.1",
+    "remark-parse": "^11.0.0",
+    "remark-rehype": "^11.1.2",
+    "remark-smartypants": "^3.0.3",
+    "unified": "^11.0.5"
   },
   "devDependencies": {
     "@types/node": "^22.20.4",
