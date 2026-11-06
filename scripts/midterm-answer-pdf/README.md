@@ -55,7 +55,7 @@ scripts/midterm-answer-pdf/
 
 `build-detail.mjs` 把[第 8 週筆記](../../src/content/notes/電子學實作系列第8週-期中考.mdx)
 整篇轉成 PDF（去掉 frontmatter、`@ai-*` 標記、JSX island，`PdfRefChip` 換成一行講義出處，
-`@ai-visualize` 的互動元件換成同一張靜態 SVG，「三份 PDF」整節略過）。
+`@ai-visualize` 的互動元件換成同一張靜態 SVG，「N 份 PDF」整節略過）。
 
 它走 remark／rehype 管線，那組套件**不是專案相依**，而 ESM 不吃 `NODE_PATH`，所以要搬到裝了
 套件的目錄裡跑，再用 `NC_ROOT` 指回 repo：

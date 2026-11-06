@@ -36,9 +36,9 @@ md = md.replace(/^---\n[\s\S]*?\n---\n/, "");
 md = md.replace(/^import .*$/gm, "");
 // @ai-visualize 標記 → 換成靜態答案圖佔位
 md = md.replace(/\{\/\*\s*@ai-visualize[\s\S]*?\*\/\}/g, "\n<!--Q5PLOT-->\n");
-// 「三份 PDF」整節是指向檔案的連結，放進 PDF 本身沒有意義，整段拿掉
+// 「N 份 PDF」整節是指向檔案的連結，放進 PDF 本身沒有意義，整段拿掉
 {
-  const start = md.indexOf("## 三份 PDF");
+  const start = md.search(/^## .份 PDF$/m);
   if (start >= 0) {
     const next = md.indexOf("\n## ", start + 1);
     md = md.slice(0, start) + (next >= 0 ? md.slice(next + 1) : "");
@@ -148,7 +148,7 @@ code { font-family: ui-monospace, Menlo, monospace; font-size: .9em; background:
   <div class="meta"><span>5 題，每題 20 分</span><span>學號 515661055</span><span>陳欣怡</span><span>2026-10-31</span></div>
 </div>
 ${body}
-<p class="foot">本份詳解依課程投影片 CH2–CH4 的公式與例題整理；每題附上投影片最相關的原題出處與差異比對。計算取 V_T = 26 mV（300 K）、n_i = 1.08×10¹⁰ cm⁻³。</p>
+<p class="foot">本份詳解依課程投影片 CH2–CH4 的公式與例題整理；每題附上投影片最相關的原題出處與差異比對。計算取 V_T = 26 mV（300 K）、n_i = 1.08×10¹⁰ cm⁻³；第 2 題比較兩個溫度時改用 k/q = 8.625×10⁻⁵ V/K。</p>
 </body></html>`;
 
 fs.writeFileSync(OUT_HTML, page);

@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 200" width="320" height="200" role="img"
+  aria-label="BJT hybrid-pi 小訊號模型：B 與 E 之間為 r pi，C 與 E 之間為受控電流源 g m v pi，射極交流接地">
+  <g stroke="#111827" stroke-width="1.9" fill="none" stroke-linecap="round">
+    <circle cx="28" cy="34" r="3.5" stroke-width="1.4"/>
+    <path d="M31.5,34 H100"/>
+    <path d="M100,34 V58"/>
+    <path d="M100,58 l8,6 l-16,12 l16,12 l-16,12 l16,12 l-8,6"/>
+    <path d="M100,118 V146"/>
+    <circle cx="292" cy="34" r="3.5" stroke-width="1.4"/>
+    <path d="M288.5,34 H215"/>
+    <path d="M215,34 V71"/>
+    <circle cx="215" cy="88" r="17"/>
+    <path d="M215,105 V146"/>
+    <path d="M100,146 H215"/>
+    <path d="M215,78 V97"/>
+    <path d="M157,146 V162"/>
+    <path d="M147,162 H167"/>
+    <path d="M150.5,167 H163.5"/>
+    <path d="M154,172 H160"/>
+  </g>
+  <g fill="#111827" stroke="none">
+    <polygon points="211.4,95 218.6,95 215,101.5"/>
+    <circle cx="100" cy="34" r="2.6"/>
+    <circle cx="215" cy="34" r="2.6"/>
+    <circle cx="100" cy="146" r="2.6"/>
+    <circle cx="215" cy="146" r="2.6"/>
+    <circle cx="157" cy="146" r="2.6"/>
+  </g>
+  <g font-family="'Times New Roman',Times,serif" font-size="20" fill="#111827">
+    <text x="28" y="21" text-anchor="middle" font-weight="700">B</text>
+    <text x="292" y="21" text-anchor="middle" font-weight="700">C</text>
+    <text x="84" y="92" text-anchor="end" font-style="italic">r<tspan font-size="13" dy="5">π</tspan><tspan dy="-5"></tspan></text>
+    <text x="242" y="92" font-style="italic">g<tspan font-size="13" dy="5">m</tspan><tspan dy="-5"></tspan> v<tspan font-size="13" dy="5">π</tspan><tspan dy="-5"></tspan></text>
+    <text x="117" y="92" font-style="italic">v<tspan font-size="13" dy="5">π</tspan><tspan dy="-5"></tspan></text>
+    <text x="118" y="62" font-size="19">+</text>
+    <text x="118" y="122" font-size="19">−</text>
+  </g>
+  <g font-family="'PingFang TC','Noto Sans TC',sans-serif" font-size="15" fill="#111827">
+    <text x="157" y="192" text-anchor="middle">E（交流接地）</text>
+  </g>
+</svg>
