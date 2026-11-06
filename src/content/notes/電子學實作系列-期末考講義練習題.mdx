@@ -1,9 +1,9 @@
 ---
 title: "電子學實作系列：期末考 - 講義練習題總整理"
-description: "期末考範圍確認為講義裡的全部練習題。把 CH1–CH4 投影片的 38 道 Example 逐題整理：題目中英對照、解題思路、完整計算過程、原題圖片與講義頁碼連結（PNP 一節教授未教，已排除）。"
+description: "期末考範圍確認為講義裡的全部練習題。把 CH1–CH4、CH6 投影片的 39 道 Example 逐題整理：題目中英對照、原題圖片與講義頁碼連結，答案與詳解放在可收合的區塊，預設展開（PNP 一節教授未教，已排除）。"
 tags: ["電子學實作系列"]
 createdAt: "2026-10-17"
-updatedAt: "2026-11-04"
+updatedAt: "2026-11-06"
 ---
 
 import PdfRefChip from '@/components/islands/PdfRefChip.tsx'
@@ -12,9 +12,9 @@ import PdfRefChip from '@/components/islands/PdfRefChip.tsx'
 
 *Final Exam — Worked Examples from the Lecture Slides*
 
-> **範圍與用法**：教授確認期末考題目就是講義裡的練習題。這篇把 CH1–CH4 投影片出現的每一道 Example 依章節順序收齊，每題固定四段：**題目**（中文在上、英文原文在下）→ **解題思路**（先想什麼、用哪條公式）→ **計算過程**（KaTeX 逐步）→ **答案與陷阱**。原題有圖的直接嵌入，每題標題下的頁碼 chip 點開就是講義該頁。CH4 的 PNP 一節（4.6，Example 4-17、4-18、4-20）教授沒有教，不收。投影片在部分例題後面附的 Exercise 也一併列為「延伸練習」，答案是我自己算的，講義沒有給。
+> **範圍與用法**：教授確認期末考題目就是講義裡的練習題。這篇把 CH1–CH4、CH6 投影片出現的每一道 Example 依章節順序收齊。每題先放題目（中文在上、英文原文在下），原題有圖的直接嵌入，標題下的頁碼 chip 點開就是講義該頁。**答案與詳解放在可收合的區塊**，預設展開，想先自己算時點標題收起來，裡面依序是答案、核心觀念、公式、常數、計算、檢查、總結、陷阱。CH4 的 PNP 一節（4.6，Example 4-17、4-18、4-20）教授沒有教，不收。投影片在部分例題後面附的 Exercise 也一併列為「延伸練習」，答案同樣放在可收合區塊，是我自己算的，講義沒有給。CH5、CH7、CH8 的講義還沒收進來，這三章暫缺。
 > 看不懂名詞、電路圖或英文題幹時，先查[讀題工具](/notes/電子學實作系列-期末考讀題工具)（名詞卡、讀圖五步、題幹解碼表、假設 → 求解 → 驗證流程）。
-> 概念說明請回各週筆記：[第 1 週](/notes/電子學實作系列第1週-半導體物理基礎)（CH1、CH2）、[第 2 週](/notes/電子學實作系列第2週-二極體與eda模擬)（CH3）、[第 4 週](/notes/電子學實作系列第4週-bjt雙極性電晶體)（CH4）。
+> 概念說明請回各週筆記：[第 1 週](/notes/電子學實作系列第1週-半導體物理基礎)（CH1、CH2）、[第 2 週](/notes/電子學實作系列第2週-二極體與eda模擬)（CH3）、[第 4 週](/notes/電子學實作系列第4週-bjt雙極性電晶體)（CH4）、[第 7 週](/notes/電子學實作系列第7週-mos電晶體與cs放大器)（CH6）。
 
 ## 題目總覽
 
@@ -24,8 +24,11 @@ import PdfRefChip from '@/components/islands/PdfRefChip.tsx'
 | CH2 半導體物理 | 15 | 2-1、2-3、2-5、2-6、2-7、2-8、2-9、2-13、2-14、2-15、2-16、2-17、2-18、2-19、2-21 | $n_i(T)$、$np = n_i^2$、$v = \mu E$、$J = qD\frac{dn}{dx}$、$V_0$、$C_j$、$I_S$、二極體方程式 |
 | CH3 二極體模型與電路 | 8 | 3-1、3-13、3-18、3-19、3-27、3-28、3-31、3-33 | $r_d = \frac{V_T}{I_D}$、$V_R \approx \frac{I_L}{C f_{in}}$、$I_p$、線／負載調整率 |
 | CH4 BJT | 11 | 4-3、4-4、4-5、4-6、4-7、4-8、4-10、4-11、4-13、4-14、4-16 | $I_C = I_S \exp\!\left(\frac{V_{BE}}{V_T}\right)$、$g_m = \frac{I_C}{V_T}$、$r_\pi$、$r_o$、軟飽和判準 |
+| CH6 MOS 電晶體 | 1 | 6-6 | $I_D = \frac{1}{2}\mu_n C_{ox}\frac{W}{L}(V_{GS}-V_{TH})^2$、$g_m = \frac{2I_D}{V_{GS}-V_{TH}}$、飽和區判準 |
 
-常數（矽，300 K）：$V_T = 26\ \text{mV}$、$n_i = 1.08\times10^{10}\ \text{cm}^{-3}$、$\mu_n = 1350$、$\mu_p = 480\ \text{cm}^2/(\text{V}\cdot\text{s})$、$D_n = 34$、$D_p = 12\ \text{cm}^2/\text{s}$、$q = 1.6\times10^{-19}\ \text{C}$、$\varepsilon_{si} = 11.7\times8.85\times10^{-14}\ \text{F/cm}$。
+數字以講義為準：講義和按計算機的結果不同時，答案與計算寫講義的數字，重算值放在「註記」。講義的明顯筆誤例外，會在註記或陷阱說明更正。
+
+常數（矽，300 K）：$V_T = 26\ \text{mV}$、$n_i = 1.08\times10^{10}\ \text{cm}^{-3}$、$\mu_n = 1350$、$\mu_p = 480\ \text{cm}^2/(\text{V}\cdot\text{s})$、$D_n = 34$、$D_p = 12\ \text{cm}^2/\text{s}$、$q = 1.6\times10^{-19}\ \text{C}$、$\varepsilon_{si} = 11.7\times8.85\times10^{-14}\ \text{F/cm}$、$E_g = 1.12\ \text{eV}$、$k = 1.38\times10^{-23}\ \text{J/K}$。每題的「常數」段會再列出該題用到的值。
 
 ## CH1：微電子學導論
 
@@ -43,9 +46,26 @@ excerpt: Today's microprocessors contain about 100 million transistors in a chip
 > 現代微處理器在約 3 cm × 3 cm 的晶片上有一億顆電晶體。若沒有積體電路，改用一億顆分立電晶體來做，每顆佔 3 mm × 3 mm × 3 mm 的體積，處理器最小體積是多少？還會有什麼問題？
 > :en[Today's microprocessors contain about 100 million transistors in a chip area of approximately 3 cm × 3 cm. Suppose integrated circuits were not invented and we attempted to build a processor using 100 million discrete transistors. If each device occupies a volume of 3 mm × 3 mm × 3 mm, determine the minimum volume for the processor. What other issues would arise in such an implementation?]
 
-**解題思路**：純粹是數量級估算：單顆體積乘上顆數，再把立方公厘換成公尺看結果有多荒謬。第二問是定性題，從體積推到導線長度、速度、成本、重量。
+:::tip{collapsible open title="答案與詳解"}
+**答案**：體積至少 $2.7\ \text{m}^3$，相當於邊長約 $1.4\ \text{m}$ 的立方體，而且還沒算導線。其他問題：訊號要走長達 $1.4\ \text{m}$ 的導線，速度極慢；若每顆 1 分錢、1 克，一台要一百萬美元、重 100 噸。
 
-**計算過程**：
+**核心觀念**：這是數量級估算。總體積是單顆體積乘上顆數，題目給的 3 cm 晶片尺寸只是對照，計算用不到。
+
+**公式**：
+
+- $V_{min} = N a^3$：$N$ 是電晶體顆數、$a$ 是單顆邊長。前提是緊密堆疊、不留導線空間，所以算出來的是下界
+- $\ell = \sqrt[3]{V_{min}}$：相同體積的立方體邊長
+- 成本 $= N\times$ 單價，重量 $= N\times$ 單顆質量
+- 檢查用：每邊顆數 $= \sqrt[3]{N}$，邊長 $= \sqrt[3]{N}\,a$
+
+**常數**：
+
+- 物理常數：無
+- 題目給定：$N = 10^8$、$a = 3\ \text{mm}$
+- 講義假設：每顆 1 分錢（0.01 美元）、1 克
+- 換算：$1\ \text{m}^3 = 10^9\ \text{mm}^3$、$1\ \text{噸} = 10^6\ \text{g}$
+
+**計算**：先乘出總體積，用 $1\ \text{m}^3 = 10^9\ \text{mm}^3$ 換單位，再開立方換成邊長。
 
 $$
 \begin{aligned}
@@ -54,9 +74,18 @@ V_{min} &= (3\ \text{mm})^3\times10^8 = 27\ \text{mm}^3\times10^8 = 2.7\times10^
 \end{aligned}
 $$
 
-**答案與陷阱**：至少是邊長 1.4 m 的立方體，而且這還沒算導線。其他問題：導線長達 1.4 m 讓訊號極慢；每顆 1 分錢、1 克，一台要一百萬美元、重 100 噸。陷阱在單位換算：$1\ \text{m}^3 = 10^9\ \text{mm}^3$，不是 $10^6$。
+**檢查**：改從一條邊算。每邊要排 $\sqrt[3]{10^8} \approx 464$ 顆，$464\times3\ \text{mm} \approx 1.39\ \text{m}$，和開立方的 $1.4\ \text{m}$ 一致。
 
-**延伸練習（第 20 頁 Exercise）**：若每顆電晶體耗 10 µW，整台耗多少功率？$10\ \mu\text{W}\times10^8 = 1000\ \text{W} = 1\ \text{kW}$。
+**總結**：沒有積體電路，一顆處理器會是一個人高的立方體，又慢又貴又重。
+
+**陷阱**：單位換算，$1\ \text{m}^3 = 10^9\ \text{mm}^3$，不是 $10^6$。
+:::
+
+**延伸練習（第 20 頁 Exercise）**：若每顆電晶體耗 10 µW，整台耗多少功率？
+
+:::tip{collapsible open title="延伸練習答案"}
+$10\ \mu\text{W}\times10^8 = 1000\ \text{W} = 1\ \text{kW}$。
+:::
 
 ### Example 1-2：數位相機拍棋盤（第 29 頁）
 
@@ -74,11 +103,34 @@ excerpt: A digital camera is focused on a chess board. Sketch the voltage produc
 
 ![Example 1-2：(a) 相機拍到的棋盤；(b) 每個像素是光二極體加電容與放大器，由開關依序掃描；(c) 同一欄讀出的電壓是黑白交替的方波](/note-images/ec-week1-ch1/20-chessboard-example.jpeg)
 
-**解題思路**：每個像素的光二極體把亮度變成電壓，掃描電路沿一欄依序讀出，棋盤同一欄是黑白交替，所以電壓是高低交替。
+:::tip{collapsible open title="答案與詳解"}
+**答案**：方波。白格對應高電壓、黑格對應低電壓，週期等於掃描兩格的時間；一欄 8 格共 4 個週期，如投影片的圖 (c)。
 
-**計算過程**：沒有數值計算，答案是波形：白格→高電壓、黑格→低電壓，週期性方波，週期等於掃描兩格的時間。
+**核心觀念**：每個像素的光二極體把亮度變成電壓，開關再依序把同一欄的像素接到 $V_{column}$，所以空間上的黑白交替會變成時間上的高低交替。
 
-**答案與陷阱**：方波，如投影片 (c)。延伸討論：每個像素輸出是類比值，要經 ADC 數位化；一個 2500 欄的陣列可以每欄一個 ADC，或共用一個速度加倍的 ADC，實務取兩者之間。考點是「為什麼要數位化」與「ADC 共用要變快」。
+**公式**：
+
+- 這題沒有算式，用的是兩個對應：亮度對應電壓，掃描順序對應時間軸。前提是每個像素的讀出時間相同，方波才會等寬
+- 檢查用：週期數 $=$ 格數 $\div 2$
+
+**常數**：
+
+- 物理常數：無
+- 題目給定：西洋棋盤一欄 8 格，黑白相間
+
+**計算**：這題不用計算，沿著一欄依序讀出即可。以從黑格開始的一欄為例：
+
+| 讀出順序 | 第 1 格 | 第 2 格 | 第 3 格 | 第 4 格 | … |
+| --- | --- | --- | --- | --- | --- |
+| 顏色 | 黑 | 白 | 黑 | 白 | … |
+| $V_{column}$ | 低 | 高 | 低 | 高 | … |
+
+**檢查**：數週期。一個週期含一黑一白，一欄 8 格就是 4 個週期；圖 (c) 也正好有 4 個高電壓脈衝。
+
+**總結**：相機把空間上的明暗圖案，轉成時間上的電壓波形。
+
+**陷阱**：這題的考點常在圖之外。像素輸出是類比值，要經 ADC 數位化。投影片的 6.25 百萬像素陣列有 2500 欄，每欄一顆就要 2500 顆 ADC；兩欄共用一顆時，ADC 要在同樣時間內處理兩欄的像素，所以速度要加倍。極端情況是所有欄共用一顆極快的 ADC，實務上取兩者之間。
+:::
 
 ### Example 1-3：手機接收機需要多少 dB 增益（第 36–37 頁）
 
@@ -94,9 +146,24 @@ excerpt: A cellphone receives a signal level of 20 uV, but it must deliver a swi
 > 手機收到的訊號只有 20 µV，但要送給喇叭 50 mV 的擺幅。求所需的電壓增益，以分貝表示。
 > :en[A cellphone receives a signal level of 20 µV, but it must deliver a swing of 50 mV to the speaker that reproduces the voice. Calculate the required voltage gain in decibels.]
 
-**解題思路**：電壓增益的分貝定義是 $20\log_{10}$（功率才是 $10\log_{10}$）。先算倍率再取對數。
+:::tip{collapsible open title="答案與詳解"}
+**答案**：約 $68\ \text{dB}$（電壓放大 2500 倍）。
 
-**計算過程**：
+**核心觀念**：這題考電壓增益換算成分貝。先算倍率，再取對數。
+
+**公式**：
+
+- $\dfrac{v_{out}}{v_{in}}$：電壓增益的倍率
+- $A_V(\text{dB}) = 20\log_{10}\dfrac{v_{out}}{v_{in}}$：電壓比用 $20\log_{10}$，功率比才用 $10\log_{10}$
+- 檢查用：$\log_{10}(ab) = \log_{10}a + \log_{10}b$
+
+**常數**：
+
+- 物理常數：無
+- 題目給定：$v_{in} = 20\ \mu\text{V}$、$v_{out} = 50\ \text{mV}$
+- 換算：$1\ \text{mV} = 1000\ \mu\text{V}$
+
+**計算**：兩個電壓的單位不同，$50\ \text{mV} = 50000\ \mu\text{V}$，換算後相除得倍率，再代入定義。
 
 $$
 \begin{aligned}
@@ -105,9 +172,18 @@ A_V &= 20\log_{10}(2500) \approx 68\ \text{dB}.
 \end{aligned}
 $$
 
-**答案與陷阱**：約 68 dB。陷阱是用成 $10\log_{10}$ 得 34 dB。記法：電壓每 10 倍是 20 dB，2500 倍 ≈ $10^{3.4}$ → 68 dB。
+**檢查**：把倍率拆成 $2500 = 1000\times2.5$。對數把乘法變加法，1000 倍是 $60\ \text{dB}$，2.5 倍是 $20\log_{10}2.5 \approx 8\ \text{dB}$，合計 $68\ \text{dB}$，和直接計算一致。
 
-**延伸練習（第 37 頁 Exercise）**：增益改為 50 dB 時輸出擺幅是多少？$10^{\frac{50}{20}} = 316$ 倍，$20\ \mu\text{V}\times316 \approx 6.3\ \text{mV}$。
+**總結**：手機要把收到的訊號放大約 2500 倍，也就是 $68\ \text{dB}$，喇叭才推得動。
+
+**陷阱**：用成 $10\log_{10}$ 會得到 $34\ \text{dB}$，剛好少一半。
+:::
+
+**延伸練習（第 37 頁 Exercise）**：增益改為 50 dB 時輸出擺幅是多少？
+
+:::tip{collapsible open title="延伸練習答案"}
+$10^{\frac{50}{20}} = 316$ 倍，$20\ \mu\text{V}\times316 \approx 6.3\ \text{mV}$。
+:::
 
 ### Example 1-4：證明開關加電阻就是 NOT 閘（第 42–43 頁）
 
@@ -125,16 +201,37 @@ excerpt: Consider the circuit shown in Fig. 1.17, where switch is controlled by 
 
 ![Example 1-4 電路：負載電阻 RL 接在 VDD 與輸出節點之間，輸出節點經開關 S1 接地，S1 由輸入 A 控制](/note-images/ec-week1-ch1/37-example-1-4-circuit.png)
 
-**解題思路**：兩種輸入各走一遍。開關閉合時輸出被短路到地；開關斷開時 $R_L$ 沒有電流、沒有壓降，輸出等於電源。
+:::tip{collapsible open title="答案與詳解"}
+**答案**：得證。$A$ 為高時 $V_{out} = 0$（低），$A$ 為低時 $V_{out} = V_{DD}$（高），輸出永遠和輸入相反，這就是 NOT 函數。
 
-**計算過程**：
+**核心觀念**：輸入只有高、低兩種狀態，兩種都走一遍就是完整的證明。
+
+**公式**：
+
+- $V_{out} = V_{DD} - I R_L$：$R_L$ 接在 $V_{DD}$ 與輸出節點之間，$I$ 是流過 $R_L$ 的電流
+- $I = \frac{V_{DD}}{R_L}$：開關閉合、輸出接地時的電流。開關斷開時 $I = 0$
+- 檢查用：分壓 $V_{out} = V_{DD}\dfrac{R_S}{R_S + R_L}$
+- 前提是開關理想，輸出端也沒有接其他負載
+
+**常數**：
+
+- 物理常數：無
+- 理想開關：閉合時 $R_S = 0$，斷開時 $R_S \to \infty$
+- $V_{DD}$、$R_L$ 留符號，不代數字
+
+**計算**：開關閉合時，輸出節點經開關直接接地，$V_{DD}$ 全部降在 $R_L$ 上。開關斷開時，電流沒有到地的路徑，$I = 0$，$R_L$ 上沒有壓降。
 
 | 輸入 $A$ | $S_1$ | $R_L$ 的電流 | $V_{out}$ |
 | --- | --- | --- | --- |
 | 高 | 閉合 | $\frac{V_{DD}}{R_L}$ | $0$（低） |
 | 低 | 斷開 | $0$ | $V_{DD}$（高） |
 
-**答案與陷阱**：兩種輸入的輸出都相反，就是 NOT。陷阱是「開關斷開時電阻上沒電流」這一步——沒電流就沒壓降，所以輸出被電阻「拉」到 $V_{DD}$，這也是「上拉電阻」的由來。
+**檢查**：把開關換成電阻 $R_S$，用分壓寫出 $V_{out} = V_{DD}\dfrac{R_S}{R_S + R_L}$。$R_S \to 0$ 時得 $0$，$R_S \to \infty$ 時得 $V_{DD}$，和表格的兩列一致。
+
+**總結**：開關閉合就把輸出拉到地，斷開時電阻把輸出拉回 $V_{DD}$，一拉一放就是反相。
+
+**陷阱**：開關斷開時輸出不是 $0$。電阻上沒有電流就沒有壓降，所以輸出等於 $V_{DD}$，這也是「上拉電阻」這個名稱的由來。
+:::
 
 ## CH2：半導體物理
 
@@ -152,21 +249,49 @@ excerpt: Determine the density of electrons in silicon at T = 300 K (room temper
 > 求矽在 $T = 300\ \text{K}$（室溫）與 $T = 600\ \text{K}$ 時的電子密度。
 > :en[Determine the density of electrons in silicon at $T = 300\ \text{K}$ (room temperature) and $T = 600\ \text{K}$.]
 
-**解題思路**：純矽的電子密度就是本質載子濃度 $n_i$，套公式 $n_i = 5.2\times10^{15}\,T^{\frac{3}{2}}\exp\!\left(-\frac{E_g}{2kT}\right)$，指數裡 $E_g$ 與 $kT$ 同用 eV。
+:::tip{collapsible open title="答案與詳解"}
+**答案**：$n_i(300\ \text{K}) = 1.08\times10^{10}\ \text{cm}^{-3}$，$n_i(600\ \text{K}) = 1.54\times10^{15}\ \text{cm}^{-3}$。
 
-**計算過程**：
+**核心觀念**：純矽的電子全部來自熱激發，所以電子密度就是本質載子濃度（intrinsic carrier concentration）$n_i$。
+
+**公式**：
+
+- $n_i = 5.2\times10^{15}\,T^{\frac{3}{2}}\exp\!\left(-\frac{E_g}{2kT}\right)\ \text{cm}^{-3}$：前提是純矽，且指數裡 $E_g$ 與 $kT$ 用同一種能量單位
+- 檢查用：$\dfrac{n_i(600)}{n_i(300)} = 2^{\frac{3}{2}}\exp\!\left(\dfrac{E_g}{2k}\left(\dfrac{1}{300} - \dfrac{1}{600}\right)\right)$
+
+**常數**：
+
+- $5.2\times10^{15}$：矽的材料係數，單位 $\text{K}^{-\frac{3}{2}}\,\text{cm}^{-3}$
+- $E_g = 1.12\ \text{eV}$：矽的能隙
+- $k = 1.38\times10^{-23}\ \text{J/K}$：波茲曼常數
+- 題目給定：$T = 300\ \text{K}$、$600\ \text{K}$
+- 換算：$1\ \text{eV} = 1.6\times10^{-19}\ \text{J}$
+
+**計算**：講義把能隙換成焦耳，所以 $k$ 也用 $1.38\times10^{-23}\ \text{J/K}$。先算兩個溫度共用的 $\frac{E_g}{2k}$，再分別代入。
 
 $$
 \begin{aligned}
 E_g &= 1.12\ \text{eV} = 1.792\times10^{-19}\ \text{J}\\
-n_i(300\ \text{K}) &= 5.2\times10^{15}\times300^{\frac{3}{2}}\exp\!\left(-\frac{1.12}{2\times8.617\times10^{-5}\times300}\right) = 1.08\times10^{10}\ \text{cm}^{-3}\\
-n_i(600\ \text{K}) &= 5.2\times10^{15}\times600^{\frac{3}{2}}\exp\!\left(-\frac{1.12}{2\times8.617\times10^{-5}\times600}\right) = 1.54\times10^{15}\ \text{cm}^{-3}.
+\frac{E_g}{2k} &= \frac{1.792\times10^{-19}\ \text{J}}{2\times1.38\times10^{-23}\ \text{J/K}} = 6493\ \text{K}\\
+n_i(300\ \text{K}) &= 5.2\times10^{15}\times300^{\frac{3}{2}}\exp\!\left(-\frac{6493}{300}\right) = 1.08\times10^{10}\ \text{cm}^{-3}\\
+n_i(600\ \text{K}) &= 5.2\times10^{15}\times600^{\frac{3}{2}}\exp\!\left(-\frac{6493}{600}\right) \approx 1.54\times10^{15}\ \text{cm}^{-3}.
 \end{aligned}
 $$
 
-**答案與陷阱**：溫度加倍，$n_i$ 增加五個數量級，因為指數項主宰。矽每 $5\times10^{22}$ 個原子只有約 $10^{10}$ 個自由電子（每 $5\times10^{12}$ 個原子才一個），室溫下仍是極差的導體。陷阱：$k$ 要用 $8.617\times10^{-5}\ \text{eV/K}$，用 J/K 會算出天文數字。
+**註記**：$1.54\times10^{15}$ 是講義的數字，按計算機是 $1.53\times10^{15}$，差在末位取位。
 
-**延伸練習（第 12 頁 Exercise）**：能隙改為 1.5 eV 的材料：$n_i(300\ \text{K}) \approx 6.8\times10^{6}\ \text{cm}^{-3}$、$n_i(600\ \text{K}) \approx 3.8\times10^{13}\ \text{cm}^{-3}$。能隙大 0.38 eV，室溫載子少了三個數量級。
+**檢查**：改算兩溫度的比值，常數 $5.2\times10^{15}$ 會消掉：$2^{\frac{3}{2}}\exp\!\left(\frac{6493}{300} - \frac{6493}{600}\right) = 2.83\times5.0\times10^{4} = 1.42\times10^{5}$，再乘 $1.08\times10^{10}$ 得 $1.53\times10^{15}$，和講義只差 0.7%。
+
+**總結**：溫度加倍，$n_i$ 增加五個數量級，因為指數項主宰；室溫下每 $5\times10^{12}$ 個矽原子才有一個自由電子，矽仍是極差的導體。
+
+**陷阱**：$E_g$ 用 eV 時 $k$ 要用 $8.617\times10^{-5}\ \text{eV/K}$，$E_g$ 用 J 時 $k$ 要用 $1.38\times10^{-23}\ \text{J/K}$，混用會算出天文數字。用 eV 這組算出 $1.06\times10^{10}$，差 2%，因為指數對常數的取位很敏感，考試寫 $1.08\times10^{10}$。
+:::
+
+**延伸練習（第 12 頁 Exercise）**：能隙改為 1.5 eV 的材料，重算兩個溫度的 $n_i$。
+
+:::tip{collapsible open title="延伸練習答案"}
+$E_g = 2.4\times10^{-19}\ \text{J}$，$\frac{E_g}{2k} = 8696\ \text{K}$，得 $n_i(300\ \text{K}) \approx 7.0\times10^{6}\ \text{cm}^{-3}$、$n_i(600\ \text{K}) \approx 3.9\times10^{13}\ \text{cm}^{-3}$。能隙大 0.38 eV，室溫載子少了三個數量級。
+:::
 
 ### Example 2-3：磷摻雜後的電子與電洞密度（第 19 頁）
 
@@ -182,9 +307,22 @@ excerpt: A piece of crystalline silicon is doped uniformly with phosphorus atoms
 > 一片矽均勻摻雜磷，摻雜濃度 $10^{16}\ \text{cm}^{-3}$。求室溫下的電子與電洞密度。
 > :en[A piece of crystalline silicon is doped uniformly with phosphorus atoms. The doping density is $10^{16}\ \text{electrons/cm}^3$. Determine the electron and hole densities in this material at room temperature.]
 
-**解題思路**：磷是施體，$N_D \gg n_i$ 時多數載子 $n \approx N_D$；少數載子用質量作用定律 $np = n_i^2$。
+:::tip{collapsible open title="答案與詳解"}
+**答案**：電子 $n \approx 10^{16}\ \text{cm}^{-3}$，電洞 $p \approx 1.17\times10^{4}\ \text{cm}^{-3}$。
 
-**計算過程**：
+**核心觀念**：磷是施體（donor），每顆提供一個自由電子，電子成為多數載子；電洞被質量作用定律壓低，成為少數載子。
+
+**公式**：
+
+- $n \approx N_D$：前提是 $N_D \gg n_i$，這題 $10^{16} \gg 1.08\times10^{10}$ 成立
+- $np = n_i^2$：前提是熱平衡
+
+**常數**：
+
+- $n_i = 1.08\times10^{10}\ \text{cm}^{-3}$：矽在 300 K 的本質載子濃度，考卷不給
+- 題目給定：$N_D = 10^{16}\ \text{cm}^{-3}$
+
+**計算**：多數載子直接等於摻雜濃度，少數載子由 $np = n_i^2$ 反解。
 
 $$
 \begin{aligned}
@@ -193,7 +331,12 @@ p &\approx \frac{n_i^2}{N_D} = \frac{(1.08\times10^{10})^2}{10^{16}} = 1.17\time
 \end{aligned}
 $$
 
-**答案與陷阱**：電子 $10^{16}$、電洞 $1.17\times10^4$，差 12 個數量級，這就是「多數／少數載子」名稱的由來。陷阱：忘了 $n_i$ 要平方。
+**檢查**：兩數相乘 $10^{16}\times1.17\times10^{4} = 1.17\times10^{20}$，開根號得 $1.08\times10^{10} = n_i$，一致。
+
+**總結**：摻雜讓電子與電洞相差 12 個數量級，這就是「多數／少數載子」名稱的由來。
+
+**陷阱**：忘了 $n_i$ 要平方。
+:::
 
 ### Example 2-5：1 µm 矽條上加 1 V 的電子速度（第 21 頁）
 
@@ -209,9 +352,24 @@ excerpt: A uniform piece of n-type of silicon that is 1 um long senses a voltage
 > 一片長 1 µm 的均勻 N 型矽兩端加 1 V。求電子的速度。
 > :en[A uniform piece of n-type silicon that is 1 µm long senses a voltage of 1 V. Determine the velocity of the electrons.]
 
-**解題思路**：均勻材料的電場是電壓除以長度，漂移速度 $v = \mu_n E$。單位要統一成 cm。
+:::tip{collapsible open title="答案與詳解"}
+**答案**：$v_e = 1.35\times10^{7}\ \text{cm/s}$，穿過 1 µm 只要 7.4 ps。
 
-**計算過程**：
+**核心觀念**：電場把電子推出一個平均速度，稱為漂移速度（drift velocity），大小與電場成正比。
+
+**公式**：
+
+- $E = \frac{V}{L}$：前提是材料均勻，電場處處相同
+- $v = \mu_n E$：前提是電場不強，尚未速度飽和
+- $\Delta t = \frac{L}{v}$：穿越時間
+
+**常數**：
+
+- $\mu_n = 1350\ \text{cm}^2/(\text{V}\cdot\text{s})$：矽的電子遷移率
+- 題目給定：$V = 1\ \text{V}$、$L = 1\ \mu\text{m}$
+- 換算：$1\ \mu\text{m} = 10^{-4}\ \text{cm}$、$1\ \text{m}^2 = 10^{4}\ \text{cm}^2$
+
+**計算**：先把 1 µm 換成 $10^{-4}\ \text{cm}$ 求電場，乘遷移率得速度，再用長度除以速度得穿越時間。
 
 $$
 \begin{aligned}
@@ -221,7 +379,12 @@ v_e &= \mu_n E = 1350\ \frac{\text{cm}^2}{\text{V}\cdot\text{s}}\times10^{4}\ \f
 \end{aligned}
 $$
 
-**答案與陷阱**：$1.35\times10^7\ \text{cm/s}$，穿過 1 µm 只要 7.4 ps。陷阱：$\mu$ 用 cm 制，$E$ 就要用 V/cm；混用 V/m 會差 $10^2$。另外這個速度已經超過 $v_{sat} \approx 10^7\ \text{cm/s}$，實際上會被速度飽和壓住（Example 2-7）。
+**檢查**：改用公尺制重算：$\mu_n = 0.135\ \text{m}^2/(\text{V}\cdot\text{s})$，$E = 10^{6}\ \text{V/m}$，$v_e = 1.35\times10^{5}\ \text{m/s} = 1.35\times10^{7}\ \text{cm/s}$，一致。
+
+**總結**：1 V 加在 1 µm 上，電子只要幾皮秒就穿過去。
+
+**陷阱**：$\mu$ 用 cm 制，$E$ 就要用 V/cm；混用 V/m 會差 $10^2$。另外這個速度已經超過 $v_{sat} \approx 10^7\ \text{cm/s}$，實際上會被速度飽和壓住（Example 2-7）。
+:::
 
 ### Example 2-6：電子與電洞漂移電流相等的條件（第 24 頁）
 
@@ -237,9 +400,23 @@ excerpt: In an experiment, it is desired to obtain equal electron and hole drift
 > 實驗上希望電子與電洞的漂移電流相等。載子濃度該怎麼選？
 > :en[In an experiment, it is desired to obtain equal electron and hole drift currents. How should the carrier densities be chosen?]
 
-**解題思路**：兩種載子在同一電場下，漂移電流密度 $J = q\mu n E$，相等代表 $\mu_n n = \mu_p p$；再與 $np = n_i^2$ 聯立，兩個方程式解兩個未知數。
+:::tip{collapsible open title="答案與詳解"}
+**答案**：$p = \sqrt{\frac{\mu_n}{\mu_p}}\,n_i = 1.68\,n_i$，$n = \sqrt{\frac{\mu_p}{\mu_n}}\,n_i = 0.596\,n_i$。
 
-**計算過程**：
+**核心觀念**：兩種載子受同一電場，漂移電流相等只要「遷移率乘濃度」相等；濃度又受質量作用定律約束，兩個方程式解兩個未知數。
+
+**公式**：
+
+- $J_n = q\mu_n nE$、$J_p = q\mu_p pE$：漂移電流密度，前提是同一片材料、同一電場
+- $np = n_i^2$：前提是熱平衡
+
+**常數**：
+
+- $\mu_n = 1350$、$\mu_p = 480\ \text{cm}^2/(\text{V}\cdot\text{s})$：矽的電子與電洞遷移率
+- $n_i$：答案以 $n_i$ 的倍數表示，不代數字（數值是 $1.08\times10^{10}\ \text{cm}^{-3}$）
+- $q$、$E$：令兩電流相等時消掉
+
+**計算**：令兩種電流相等，$q$ 與 $E$ 消掉，得到比值 (1)；代入 (2) 解出 $p$，再回頭求 $n$。
 
 $$
 \begin{aligned}
@@ -250,7 +427,12 @@ np &= n_i^2 \qquad (2)\\
 \end{aligned}
 $$
 
-**答案與陷阱**：$p = 1.68\,n_i$、$n = 0.596\,n_i$，兩者都與 $n_i$ 同數量級，所以只有極輕摻雜的材料才做得到。陷阱：電子跑得快（$\mu_n$ 大），要電流相等反而要「電洞比較多」，方向別弄反。
+**檢查**：這題沒有單一數值，改把解代回兩個條件：$1350\times0.596 \approx 805$ 與 $480\times1.68 \approx 806$，電流相等；$0.596\times1.68 \approx 1.00$，$np = n_i^2$ 也成立。
+
+**總結**：兩者都與 $n_i$ 同數量級，所以只有極輕摻雜的材料才做得到。
+
+**陷阱**：電子跑得快（$\mu_n$ 大），要電流相等反而要「電洞比較多」，方向別弄反。
+:::
 
 ### Example 2-7：速度飽和下的有效遷移率（第 27–28 頁）
 
@@ -266,9 +448,25 @@ excerpt: A uniform piece of semiconductor 0.2 um long sustains a voltage of 1 V.
 > 一片長 0.2 µm 的半導體兩端加 1 V。低場遷移率 $1350\ \text{cm}^2/(\text{V}\cdot\text{s})$、飽和速度 $10^7\ \text{cm/s}$。求有效遷移率；再求讓有效遷移率只比 $\mu_0$ 低 10% 的最大電壓。
 > :en[A uniform piece of semiconductor 0.2 µm long sustains a voltage of 1 V. If the low-field mobility is equal to $1350\ \text{cm}^2/(\text{V}\cdot\text{s})$ and the saturation velocity of the carriers is $10^7\ \text{cm/s}$, determine the effective mobility. Also, calculate the maximum allowable voltage such that the effective mobility is only 10% lower than $\mu_0$.]
 
-**解題思路**：速度飽和模型 $v = \frac{\mu_0}{1 + \frac{\mu_0 E}{v_{sat}}}E$，分母那一項就是「有效遷移率縮小的倍數」。第二問反過來：要 $\mu = 0.9\mu_0$，解出 $E$，再乘長度得電壓。
+:::tip{collapsible open title="答案與詳解"}
+**答案**：有效遷移率 $\mu = 174\ \text{cm}^2/(\text{V}\cdot\text{s})$，只剩原來的 13%；要維持 $0.9\mu_0$，電壓不能超過 16.5 mV。
 
-**計算過程**：
+**核心觀念**：電場夠強時速度不再隨電場增加，會趨近飽和速度（saturation velocity）$v_{sat}$，等效上遷移率變小。
+
+**公式**：
+
+- $E = \frac{V}{L}$：前提是材料均勻
+- $\mu = \dfrac{\mu_0}{1 + \frac{\mu_0 E}{v_{sat}}}$：有效遷移率
+- $v = \mu E$
+- $V = EL$：由電場換回電壓
+
+**常數**：
+
+- 物理常數：無，材料參數題目都給了
+- 題目給定：$L = 0.2\ \mu\text{m}$、$V = 1\ \text{V}$、$\mu_0 = 1350\ \text{cm}^2/(\text{V}\cdot\text{s})$、$v_{sat} = 10^7\ \text{cm/s}$、$\mu = 0.9\mu_0$（第二問）
+- 換算：$1\ \mu\text{m} = 10^{-4}\ \text{cm}$
+
+**計算**：第一問把 $E$ 代進分母；第二問反過來，令 $\mu = 0.9\mu_0$ 解出 $E$，再乘長度得電壓。
 
 $$
 \begin{aligned}
@@ -279,9 +477,18 @@ V &= EL = 823\ \text{V/cm}\times0.2\times10^{-4}\ \text{cm} = 16.5\ \text{mV}.
 \end{aligned}
 $$
 
-**答案與陷阱**：有效遷移率只剩 174（原來的 13%）；要維持 90% 以上，電壓不能超過 16.5 mV。結論：次微米元件工作電壓遠高於 16.5 mV，速度飽和是常態。陷阱：$0.9 = \frac{1}{1+x}$ 解出 $x = \frac{1}{9}$，不是 $0.1$。
+**檢查**：第一問算速度：$v = 174\times5\times10^{4} = 8.7\times10^{6}\ \text{cm/s}$，低於 $v_{sat} = 10^{7}$，合理。第二問代回：$\frac{1350}{1 + \frac{1350\times823}{10^{7}}} = 1215 = 0.9\times1350$，一致。
 
-**延伸練習（第 28 頁 Exercise）**：遷移率下降 20% 時的電壓？$0.8 = \frac{1}{1+x} \Rightarrow x = 0.25$，$E = \frac{0.25 v_{sat}}{\mu_0} = 1852\ \text{V/cm}$，$V = 1852\times0.2\times10^{-4} \approx 37\ \text{mV}$。
+**總結**：次微米元件的工作電壓遠高於 16.5 mV，速度飽和是常態。
+
+**陷阱**：$0.9 = \frac{1}{1+x}$ 解出 $x = \frac{1}{9}$，不是 $0.1$。
+:::
+
+**延伸練習（第 28 頁 Exercise）**：遷移率下降 20% 時的電壓是多少？
+
+:::tip{collapsible open title="延伸練習答案"}
+$0.8 = \frac{1}{1+x} \Rightarrow x = 0.25$，$E = \frac{0.25\,v_{sat}}{\mu_0} = 1852\ \text{V/cm}$，$V = 1852\times0.2\times10^{-4} \approx 37\ \text{mV}$。
+:::
 
 ### Example 2-8：線性濃度梯度的擴散電流（第 31 頁）
 
@@ -299,15 +506,35 @@ excerpt: Suppose the electron concentration is equal to N at x = 0 and falls lin
 
 ![Example 2-8：電子從左側注入，濃度從 x = 0 的 N 線性降到 x = L 的零](/note-images/ec-week1-ch2/21-example-2-8-linear-gradient.png)
 
-**解題思路**：Fick 定律 $J_n = qD_n\frac{dn}{dx}$，直線的導數是常數斜率 $-\frac{N}{L}$。
+:::tip{collapsible open title="答案與詳解"}
+**答案**：$J_n = -qD_n\frac{N}{L}$，是不隨 $x$ 改變的常數。
 
-**計算過程**：
+**核心觀念**：載子會從濃度高處往低處散開，電流大小只看濃度的斜率，這叫擴散電流（diffusion current）。
+
+**公式**：
+
+- $J_n = qD_n\frac{dn}{dx}$：前提是只有擴散、沒有電場；這是電子的公式，電洞的正負號相反
+- $n(x) = N\left(1 - \frac{x}{L}\right)$：題目的線性分佈
+- 檢查用：$\int_0^L \frac{dn}{dx}\,dx = n(L) - n(0)$
+
+**常數**：
+
+- $q = 1.6\times10^{-19}\ \text{C}$：電子電荷，答案留符號
+- $D_n$：電子擴散係數，答案留符號（矽的數值是 $34\ \text{cm}^2/\text{s}$）
+- 題目給定：$n(0) = N$、$n(L) = 0$
+
+**計算**：先寫出濃度的直線方程式，再微分。直線的導數是常數斜率 $-\frac{N}{L}$。
 
 $$
 n(x) = N\left(1 - \frac{x}{L}\right) \;\Rightarrow\; J_n = qD_n\frac{dn}{dx} = -qD_n\frac{N}{L}.
 $$
 
-**答案與陷阱**：電流密度是常數、不隨 $x$ 改變。負號只表示電子往 $+x$ 擴散時傳統電流方向為 $-x$（電子帶負電）。
+**檢查**：這題沒有單一數值，改做單位檢查：$\text{C}\times\frac{\text{cm}^2}{\text{s}}\times\frac{\text{cm}^{-3}}{\text{cm}} = \frac{\text{C}}{\text{s}\cdot\text{cm}^2} = \text{A/cm}^2$，正是電流密度。把 $J_n$ 從 0 積到 $L$ 得 $-qD_nN$，也等於 $qD_n[n(L) - n(0)]$。
+
+**總結**：線性濃度梯度給出處處相同的擴散電流。
+
+**陷阱**：負號只表示電子往 $+x$ 擴散時傳統電流方向為 $-x$（電子帶負電）。
+:::
 
 ### Example 2-9：指數濃度梯度的擴散電流（第 32 頁）
 
@@ -325,15 +552,35 @@ excerpt: Repeat the above example but assume an exponential gradient, n(x) = N e
 
 ![Example 2-9：濃度從 x = 0 的 N 以指數曲線衰減](/note-images/ec-week1-ch2/22-example-2-9-exponential-gradient.png)
 
-**解題思路**：一樣對 $n(x)$ 微分，指數函數的導數還是指數。
+:::tip{collapsible open title="答案與詳解"}
+**答案**：$J_n = -\frac{qD_n N}{L_d}\exp\!\left(-\frac{x}{L_d}\right)$，隨 $x$ 指數衰減，**不是常數**。
 
-**計算過程**：
+**核心觀念**：擴散電流只看每個位置的斜率。指數曲線越往右越平，所以電流也越往右越小。
+
+**公式**：
+
+- $J_n = qD_n\frac{dn}{dx}$：前提與 Example 2-8 相同
+- $\dfrac{d}{dx}\exp\!\left(-\dfrac{x}{L_d}\right) = -\dfrac{1}{L_d}\exp\!\left(-\dfrac{x}{L_d}\right)$：鏈鎖律
+- 檢查用：Example 2-8 的 $J_n = -qD_n\frac{N}{L}$，取 $L = L_d$
+
+**常數**：
+
+- $q = 1.6\times10^{-19}\ \text{C}$：電子電荷，答案留符號
+- $D_n$：電子擴散係數，答案留符號（矽的數值是 $34\ \text{cm}^2/\text{s}$）
+- 題目給定：$n(x) = N\exp\!\left(-\frac{x}{L_d}\right)$，$N$、$L_d$ 是常數
+
+**計算**：指數函數的導數還是指數，鏈鎖律帶出 $-\frac{1}{L_d}$。
 
 $$
 J_n = qD_n\frac{dn}{dx} = -\frac{qD_n N}{L_d}\exp\!\left(-\frac{x}{L_d}\right).
 $$
 
-**答案與陷阱**：電流密度隨 $x$ 指數衰減，**不是常數**。投影片這頁的結論句寫「電流沿 x 軸為常數」是沿用上一頁的筆誤，依公式它明顯隨 $x$ 變；考試若問「兩題差在哪」，答案就是這一點：線性梯度給常數電流、指數梯度給隨位置衰減的電流（多出來的載子在途中復合掉了）。
+**檢查**：這題沒有單一數值，改用切線比對：曲線在 $x = 0$ 的切線於 $x = L_d$ 碰到零，等於 Example 2-8 取 $L = L_d$，電流應為 $-\frac{qD_nN}{L_d}$；上式代 $x = 0$ 正是這個值。
+
+**總結**：線性梯度給常數電流，指數梯度給隨位置衰減的電流，因為載子在途中復合掉了。
+
+**陷阱**：投影片這頁的結論句寫「電流沿 x 軸為常數」，是沿用上一頁的筆誤，依公式它明顯隨 $x$ 變。考試若問「兩題差在哪」，答案就是這一點。
+:::
 
 ### Example 2-13：PN 接面的內建電位（第 42 頁）
 
@@ -349,15 +596,34 @@ excerpt: A silicon pn junction employs NA = 2e16 cm-3 and ND = 4e16 cm-3. Determ
 > 矽 PN 接面 $N_A = 2\times10^{16}\ \text{cm}^{-3}$、$N_D = 4\times10^{16}\ \text{cm}^{-3}$。求室溫下的內建電位。
 > :en[A silicon pn junction employs $N_A = 2\times10^{16}\ \text{cm}^{-3}$ and $N_D = 4\times10^{16}\ \text{cm}^{-3}$. Determine the built-in potential at room temperature ($T = 300\ \text{K}$).]
 
-**解題思路**：直接套 $V_0 = V_T\ln\!\left(\frac{N_A N_D}{n_i^2}\right)$，$n_i$ 用 Example 2-1 的值。
+:::tip{collapsible open title="答案與詳解"}
+**答案**：$V_0 = 768\ \text{mV}$。
 
-**計算過程**：
+**核心觀念**：接面兩側的濃度差讓載子擴散，留下的離子形成電場，平衡時這個電場對應的電位差就是內建電位（built-in potential）。
+
+**公式**：
+
+- $V_0 = V_T\ln\!\left(\frac{N_A N_D}{n_i^2}\right)$：前提是熱平衡、未外加電壓
+- 檢查用：$V_0 = V_T\ln\frac{N_A}{n_i} + V_T\ln\frac{N_D}{n_i}$
+
+**常數**：
+
+- $V_T = 26\ \text{mV}$：室溫（300 K）熱電壓，考卷不給
+- $n_i = 1.08\times10^{10}\ \text{cm}^{-3}$：矽在 300 K 的本質載子濃度，考卷不給
+- 題目給定：$N_A = 2\times10^{16}\ \text{cm}^{-3}$、$N_D = 4\times10^{16}\ \text{cm}^{-3}$
+
+**計算**：先算對數裡的比值，$\ln$ 值是 29.6，再乘 $V_T$。
 
 $$
 V_0 = (26\ \text{mV})\ln\!\left(\frac{(2\times10^{16})(4\times10^{16})}{(1.08\times10^{10})^2}\right) = (26\ \text{mV})\times29.6 = 768\ \text{mV}.
 $$
 
-**答案與陷阱**：768 mV。陷阱：分母 $n_i^2$ 忘記平方會多出 $\ln(10^{10}) \approx 23$，答案差 600 mV。
+**檢查**：把對數拆成兩側各算：$26\ \text{mV}\times\ln\frac{2\times10^{16}}{1.08\times10^{10}} = 375\ \text{mV}$，$26\ \text{mV}\times\ln\frac{4\times10^{16}}{1.08\times10^{10}} = 393\ \text{mV}$，相加 768 mV，一致。
+
+**總結**：一般摻雜的矽接面，內建電位約 0.7 到 0.8 V。
+
+**陷阱**：分母 $n_i^2$ 忘記平方會多出 $\ln(10^{10}) \approx 23$，答案差 600 mV。
+:::
 
 ### Example 2-14：摻雜增加十倍，內建電位變多少（第 43 頁）
 
@@ -373,9 +639,24 @@ excerpt: V0 is a weak function of the doping levels (NA or ND). How much does V0
 > $V_0$ 是摻雜濃度的弱函數。若 $N_A$ 或 $N_D$ 增加一個數量級，$V_0$ 改變多少？
 > :en[$V_0$ is a weak function of the doping levels ($N_A$ or $N_D$). How much does $V_0$ change if $N_A$ or $N_D$ is increased by one order of magnitude?]
 
-**解題思路**：兩個 $V_0$ 相減，對數相減變成比值的對數，其他項全部消掉。
+:::tip{collapsible open title="答案與詳解"}
+**答案**：$\Delta V_0 = V_T\ln10 \approx 60\ \text{mV}$，與原本的摻雜濃度無關。
 
-**計算過程**：
+**核心觀念**：摻雜濃度在對數裡面，乘上一個倍數只是加上一個常數，這就是「弱函數」的意思。
+
+**公式**：
+
+- $V_0 = V_T\ln\!\left(\frac{N_A N_D}{n_i^2}\right)$：前提同 Example 2-13
+- $\ln a - \ln b = \ln\frac{a}{b}$
+
+**常數**：
+
+- $V_T = 26\ \text{mV}$：室溫（300 K）熱電壓，考卷不給
+- $\ln 10 = 2.303$
+- 題目給定：$N_A$ 或 $N_D$ 增加 10 倍
+- 檢查用：Example 2-13 的接面把 $N_A$ 改成 $2\times10^{17}\ \text{cm}^{-3}$，$N_D = 4\times10^{16}\ \text{cm}^{-3}$、$n_i = 1.08\times10^{10}\ \text{cm}^{-3}$ 不變
+
+**計算**：兩個 $V_0$ 相減，對數相減變成比值的對數，其他項全部消掉。
 
 $$
 \begin{aligned}
@@ -385,7 +666,12 @@ $$
 \end{aligned}
 $$
 
-**答案與陷阱**：只增加 60 mV，與原本的摻雜濃度無關——這就是「弱函數」的意思。陷阱：$\ln$ 不是 $\log_{10}$，$V_T\log_{10}10 = 26\ \text{mV}$ 是錯的。
+**檢查**：用 Example 2-13 的接面實算：$N_A$ 改成 $2\times10^{17}$ 時 $V_0 = 828\ \text{mV}$，比 768 mV 多 60 mV，一致。
+
+**總結**：摻雜增加十倍，內建電位只多 60 mV。
+
+**陷阱**：$\ln$ 不是 $\log_{10}$，$V_T\log_{10}10 = 26\ \text{mV}$ 是錯的。
+:::
 
 ### Example 2-15：接面電容在 0 V 與 −1 V（第 47 頁）
 
@@ -401,22 +687,47 @@ excerpt: A pn junction is doped with NA = 2e16 cm-3 and ND = 9e15 cm-3. Determin
 > PN 接面 $N_A = 2\times10^{16}\ \text{cm}^{-3}$、$N_D = 9\times10^{15}\ \text{cm}^{-3}$。求 (a) $V_R = 0\ \text{V}$ 與 (b) $V_R = -1\ \text{V}$ 時的單位面積電容。
 > :en[A pn junction is doped with $N_A = 2\times10^{16}\ \text{cm}^{-3}$ and $N_D = 9\times10^{15}\ \text{cm}^{-3}$. Determine the capacitance of the device with (a) $V_R = 0\ \text{V}$ and (b) $V_R = -1\ \text{V}$.]
 
-**解題思路**：先算 $V_0$，再算零偏壓電容 $C_{j0}$，逆偏時用 $C_j = \frac{C_{j0}}{\sqrt{1 - \frac{V_R}{V_0}}}$。Razavi 的慣例是逆偏電壓取負值，所以 $V_R = -1$ 代進去分母是 $1 + \frac{1}{V_0}$。
+:::tip{collapsible open title="答案與詳解"}
+**答案**：(a) $0.265\ \text{fF}/\mu\text{m}^2$；(b) $0.172\ \text{fF}/\mu\text{m}^2$。
 
-**計算過程**：
+**核心觀念**：空乏區（depletion region）像平行板電容的介質，逆偏讓它變寬，電容就變小。
+
+**公式**：
+
+- $V_0 = V_T\ln\!\left(\frac{N_A N_D}{n_i^2}\right)$：內建電位
+- $C_{j0} = \sqrt{\frac{\varepsilon_{si} q}{2}\cdot\frac{N_A N_D}{N_A + N_D}\cdot\frac{1}{V_0}}$：零偏壓的單位面積電容
+- $C_j = \frac{C_{j0}}{\sqrt{1 - \frac{V_R}{V_0}}}$：Razavi 的慣例是逆偏電壓取負值，所以 $V_R = -1$ 代進去分母是 $1 + \frac{1}{V_0}$
+- 檢查用：$W = \frac{\varepsilon_{si}}{C_{j0}}$（平行板電容）、$W = \sqrt{\frac{2\varepsilon_{si}V_0}{q}\left(\frac{1}{N_A} + \frac{1}{N_D}\right)}$（空乏區寬度）
+
+**常數**：
+
+- $V_T = 26\ \text{mV}$：室溫（300 K）熱電壓，考卷不給
+- $n_i = 1.08\times10^{10}\ \text{cm}^{-3}$：矽在 300 K 的本質載子濃度，考卷不給
+- $q = 1.6\times10^{-19}\ \text{C}$：電子電荷
+- $\varepsilon_{si} = 11.7\times8.85\times10^{-14}\ \text{F/cm}$：矽的介電常數
+- 題目給定：$N_A = 2\times10^{16}\ \text{cm}^{-3}$、$N_D = 9\times10^{15}\ \text{cm}^{-3}$、$V_R = 0$、$-1\ \text{V}$
+- 換算：$1\ \text{F/cm}^2 = 10^{-8}\ \text{F}/\mu\text{m}^2$、$1\ \text{fF} = 10^{-15}\ \text{F}$
+
+**計算**：先算 $V_0$，代入得零偏壓電容 $C_{j0}$，換成 fF/µm²，再除以逆偏的根號項。
 
 $$
 \begin{aligned}
 V_0 &= (26\ \text{mV})\ln\!\left(\frac{(2\times10^{16})(9\times10^{15})}{(1.08\times10^{10})^2}\right) = 730\ \text{mV}\\
-C_{j0} &= \sqrt{\frac{\varepsilon_{si} q}{2}\cdot\frac{N_A N_D}{N_A + N_D}\cdot\frac{1}{V_0}}
-= \sqrt{\frac{(11.7\times8.85\times10^{-14})(1.6\times10^{-19})}{2}\cdot\frac{(2\times10^{16})(9\times10^{15})}{2.9\times10^{16}}\cdot\frac{1}{0.73}}\\
+C_{j0} &= \sqrt{\frac{(11.7\times8.85\times10^{-14})(1.6\times10^{-19})}{2}\cdot\frac{(2\times10^{16})(9\times10^{15})}{2.9\times10^{16}}\cdot\frac{1}{0.73}}\\
 &= 2.65\times10^{-8}\ \text{F/cm}^2 = 0.265\ \text{fF}/\mu\text{m}^2\\
 \text{(a)}\quad C_j(0) &= C_{j0} = 0.265\ \text{fF}/\mu\text{m}^2\\
 \text{(b)}\quad C_j(-1\ \text{V}) &= \frac{C_{j0}}{\sqrt{1 + \frac{1}{0.73}}} = \frac{0.265}{1.54} = 0.172\ \text{fF}/\mu\text{m}^2 .
 \end{aligned}
 $$
 
-**答案與陷阱**：0.265 與 0.172 fF/µm²。單位換算：$1\ \text{F/cm}^2 = 10^{-8}\ \text{F}/\mu\text{m}^2$，所以 $2.65\times10^{-8}\ \text{F/cm}^2 = 2.65\times10^{-16}\ \text{F}/\mu\text{m}^2 = 0.265\ \text{fF}/\mu\text{m}^2$。陷阱：逆偏讓空乏區變寬、電容變小，算出來比 $C_{j0}$ 大就是符號代錯。
+單位換算：$1\ \text{F/cm}^2 = 10^{-8}\ \text{F}/\mu\text{m}^2$，所以 $2.65\times10^{-8}\ \text{F/cm}^2 = 2.65\times10^{-16}\ \text{F}/\mu\text{m}^2$。
+
+**檢查**：改從空乏區寬度算：平行板電容給 $W = \frac{\varepsilon_{si}}{C_{j0}} = 0.39\ \mu\text{m}$，寬度公式 $W = \sqrt{\frac{2\varepsilon_{si}V_0}{q}\left(\frac{1}{N_A} + \frac{1}{N_D}\right)}$ 也是 $0.39\ \mu\text{m}$，一致。
+
+**總結**：逆偏 1 V 讓電容降到零偏壓的 65%，所以接面可以當電壓控制的電容。
+
+**陷阱**：逆偏讓空乏區變寬、電容變小，算出來比 $C_{j0}$ 大就是符號代錯。
+:::
 
 ### Example 2-16：用接面電容調振盪頻率（第 48–49 頁）
 
@@ -434,9 +745,25 @@ excerpt: A cellphone incorporates a 2-GHz oscillator whose frequency is defined 
 
 ![Example 2-16：LC 振盪槽，可變電容 C 由逆偏 VR 控制，與電感 L 並聯](/note-images/ec-week1-ch2/29-lc-oscillator-circuit.png)
 
-**解題思路**：共振頻率 $f_{res} = \frac{1}{2\pi\sqrt{LC}}$。三步：用 0 V 的電容與 2 GHz 反推 $L$；算 −2 V 的電容；再算新頻率。
+:::tip{collapsible open title="答案與詳解"}
+**答案**：頻率從 2 GHz 升到約 2.78 GHz，變化約 0.78 GHz。
 
-**計算過程**：
+**核心觀念**：逆偏電壓調電容、電容調頻率，這就是壓控振盪器（voltage-controlled oscillator，VCO）。
+
+**公式**：
+
+- $f_{res} = \frac{1}{2\pi\sqrt{LC}}$：LC 槽的共振頻率，前提是 $L$ 固定
+- $C_j = \frac{C_{j0}}{\sqrt{1 - \frac{V_R}{V_0}}}$：單位面積接面電容
+- $C = C_j\times A$：總電容等於單位面積電容乘面積
+- 檢查用：$L$ 固定時 $f \propto \frac{1}{\sqrt{C}}$
+
+**常數**：
+
+- 沿用 Example 2-15：$C_{j0} = 0.265\ \text{fF}/\mu\text{m}^2$、$V_0 = 0.73\ \text{V}$
+- 題目給定：$A = 2000\ \mu\text{m}^2$、$f_{res}(0\ \text{V}) = 2\ \text{GHz}$、$V_R = 0$、$-2\ \text{V}$
+- 換算：$1\ \text{GHz} = 10^{9}\ \text{Hz}$、$1\ \text{fF} = 10^{-15}\ \text{F}$、$1\ \text{nH} = 10^{-9}\ \text{H}$
+
+**計算**：三步：用 0 V 的電容與 2 GHz 反推 $L$；算 $V_R = -2\ \text{V}$ 的電容；再算新頻率。
 
 $$
 \begin{aligned}
@@ -447,7 +774,12 @@ f_{res}(-2\ \text{V}) &= \frac{1}{2\pi\sqrt{11.9\times10^{-9}\times274\times10^{
 \end{aligned}
 $$
 
-**答案與陷阱**：從 2 GHz 調到 2.78 GHz。這就是壓控振盪器（VCO）：逆偏電壓調電容、電容調頻率。陷阱：電容變小頻率要變高，算出來變低就是 $\sqrt{LC}$ 放錯位置。
+**檢查**：$L$ 固定時 $f \propto \frac{1}{\sqrt{C}}$，不用算 $L$：$2\ \text{GHz}\times\sqrt{\frac{530}{274}} = 2.78\ \text{GHz}$，一致。
+
+**總結**：逆偏 2 V 讓電容幾乎減半，頻率上調約 39%。
+
+**陷阱**：電容變小頻率要變高，算出來變低就是 $\sqrt{LC}$ 放錯位置。
+:::
 
 ### Example 2-17：二極體的飽和電流 $I_S$（第 55 頁）
 
@@ -463,18 +795,45 @@ excerpt: Determine Is for the junction of Example 2-13 at T = 300 K if A = 100 u
 > 求 Example 2-13 那個接面在 300 K 的 $I_S$，$A = 100\ \mu\text{m}^2$、$L_n = L_p = 20\ \mu\text{m}$。
 > :en[Determine $I_S$ for the junction of Example 2-13 at $T = 300\ \text{K}$ if $A = 100\ \mu\text{m}^2$, $L_n = 20\ \mu\text{m}$, and $L_p = 20\ \mu\text{m}$.]
 
-**解題思路**：套 $I_S = Aqn_i^2\left(\frac{D_n}{N_A L_n} + \frac{D_p}{N_D L_p}\right)$，全部換成 cm 制：$A = 10^{-6}\ \text{cm}^2$、$L = 2\times10^{-3}\ \text{cm}$。
+:::tip{collapsible open title="答案與詳解"}
+**答案**：$I_S = 1.77\times10^{-17}\ \text{A}$。
 
-**計算過程**：
+**核心觀念**：飽和電流（saturation current）$I_S$ 來自少數載子的擴散，$n_i^2$ 很小，所以它極小。
+
+**公式**：
+
+- $I_S = Aqn_i^2\left(\frac{D_n}{N_A L_n} + \frac{D_p}{N_D L_p}\right)$：前提是長二極體
+
+**常數**：
+
+- $q = 1.6\times10^{-19}\ \text{C}$：電子電荷
+- $n_i = 1.08\times10^{10}\ \text{cm}^{-3}$：矽在 300 K 的本質載子濃度，考卷不給
+- $D_n = 34\ \text{cm}^2/\text{s}$、$D_p = 12\ \text{cm}^2/\text{s}$：矽的電子與電洞擴散係數
+- 沿用 Example 2-13：$N_A = 2\times10^{16}\ \text{cm}^{-3}$、$N_D = 4\times10^{16}\ \text{cm}^{-3}$
+- 題目給定：$A = 100\ \mu\text{m}^2$、$L_n = L_p = 20\ \mu\text{m}$、$T = 300\ \text{K}$
+- 換算：$1\ \mu\text{m} = 10^{-4}\ \text{cm}$、$1\ \mu\text{m}^2 = 10^{-8}\ \text{cm}^2$
+
+**計算**：全部換成 cm 制：$A = 10^{-6}\ \text{cm}^2$、$L = 2\times10^{-3}\ \text{cm}$。括號外與括號內分開算，最後相乘。
 
 $$
 \begin{aligned}
-I_S &= (10^{-6})(1.6\times10^{-19})(1.08\times10^{10})^2\left(\frac{34}{(2\times10^{16})(2\times10^{-3})} + \frac{12}{(4\times10^{16})(2\times10^{-3})}\right)\\
-&= 1.87\times10^{-26}\times\left(8.5\times10^{-13} + 1.5\times10^{-13}\right)\ \text{A} \approx 1.8\times10^{-17}\ \text{A}.
+\frac{D_n}{N_A L_n} + \frac{D_p}{N_D L_p} &= \frac{34}{(2\times10^{16})(2\times10^{-3})} + \frac{12}{(4\times10^{16})(2\times10^{-3})} = 10^{-12}\ \text{cm}^{-2}\text{s}^{-1}\cdot\text{cm}^{3}\\
+I_S &= Aqn_i^2\left(\frac{D_n}{N_A L_n} + \frac{D_p}{N_D L_p}\right) = 1.77\times10^{-17}\ \text{A}\quad\text{（講義答案）}.
 \end{aligned}
 $$
 
-**答案與陷阱**：講義答案 $1.77\times10^{-17}\ \text{A}$（用講義列的常數重算約 $1.87\times10^{-17}$，差在 $n_i$、$q$ 取位，考試照講義寫 $1.77\times10^{-17}$）。重點是數量級：$I_S$ 小到 $10^{-17}$ 等級，所以 $\exp\!\left(\frac{V_D}{V_T}\right)$ 必須大到 $10^{13}$ 才能給出 mA 級的電流，這就是二極體要加到 0.7 V 左右才導通的原因。陷阱：投影片把 $q$ 印成 $1.08\times10^{-19}$，正確是 $1.6\times10^{-19}\ \text{C}$。
+**註記**：講義沒有列中間式，用它列的常數精確代入算不出 $1.77$，差 5.6%，原因不明。考試寫講義的 $1.77\times10^{-17}\ \text{A}$，Example 2-18 也接這個值。
+
+$$
+I_S = (10^{-6})(1.6\times10^{-19})(1.08\times10^{10})^2\times10^{-12}\ \text{A} = 1.87\times10^{-17}\ \text{A}
+$$
+
+**檢查**：這題只能驗量級：$Aqn_i^2 \approx 10^{-5}$，乘括號的 $10^{-12}$ 得 $10^{-17}$ 量級，和講義相同。有效數字對不上，見上方註記。
+
+**總結**：$I_S$ 小到 $10^{-17}$ 等級，所以 $\exp\!\left(\frac{V_D}{V_T}\right)$ 必須大到 $10^{13}$ 才能給出 mA 級的電流，這個接面要加到約 0.8 V。
+
+**陷阱**：投影片把 $q$ 印成 $1.08\times10^{-19}$，正確是 $1.6\times10^{-19}\ \text{C}$；$n_i^2$ 那一行也寫成未平方的 $n_i$ 值。這兩處是筆誤，不要照抄。
+:::
 
 ### Example 2-18：並聯 PN 接面的順向電流（第 60–61 頁）
 
@@ -492,18 +851,40 @@ excerpt: Each junction in Fig. 2.33 employs the doping levels described in Examp
 
 ![Example 2-18：兩個面積 A 的 PN 接面並聯，等效於一個面積 2A 的接面](/note-images/ec-week1-ch2/32-parallel-junctions-equivalence.png)
 
-**解題思路**：並聯等於面積加倍，$I_S$ 加倍；套二極體方程式。300 mV 時 $\exp\!\left(\frac{V_D}{V_T}\right)$ 只有 $10^5$ 等級，$-1$ 可忽略但電流仍是 pA；800 mV 才到 µA 級。
+:::tip{collapsible open title="答案與詳解"}
+**答案**：$V_D = 300\ \text{mV}$ 時 3.63 pA，$V_D = 800\ \text{mV}$ 時 816 µA。
 
-**計算過程**：
+**核心觀念**：兩個相同接面並聯，等於面積加倍，$I_S$ 也加倍。
+
+**公式**：
+
+- $I_D = I_S\left(\exp\frac{V_D}{V_T} - 1\right)$：二極體方程式，前提是 $T = 300\ \text{K}$
+- $I_{D,tot} = 2I_D$：兩個相同接面並聯，跨壓相同，等效 $I_S$ 加倍
+- 檢查用：60 mV 法則，電流每差 10 倍，電壓差 $V_T\ln 10 = 59.9\ \text{mV}$
+
+**常數**：
+
+- $V_T = 26\ \text{mV}$：室溫（300 K）熱電壓，考卷不給
+- 沿用 Example 2-17：$I_S = 1.77\times10^{-17}\ \text{A}$
+- 題目給定：$V_D = 300\ \text{mV}$、$800\ \text{mV}$
+
+**計算**：把 $2I_S$ 代入二極體方程式，兩個電壓各算一次。
 
 $$
 \begin{aligned}
-I_{D,tot}(300\ \text{mV}) &= 2I_S\left(\exp\frac{300}{26} - 1\right) = 2\times1.77\times10^{-17}\times(1.03\times10^{5}) = 3.63\ \text{pA}\\
-I_{D,tot}(800\ \text{mV}) &= 2\times1.77\times10^{-17}\times\left(\exp\frac{800}{26} - 1\right) = 816\ \mu\text{A}.
+I_{D,tot}(300\ \text{mV}) &= 2I_S\left(\exp\frac{300}{26} - 1\right) = 2\times1.77\times10^{-17}\times(1.026\times10^{5}) = 3.63\ \text{pA}\\
+I_{D,tot}(800\ \text{mV}) &= 2\times1.77\times10^{-17}\times\left(\exp\frac{800}{26} - 1\right) = 2\times1.77\times10^{-17}\times(2.306\times10^{13}) = 816\ \mu\text{A}.
 \end{aligned}
 $$
 
-**答案與陷阱**：3.63 pA 與 816 µA，電壓差 500 mV、電流差八個數量級。陷阱：忘記並聯要乘 2。
+**註記**：改用 Example 2-17 精確代入的 $1.87\times10^{-17}\ \text{A}$，會得 3.84 pA 與 863 µA。
+
+**檢查**：用 60 mV 法則：電壓差 500 mV 約等於 $\frac{500}{59.9} = 8.35$ 個十倍，$10^{8.35} = 2.2\times10^{8}$；$\frac{816\ \mu\text{A}}{3.63\ \text{pA}} = 2.2\times10^{8}$，一致。
+
+**總結**：電壓只差 500 mV，電流差八個數量級。
+
+**陷阱**：忘記並聯要乘 2。
+:::
 
 ### Example 2-19：電流增加十倍需要多少 $V_D$（第 62 頁）
 
@@ -519,9 +900,24 @@ excerpt: A diode operates in the forward bias region with a typical current leve
 > 二極體工作在典型順向電流（$I_D \approx I_S \exp\!\left(\frac{V_D}{V_T}\right)$）。要讓電流增加 10 倍，$V_D$ 要改變多少？
 > :en[A diode operates in the forward bias region with a typical current level, that is $I_D \approx I_S\exp\!\left(\frac{V_D}{V_T}\right)$. Suppose we wish to increase the current by a factor of 10. How much change in $V_D$ is required?]
 
-**解題思路**：把指數式反解成 $V_D = V_T\ln\frac{I_D}{I_S}$，兩個電壓相減，$I_S$ 消掉。
+:::tip{collapsible open title="答案與詳解"}
+**答案**：$\Delta V_D = V_T\ln10 \approx 60\ \text{mV}$。
 
-**計算過程**：
+**核心觀念**：電流是電壓的指數，所以電流乘一個倍數，電壓只加一個固定值。
+
+**公式**：
+
+- $I_D \approx I_S\exp\frac{V_D}{V_T}$：前提是順偏、$-1$ 可忽略
+- $V_D = V_T\ln\frac{I_D}{I_S}$：由上式反解
+- $\ln(ab) = \ln a + \ln b$
+
+**常數**：
+
+- $V_T = 26\ \text{mV}$：室溫（300 K）熱電壓，考卷不給
+- $\ln 10 = 2.303$
+- 題目給定：電流變 10 倍
+
+**計算**：寫出電流變 10 倍後的電壓，用對數性質拆開，再與原電壓相減，$I_S$ 消掉。
 
 $$
 \begin{aligned}
@@ -530,7 +926,12 @@ V_{D1} &= V_T\ln\frac{10I_D}{I_S} = V_T\ln 10 + V_T\ln\frac{I_D}{I_S} = V_T\ln10
 \end{aligned}
 $$
 
-**答案與陷阱**：約 60 mV——「60 mV 法則」。電流差 100 倍是 120 mV，差 1000 倍是 180 mV。這也是定電壓模型成立的理由：電流動好幾個數量級，電壓只動一百多 mV。
+**檢查**：代回指數式：$\exp\frac{60\ \text{mV}}{26\ \text{mV}} = \exp(2.31) \approx 10$，電流確實變 10 倍。
+
+**總結**：這就是「60 mV 法則」：電流差 100 倍是 120 mV，差 1000 倍是 180 mV，也是定電壓模型成立的理由。
+
+**陷阱**：這個結果與 $I_S$、原本的電流都無關，不要去找 $I_S$ 的數值。
+:::
 
 ### Example 2-21：指數模型 vs 定電壓模型（第 64–66 頁）
 
@@ -548,20 +949,43 @@ excerpt: Consider the following circuit. Calculate IX for VX = 3 V and VX = 1 V 
 
 ![Example 2-21 電路：VX 串聯 R1 = 1 kΩ 與二極體 D1，電流 IX，二極體跨壓 VD](/note-images/ec-week1-ch2/33-example-2-21-circuit.png)
 
-**解題思路**：KVL 給 $V_X = I_X R_1 + V_D$。指數模型下 $V_D = V_T\ln\frac{I_X}{I_S}$，兩式互相牽扯，只能疊代：先猜 $V_D$ 算 $I_X$，再用 $I_X$ 更新 $V_D$，兩輪就收斂。定電壓模型下 $V_D$ 固定，一條線性式解完。
+:::tip{collapsible open title="答案與詳解"}
+**答案**：(a) 指數模型：$V_X = 3\ \text{V}$ 時 $I_X = 2.201\ \text{mA}$，$V_X = 1\ \text{V}$ 時 $I_X = 0.258\ \text{mA}$。(b) 定電壓模型：2.2 mA 與 0.2 mA。
 
-**計算過程**：
+**核心觀念**：指數模型下電流與跨壓互相牽扯，只能疊代；定電壓模型把 $V_D$ 固定，一條線性式解完。
+
+**公式**：
+
+- $V_X = I_X R_1 + V_D$：KVL，整理成 $I_X = \frac{V_X - V_D}{R_1}$
+- $V_D = V_T\ln\frac{I_X}{I_S}$：指數模型
+- $V_D = V_{D,on}$：定電壓模型
+- 前提是二極體順偏導通
+
+**常數**：
+
+- $V_T = 26\ \text{mV}$：室溫（300 K）熱電壓，考卷不給
+- 題目給定：$R_1 = 1\ \text{k}\Omega$、$I_S = 10^{-16}\ \text{A}$、$V_{D,on} = 800\ \text{mV}$、$V_X = 3\ \text{V}$、$1\ \text{V}$
+- 迭代起點：猜 $V_D = 750\ \text{mV}$
+
+**計算**：指數模型先猜 $V_D = 750\ \text{mV}$ 算 $I_X$，再用 $I_X$ 更新 $V_D$，反覆到數字不變。定電壓模型直接代入。
 
 $$
 \begin{aligned}
 \text{(a) } V_X = 3\ \text{V}:\quad &\text{猜 } V_D = 750\ \text{mV} \Rightarrow I_X = \frac{3 - 0.75}{1\ \text{k}\Omega} = 2.25\ \text{mA}\\
-&V_D = 26\ \text{mV}\times\ln\frac{2.25\times10^{-3}}{10^{-16}} = 779\ \text{mV} \Rightarrow I_X = \frac{3 - 0.779}{1\ \text{k}\Omega} = 2.201\ \text{mA}\\
-\text{(a) } V_X = 1\ \text{V}:\quad &I_X = \frac{1 - 0.75}{1\ \text{k}\Omega} = 0.25\ \text{mA} \Rightarrow V_D = 742\ \text{mV} \Rightarrow I_X = 0.258\ \text{mA}\\
+&V_D = 26\ \text{mV}\times\ln\frac{2.25\times10^{-3}}{10^{-16}} = 799\ \text{mV} \Rightarrow I_X = \frac{3 - 0.799}{1\ \text{k}\Omega} = 2.201\ \text{mA}\\
+\text{(a) } V_X = 1\ \text{V}:\quad &I_X = \frac{1 - 0.75}{1\ \text{k}\Omega} = 0.25\ \text{mA} \Rightarrow V_D = 742\ \text{mV} \Rightarrow I_X = \frac{1 - 0.742}{1\ \text{k}\Omega} = 0.258\ \text{mA}\\
 \text{(b)}:\quad &I_X(3\ \text{V}) = \frac{3 - 0.8}{1\ \text{k}\Omega} = 2.2\ \text{mA},\qquad I_X(1\ \text{V}) = \frac{1 - 0.8}{1\ \text{k}\Omega} = 0.2\ \text{mA}.
 \end{aligned}
 $$
 
-**答案與陷阱**：指數模型 2.201／0.258 mA，定電壓模型 2.2／0.2 mA。3 V 時幾乎一樣，1 V 時差 25%（因為 $V_D$ 在 $V_X$ 裡佔的比例大，0.8 V 的假設誤差被放大）。結論：定電壓模型簡單得多，精度在電源遠大於 $V_{D,on}$ 時足夠。陷阱：疊代題要寫出「猜 → 算 → 更新」的過程，不能直接寫答案。
+**註記**：講義 1 V 這邊只疊代一輪，再算一輪是 $V_D = 743\ \text{mV}$、$I_X = 0.257\ \text{mA}$。講義第 65 頁把 3 V 那一行的 $V_D$ 印成 779 mV，但 $\ln(2.25\times10^{13}) = 30.74$，乘 26 mV 是 799 mV；它下一步 $I_X = 2.201\ \text{mA}$ 也只有 0.799 V 才對得上，所以 779 是筆誤。
+
+**檢查**：把解代回兩條式子：$26\ \text{mV}\times\ln\frac{2.201\times10^{-3}}{10^{-16}} = 799\ \text{mV}$，$0.799 + 2.201 = 3.000\ \text{V}$；$26\ \text{mV}\times\ln\frac{0.258\times10^{-3}}{10^{-16}} = 743\ \text{mV}$，$0.743 + 0.258 = 1.001\ \text{V}$，多出的 1 mV 是只疊代一輪留下的誤差。
+
+**總結**：電源遠大於 $V_{D,on}$ 時定電壓模型幾乎一樣準；1 V 時它低估約 22%，因為 $V_D$ 佔 $V_X$ 的比例大，0.8 V 的假設誤差被放大。
+
+**陷阱**：疊代題要寫出「猜 → 算 → 更新」的過程，不能直接寫答案。
+:::
 
 ## CH3：二極體模型與電路
 
@@ -581,11 +1005,33 @@ excerpt: As with other two-terminal devices, diodes can be placed in series (or 
 
 ![Example 3-1：三種 A–D1–B–D2–C 串聯接法：(a) 兩顆同向；(b) D2 反向；(c) D1 反向](/note-images/ec-week2-ch3/04-example-3-1-series-diodes.png)
 
-**解題思路**：串聯路徑上每一顆都要順偏才通。逐顆問「電流從 A 到 C 時，這顆是順向還是逆向」。
+:::tip{collapsible open title="答案與詳解"}
+**答案**：只有 (a) 能讓電流從 A 流到 C。
 
-**計算過程**：(a) 兩顆都朝 C，從 A 到 C 都順偏，導通。(b) $D_2$ 朝 B，從 A 到 C 時逆偏，不通。(c) $D_1$ 朝 A，逆偏，不通。反方向（C 到 A）三種也都不通，因為 (a) 兩顆都逆偏、(b)(c) 總有一顆逆偏。
+**核心觀念**：串聯時所有元件走同一條路，路上每一顆二極體都要順偏，電流才過得去。只要有一顆逆偏，整條路就斷了。
 
-**答案與陷阱**：只有 (a) 能讓電流從 A 流到 C。陷阱：把串聯的「有一顆擋住就不通」和並聯的「有一顆通就通」混淆。
+**公式**：
+
+- 這題不用算式，用理想二極體模型判斷：順偏等於短路，逆偏等於開路
+
+**常數**：
+
+- 物理常數：無。理想模型的導通電壓是 $0$
+
+**計算**：逐顆問「電流從 A 走到 C 時，這顆是順向還是逆向」。
+
+| 接法 | $D_1$ | $D_2$ | 結果 |
+| --- | --- | --- | --- |
+| (a) 兩顆都朝 C | 順偏 | 順偏 | 導通 |
+| (b) $D_2$ 朝 B | 順偏 | 逆偏 | 不通 |
+| (c) $D_1$ 朝 A | 逆偏 | 順偏 | 不通 |
+
+**檢查**：換方向再走一次，電流從 C 走到 A。(a) 兩顆都變逆偏；(b) $D_1$ 逆偏；(c) $D_2$ 逆偏。三種都不通，所以這三種接法中，唯一的導通路徑就是 (a) 的 A 到 C。
+
+**總結**：串聯的二極體只有全部同向才導通，而且只有一個方向通。
+
+**陷阱**：把串聯的「有一顆擋住就不通」和並聯的「有一顆通就通」混淆。
+:::
 
 ### Example 3-13：面積不同的兩顆二極體並聯分流（第 15 頁）
 
@@ -603,9 +1049,30 @@ excerpt: Assume D1 and D2 have different cross section areas but are otherwise i
 
 ![Example 3-13 電路：V1 經 R1 供電流 Iin，D1 與 D2 並聯](/note-images/ec-week2-ch3/12-example-3-13-parallel-diodes.png)
 
-**解題思路**：理想與定電壓模型都沒有「面積」這個變數，必須用指數模型。並聯跨壓相同，所以電流比等於 $I_S$ 比（也就是面積比）。
+:::tip{collapsible open title="答案與詳解"}
+**答案**：
 
-**計算過程**：
+$$
+I_{D1} = \frac{I_{in}}{1 + \frac{I_{S2}}{I_{S1}}},\qquad I_{D2} = \frac{I_{in}}{1 + \frac{I_{S1}}{I_{S2}}}
+$$
+
+電流依 $I_S$ 的比例分配，也就是依面積比例分配，面積大的分到多。
+
+**核心觀念**：理想模型與定電壓模型都沒有「面積」這個變數，所以必須用指數模型。兩顆接在相同的兩點之間，跨壓 $V_D$ 相同，電流比就等於 $I_S$ 比。
+
+**公式**：
+
+- $I_D = I_S\exp\frac{V_D}{V_T}$：前提是順偏且 $V_D \gg V_T$
+- $I_S \propto$ 截面積：前提是其餘參數相同
+- $I_{in} = I_{D1} + I_{D2}$：節點電流相加
+- 兩顆接在相同的兩點之間，跨壓都是 $V_D$
+
+**常數**：
+
+- $V_T$：相除時消掉，不必代數字
+- 題目給定：$I_{in}$、$I_{S1}$、$I_{S2}$ 都留符號
+
+**計算**：先用「跨壓相同」得到兩電流的比例，再代進節點電流式，把 $I_{D2}$ 換掉。
 
 $$
 \begin{aligned}
@@ -615,7 +1082,12 @@ I_{D1} &= \frac{I_{in}}{1 + \frac{I_{S2}}{I_{S1}}},\qquad I_{D2} = \frac{I_{in}}
 \end{aligned}
 $$
 
-**答案與陷阱**：電流依 $I_S$（面積）比例分配，面積大的分到多。陷阱：用定電壓模型會得到「兩顆各分一半」，是錯的。
+**檢查**：這題沒有單一數值，用兩個條件驗證。令 $r = \frac{I_{S2}}{I_{S1}}$，兩電流相加為 $\frac{I_{in}}{1+r} + \frac{r\,I_{in}}{1+r} = I_{in}$，符合節點電流。再取 $I_{S1} = I_{S2}$，兩式都得 $\frac{I_{in}}{2}$，相同的兩顆平分，符合直覺。
+
+**總結**：並聯時跨壓相同，電流按 $I_S$（面積）分配。
+
+**陷阱**：用定電壓模型會得到「兩顆各分一半」，這是錯的，因為模型裡沒有面積。
+:::
 
 ### Example 3-18：偏壓 1 mA 的二極體對小擾動的反應（第 19 頁）
 
@@ -631,9 +1103,24 @@ excerpt: A diode is biased at a current of 1 mA. (a) Determine the current chang
 > 二極體偏壓在 1 mA。(a) $V_D$ 改變 1 mV，電流變多少？(b) $I_D$ 改變 10%，電壓變多少？
 > :en[A diode is biased at a current of 1 mA. (a) Determine the current change if $V_D$ changes by 1 mV. (b) Determine the voltage change if $I_D$ changes by 10%.]
 
-**解題思路**：小訊號：$\Delta I_D = \frac{I_D}{V_T}\Delta V_D$，反過來 $\Delta V_D = \frac{V_T}{I_D}\Delta I_D$。兩小題是同一條線性關係的兩個方向。
+:::tip{collapsible open title="答案與詳解"}
+**答案**：(a) $\Delta I_D = 38.5\ \mu\text{A}$。(b) $\Delta V_D = 2.6\ \text{mV}$。
 
-**計算過程**：
+**核心觀念**：小訊號分析是在偏壓點對指數曲線取切線。兩小題是同一條線性關係的兩個方向，切線斜率的倒數就是小訊號電阻 $r_d$。
+
+**公式**：
+
+- $I_D = I_S\exp\frac{V_D}{V_T}$：指數模型，切線斜率是 $\frac{I_D}{V_T}$
+- $\Delta I_D = \frac{I_D}{V_T}\Delta V_D$，反過來 $\Delta V_D = \frac{V_T}{I_D}\Delta I_D$：前提是 $\Delta V_D \ll V_T$
+- $r_d = \frac{V_T}{I_D}$：小訊號電阻
+- 檢查用：$\Delta I_D = I_D\left(e^{\frac{\Delta V_D}{V_T}} - 1\right)$、$\Delta V_D = V_T\ln\!\left(1 + \frac{\Delta I_D}{I_D}\right)$
+
+**常數**：
+
+- $V_T = 26\ \text{mV}$：室溫（300 K）熱電壓，考卷不給
+- 題目給定：$I_D = 1\ \text{mA}$、$\Delta V_D = 1\ \text{mV}$、$\frac{\Delta I_D}{I_D} = 10\%$
+
+**計算**：(a) 已知電壓變動，乘切線斜率得電流變動。(b) 已知電流變動 $10\%$，也就是 $0.1\ \text{mA}$，反過來求電壓變動。
 
 $$
 \begin{aligned}
@@ -642,7 +1129,12 @@ $$
 \end{aligned}
 $$
 
-**答案與陷阱**：38.5 µA 與 2.6 mV。$\frac{V_T}{I_D} = 26\ \Omega$ 就是小訊號電阻 $r_d$。陷阱：這是線性近似，只在 $\Delta V_D \ll V_T$ 時成立。
+**檢查**：改用精確的指數式。(a) $1\ \text{mA}\times\left(e^{\frac{1}{26}} - 1\right) = 39.2\ \mu\text{A}$，和 $38.5\ \mu\text{A}$ 差 2%。(b) $26\ \text{mV}\times\ln1.1 = 2.48\ \text{mV}$，和 $2.6\ \text{mV}$ 差 5%。差距來自切線近似，10% 的電流變動已經不算很小。
+
+**總結**：偏壓 1 mA 時 $r_d = \frac{V_T}{I_D} = 26\ \Omega$，1 mV 的擾動約帶來 $38.5\ \mu\text{A}$ 的電流變化。
+
+**陷阱**：這是線性近似，只在 $\Delta V_D \ll V_T$ 時成立。
+:::
 
 ### Example 3-19：小訊號正弦加在二極體上（第 21–22 頁）
 
@@ -660,9 +1152,26 @@ excerpt: A sinusoidal signal having a peak amplitude of Vp and a DC value of V0 
 
 ![Example 3-19：(a) 直流加小正弦的輸入波形；(b) 在指數曲線的偏壓點附近，小正弦電壓對應小正弦電流](/note-images/ec-week2-ch3/17-example-3-19-small-signal-sinusoid.png)
 
-**解題思路**：方法一從指數式硬展開，用 $e^x \approx 1 + x$；方法二直接套小訊號電阻。兩者答案相同，方法二兩行就完。
+:::tip{collapsible open title="答案與詳解"}
+**答案**：交流電流也是正弦，$\Delta I_D = \frac{V_p\cos\omega t}{r_d}$，振幅 $\frac{V_p}{r_d}$，其中 $r_d = \frac{V_T}{I_0}$，$I_0 = I_S\exp\frac{V_0}{V_T}$。
 
-**計算過程**：
+**核心觀念**：把訊號分成直流與交流兩部分。直流決定偏壓電流 $I_0$ 與 $r_d$，交流只看 $r_d$，用歐姆定律就好。
+
+**公式**：
+
+- $I_D = I_S\exp\frac{V_D}{V_T}$：指數模型
+- $I_0 = I_S\exp\frac{V_0}{V_T}$：直流偏壓電流
+- $e^{a+b} = e^a e^b$
+- $e^x \approx 1 + x$：前提是 $|x| \ll 1$，這題 $x = \frac{V_p\cos\omega t}{V_T}$，所以需要 $V_p \ll V_T$
+- $r_d = \frac{V_T}{I_0}$：小訊號電阻
+- $\Delta I_D = \frac{\Delta V_D}{r_d}$：小訊號的歐姆定律
+
+**常數**：
+
+- $V_T$：答案留符號（室溫 $26\ \text{mV}$）
+- 題目給定：$V_0$、$V_p$、$\omega$、$I_S$ 都留符號
+
+**計算**：把指數拆成直流與交流兩個因子，對交流因子做一階展開。
 
 $$
 \begin{aligned}
@@ -672,7 +1181,12 @@ I_D &= I_S\exp\!\left(\frac{V_0 + V_p\cos\omega t}{V_T}\right) = \underbrace{I_S
 \end{aligned}
 $$
 
-**答案與陷阱**：交流電流也是正弦，振幅 $\frac{V_p}{r_d}$。流程：先用 $V_0$ 算偏壓電流 $I_0$ 與 $r_d$，訊號部分用歐姆定律。陷阱：$V_p$ 若不遠小於 $V_T$，$e^x \approx 1 + x$ 不成立，電流會有失真。
+**檢查**：改走講義的方法二，直接用小訊號電阻。$\Delta V_D = r_d\,\Delta I_D$，所以 $\Delta I_D = \frac{\Delta V_D}{r_d} = \frac{V_p\cos\omega t}{r_d}$，和展開的結果相同。單位是 $\frac{\text{V}}{\Omega} = \text{A}$，也對。
+
+**總結**：先用 $V_0$ 算 $I_0$ 與 $r_d$，訊號部分用歐姆定律，兩行就算完。
+
+**陷阱**：$V_p$ 若不遠小於 $V_T$，$e^x \approx 1 + x$ 不成立，電流會失真。
+:::
 
 ### Example 3-27：半波整流器要多大的濾波電容（第 31 頁）
 
@@ -690,18 +1204,43 @@ excerpt: A transformer converts the 110-V, 60-Hz line voltage to a peak-to-peak 
 
 ![半波整流器加濾波電容與負載電阻：D1 導通時 C1 充電，截止時 C1 向 RL 放電形成漣波](/note-images/ec-week2-ch3/23-diode-capacitor-load-resistor-ripple.png)
 
-**解題思路**：漣波公式 $V_R \approx \frac{I_L}{C_1 f_{in}}$，負載電流用 $\frac{V_p - V_{D,on}}{R_L}$。峰對峰 9 V 的峰值是 4.5 V。
+:::tip{collapsible open title="答案與詳解"}
+**答案**：$C_1 \approx 1.417\ \text{F}$。
 
-**計算過程**：
+**核心觀念**：二極體截止時，電容獨自供電給負載，電壓一路往下掉，這段下降就是漣波（ripple）。電容越大，掉得越少。
+
+**公式**：
+
+- $V_p = \frac{V_{pp}}{2}$：峰值是峰對峰值的一半
+- $I_L \approx \frac{V_p - V_{D,on}}{R_L}$：前提是負載電流近似定值
+- $V_R \approx \frac{I_L}{C_1 f_{in}}$：半波整流的漣波，前提是 $V_R \ll V_p$，放電時間近似一整個週期
+- $C_1 \approx \frac{I_L}{V_R f_{in}}$：上式反解
+
+**常數**：
+
+- 物理常數：無
+- 題目給定：$V_{pp} = 9\ \text{V}$、$f_{in} = 60\ \text{Hz}$、$R_L = 0.436\ \Omega$、$V_R = 0.1\ \text{V}$、$V_{D,on} = 0.8\ \text{V}$
+
+**計算**：峰對峰 $9\ \text{V}$ 的峰值是 $4.5\ \text{V}$。先求負載電流，再解出電容。
 
 $$
 \begin{aligned}
-C_1 &\approx \frac{I_L}{V_R f_{in}} = \frac{V_p - V_{D,on}}{R_L}\cdot\frac{1}{V_R f_{in}}\\
-&= \frac{4.5 - 0.8}{0.436}\cdot\frac{1}{0.1\times60} = 8.49\ \text{A}\times\frac{1}{6\ \text{V/s}} = 1.417\ \text{F}.
+I_L &\approx \frac{V_p - V_{D,on}}{R_L} = \frac{4.5 - 0.8}{0.436} = 8.49\ \text{A}\\
+C_1 &\approx \frac{I_L}{V_R f_{in}} = \frac{8.49\ \text{A}}{0.1\ \text{V}\times60\ \text{Hz}} \approx 1.417\ \text{F}.
 \end{aligned}
 $$
 
-**答案與陷阱**：1.417 F，大到不切實際（電解電容是 µF 到 mF 等級），鋪陳全波整流與穩壓器的必要性。陷阱：峰對峰 9 V 要除以 2 才是 $V_p$。
+**註記**：$1.417\ \text{F}$ 是講義的數字，按計算機是 $1.414\ \text{F}$，差 0.2%。
+
+**檢查**：把電容代回漣波公式：$V_R = \frac{8.49}{1.417\times60} = 0.0998\ \text{V}$，不超過 $0.1\ \text{V}$，符合題目要求。單位是 $\frac{\text{A}}{\text{V}\cdot\text{Hz}} = \frac{\text{A}\cdot\text{s}}{\text{V}} = \text{F}$，也對。
+
+**總結**：半波整流要壓到 0.1 V 漣波，需要約 1.4 F 的電容，大到不切實際（電解電容是 µF 到 mF 等級），所以才需要全波整流與穩壓器。
+
+**陷阱**：
+
+- 峰對峰 $9\ \text{V}$ 要除以 2 才是 $V_p$。
+- Example 3-28 的題目直接用 $1.417\ \text{F}$，下一題要接這個值。
+:::
 
 ### Example 3-28：半波整流器的二極體峰值電流（第 32–35 頁）
 
@@ -719,9 +1258,25 @@ excerpt: Determine the peak diode current in Example 3-27 assuming VD,on ≈ 0.8
 
 ![二極體最大電流：Vout 在 t1 的斜率最大、二極體電流在此刻達到峰值 Ip](/note-images/ec-week2-ch3/27-maximum-diode-current.png)
 
-**解題思路**：二極體電流 $= C_1\frac{dV_{out}}{dt} + I_L$，在輸出斜率最大的 $t_1$ 達到峰值；推導結果 $I_p = I_L\left(1 + 2\pi\sqrt{\frac{2V_p}{V_R}}\right)$。先算 $I_L$ 與 $V_R$ 再代入。
+:::tip{collapsible open title="答案與詳解"}
+**答案**：$I_p \approx 515\ \text{A}$（講義附註：直接取 $V_R \approx 0.1\ \text{V}$ 時寫 $517\ \text{A}$）。
 
-**計算過程**：
+**核心觀念**：二極體電流同時負責兩件事，一是替電容充電，二是供應負載。電容電流 $C_1\frac{dV_{out}}{dt}$ 在導通窗的起點 $t_1$ 最大，所以尖峰出現在那一刻。
+
+**公式**：
+
+- $I_L \approx \frac{V_p - V_{D,on}}{R_L}$：負載電流
+- $V_R \approx \frac{I_L}{C_1 f_{in}}$：半波整流的漣波
+- $I_p = C_1\max\frac{dV_{out}}{dt} + I_L = I_L\left(1 + 2\pi\sqrt{\frac{2V_p}{V_R}}\right)$：前提是 $V_R \ll V_p$，推導在投影片第 32–34 頁
+- 檢查用：$\omega_{in} = 2\pi f_{in}$、$\Delta t \approx \frac{1}{\omega_{in}}\sqrt{\frac{2V_R}{V_p}}$（導通窗）、$Q = C_1 V_R$（一週期放掉的電荷）、$Q \approx \frac{1}{2}(I_p - I_L)\Delta t$（三角形面積）
+
+**常數**：
+
+- 物理常數：無
+- 沿用 Example 3-27：$V_p = 4.5\ \text{V}$、$R_L = 0.436\ \Omega$、$f_{in} = 60\ \text{Hz}$
+- 題目給定：$V_{D,on} = 0.8\ \text{V}$、$C_1 = 1.417\ \text{F}$
+
+**計算**：先算 $I_L$ 與 $V_R$，再代入尖峰公式。
 
 $$
 \begin{aligned}
@@ -731,7 +1286,15 @@ I_p &= I_L\left(1 + 2\pi\sqrt{\frac{2V_p}{V_R}}\right) = 8.49\times\left(1 + 2\p
 \end{aligned}
 $$
 
-**答案與陷阱**：515 A（取 $V_R = 0.1$ 得 517 A）。負載平均只抽 8.49 A，二極體每個週期卻要扛 500 A 以上的尖峰——漣波要求越嚴、尖峰越大。陷阱：根號裡是 $\frac{2V_p}{V_R}$，不是 $\frac{V_p}{2V_R}$。
+**檢查**：用電荷守恆。導通窗長度 $\Delta t \approx \frac{1}{\omega_{in}}\sqrt{\frac{2V_R}{V_p}} = \frac{0.2106}{377} = 0.559\ \text{ms}$。電容電流從 $I_p - I_L = 506.5\ \text{A}$ 近似線性降到 0，補回的電荷是三角形面積 $\frac{1}{2}\times506.5\times0.559\ \text{ms} = 0.1415\ \text{C}$。一週期放掉的電荷是 $C_1 V_R = 1.417\times0.0998 = 0.1414\ \text{C}$，兩者一致。
+
+**總結**：負載平均只抽 8.49 A，二極體卻要在約 0.56 ms 內扛 500 A 以上的尖峰。漣波要求越嚴，導通窗越窄，尖峰越大。
+
+**陷阱**：
+
+- 根號裡是 $\frac{2V_p}{V_R}$，不是 $\frac{V_p}{2V_R}$。
+- 講義主解是 $515\ \text{A}$，答這個值。第 35 頁附註的 $517\ \text{A}$ 重算不出來：取 $V_R = 0.1\ \text{V}$ 代入公式是 $514\ \text{A}$，$V_R$ 變大時尖峰應該變小。
+:::
 
 ### Example 3-31：設計一個全波整流器（第 41 頁）
 
@@ -749,19 +1312,45 @@ excerpt: Design a full-wave rectifier to deliver an average power of 2 W to a ce
 
 ![完整的全波（橋式）整流器：變壓器、四顆二極體、濾波電容與負載](/note-images/ec-week2-ch3/31-complete-full-wave-rectifier.png)
 
-**解題思路**：三個設計量：輸入峰值（輸出加兩顆二極體壓降）、電容（全波的漣波公式多一個 $\frac{1}{2}$）、二極體耐壓。負載電流用 $\frac{P}{V_{out}}$。
+:::tip{collapsible open title="答案與詳解"}
+**答案**：變壓器降到峰值 $5.2\ \text{V}$，電容約 $23{,}100\ \mu\text{F}$，二極體要能承受 $5.2\ \text{V}$ 的逆向電壓。
 
-**計算過程**：
+**核心觀念**：這是設計題，要決定三個量：輸入峰值、濾波電容、二極體耐壓。橋式整流每半週都由兩顆二極體串聯導通，而且電容每半個週期就補充一次電。
+
+**公式**：
+
+- $V_{in,p} = V_{out} + 2V_{D,on}$：橋式路徑上串了兩顆二極體
+- $I_L = \frac{P}{V_{out}}$：負載電流
+- $V_R = \frac{1}{2}\cdot\frac{I_L}{C_1 f_{in}}$：全波整流的漣波，前提是 $V_R \ll V_p$
+- $C_1 = \frac{1}{2}\cdot\frac{I_L}{V_R f_{in}}$：上式反解
+- 逆向耐壓 $\approx V_p$：投影片第 39 頁
+- 檢查用：$P = V_{out}I_L$
+
+**常數**：
+
+- $f_{in} = 60\ \text{Hz}$：市電頻率，這題題目沒給，沿用 Example 3-27
+- 題目給定：$P = 2\ \text{W}$、$V_{out} = 3.6\ \text{V}$、$V_R = 0.2\ \text{V}$、$V_{D,on} = 0.8\ \text{V}$
+
+**計算**：輸入峰值要多留兩顆二極體的壓降；負載電流由功率除以電壓得到；再由全波漣波公式解出電容。
 
 $$
 \begin{aligned}
 V_{in,p} &= V_{out} + 2V_{D,on} = 3.6 + 2\times0.8 = 5.2\ \text{V}\\
 I_L &= \frac{P}{V_{out}} = \frac{2\ \text{W}}{3.6\ \text{V}} = 0.556\ \text{A}\\
-V_R &= \frac{1}{2}\cdot\frac{I_L}{C_1 f_{in}} \;\Rightarrow\; C_1 = \frac{1}{2}\cdot\frac{I_L}{V_R f_{in}} = \frac{1}{2}\cdot\frac{0.556}{0.2\times60} = 23{,}100\ \mu\text{F}.
+C_1 &= \frac{1}{2}\cdot\frac{I_L}{V_R f_{in}} = \frac{1}{2}\cdot\frac{0.556}{0.2\times60} \approx 23{,}100\ \mu\text{F}.
 \end{aligned}
 $$
 
-**答案與陷阱**：變壓器降到峰值 5.2 V、電容 23,100 µF、二極體耐逆壓 5.2 V。陷阱：橋式路徑上串了兩顆二極體，壓降要算 $2V_{D,on}$；全波的漣波是半波的一半，公式多 $\frac{1}{2}$。
+**註記**：$23{,}100\ \mu\text{F}$ 是講義的取位，按計算機是 $23{,}150\ \mu\text{F}$。
+
+耐壓：投影片第 39 頁指出每顆二極體約承受一個 $V_p$ 的逆向電壓，所以取 $5.2\ \text{V}$。
+
+**檢查**：把電容代回全波漣波公式：$V_R = \frac{1}{2}\cdot\frac{0.556}{0.0231\times60} = 0.201\ \text{V}$，和題目的 $0.2\ \text{V}$ 只差取位。功率也對得上：$3.6\ \text{V}\times0.556\ \text{A} = 2.0\ \text{W}$。
+
+**總結**：把 $V_{in,p}$、$C_1$、耐壓三個量都寫出來，這題才算設計完成。
+
+**陷阱**：橋式路徑上串了兩顆二極體，壓降要算 $2V_{D,on}$；全波的漣波是半波的一半，公式多一個 $\frac{1}{2}$。
+:::
 
 ### Example 3-33：齊納穩壓器的線調整率與負載調整率（第 45–46 頁）
 
@@ -779,20 +1368,43 @@ excerpt: Vin has a nominal value of 5 V, R1 = 100 Ω, and D2 has a reverse break
 
 ![齊納穩壓器的線調整率與負載調整率：(a) Vin 經 R1 接 D1 順偏串 D2 逆偏齊納；(b) 輸入變動的小訊號分壓；(c) 負載電流變動](/note-images/ec-week2-ch3/35-line-vs-load-regulation.png)
 
-**解題思路**：兩段式：偏壓用定電壓模型算 $I_{D1}$ 與 $r_{D1}$；變動量用小訊號電阻做分壓。線調整率是 $\frac{v_{out}}{v_{in}}$ 的分壓比，負載調整率是輸出節點看到的並聯電阻。
+:::tip{collapsible open title="答案與詳解"}
+**答案**：線調整率（line regulation）$\frac{v_{out}}{v_{in}} = 0.0631$，負載調整率（load regulation）$\frac{v_{out}}{I_L} = 6.31\ \Omega$。
 
-**計算過程**：
+**核心觀念**：分兩段。先用定電壓模型算偏壓電流，得到 $D_1$ 的小訊號電阻；再把兩顆二極體換成電阻，算變動量。線調整率問輸入動多少、輸出跟著動多少，負載調整率問負載多抽電流時輸出掉多少。
+
+**公式**：
+
+- $I_{D1} = \frac{V_{in} - V_{D1,on} - V_{DZ}}{R_1}$：偏壓電流，用定電壓模型
+- $r_{D1} = \frac{V_T}{I_{D1}}$：$D_1$ 的小訊號電阻
+- 線調整率 $\frac{v_{out}}{v_{in}} = \frac{r_{D1}+r_{D2}}{r_{D1}+r_{D2}+R_1}$：分壓比
+- 負載調整率 $\frac{v_{out}}{I_L} = (r_{D1}+r_{D2})\parallel R_1$：從輸出節點看進去的電阻
+- $a\parallel b = \frac{ab}{a+b}$
+- 檢查用：$\frac{r}{r+R_1} = \frac{r\parallel R_1}{R_1}$
+- 前提是變動量小，二極體都維持導通，$D_2$ 維持崩潰
+
+**常數**：
+
+- $V_T = 26\ \text{mV}$：室溫（300 K）熱電壓，考卷不給
+- 題目給定：$V_{in} = 5\ \text{V}$、$R_1 = 100\ \Omega$、$V_{DZ} = 2.7\ \text{V}$、$r_{D2} = 5\ \Omega$、$V_{D1,on} = 0.8\ \text{V}$
+
+**計算**：$R_1$ 的跨壓是輸入扣掉兩顆二極體的壓降，由此得偏壓電流與 $r_{D1}$，再代入兩條式子。
 
 $$
 \begin{aligned}
-I_{D1} &= \frac{V_{in} - V_{D1,on} - V_{DZ}}{R_1} = \frac{5 - 0.8 - 2.7}{100} = 15\ \text{mA},\qquad
-r_{D1} = \frac{V_T}{I_{D1}} = \frac{26\ \text{mV}}{15\ \text{mA}} = 1.73\ \Omega\\
+I_{D1} &= \frac{V_{in} - V_{D1,on} - V_{DZ}}{R_1} = \frac{5 - 0.8 - 2.7}{100} = 15\ \text{mA}\\
+r_{D1} &= \frac{V_T}{I_{D1}} = \frac{26\ \text{mV}}{15\ \text{mA}} = 1.73\ \Omega\\
 \frac{v_{out}}{v_{in}} &= \frac{r_{D1} + r_{D2}}{r_{D1} + r_{D2} + R_1} = \frac{1.73 + 5}{1.73 + 5 + 100} = 0.0631\\
 \frac{v_{out}}{I_L} &= (r_{D1} + r_{D2})\parallel R_1 = \frac{6.73\times100}{6.73 + 100} = 6.31\ \Omega .
 \end{aligned}
 $$
 
-**答案與陷阱**：線調整率 0.0631（輸入動 1 V、輸出動 63 mV）；負載調整率 6.31 Ω（負載多抽 1 mA、輸出掉 6.31 mV）。陷阱：齊納的 $r_{D2}$ 是題目給的 5 Ω，不要再用 $\frac{V_T}{I}$ 算。
+**檢查**：兩個答案有固定關係：$\frac{r}{r+R_1} = \frac{r\parallel R_1}{R_1}$，其中 $r = r_{D1}+r_{D2}$。代入 $\frac{6.31\ \Omega}{100\ \Omega} = 0.0631$，和線調整率一致。
+
+**總結**：輸入動 1 V，輸出只動 63 mV；負載多抽 1 mA，輸出掉 6.31 mV。
+
+**陷阱**：齊納的 $r_{D2}$ 是題目給的 5 Ω，不要再用 $\frac{V_T}{I}$ 算。
+:::
 
 ## CH4：BJT 雙極性電晶體
 
@@ -812,9 +1424,23 @@ excerpt: In the following circuit, Q1 and Q2 are identical and operate in the ac
 
 ![Example 4-3 電路：Q1 由 V1 偏壓、Q2 由 V2 偏壓，兩顆集極共接到 V3](/note-images/ec-week4-ch4/08-example-4-3-circuit.jpeg)
 
-**解題思路**：兩顆 $I_S$ 相同，集極電流相除時消掉，只剩指數的差。
+:::tip{collapsible open title="答案與詳解"}
+**答案**：$V_1 - V_2 = 59.9\ \text{mV}$。
 
-**計算過程**：
+**核心觀念**：兩顆電晶體相同，$I_S$ 也相同，集極電流相除時 $I_S$ 消掉，只剩指數的差。
+
+**公式**：
+
+- $I_C = I_S\exp\frac{V_{BE}}{V_T}$：集極電流，前提是主動區，題目已給定
+- $\ln e^x = x$：取對數解出電壓差
+
+**常數**：
+
+- $V_T = 26\ \text{mV}$：室溫（300 K）熱電壓，考卷不給
+- $\ln 10 = 2.303$
+- 題目給定：$\frac{I_{C1}}{I_{C2}} = 10$，兩顆相同所以 $I_S$ 相同、會消掉
+
+**計算**：把兩個集極電流相除，再對兩邊取對數。
 
 $$
 \begin{aligned}
@@ -823,7 +1449,12 @@ V_1 - V_2 &= V_T\ln 10 = 26\ \text{mV}\times2.303 = 59.9\ \text{mV}.
 \end{aligned}
 $$
 
-**答案與陷阱**：59.9 mV，二極體的 60 mV 法則在 BJT 重現。
+**檢查**：反過來代回：$\exp\frac{59.9}{26} = e^{2.304} = 10.0$，電流比正好是 10。
+
+**總結**：電流差十倍，$V_{BE}$ 只差約 60 mV，二極體的 60 mV 法則在 BJT 重現。
+
+**陷阱**：$V_T\ln10$ 用的是自然對數，不要寫成 $V_T\log_{10}10 = 26\ \text{mV}$。
+:::
 
 ### Example 4-4：分立與積體電晶體的 $V_{BE}$ 差（第 15–16 頁）
 
@@ -839,9 +1470,25 @@ excerpt: Typical discrete bipolar transistors have a large area, e.g., 500 um ×
 > 分立電晶體面積約 500 µm × 500 µm，積體電晶體可小到 0.5 µm × 0.2 µm。其他參數相同，同樣集極電流下兩者的 $V_{BE}$ 差多少？
 > :en[Typical discrete bipolar transistors have a large area, e.g., 500 µm × 500 µm, whereas modern integrated devices may have an area as small as 0.5 µm × 0.2 µm. Assuming other device parameters are identical, determine the difference between the base-emitter voltage of two such transistors for equal collector currents.]
 
-**解題思路**：$I_S \propto A_E$。把 $V_{BE} = V_T\ln\frac{I_C}{I_S}$ 相減，$I_C$ 消掉，剩面積比的對數。
+:::tip{collapsible open title="答案與詳解"}
+**答案**：理論值 $V_{BE,IC} - V_{BE,dis} = 383\ \text{mV}$，積體電晶體的 $V_{BE}$ 較高。實務上因基極寬度等差異，落在 100–150 mV。
 
-**計算過程**：
+**核心觀念**：$I_S$ 與射極面積 $A_E$ 成正比。電流相同時，面積小的那顆 $I_S$ 小，需要更高的 $V_{BE}$。
+
+**公式**：
+
+- $V_{BE} = V_T\ln\frac{I_C}{I_S}$：前提是主動區
+- $I_S \propto A_E$：前提是其他參數相同
+- $\ln a - \ln b = \ln\frac{a}{b}$
+- 檢查用：60 mV 法則，$\Delta V_{BE} = 59.9\ \text{mV}\times\log_{10}\frac{A_{E1}}{A_{E2}}$
+
+**常數**：
+
+- $V_T = 26\ \text{mV}$：室溫（300 K）熱電壓，考卷不給
+- 題目給定：$A_{E1} = 500\ \mu\text{m}\times500\ \mu\text{m}$、$A_{E2} = 0.5\ \mu\text{m}\times0.2\ \mu\text{m}$
+- 實務參考值：積體電晶體 $V_{BE} \approx 800\ \text{mV}$、分立元件 $\approx 700\ \text{mV}$
+
+**計算**：把兩顆的 $V_{BE}$ 相減，$I_C$ 消掉，只剩面積比的對數。
 
 $$
 \begin{aligned}
@@ -850,7 +1497,12 @@ V_{BE,IC} - V_{BE,dis} &= V_T\ln\frac{I_C}{I_{S2}} - V_T\ln\frac{I_C}{I_{S1}} = 
 \end{aligned}
 $$
 
-**答案與陷阱**：理論 383 mV；實務因基極寬度等差異落在 100–150 mV。記住兩個數字：積體電晶體 $V_{BE} \approx 800\ \text{mV}$、分立元件 $\approx 700\ \text{mV}$。陷阱：面積小的那顆 $I_S$ 小，同樣電流要更高的 $V_{BE}$，方向別反。
+**檢查**：用 60 mV 法則估：面積比 $2.5\times10^{6}$ 是 $\log_{10} = 6.4$ 個十倍，$6.4\times59.9\ \text{mV} = 383\ \text{mV}$，一致。
+
+**總結**：面積差兩百五十萬倍，$V_{BE}$ 只差幾百 mV。實務上記兩個數字：積體電晶體 $V_{BE} \approx 800\ \text{mV}$，分立元件 $\approx 700\ \text{mV}$。
+
+**陷阱**：面積小的那顆 $I_S$ 小，同樣電流要更高的 $V_{BE}$，方向別反。
+:::
 
 ### Example 4-5：簡單偏壓級的輸出電壓（第 17 頁）
 
@@ -868,18 +1520,42 @@ excerpt: Example 4-5 Simple stage with biasing: determine the output voltage if 
 
 ![Example 4-5 電路：基極 750 mV，集極經 RL = 1 kΩ 接 3 V，輸出取集極電壓](/note-images/ec-week4-ch4/09-example-4-5-simple-stage.png)
 
-**解題思路**：指數公式算 $I_C$，KVL 算 $V_{out}$，最後確認集極高於基極（主動區）。
+:::tip{collapsible open title="答案與詳解"}
+**答案**：$V_{out} = 1.31\ \text{V}$。
 
-**計算過程**：
+**核心觀念**：先假設主動區，用指數式算 $I_C$，再用 $R_L$ 的壓降算輸出，最後回頭驗證假設。集極電流只看 $V_{BE}$，與集極電壓無關，所以它像定電流源。
+
+**公式**：
+
+- $I_C = I_S\exp\frac{V_{BE}}{V_T}$：集極電流，前提是主動區
+- $V_{out} = V_{CC} - I_C R_L$：$R_L$ 的壓降
+- 主動區判準：$V_{out} > V_B$，B–C 接面逆偏
+- 檢查用：$V_{BE} = V_T\ln\frac{I_C}{I_S}$
+
+**常數**：
+
+- $V_T = 26\ \text{mV}$：室溫（300 K）熱電壓，考卷不給
+- 題目給定：$V_B = 750\ \text{mV}$、射極接地所以 $V_{BE} = 750\ \text{mV}$、$V_{CC} = 3\ \text{V}$、$R_L = 1\ \text{k}\Omega$、$I_S = 5\times10^{-16}\ \text{A}$
+
+**計算**：基極接 $750\ \text{mV}$、射極接地，所以 $V_{BE} = 750\ \text{mV}$。代入指數式，再扣掉 $R_L$ 的壓降。
 
 $$
 \begin{aligned}
 I_C &= I_S \exp\!\left(\frac{V_{BE}}{V_T}\right) = 5\times10^{-16}\ \text{A}\times \exp\!\left(\frac{750}{26}\right) = 1.69\ \text{mA}\\
-V_{out} &= V_{CC} - I_C R_L = 3\ \text{V} - 1.69\ \text{mA}\times1\ \text{k}\Omega = 1.31\ \text{V} > 0.75\ \text{V}\ \checkmark
+V_{out} &= V_{CC} - I_C R_L = 3\ \text{V} - 1.69\ \text{mA}\times1\ \text{k}\Omega = 1.31\ \text{V}.
 \end{aligned}
 $$
 
-**答案與陷阱**：1.31 V。集極電流只看 $V_{BE}$，與集極電壓無關（定電流源）。陷阱：算完要回頭驗證主動區假設，否則公式不成立。
+$V_{out} = 1.31\ \text{V} > V_B = 0.75\ \text{V}$，B–C 接面逆偏，假設成立。
+
+**註記**：$I_C$ 多留一位是 $1.685\ \text{mA}$，此時 $V_{out} = 1.315\ \text{V}$。
+
+**檢查**：反過來由電流算電壓：$V_T\ln\frac{I_C}{I_S} = 26\ \text{mV}\times\ln\frac{1.69\times10^{-3}}{5\times10^{-16}} = 750\ \text{mV}$，回到題目的 $V_{BE}$。
+
+**總結**：$I_C$ 由 $V_{BE}$ 決定，$R_L$ 把它變成約 1.7 V 的壓降，輸出留下約 1.3 V。
+
+**陷阱**：算完要回頭驗證主動區假設，否則公式不成立。
+:::
 
 ### Example 4-6：$\beta$ 變動時三隻腳的電流範圍（第 23 頁）
 
@@ -895,9 +1571,30 @@ excerpt: A bipolar transistor having IS = 5e-16 A is biased in the forward activ
 > $I_S = 5\times10^{-16}\ \text{A}$ 的電晶體以 $V_{BE} = 750\ \text{mV}$ 偏壓在主動區。若製程使 $\beta$ 在 50 到 200 之間變動，求三隻腳電流的最小與最大值。
 > :en[A bipolar transistor having $I_S = 5\times10^{-16}\ \text{A}$ is biased in the forward active region with $V_{BE} = 750\ \text{mV}$. If the current gain varies from 50 to 200 due to manufacturing variations, calculate the minimum and maximum terminal currents of the device.]
 
-**解題思路**：$I_C$ 只看 $V_{BE}$、不含 $\beta$；$I_B = \frac{I_C}{\beta}$、$I_E = \left(1 + \frac{1}{\beta}\right)I_C$ 才跟著 $\beta$ 變。
+:::tip{collapsible open title="答案與詳解"}
+**答案**：
 
-**計算過程**：
+| 電流 | 最小 | 最大 |
+| --- | --- | --- |
+| $I_C$ | $1.685\ \text{mA}$ | $1.685\ \text{mA}$（不變） |
+| $I_B$ | $8.43\ \mu\text{A}$ | $33.7\ \mu\text{A}$ |
+| $I_E$ | $1.69\ \text{mA}$ | $1.719\ \text{mA}$ |
+
+**核心觀念**：$V_{BE}$ 已固定，$I_C$ 由指數式決定，公式裡沒有 $\beta$。$\beta$ 只影響基極要多抽多少電流。
+
+**公式**：
+
+- $I_C = I_S\exp\frac{V_{BE}}{V_T}$：集極電流，前提是主動區，題目已給定
+- $I_B = \frac{I_C}{\beta}$
+- $I_E = \left(1 + \frac{1}{\beta}\right)I_C$
+- 檢查用：$I_E = I_C + I_B$
+
+**常數**：
+
+- $V_T = 26\ \text{mV}$：室溫（300 K）熱電壓，考卷不給
+- 題目給定：$I_S = 5\times10^{-16}\ \text{A}$、$V_{BE} = 750\ \text{mV}$、$50 \le \beta \le 200$
+
+**計算**：先算不含 $\beta$ 的 $I_C$，再把 $\beta$ 的兩端代入。$\beta$ 越大，$I_B$ 與 $I_E$ 都越小。
 
 $$
 \begin{aligned}
@@ -907,7 +1604,14 @@ I_C\left(1 + \tfrac{1}{200}\right) < I_E &< I_C\left(1 + \tfrac{1}{50}\right) \;
 \end{aligned}
 $$
 
-**答案與陷阱**：$\beta$ 變四倍，$I_C$ 不動、$I_E$ 差 2%、只有 $I_B$ 差四倍。陷阱：把 $I_C = \beta I_B$ 讀成「$I_C$ 跟著 $\beta$ 跑」，那只在用電流源驅動基極時成立。
+**註記**：下限多留一位是 $1.694\ \text{mA}$。
+
+**檢查**：改用 $I_E = I_C + I_B$ 算：$1.6854 + 0.0084 = 1.694\ \text{mA} \approx 1.69\ \text{mA}$，$1.6854 + 0.0337 = 1.719\ \text{mA}$，和上面相同。
+
+**總結**：$\beta$ 變四倍，$I_C$ 不動，$I_E$ 只差約 1.5%，只有 $I_B$ 差四倍。
+
+**陷阱**：把 $I_C = \beta I_B$ 讀成「$I_C$ 跟著 $\beta$ 跑」，那只在用電流源驅動基極時成立。
+:::
 
 ### Example 4-7：驗證主動區與集極電阻上限（第 25–27 頁）
 
@@ -925,20 +1629,44 @@ excerpt: Consider the circuit shown in below, where IS,Q1 = 5e-17 A and VBE = 80
 
 ![Example 4-7：(a) 基極 VBE、集極經 RC = 500 Ω 接 VCC = 2 V；(b) VX 隨 RC 線性下降，RC = 1041 Ω 時降到 0.8 V](/note-images/ec-week4-ch4/13-example-4-7-circuit-and-vx-vs-rc.png)
 
-**解題思路**：(a) 指數公式 → $I_B$、$I_E$ → KVL 算 $V_X$ → 比較 $V_X$ 與 $V_B$。(b) $V_X$ 降到 $V_{BE}$ 就是主動區邊緣，反解 $R_C$。
+:::tip{collapsible open title="答案與詳解"}
+**答案**：(a) $I_C = 1.153\ \text{mA}$、$I_B = 11.53\ \mu\text{A}$、$I_E = 1.165\ \text{mA}$、$V_X = 1.424\ \text{V}$，在主動區。(b) $R_{C,max} = 1041\ \Omega$。
 
-**計算過程**：
+**核心觀念**：$R_C$ 越大，壓降越大，集極電壓 $V_X$ 越低。$V_X$ 降到基極電壓時，B–C 接面不再逆偏，這就是主動區的邊緣，所以 $R_C$ 有上限。
+
+**公式**：
+
+- $I_C = I_S\exp\frac{V_{BE}}{V_T}$：集極電流，前提是主動區
+- $I_B = \frac{I_C}{\beta}$、$I_E = I_C + I_B$
+- $V_X = V_{CC} - I_C R_C$：集極電壓
+- $V_{CB} = V_X - V_B \ge 0$：主動區判準
+- $R_{C,max} = \frac{V_{CC} - V_{BE}}{I_C}$：令 $V_X = V_B = V_{BE}$ 反解
+
+**常數**：
+
+- $V_T = 26\ \text{mV}$：室溫（300 K）熱電壓，考卷不給
+- 題目給定：$I_S = 5\times10^{-17}\ \text{A}$、$V_{BE} = 800\ \text{mV}$、$\beta = 100$、$R_C = 500\ \Omega$、$V_{CC} = 2\ \text{V}$
+
+**計算**：(a) 由指數式得 $I_C$，再得 $I_B$、$I_E$，用 $R_C$ 的壓降算 $V_X$，和 $V_B$ 比較。(b) 令 $V_X = V_{BE}$，反解 $R_C$。
 
 $$
 \begin{aligned}
-I_C &= 5\times10^{-17}\times\exp\frac{800}{26} = 1.153\ \text{mA},\qquad I_B = \frac{I_C}{\beta} = 11.53\ \mu\text{A},\qquad I_E = 1.165\ \text{mA}\\
+I_C &= 5\times10^{-17}\times\exp\frac{800}{26} = 1.153\ \text{mA}\\
+I_B &= \frac{I_C}{\beta} = 11.53\ \mu\text{A},\qquad I_E = I_C + I_B = 1.165\ \text{mA}\\
 V_X &= V_{CC} - I_C R_C = 2 - 1.153\ \text{mA}\times500\ \Omega = 1.424\ \text{V}\\
 V_{CB} &= V_X - V_B = 1.424 - 0.8 = 0.624\ \text{V} > 0 \;\Rightarrow\; \text{B–C 逆偏，主動區}\\
 \text{(b)}\quad R_{C,max} &= \frac{V_{CC} - V_{BE}}{I_C} = \frac{2 - 0.8}{1.153\ \text{mA}} = 1041\ \Omega .
 \end{aligned}
 $$
 
-**答案與陷阱**：(a) 1.153 mA、11.53 µA、1.165 mA、$V_X = 1.424\ \text{V}$，主動區；(b) 1041 Ω。陷阱：$R_C$ 越大集極電壓越低，不是越高。
+**註記**：$I_C$ 不先捨入時 $V_X = 1.423\ \text{V}$，差在末位。
+
+**檢查**：把 $R_C = 1041\ \Omega$ 代回：$V_X = 2 - 1.153\ \text{mA}\times1041\ \Omega = 0.800\ \text{V}$，正好等於 $V_B$，是主動區的邊緣。
+
+**總結**：$R_C = 500\ \Omega$ 時在主動區，而且還有餘裕；$R_C$ 超過 $1041\ \Omega$，電晶體就離開主動區。
+
+**陷阱**：$R_C$ 越大集極電壓越低，不是越高。
+:::
 
 ### Example 4-8：畫出四張特性曲線（第 28–29 頁）
 
@@ -956,9 +1684,8 @@ excerpt: For a bipolar transistor, IS = 5e-17 A and β = 100. Construct the IC�
 
 ![Example 4-8 的四張特性曲線：(a) IC–VBE 指數曲線；(b) IC–VCE 三條水平線；(c) IB–VBE；(d) IB–VCE](/note-images/ec-week4-ch4/15-example-4-8-four-characteristics.png)
 
-**解題思路**：取三個 $V_{BE}$ 代指數公式得三個 $I_C$，除以 $\beta$ 得 $I_B$；對 $V_{CE}$ 的兩張圖在主動區都是水平線。
-
-**計算過程**：
+:::tip{collapsible open title="答案與詳解"}
+**答案**：取三個 $V_{BE}$ 算出下表。$I_C$–$V_{BE}$ 與 $I_B$–$V_{BE}$ 是指數曲線；$I_C$–$V_{CE}$ 與 $I_B$–$V_{CE}$ 在主動區是三條水平線。
 
 | $V_{BE}$ | $I_C = I_S \exp\!\left(\frac{V_{BE}}{V_T}\right)$ | $I_B = \frac{I_C}{\beta}$ |
 | --- | --- | --- |
@@ -966,7 +1693,35 @@ excerpt: For a bipolar transistor, IS = 5e-17 A and β = 100. Construct the IC�
 | 750 mV | 169 µA | 1.69 µA |
 | 800 mV | 1.153 mA | 11.5 µA |
 
-**答案與陷阱**：每加 50 mV 電流約 6.8 倍。投影片 (c)(d) 標的 0.025 µA、0.169 µA 依公式應為 0.246 µA、1.69 µA，是排版錯誤；題目的「700 mA」也是 mV。考試照公式算。
+**核心觀念**：主動區的 $I_C$ 只看 $V_{BE}$，不看 $V_{CE}$，所以對 $V_{CE}$ 畫出來是水平線。$I_B$ 是 $I_C$ 除以定值 $\beta$，形狀完全相同，只是縮小 100 倍。
+
+**公式**：
+
+- $I_C = I_S\exp\frac{V_{BE}}{V_T}$：集極電流，前提是主動區，且不計爾利效應（Early effect）
+- $I_B = \frac{I_C}{\beta}$
+- 檢查用：$V_{BE}$ 增加 $\Delta V$ 時，電流乘上 $\exp\frac{\Delta V}{V_T}$
+
+**常數**：
+
+- $V_T = 26\ \text{mV}$：室溫（300 K）熱電壓，考卷不給
+- 題目給定：$I_S = 5\times10^{-17}\ \text{A}$、$\beta = 100$
+- 自選取點：$V_{BE} = 700$、$750$、$800\ \text{mV}$
+
+**計算**：以 $V_{BE} = 750\ \text{mV}$ 為例代入，其他兩列做法相同。
+
+$$
+\begin{aligned}
+I_C &= 5\times10^{-17}\times\exp\frac{750}{26} = 169\ \mu\text{A}\\
+I_B &= \frac{169\ \mu\text{A}}{100} = 1.69\ \mu\text{A}.
+\end{aligned}
+$$
+
+**檢查**：每加 50 mV，電流應該乘上 $\exp\frac{50}{26} = 6.84$。表中 $\frac{169}{24.6} = 6.87$、$\frac{1153}{169} = 6.82$，都吻合。
+
+**總結**：四張圖都來自同一條指數式，每加 50 mV 電流約 6.8 倍。
+
+**陷阱**：投影片 (c)(d) 標的 0.025 µA、0.169 µA 依公式應為 0.246 µA、1.69 µA，是排版錯誤；講義解答寫的「700 mA」也應為 mV。考試照公式算。
+:::
 
 ### Example 4-10：麥克風訊號的小訊號參數（第 38–39 頁）
 
@@ -984,19 +1739,43 @@ excerpt: Consider the circuit shown below, where v1 represents the signal genera
 
 ![Example 4-10：(a) 麥克風 v1 串在 800 mV 偏壓上、集極接 VCC = 1.8 V；(b) 小訊號模型 rπ 與 gm·vπ](/note-images/ec-week4-ch4/23-example-4-10-circuit-and-model.png)
 
-**解題思路**：先用大訊號模型算偏壓電流，再換算 $g_m = \frac{I_C}{V_T}$、$r_\pi = \frac{\beta}{g_m}$；訊號部分用 $\Delta I_C = g_m v_1$、$\Delta I_B = \frac{v_1}{r_\pi}$。
+:::tip{collapsible open title="答案與詳解"}
+**答案**：(a) $I_C = 6.92\ \text{mA}$、$g_m = \frac{1}{3.75\ \Omega}$、$r_\pi = 375\ \Omega$。(b) $\Delta I_C = 0.267\ \text{mA}$、$\Delta I_B = 2.67\ \mu\text{A}$。
 
-**計算過程**：
+**核心觀念**：先用大訊號模型算偏壓電流，再換算小訊號參數。跨導（transconductance）$g_m$ 是 $I_C$ 對 $V_{BE}$ 的切線斜率，$r_\pi$ 是基極看進去的小訊號電阻。
+
+**公式**：
+
+- $I_C = I_S\exp\frac{V_{BE}}{V_T}$：集極電流，前提是主動區
+- $g_m = \frac{I_C}{V_T}$：跨導
+- $r_\pi = \frac{\beta}{g_m}$
+- $\Delta I_C = g_m v_1$、$\Delta I_B = \frac{v_1}{r_\pi}$：前提是 $v_1 \ll V_T$，這題 $1\ \text{mV} \ll 26\ \text{mV}$ 成立
+- 檢查用：$\Delta I_B = \frac{\Delta I_C}{\beta}$
+
+**常數**：
+
+- $V_T = 26\ \text{mV}$：室溫（300 K）熱電壓，考卷不給
+- 題目給定：$I_S = 3\times10^{-16}\ \text{A}$、$\beta = 100$、$v_1 = 1\ \text{mV}$
+- 圖中給定：$v_1 = 0$ 時 $V_{BE} = 800\ \text{mV}$
+
+**計算**：$v_1 = 0$ 時 $V_{BE} = 800\ \text{mV}$，先得偏壓電流與小訊號參數，再代入 $1\ \text{mV}$ 的訊號。
 
 $$
 \begin{aligned}
 I_C &= 3\times10^{-16}\times\exp\frac{800}{26} = 6.92\ \text{mA}\\
 g_m &= \frac{6.92\ \text{mA}}{26\ \text{mV}} = \frac{1}{3.75\ \Omega},\qquad r_\pi = \frac{\beta}{g_m} = 100\times3.75 = 375\ \Omega\\
-\Delta I_C &= g_m v_1 = \frac{1\ \text{mV}}{3.75\ \Omega} = 0.267\ \text{mA},\qquad \Delta I_B = \frac{v_1}{r_\pi} = \frac{1\ \text{mV}}{375\ \Omega} = 2.67\ \mu\text{A}.
+\Delta I_C &= g_m v_1 = \frac{1}{3.75\ \Omega}\times1\ \text{mV} = 0.267\ \text{mA},\qquad \Delta I_B = \frac{v_1}{r_\pi} = \frac{1\ \text{mV}}{375\ \Omega} = 2.67\ \mu\text{A}.
 \end{aligned}
 $$
 
-**答案與陷阱**：$g_m = \frac{1}{3.75\ \Omega} = 267\ \text{mS}$、$r_\pi = 375\ \Omega$、$\Delta I_C = 0.267\ \text{mA}$、$\Delta I_B = 2.67\ \mu\text{A}$。核對：$\Delta I_B = \frac{\Delta I_C}{\beta}$。
+**註記**：$\frac{26}{6.92} = 3.757$，講義截成 $3.75$。四捨五入成 $3.76$ 時是 $g_m = 266\ \text{mS}$、$r_\pi = 376\ \Omega$、$\Delta I_C = 0.266\ \text{mA}$、$\Delta I_B = 2.66\ \mu\text{A}$，差 0.3%。
+
+**檢查**：改用 $\Delta I_B = \frac{\Delta I_C}{\beta} = \frac{0.267\ \text{mA}}{100} = 2.67\ \mu\text{A}$，和用 $r_\pi$ 算的相同。
+
+**總結**：1 mV 的麥克風訊號，讓集極電流變動約 0.27 mA，基極電流變動約 2.7 µA。
+
+**陷阱**：小訊號參數一定要用偏壓電流 $I_C$ 算，不是用訊號造成的 $\Delta I_C$ 算。
+:::
 
 ### Example 4-11：加上集極電阻後的電壓增益（第 40–41 頁）
 
@@ -1016,19 +1795,46 @@ excerpt: Consider the circuit shown below, where resistor Rc converts the collec
 
 ![Example 4-11 的小訊號等效電路：v1 跨在 rπ 上，受控源 gm·vπ 流過 RC，VCC 接地](/note-images/ec-week4-ch4/25-example-4-11-small-signal-circuit.png)
 
-**解題思路**：(a) 算 $V_{out} = V_{CC} - R_C I_C$，與 $V_B$ 比較。(b) $v_{out} = -R_C\,\Delta I_C = -g_m R_C v_1$。
+:::tip{collapsible open title="答案與詳解"}
+**答案**：(a) $V_{out} = 1.108\ \text{V} > 0.8\ \text{V}$，在主動區。(b) $v_{out} = -26.7\ \text{mV}$，增益 $A_V = -26.7$。
 
-**計算過程**：
+**核心觀念**：$R_C$ 把集極電流的變動轉成電壓變動。負號表示反相：基極升高，集極電流變大，$R_C$ 壓降變大，集極電壓下降。
+
+**公式**：
+
+- $I_C = I_S\exp\frac{V_{BE}}{V_T}$：集極電流，前提是主動區
+- $V_{out} = V_{CC} - R_C I_C$：集極電壓
+- 主動區判準：$V_{out} > V_B$
+- $g_m = \frac{I_C}{V_T}$：跨導
+- $v_{out} = -R_C\,\Delta I_C = -g_m R_C v_1$：前提是主動區，所以 (a) 要先驗證
+- $A_V = \frac{v_{out}}{v_1} = -g_m R_C$
+- 檢查用：$g_m R_C = \frac{I_C R_C}{V_T}$
+
+**常數**：
+
+- $V_T = 26\ \text{mV}$：室溫（300 K）熱電壓，考卷不給
+- 題目給定：$R_C = 100\ \Omega$、$V_{CC} = 1.8\ \text{V}$、$I_S = 3\times10^{-16}\ \text{A}$、$\beta = 100$、$v_1 = 1\ \text{mV}$
+- 沿用 Example 4-10：$V_{BE} = V_B = 800\ \text{mV}$、$I_C = 6.92\ \text{mA}$、$g_m = \frac{1}{3.75\ \Omega}$
+
+**計算**：偏壓電流和 Example 4-10 相同。(a) 算集極電壓，和基極比較。(b) 用 $g_m$ 把訊號換成電流，再乘 $R_C$。
 
 $$
 \begin{aligned}
-I_C &= 6.92\ \text{mA}\ (\text{同 Example 4-10})\\
 V_{out} &= 1.8 - 100\times6.92\times10^{-3} = 1.108\ \text{V} > 0.8\ \text{V} \;\Rightarrow\; \text{主動區}\\
-v_{out} &= -R_C\,g_m v_1 = -100\ \Omega\times\frac{1\ \text{mV}}{3.75\ \Omega} = -26.7\ \text{mV},\qquad A_V = \frac{-26.7\ \text{mV}}{1\ \text{mV}} = -26.7 .
+\Delta I_C &= g_m v_1 = \frac{1}{3.75\ \Omega}\times1\ \text{mV} = 0.267\ \text{mA}\\
+v_{out} &= -R_C\,\Delta I_C = -100\ \Omega\times0.267\ \text{mA} = -26.7\ \text{mV}\\
+A_V &= \frac{v_{out}}{v_1} = -26.7 .
 \end{aligned}
 $$
 
-**答案與陷阱**：增益 −26.7，負號表示反相（基極升、集極電流升、$R_C$ 壓降升、集極電壓降）。陷阱：$R_C$ 加倍成 200 Ω 時 $V_{out} = 0.416\ \text{V} < 0.8\ \text{V}$，進入飽和區，公式失效。
+**註記**：不截位時增益是 $-26.6$，來由見 Example 4-10 的註記。
+
+**檢查**：$g_m R_C = \frac{I_C R_C}{V_T}$，所以增益大小等於 $R_C$ 的直流壓降除以 $V_T$：$\frac{0.692\ \text{V}}{0.026\ \text{V}} = 26.6$，和 $26.7$ 差 0.4%，來自講義把 $3.757$ 截成 $3.75$。
+
+**總結**：1 mV 的輸入變成約 27 mV 的反相輸出，增益由 $R_C$ 的直流壓降決定。
+
+**陷阱**：$R_C$ 不能為了增益無限加大。加倍成 200 Ω 時 $V_{out} = 0.416\ \text{V} < 0.8\ \text{V}$，電晶體進入飽和區，公式失效。
+:::
 
 ### Example 4-13：有無爾利效應時所需的 $V_{BE}$（第 44 頁）
 
@@ -1044,9 +1850,23 @@ excerpt: A bipolar transistor carries a collector current of 1 mA with VCE = 2 V
 > 電晶體集極電流 1 mA、$V_{CE} = 2\ \text{V}$。分別在 $V_A = \infty$ 與 $V_A = 20\ \text{V}$ 時求所需的 $V_{BE}$，$I_S = 2\times10^{-16}\ \text{A}$。
 > :en[A bipolar transistor carries a collector current of 1 mA with $V_{CE} = 2\ \text{V}$. Determine the required base-emitter voltage if $V_A = \infty$ or $V_A = 20\ \text{V}$. Assume $I_S = 2\times10^{-16}\ \text{A}$.]
 
-**解題思路**：含爾利效應的公式 $I_C = I_S \exp\!\left(\frac{V_{BE}}{V_T}\right)\left(1 + \frac{V_{CE}}{V_A}\right)$，把修正因子移到右邊再取對數。
+:::tip{collapsible open title="答案與詳解"}
+**答案**：$V_A = \infty$ 時 $V_{BE} = 760\ \text{mV}$，$V_A = 20\ \text{V}$ 時 $V_{BE} = 758\ \text{mV}$。
 
-**計算過程**：
+**核心觀念**：爾利效應（Early effect）讓 $I_C$ 隨 $V_{CE}$ 略增。要維持同樣的 $I_C$，$V_{BE}$ 就要低一點。
+
+**公式**：
+
+- $I_C = I_S\exp\!\left(\frac{V_{BE}}{V_T}\right)\left(1 + \frac{V_{CE}}{V_A}\right)$：含爾利效應，前提是主動區
+- $V_{BE} = V_T\ln\!\left(\frac{I_C}{I_S}\cdot\frac{1}{1 + \frac{V_{CE}}{V_A}}\right)$：上式反解
+- 檢查用：兩個 $V_{BE}$ 相差 $V_T\ln\!\left(1 + \frac{V_{CE}}{V_A}\right)$
+
+**常數**：
+
+- $V_T = 26\ \text{mV}$：室溫（300 K）熱電壓，考卷不給
+- 題目給定：$I_C = 1\ \text{mA}$、$V_{CE} = 2\ \text{V}$、$I_S = 2\times10^{-16}\ \text{A}$、$V_A = \infty$、$20\ \text{V}$
+
+**計算**：把修正因子移到右邊，再取對數，分別代入兩個 $V_A$。
 
 $$
 \begin{aligned}
@@ -1056,7 +1876,12 @@ V_A = 20\ \text{V}:\quad V_{BE} &= 26\ \text{mV}\times\ln\!\left(\frac{10^{-3}}{
 \end{aligned}
 $$
 
-**答案與陷阱**：760 mV 與 758 mV，只差 2 mV——算偏壓點時爾利效應可忽略；它重要的地方在小訊號的 $r_o$（下一題）。
+**檢查**：兩式相減，$\frac{I_C}{I_S}$ 消掉，差值只剩 $V_T\ln1.1 = 26\ \text{mV}\times0.0953 = 2.5\ \text{mV}$。留一位小數是 $760.3$ 與 $757.8\ \text{mV}$，差 $2.5\ \text{mV}$，一致。
+
+**總結**：差不到 3 mV，算偏壓點時爾利效應可以忽略；它重要的地方在小訊號的 $r_o$（下一題）。
+
+**陷阱**：$V_A = \infty$ 的意思是沒有爾利效應，修正因子等於 1，不是公式失效。
+:::
 
 ### Example 4-14：含 $r_o$ 的完整小訊號模型（第 47 頁）
 
@@ -1072,17 +1897,39 @@ excerpt: A transistor is biased at a collector current of 1 mA. Determine the sm
 > 電晶體偏壓在 1 mA。若 $\beta = 100$、$V_A = 15\ \text{V}$，求小訊號模型。
 > :en[A transistor is biased at a collector current of 1 mA. Determine the small-signal model if $\beta = 100$ and $V_A = 15\ \text{V}$.]
 
-**解題思路**：三個參數都由 $I_C$ 決定：$g_m = \frac{I_C}{V_T}$、$r_\pi = \frac{\beta}{g_m}$、$r_o = \frac{V_A}{I_C}$。
+:::tip{collapsible open title="答案與詳解"}
+**答案**：$g_m = \frac{1}{26\ \Omega} = 38.5\ \text{mS}$、$r_\pi = 2.6\ \text{k}\Omega$、$r_o = 15\ \text{k}\Omega$。
 
-**計算過程**：
+**核心觀念**：完整的小訊號模型有三個參數，全部由偏壓電流 $I_C$ 決定。$r_o$ 是爾利效應在小訊號模型裡的形式，代表 $V_{CE}$ 變動時 $I_C$ 跟著變動的程度。
+
+**公式**：
+
+- $g_m = \frac{I_C}{V_T}$：跨導
+- $r_\pi = \frac{\beta}{g_m}$
+- $r_o = \frac{V_A}{I_C}$：前提是主動區，且 $V_{CE} \ll V_A$
+- 檢查用：$g_m r_\pi = \beta$、$g_m r_o = \frac{V_A}{V_T}$
+
+**常數**：
+
+- $V_T = 26\ \text{mV}$：室溫（300 K）熱電壓，考卷不給
+- 題目給定：$I_C = 1\ \text{mA}$、$\beta = 100$、$V_A = 15\ \text{V}$
+
+**計算**：三個參數分別代入 $I_C = 1\ \text{mA}$。
 
 $$
-g_m = \frac{1\ \text{mA}}{26\ \text{mV}} = \frac{1}{26\ \Omega},\qquad
-r_\pi = \frac{\beta}{g_m} = 100\times26\ \Omega = 2.6\ \text{k}\Omega,\qquad
-r_o = \frac{V_A}{I_C} = \frac{15\ \text{V}}{1\ \text{mA}} = 15\ \text{k}\Omega .
+\begin{aligned}
+g_m &= \frac{1\ \text{mA}}{26\ \text{mV}} = \frac{1}{26\ \Omega} = 38.5\ \text{mS}\\
+r_\pi &= \frac{\beta}{g_m} = 100\times26\ \Omega = 2.6\ \text{k}\Omega\\
+r_o &= \frac{V_A}{I_C} = \frac{15\ \text{V}}{1\ \text{mA}} = 15\ \text{k}\Omega .
+\end{aligned}
 $$
 
-**答案與陷阱**：$g_m = 38.5\ \text{mS}$、$r_\pi = 2.6\ \text{k}\Omega$、$r_o = 15\ \text{k}\Omega$。延伸：本質增益 $g_m r_o = \frac{V_A}{V_T} \approx 577$，與偏壓電流無關。
+**檢查**：兩條恆等式。$g_m r_\pi = \frac{2600}{26} = 100 = \beta$，對。$g_m r_o = \frac{15{,}000}{26} = 577$，而 $\frac{V_A}{V_T} = \frac{15}{0.026} = 577$，也對。
+
+**總結**：本質增益 $g_m r_o = \frac{V_A}{V_T} \approx 577$，與偏壓電流無關，是這顆電晶體增益的上限。
+
+**陷阱**：$r_\pi$ 含 $\beta$，$g_m$ 與 $r_o$ 不含。$I_C$ 加倍時三個參數都會變：$g_m$ 加倍，$r_\pi$ 與 $r_o$ 減半。
+:::
 
 ### Example 4-16：保證軟飽和的 $R_C$ 與 $V_{CC}$ 關係（第 52–53 頁）
 
@@ -1100,9 +1947,26 @@ excerpt: Determine the relation between RC and VCC that guarantees operation in 
 
 ![Example 4-16：(a) 基極 VBE、集極經 RC 接 VCC；(b) VCC 對 RC 的直線，截距 VBE − 400 mV，直線上方為可接受區域](/note-images/ec-week4-ch4/34-example-4-16-soft-saturation-region.png)
 
-**解題思路**：軟飽和判準是集極不能比基極低超過 400 mV，即 $V_{BC} \le 400\ \text{mV}$；把 $V_{CE} = V_{CC} - I_C R_C$ 代進去整理成 $V_{CC}$ 的下界。軟飽和時 $I_C$ 仍是 $I_S \exp\!\left(\frac{V_{BE}}{V_T}\right)$，是常數。
+:::tip{collapsible open title="答案與詳解"}
+**答案**：$V_{CC} \ge I_C R_C + (V_{BE} - 400\ \text{mV})$，其中 $I_C = I_S\exp\frac{V_{BE}}{V_T}$。在 $R_C$–$V_{CC}$ 平面上，下界是一條斜率 $I_C$、截距 $V_{BE} - 400\ \text{mV}$ 的直線，直線上方是可接受區域。
 
-**計算過程**：
+**核心觀念**：軟飽和（soft saturation）的判準是集極不能比基極低超過 400 mV，也就是 $V_{BC} \le 400\ \text{mV}$。在這個範圍內 B–C 接面的順偏電流還很小，$I_C$ 仍可用指數式計算。
+
+**公式**：
+
+- $V_{BC} \le 400\ \text{mV}$：軟飽和判準
+- $V_{BC} = V_{BE} - V_{CE}$
+- $V_{CE} = V_{CC} - I_C R_C$：前提是射極接地
+- $I_C = I_S\exp\frac{V_{BE}}{V_T}$：集極電流，前提是主動區（軟飽和內仍可用）
+
+**常數**：
+
+- $400\ \text{mV}$：軟飽和容許的 B–C 順偏上限
+- $V_T = 26\ \text{mV}$：出現在 $I_C$ 的指數式裡，答案留符號
+- 題目給定：$R_C$、$V_{CC}$、$V_{BE}$、$I_S$ 都留符號
+- 檢查用的代入值：$V_{BE} = 0.8\ \text{V}$、$I_C = 1\ \text{mA}$、$R_C = 1\ \text{k}\Omega$
+
+**計算**：從判準出發，把 $V_{BC}$ 換成 $V_{BE} - V_{CE}$，再把 $V_{CE}$ 代掉，整理成 $V_{CC}$ 的下界。
 
 $$
 \begin{aligned}
@@ -1112,7 +1976,84 @@ V_{CC} &\ge I_C R_C + (V_{BE} - 400\ \text{mV}).
 \end{aligned}
 $$
 
-**答案與陷阱**：$V_{CC}$ 的下界是一條直線 $V_{CC} = mR_C + b$，斜率 $m = I_C$、截距 $b = V_{BE} - 400\ \text{mV}$，直線上方是可接受區域。陷阱：這題要的是「關係式」不是數字；若題目給數值（例如 $V_{BE} = 0.8\ \text{V}$、$I_C = 1\ \text{mA}$、$R_C = 1\ \text{k}\Omega$）就代入得 $V_{CC} \ge 1.4\ \text{V}$。
+**檢查**：這題沒有單一數值，用一組數字代入邊界驗證。取 $V_{BE} = 0.8\ \text{V}$、$I_C = 1\ \text{mA}$、$R_C = 1\ \text{k}\Omega$，得 $V_{CC} \ge 1.4\ \text{V}$。代 $V_{CC} = 1.4\ \text{V}$ 回電路：$V_{CE} = 1.4 - 1 = 0.4\ \text{V}$，$V_{BC} = 0.8 - 0.4 = 0.4\ \text{V}$，正好在判準上。
+
+**總結**：$R_C$ 越大，$V_{CC}$ 的下限就要越高，兩者的邊界是一條直線。
+
+**陷阱**：這題要的是關係式，不是數字。題目給數值時才代入。
+:::
+
+## CH6：MOS 電晶體
+
+### Example 6-6：偏壓電流與小訊號放大（第 23–25 頁）
+
+{/* @ai-reference
+id: ex-6-6
+file: _references/電子學實作系列/第七週/Ch 6 - Physics of MOS Transistors.pdf
+page: 23
+status: suggested
+excerpt: Calculate the bias current. Assume mu_n Cox = 100 uA/V2 and VTH = 0.4 V. If the gate voltage increases by 10 mV, what is the change in the drain voltage?
+*/}
+<PdfRefChip file="_references/電子學實作系列/第七週/Ch 6 - Physics of MOS Transistors.pdf" page={23} status="suggested" excerpt={"Calculate the bias current. Assume mu_n Cox = 100 uA/V2 and VTH = 0.4 V. If the gate voltage increases by 10 mV, what is the change in the drain voltage?"} client:visible />
+
+> 電路中 $V_{DD} = 1.8\ \text{V}$，汲極電阻 $R_D = 5\ \text{k}\Omega$，閘極接 $1\ \text{V}$ 的電壓源，源極接地，元件 $\frac{W}{L} = \frac{2}{0.18}$。假設 $\mu_n C_{ox} = 100\ \mu\text{A/V}^2$、$V_{TH} = 0.4\ \text{V}$，求偏壓電流。若閘極電壓升高 $10\ \text{mV}$，汲極電壓變化多少？
+> :en[Calculate the bias current. Assume $\mu_n C_{ox} = 100\ \mu\text{A/V}^2$ and $V_{TH} = 0.4\ \text{V}$. If the gate voltage increases by $10\ \text{mV}$, what is the change in the drain voltage?]
+
+![Example 6-6 的電路：1.8 V 電源經 5 kΩ 汲極電阻接到 M1 的汲極 X，閘極接 1 V 電壓源，源極接地，寬長比為 2 比 0.18](/note-images/ec-week7-ch6/20-example-6-6-circuit.png)
+
+:::tip{collapsible open title="答案與詳解"}
+**答案**：偏壓電流 $I_D = 200\ \mu\text{A}$。閘極升高 $10\ \text{mV}$ 時，汲極電壓下降 $35\ \text{mV}$。
+
+**核心觀念**：工作區要先假設、再驗證。閘極直接接定電壓，$V_{GS}$ 已知，所以假設飽和區後可以直接代平方律求 $I_D$，再由 $R_D$ 的壓降求 $V_{DS}$，最後回頭驗證假設。第二問把閘極電壓換掉，重算一次工作點再相減。
+
+**公式**：
+
+- $I_D = \frac{1}{2}\mu_n C_{ox}\frac{W}{L}(V_{GS}-V_{TH})^2$：飽和區的平方律
+- $V_{DS} = V_{DD} - I_D R_D$：$R_D$ 的壓降
+- $V_{GD} = V_{GS} - V_{DS}$
+- 飽和區判準：$V_{GS} > V_{TH}$ 且 $V_{GD} < V_{TH}$
+- $\Delta V_{DS} = V_{DS}' - V_{DS}$：兩個工作點相減
+- 檢查用：$g_m = \frac{2I_D}{V_{GS}-V_{TH}}$、$|\Delta V_{DS}| \approx g_m R_D\,\Delta V_{GS}$
+
+**常數**：
+
+- 物理常數：無，製程參數題目都給了
+- 題目給定：$\mu_n C_{ox} = 100\ \mu\text{A/V}^2$、$V_{TH} = 0.4\ \text{V}$、$\frac{W}{L} = \frac{2}{0.18}$、$V_{DD} = 1.8\ \text{V}$、$R_D = 5\ \text{k}\Omega$、$V_{GS} = 1\ \text{V}$、$\Delta V_{GS} = 10\ \text{mV}$
+
+**計算**：(a) 源極接地，所以 $V_{GS}$ 就是閘極電壓 $1\ \text{V}$。假設飽和區，代入平方律，再驗證。
+
+$$
+\begin{aligned}
+I_D &= \frac{1}{2}\left(100\times10^{-6}\right)\frac{2}{0.18}(1-0.4)^2 = 200\ \mu\text{A}\\
+V_{DS} &= 1.8 - \left(200\times10^{-6}\right)\left(5\times10^{3}\right) = 0.8\ \text{V}\\
+V_{GD} &= V_{GS} - V_{DS} = 1 - 0.8 = 0.2\ \text{V} < V_{TH}
+\end{aligned}
+$$
+
+$V_{GS} = 1\ \text{V} > V_{TH}$ 且 $V_{GD} < V_{TH}$，假設成立，$M_1$ 在飽和區。
+
+(b) 閘極改成 $1.01\ \text{V}$，用同樣步驟重算。
+
+$$
+\begin{aligned}
+I_D' &= \frac{1}{2}\left(100\times10^{-6}\right)\frac{2}{0.18}(1.01-0.4)^2 = 207\ \mu\text{A}\\
+V_{DS}' &= 1.8 - \left(207\times10^{-6}\right)\left(5\times10^{3}\right) = 0.765\ \text{V}\\
+V_{GD}' &= 1.01 - 0.765 = 0.245\ \text{V} < V_{TH}\\
+\Delta V_{DS} &= 0.765 - 0.8 = -35\ \text{mV}
+\end{aligned}
+$$
+
+**註記**：$35\ \text{mV}$ 來自講義先把電流捨入成 $207\ \mu\text{A}$。下一步是兩個接近的數相減，所以捨入影響明顯：電流多留幾位是 $206.72\ \mu\text{A}$，$V_{DS}' = 0.7664\ \text{V}$，$\Delta V_{DS} = -33.6\ \text{mV}$。
+
+**檢查**：改用小訊號公式估。$g_m = \dfrac{2I_D}{V_{GS}-V_{TH}} = \dfrac{2\times200\ \mu\text{A}}{0.6\ \text{V}} = 667\ \mu\text{S}$，所以 $|\Delta V_{DS}| \approx g_m R_D\,\Delta V_{GS} = 3.33\times10\ \text{mV} = 33.3\ \text{mV}$，和講義的 $35\ \text{mV}$ 差 5%，主因是上面的電流捨入；和註記的 $33.6\ \text{mV}$ 只差 1%，這 $0.3\ \text{mV}$ 是平方律的二次項，小訊號公式只取切線，所以沒算到。
+
+**總結**：輸入升 $10\ \text{mV}$、輸出降 $35\ \text{mV}$，這個電路把訊號放大約 3.5 倍，而且反相。
+
+**陷阱**：
+
+- 講義第 25 頁寫 $V_{GD} = 1 - 0.765 = 0.235$，這是筆誤，$V_{GS}$ 應該是新的 $1.01\ \text{V}$，所以上面寫 $0.245\ \text{V}$。結論不變，仍在飽和區。
+- 汲極電壓是下降，不是上升。電流變大，$R_D$ 的壓降變大，$V_{DS}$ 就變小。
+:::
 
 ## 考前速記：各章公式一頁
 
@@ -1132,15 +2073,16 @@ $$
 | 4 | $g_m = \dfrac{I_C}{V_T}$、$r_\pi = \dfrac{\beta}{g_m}$、$r_o = \dfrac{V_A}{I_C}$、$A_V = -g_m R_C$ | 4-10、4-11、4-14 |
 | 4 | $I_C = I_S \exp\!\left(\frac{V_{BE}}{V_T}\right)\left(1 + \dfrac{V_{CE}}{V_A}\right)$ | 4-13 |
 | 4 | 軟飽和 $V_{CC} \ge I_C R_C + (V_{BE} - 400\ \text{mV})$ | 4-7、4-16 |
+| 6 | $I_D = \dfrac{1}{2}\mu_n C_{ox}\dfrac{W}{L}(V_{GS}-V_{TH})^2$；飽和區 $V_{GS} > V_{TH}$ 且 $V_{GD} < V_{TH}$；$g_m = \dfrac{2I_D}{V_{GS}-V_{TH}}$ | 6-6 |
 
 ### 必背常數（考卷不給）
 
-期中考卷給了元件值，但 $V_T$、$n_i$、$E_g$、$k$ 都沒給，第 2、3、4 題卻都要用。下表是講義各題實際代入的數值，**照這組算才會和講義答案對得上**（例如 Example 2-17 的 $I_S$）。
+期中考卷給了元件值，但 $V_T$、$n_i$、$E_g$、$k$ 都沒給，第 2、3、4 題卻都要用。下表是講義各題實際代入的數值，**照這組算才會和講義答案對得上**（例如 Example 2-1 的 $n_i$）。
 
 | 常數 | 值 | 用在哪裡 | 陷阱 |
 | --- | --- | --- | --- |
 | 熱電壓 $V_T = \dfrac{kT}{q}$ | $26\ \text{mV}$（300 K） | 二極體方程式、$r_d$、$g_m$、$V_0$ | 溫度變了要重算：$V_T \propto T$，350 K 約 $30.2\ \text{mV}$ |
-| 波茲曼常數 $k$ | $8.617\times10^{-5}\ \text{eV/K}$ | $n_i(T)$ 指數項 | 配 $E_g$ 用 eV 時 $k$ 也要用 eV/K；用 $1.38\times10^{-23}\ \text{J/K}$ 會差 $q$ 倍 |
+| 波茲曼常數 $k$ | $1.38\times10^{-23}\ \text{J/K}$（$= 8.617\times10^{-5}\ \text{eV/K}$） | $n_i(T)$ 指數項 | $E_g$ 與 $k$ 的單位要一致。講義走焦耳路線才得到 $1.08\times10^{10}$，用 eV 路線是 $1.06\times10^{10}$ |
 | 電子電荷 $q$ | $1.6\times10^{-19}\ \text{C}$ | $J = qn\mu E$、$I_S$、$C_{j0}$ | — |
 | 矽能隙 $E_g$ | $1.12\ \text{eV}$ | $n_i(T)$ | 公式分母是 $2kT$，不是 $kT$ |
 | 本質載子濃度 $n_i$ | $1.08\times10^{10}\ \text{cm}^{-3}$（300 K） | $np = n_i^2$、$V_0$、$I_S$ | 300 K 直接背；其他溫度才用 $5.2\times10^{15}\,T^{3/2}\exp\!\left(-\frac{E_g}{2kT}\right)$ |
