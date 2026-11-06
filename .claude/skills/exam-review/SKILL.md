@@ -1,6 +1,6 @@
 ---
 name: exam-review
-description: Use when the author asks to整理期中考/期末考複習、列出可能考題、出題並附詳解、整理「可能會考的選擇題」, or otherwise wants a review section built for a specific NoteCraft lecture note (electronics, ML, or similar weekly note) — producing key definitions, formulas, and practice questions (multiple-choice with the correct option coloured in place, plus concept-contrast and numeric questions) as separate sidebar sections, with every question stem and multiple-choice option written bilingually (Chinese above, English below).
+description: Use when the author asks to整理期中考/期末考複習、列出可能考題、出題並附詳解、寫考卷詳解或解答、整理「可能會考的選擇題」, or otherwise wants a review section built for a specific NoteCraft lecture note (electronics, ML, or similar weekly note) — producing key definitions, formulas, and practice questions (multiple-choice with the correct option coloured in place, plus concept-contrast and numeric questions) as separate sidebar sections, with every question stem and multiple-choice option written bilingually (Chinese above, English below).
 ---
 
 # Exam Review Section
@@ -29,6 +29,7 @@ Turns a NoteCraft lecture note into a self-contained review section: definitions
    - `### 選擇題` — multiple-choice, correct option coloured in place. See [Multiple-choice mode](#multiple-choice-mode) below for the syntax and the distractor rules; it is the substance of this section, not a formatting detail.
    - `### 概念辨析題` — compare/contrast or "why" questions testing distinctions the note already explains.
    - `### 計算題` — worked numeric problems. Prefer reusing the *structure* of an already-cited textbook Example (same formula, different numbers) over inventing new formulas. Afterward, tell the author plainly which questions mirror a cited Example vs. are self-constructed practice numbers — never imply invented numbers came from the textbook's exercise set.
+     Every 計算題 follows [Worked-solution mode](#worked-solution-mode).
    - **每個題幹都要有英文對照行**：`> 中文題幹` 之後緊接一行 `> :en[English stem]`，三種題型皆同。選擇題的選項另外各自附英文，見 [Bilingual mode](#bilingual-mode)。
    - **Each question is its own block, never a crammed bullet**: `#### <題型> N` heading → `> ` blockquote with the question → the answer block → **詳解** as its own block below. Putting question + multi-line solution inside one `-` bullet is unreadable, and an indented `$$` block inside a list item risks breaking CommonMark list parsing.
    - Number each subsection's questions from 1 independently (`#### 選擇題 1`, `#### 複習題 1`).
@@ -93,6 +94,52 @@ Options use the `:::choices` container directive; the solution goes in a collaps
 術語一律照 [CLAUDE.md](../../../CLAUDE.md) 的中文為主規則（knee voltage 寫「導通電壓」，不寫「膝點」）；英文只在專有名詞第一次出現時以括號附在中文後面。
 
 
+## Worked-solution mode
+
+計算題與考卷詳解的目標是讀者不必自己補空隙。每題依序由這六個欄位組成：
+
+```mdx
+#### 計算題 1
+
+> 中文題幹
+> :en[English stem]
+
+**答案**：(a) 數值與單位；(b) 數值與單位；題目要模型或圖時，這裡寫接法。
+
+:::tip{collapsible title="詳解"}
+**核心觀念**：一兩句，說明這題在考什麼、為什麼能用這條公式。
+
+**公式**：列出會用到的公式與成立前提。
+
+**計算**：(a) 半句理由，說明下一行為什麼可以這樣寫。
+
+$$
+\begin{aligned}
+…
+\end{aligned}
+$$
+
+**檢查**：一項不重算也能判斷結果的檢查。
+
+**總結**：一句話講結果代表什麼。
+:::
+```
+
+| 欄位 | 內容 |
+| --- | --- |
+| 答案 | 放在摺疊區外，逐一回應題目的每個問項：「求」給數值與單位，「模型」給元件接在哪兩點，「畫圖」給接法或圖的重點 |
+| 核心觀念 | 取代選擇題的 `**考的觀念**`，放在詳解最前面 |
+| 公式 | 寫出前提，例如 $V_R \ll V_P$、順向主動區 |
+| 計算 | 每段算式前有半句理由。電路常識（串並聯、導通路徑上有幾顆二極體、直流源視為交流接地）與數學技巧（$\ln(a/b)=\ln a-\ln b$）都要點名 |
+| 檢查 | 用另一條路算出一個數字，寫出它和答案的比對：比例（$C$ 加倍、$V_R$ 減半）、數量級（從 1 mA 對應的 $V_{BE}$ 推回 $I_C$）、代回原式，或近似誤差 |
+| 總結 | 一句話，比公式好記 |
+
+- **範圍**：只回答題目問的量。
+- **常數**：全份用同一組，題目有給就用題目的；顯示的中間值要能算出下一行。
+- **描述接法**：全文都用「接在哪兩點」的寫法，總結也一樣；兩個元件接在同樣兩點時才寫「並聯」。
+- **要圖的題目**：詳解裡放元件接法表，圖用 `public/note-images/` 的靜態 SVG，或放在 `:::tip` 容器之外的 `@ai-visualize` 標記。回報時說明圖是否已生成。
+- **既有筆記已有固定分段時**（例如「解題思路／計算過程／答案與陷阱」）：沿用該篇格式，作者要求才改。
+
 ## Bilingual mode
 
 教授可能以英文出題，所以**題幹與選擇題選項一律中英並列**；「考的觀念」與「詳解」維持純中文。
@@ -154,4 +201,6 @@ Run all of these before reporting done:
 - 英文選項長度落差大（正解特別長）→ 中文那層的等長設計在英文層破功。
 - 把 `:en` 寫成獨立一行的區塊 directive → `:::choices` 的選項列被拆散，版面壞掉。
 - 補英文時順手調動選項順序卻沒改 `answer` → 標錯答案，而且沒有任何警示。
+- 計算題的答案只出現在推導裡 → 讀者要讀完才知道結果；答案行放在摺疊區外。
+- 題目問「模型」或「畫圖」，答案只列參數 → 接法才是題目要的東西。
 - 跳過 `astro build` 與上面第 3、4 條 `:::choices` 檢查就宣稱完成。
