@@ -2,7 +2,9 @@
 """Lab 3（MOSFET）結報：第一部分的實驗一（輸出特性曲線）與實驗二（轉移特性曲線與臨界電壓）。
 
 數據直接讀 measured/Lab3-數據記錄.xlsx 的快取值，和當天上傳 E3 的「實驗數據結果」同一份，
-數字原樣不動。圖重用 build_lab3_data_results.py 的畫法，另加一張實測對 LTspice 的對照圖。
+數字原樣不動。圖重用 build_lab3_data_results.py 的畫法。
+
+報告裡只放實測，不出現任何模擬數據（Tinkercad 那一節是助教範本的必要項目，只講接法、不引數字）。
 
 版面照助教的 Lab_結報形式參考.pdf（章節標題連「（必要）」「（選繳）」都照抄），
 正文照 .claude/skills/lab-workflow/references/report-voice.md 的學生口吻契約，
@@ -13,10 +15,6 @@
 import argparse
 import os
 import sys
-
-import matplotlib
-matplotlib.use('Agg')
-import matplotlib.pyplot as plt
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 LAB = os.path.abspath(os.path.join(HERE, '..'))
@@ -37,30 +35,6 @@ PHOTO_DIR = os.path.join(OUT_DIR, 'photos')
 def f(v, fmt='%.3f'):
     x = D.fnum(v)
     return '' if x is None else fmt % x
-
-
-def fig_vs_ltspice(e1, e2, out):
-    """加分項用的一張圖：實測點疊在 LTspice 的曲線上。"""
-    fig, (a, b) = plt.subplots(1, 2, figsize=(9.2, 3.5))
-    for g, vgs in enumerate(D.VGS_GROUPS):
-        mx, my = D.series(e1, g, 1)
-        lx, ly = D.series(e1, g, 4)
-        a.plot(lx, ly, lw=1.2, color=D.G4[g], alpha=.55)
-        a.scatter(mx, my, s=20, color=D.G4[g], zorder=3, label=f'$V_{{GS}}$ 設定 = {vgs} V')
-    a.set_xlabel('$V_{DS}$ 電源設定 (V)'); a.set_ylabel('$I_D$ (mA)')
-    a.set_title('實驗一：實測點 vs LTspice 曲線', fontsize=10)
-    a.set_xlim(-0.3, 10.8); a.grid(alpha=.3); a.legend(fontsize=8, loc='center right', framealpha=.92)
-
-    for g, vds in enumerate(D.VDS_GROUPS):
-        mx, my = D.series(e2, g, 1)
-        lx, ly = D.series(e2, g, 2)
-        b.plot(lx, ly, lw=1.2, color=D.G3[g], alpha=.55)
-        b.scatter(mx, my, s=20, color=D.G3[g], zorder=3, label=f'$V_{{DS}}$ 設定 = {vds} V')
-    b.set_xlabel('$V_{GS}$ (V)'); b.set_ylabel('$I_D$ (mA)')
-    b.set_title('實驗二：實測點 vs LTspice 曲線', fontsize=10)
-    b.grid(alpha=.3); b.legend(fontsize=8, loc='upper left', framealpha=.92)
-    fig.tight_layout(); fig.savefig(out, dpi=200); plt.close(fig)
-    return out
 
 
 def measured_only(rows):
@@ -219,11 +193,10 @@ def build(sid, name, out, force):
            f'{a(3.0, 2, 1):.2f} 到 {a(10.0, 2, 1):.2f} mA；6 V 組要到 5.5 V 才平，平台 '
            f'{a(5.5, 3, 1):.2f} 到 {a(10.0, 3, 1):.2f} mA。閘極電壓越高、膝點越往右，'
            f'和 $V_{{DS(\\text{{sat}})}} = V_{{GS}} - V_{{th}}$ 的說法對得上。')
-    r.para(f'本來以為 $V_{{GS}}$ 設定 2 V 那組會整條貼零。LTspice 用 BS170 的模型跑只有 '
-           f'{a(10.0, 1, 4):.3f} mA，而且模型的 $V_{{to}}$ 是 2.14 V，2 V 根本還沒過門檻。'
-           f'結果當天量到 {a(0.5, 1, 1):.3f} 到 {a(10.0, 1, 1):.3f} mA，比模擬大了四到六倍。'
-           f'一開始還以為是電表零點沒歸好，做完實驗二才想通：我這顆的 $V_{{th}}$ 外插出來是 1.9 V 左右，'
-           f'2 V 已經略高於門檻，有一點點電流反而才是對的。')
+    r.para(f'$V_{{GS}}$ 設定 2 V 那組進實驗室前我沒把握會不會導通，2N7000 規格書的 $V_{{GS(th)}}$ 範圍是 '
+           f'0.8 到 3.0 V，2 V 剛好卡在中間。結果量到 {a(0.5, 1, 1):.3f} 到 {a(10.0, 1, 1):.3f} mA，'
+           f'小歸小，卻穩定地跟著 $V_{{DS}}$ 慢慢爬。一開始還以為是電表零點沒歸好，做完實驗二才想通：'
+           f'我這顆外插出來的 $V_{{th}}$ 是 1.9 V 左右，2 V 已經略高於門檻，有一點點電流反而才是對的。')
     r.para(f'源極串電阻的影響比我想像的大。6 V 那組元件端的 $V_{{GS}}$ 從 {a(0.0, 3, 2):.3f} V 一路掉到 '
            f'$V_{{DS}}$ 設定 10 V 時的 {a(10.0, 3, 2):.3f} V，4 V 那組從 {a(0.0, 2, 2):.3f} 掉到 '
            f'{a(10.0, 2, 2):.3f} V。兩組最後都停在 2.0 到 2.3 V，也就是臨界電壓再加一點過驅動。'
@@ -247,53 +220,7 @@ def build(sid, name, out, force):
            f'{a(10.0, 3, 2):.2f} 到 {a(10.0, 2, 2):.2f} V，實驗二外插的 $V_{{th}}$ 是 1.9 V 上下，'
            f'中間差的 0.1 到 0.3 V 正好是撐起那幾毫安所需要的過驅動電壓。兩個電路、兩種量法，對得起來。')
 
-    # ── 六、講義問題 ────────────────────────────────────────────────────────
-    r.h1('講義問題', None)
-    r.h4('問題 1：用實驗一的特性曲線產生對應的轉移曲線')
-    dev = [f'{v - a(5.0, g, 1):.3f}' for g, v in enumerate((0, 2, 4, 6))]
-    r.para(f'在實驗一的圖上畫一條 $V_{{DS}}$ = 常數的垂直線，和四條曲線的交點就是轉移曲線上的四個點。'
-           f'取 $V_{{DS}}$ 設定 5 V 那一欄：{a(5.0, 0, 1):.3f}、{a(5.0, 1, 1):.3f}、{a(5.0, 2, 1):.3f}、'
-           f'{a(5.0, 3, 1):.3f} mA。不過這條線和實驗二量到的不會長一樣，因為實驗一的橫軸是電源讀數，'
-           f'元件真正的 $V_{{GS}}$ 還要再減掉 $I_D R_1$：四個點換算過來是 {dev[0]}、{dev[1]}、{dev[2]}、'
-           f'{dev[3]} V，兩個導通的點被壓到只差 0.03 V。這就是為什麼實驗二一定要把電阻搬到汲極。')
-    r.h4('問題 2：用實驗二的轉移曲線解釋三個工作區')
-    r.para(f'由左到右三段。$V_{{GS}}$ 1.5 V 以下電流是 0.000 mA，閘極還造不出通道，是截止區。'
-           f'2.0 到 3.0 V 電流從 {b(2.0, 1, 1):.3f} mA 衝到 {b(3.0, 1, 1):.2f} mA（3 V 組），'
-           f'這一段才是飽和區，電流由 $V_{{GS}}$ 的平方律決定。3.0 V 以後平在 {b(5.0, 1, 1):.1f} mA 不動，'
-           f'那不是元件飽和，是 100 Ω 把電流鎖死了，元件自己已經掉進三極管區變成小電阻。')
-    r.h4('問題 3、4')
-    r.para('問題 3 要量 $V_{GS}$ = 10 V 的導通電阻、問題 4 要把實驗四的電阻換成 200 Ω 比較，'
-           '分別屬於實驗三和實驗四，這次沒做，沒有數據可以回答。')
-
-    # ── 七、LTspice 模擬（加分項）──────────────────────────────────────────
-    r.h1('LTspice 模擬', None)
-    r.para('評分辦法把 LTspice 列成加分項，所以進實驗室前先用它跑過一輪當預報。標準元件庫沒有 2N7000，'
-           '我用同一族的 BS170（60 V／500 mA／TO-92，模型的 $V_{to}$ = 2.14 V）代打，網表照講義的電路接。')
-    r.figure(fig_vs_ltspice(e1, e2, os.path.join(BUILD, 'vs-ltspice.png')),
-             '實測點（圓點）疊在 LTspice 的曲線（細線）上：左邊實驗一、右邊實驗二。', 14)
-    pl = [b(5.0, g, 1) for g in range(3)]
-    lt = [D.fnum(m2[5.0][g][2]) for g in range(3)]
-    r.table(['量', '實測', 'LTspice（BS170）', '差異'],
-            [[f'實驗一 $V_{{GS}}$ 設定 4 V 的平台 $I_D$', f'{a(10.0, 2, 1):.3f} mA',
-              f'{a(10.0, 2, 4):.3f} mA', f'+{(a(10.0, 2, 1) / a(10.0, 2, 4) - 1) * 100:.0f}%'],
-             [f'實驗一 $V_{{GS}}$ 設定 6 V 的平台 $I_D$', f'{a(10.0, 3, 1):.3f} mA',
-              f'{a(10.0, 3, 4):.3f} mA', f'+{(a(10.0, 3, 1) / a(10.0, 3, 4) - 1) * 100:.0f}%'],
-             [f'實驗一 $V_{{GS}}$ 設定 2 V 的 $I_D$', f'{a(10.0, 1, 1):.3f} mA',
-              f'{a(10.0, 1, 4):.3f} mA', f'{a(10.0, 1, 1) / a(10.0, 1, 4):.1f} 倍'],
-             ['實驗二 平台 $I_D$（1／3／5 V）', '／'.join(f'{x:.2f}' for x in pl) + ' mA',
-              '／'.join(f'{x:.2f}' for x in lt) + ' mA',
-              '／'.join(f'+{(p / l - 1) * 100:.0f}%' for p, l in zip(pl, lt))],
-             ['臨界電壓 $V_{th}$', f'{v5:.2f}～{v3:.2f} V（外插）', '2.14 V（模型 $V_{to}$）', '低約 0.2 V']],
-            caption='實測與 LTspice 預報對照（實驗一取 $V_{DS}$ 設定 10 V、實驗二取 $V_{GS}$ = 5 V 那一列）',
-            font_size=9)
-    r.para(f'對得最好的是實驗二的平台，三組都在 3% 以內。不過那本來就是 $R_1$ 決定的，'
-           f'對得上只代表電阻值和電表沒問題。真正有資訊的是對不上的地方：$V_{{GS}}$ 設定 2 V 那組'
-           f'實測是模擬的 {a(10.0, 1, 1) / a(10.0, 1, 4):.1f} 倍，平台電流也高了 6% 到 10%，'
-           f'兩件事指向同一個原因，我這顆的 $V_{{th}}$ 比模型低了 0.2 V 左右，'
-           f'同樣的閘極電壓下過驅動比較大。BS170 只是 2N7000 的同族替身，形狀和量級可以參考，'
-           f'個別元件的門檻還是得自己量。')
-
-    # ── 八、心得 ────────────────────────────────────────────────────────────
+    # ── 六、心得 ────────────────────────────────────────────────────────────
     r.h1('心得', None)
     r.para('這次最大的收穫是弄懂「電阻接在哪一隻腳」有多要命。同一顆元件、同一組電源，電阻放源極量到的是'
            '自偏壓軌跡，放汲極才量得到真正的轉移曲線；而且兩邊的平台意思完全相反，實驗一的平台是元件說了算、'
