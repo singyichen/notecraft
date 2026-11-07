@@ -6,6 +6,8 @@ createdAt: "2026-11-14"
 updatedAt: "2026-10-31"
 ---
 
+import PdfRefChip from '@/components/islands/PdfRefChip.tsx'
+
 # 第 10 週：MOS 放大器組態與運放電路
 
 *MOS Amplifier Topologies / Op-Amp-Based Circuits*
@@ -153,3 +155,460 @@ caption: 量到的增益不對時的四種嫌疑犯：源阻抗、有限增益�
 
 - 反相放大器：虛接地、增益等於電阻比、輸入阻抗等於輸入電阻、有限開路增益造成的增益誤差
 - 電壓加法器：多路輸入經各自電阻匯入虛接地點、各路互不影響、輸出為加權和
+
+## CH8：運算放大器當黑盒子（逐頁名詞詳解，中英對照）
+
+> 以下依投影片出現順序，每個名詞先給完整中文解釋、英文原文附在括號裡。前面「本週摘要」已經用直覺講過虛接地與加法器，這一節把投影片每個名詞、每道公式與例題數字攤開。這份檔案（20 頁）只涵蓋 8.1 一般考量與 8.2 運放電路兩節，外加三頁 μA741 的歷史補充；投影片目次列出的 8.3 非線性函數、8.4 非理想效應、8.5 設計範例這次沒有發。
+>
+> **本章的抽象層級和前幾章不同。** 第 1–7 章一路從矽講到小訊號模型，目標是「算出一顆元件的參數」；這一章反過來，把整顆放大器封成一個只有三個端點的黑盒子，只留一個參數——開路增益 $A_0$。能這樣做的理由在第 12 章（回授）才完整交代，這一章先把結論拿來用。
+
+### 章節架構與全章路線（第 1–3 頁）
+
+{/* @ai-reference
+id: ch8-roadmap
+file: _references/電子學實作系列/第九週/Ch 8 - Operational Amplifier as A Black Box.pdf
+page: 3
+status: suggested
+excerpt: General Concepts: Op Amp Properties. Linear Op Amp Circuits: Noninverting Amplifier, Inverting Amplifier, Integrator and Differentiator, Voltage Added. Nonlinear Op Amp Circuits. Op Amp Nonidealities.
+*/}
+<PdfRefChip file="_references/電子學實作系列/第九週/Ch 8 - Operational Amplifier as A Black Box.pdf" page={3} status="suggested" excerpt={"General Concepts: Op Amp Properties. Linear Op Amp Circuits: Noninverting Amplifier, Inverting Amplifier, Integrator and Differentiator, Voltage Added. Nonlinear Op Amp Circuits. Op Amp Nonidealities."} client:visible />
+
+- **章節架構（Contents）**：第 2 頁列出五節——8.1 一般考量、8.2 運放電路、8.3 非線性函數、8.4 運放的非理想效應、8.5 設計範例。
+- **全章路線（outline）**：第 3 頁排成四欄，四欄就是四個階段：先定義運放有哪些性質，再用它組出線性電路（非反相、反相、積分／微分、加法），接著是非線性電路（精密整流器、對數放大器、開根號電路），最後才承認理想假設會失效（直流偏移、輸入偏壓電流、速度限制、有限輸入輸出阻抗）。
+
+這條路線的讀法是：**前三欄都建立在「$A_0 = \infty$」這一條假設上，第四欄專門拆它。** 本週實驗要做的反相放大器與加法器落在第二欄，所以這份講義只發到 8.2。
+
+![第 8 章路線圖：四欄並列，依序為 General Concepts（Op Amp Properties）、Linear Op Amp Circuits（Noninverting Amplifier、Inverting Amplifier、Integrator and Differentiator、Voltage Added）、Nonlinear Op Amp Circuits（Precision Rectifier、Logarithmic Amplifier、Square Root Circuit）、Op Amp Nonidealities（DC Offsets、Input Bias Currents、Speed Limitations、Finite Input and Output Impedances）](/note-images/ec-week10-ch8/00-chapter-outline.png)
+
+*前三欄靠「增益無限大」這條假設吃飯，第四欄專門來拆它。*
+
+### 運算放大器的基本定義（第 4 頁）
+
+{/* @ai-reference
+id: ch8-basic-op-amp
+file: _references/電子學實作系列/第九週/Ch 8 - Operational Amplifier as A Black Box.pdf
+page: 4
+status: suggested
+excerpt: Op amp is a circuit that has two inputs and one output. It amplifies the difference between the two inputs. Vout = A0 (Vin1 - Vin2) where A0 is the "open-loop" gain.
+*/}
+<PdfRefChip file="_references/電子學實作系列/第九週/Ch 8 - Operational Amplifier as A Black Box.pdf" page={4} status="suggested" excerpt={"Op amp is a circuit that has two inputs and one output. It amplifies the difference between the two inputs. Vout = A0 (Vin1 - Vin2) where A0 is the open-loop gain."} client:visible />
+
+**前提盤點**：這一頁只用到一個新的原始概念——**受控電壓源（voltage-controlled voltage source）**。它不是電池，而是一個「輸出電壓由別處的電壓決定」的理想元件：內阻為零，輸出電壓恆等於控制電壓乘上一個常數。投影片右半邊那個菱形符號畫的就是它。
+
+- **運算放大器（operational amplifier，op amp）**：兩個輸入、一個輸出的電路。
+- **開路增益（open-loop gain）$A_0$**：放大的是兩個輸入的**差**，不是任何一個輸入本身：
+
+$$
+V_{out} = A_0\,(V_{in1} - V_{in2})
+$$
+
+「開路（open-loop）」的意思是**還沒接回授**。一旦把輸出經電阻接回輸入，就變成閉迴路（closed-loop），增益換成另一個值。整章的所有公式都在處理這兩者的關係。
+
+**數學對應**：$V_{out} = A_0(V_{in1}-V_{in2})$ 是一個 $\mathbb{R}^2 \to \mathbb{R}$ 的線性泛函，核（kernel）是 $V_{in1} = V_{in2}$ 這條直線。**落在核上的輸入完全不被放大**——這就是後面「共模訊號被抑制」的全部內容。
+
+**因次檢查**：$A_0$ 是電壓比電壓，**無因次**。教材常寫成「$A_0 = 1000$」或「60 dB」，兩者是同一件事（$20\log_{10} 1000 = 60$）。
+
+![運算放大器的符號與等效模型：左為三端符號，兩個輸入 Vin1（+）、Vin2（−）與一個輸出 Vout；右為等效電路，輸出畫成一個受控電壓源 A0(Vin1 − Vin2)](/note-images/ec-week10-ch8/01-basic-op-amp.png)
+
+*右半邊才是「黑盒子」的真正內容：整顆放大器被縮成一個受控電壓源。*
+
+### 反相端與非反相端（第 5 頁）
+
+{/* @ai-reference
+id: ch8-inverting-noninverting-input
+file: _references/電子學實作系列/第九週/Ch 8 - Operational Amplifier as A Black Box.pdf
+page: 5
+status: suggested
+excerpt: If the negative input is grounded, the gain is positive. If the positive input is grounded, the gain is negative.
+*/}
+<PdfRefChip file="_references/電子學實作系列/第九週/Ch 8 - Operational Amplifier as A Black Box.pdf" page={5} status="suggested" excerpt={"If the negative input is grounded, the gain is positive. If the positive input is grounded, the gain is negative."} client:visible />
+
+把 $V_{out} = A_0(V_{in1}-V_{in2})$ 的其中一個輸入接地，就得到兩條單輸入的轉移特性：
+
+| 接地的那一端 | 剩下的輸入 | 轉移特性 | 名稱 |
+| --- | --- | --- | --- |
+| $V_{in2}$（負輸入） | $V_{in1}$ | $V_{out} = +A_0 V_{in1}$，斜率為正 | 非反相端（noninverting input） |
+| $V_{in1}$（正輸入） | $V_{in2}$ | $V_{out} = -A_0 V_{in2}$，斜率為負 | 反相端（inverting input） |
+
+符號上的 $+$ 與 $-$ 記的就是這兩條斜率的正負，**和電源的正負極無關**——這是初學最容易誤會的地方。
+
+![反相與非反相輸入的兩組對照：左半為負輸入接地時，Vout 對 Vin1 的轉移特性，斜率 +A0；右半為正輸入接地時，Vout 對 Vin2 的轉移特性，斜率 −A0](/note-images/ec-week10-ch8/02-inverting-noninverting.png)
+
+*符號上的 ± 標的是斜率的正負，不是電源極性。*
+
+### 理想運算放大器的四個條件（第 6 頁）
+
+{/* @ai-reference
+id: ch8-ideal-op-amp
+file: _references/電子學實作系列/第九週/Ch 8 - Operational Amplifier as A Black Box.pdf
+page: 6
+status: suggested
+excerpt: Infinite gain (A0 = inf), Infinite input impedance (Rin = inf), Zero output impedance (Rout = 0), Infinite speed (BW = inf).
+*/}
+<PdfRefChip file="_references/電子學實作系列/第九週/Ch 8 - Operational Amplifier as A Black Box.pdf" page={6} status="suggested" excerpt={"Infinite gain (A0 = inf), Infinite input impedance (Rin = inf), Zero output impedance (Rout = 0), Infinite speed (BW = inf)."} client:visible />
+
+這一頁只有四條列，但它決定了後面每一個電路能不能用兩行算完。每一條都對應一個「可以不去想的東西」：
+
+| 理想條件 | 數學形式 | 允許我們忽略什麼 | 被哪一節打破 |
+| --- | --- | --- | --- |
+| 無限增益 | $A_0 = \infty$ | 兩輸入的電位差（虛短路成立） | 8.4、第 11 頁的增益誤差 |
+| 無限輸入阻抗 | $R_{in} = \infty$ | 輸入端吃掉的電流（輸入腳不載入訊號源） | 8.4 的輸入偏壓電流 |
+| 零輸出阻抗 | $R_{out} = 0$ | 負載對輸出電壓的影響 | 8.4 的有限輸出阻抗 |
+| 無限頻寬 | $\mathrm{BW} = \infty$ | 增益隨頻率下滑、迴轉率 | 8.4 的速度限制 |
+
+**實驗上的對照**：本週反相放大器量到的增益若偏低，嫌疑犯就在這張表裡——第一條（增益誤差）、第二條（源阻抗被載入）、第四條（頻寬或迴轉率）各有不同的症狀，判別方法整理在上面「實驗（一）」那一段。
+
+### 虛短路（第 7 頁）
+
+{/* @ai-reference
+id: ch8-virtual-short
+file: _references/電子學實作系列/第九週/Ch 8 - Operational Amplifier as A Black Box.pdf
+page: 7
+status: suggested
+excerpt: Virtual short: Vin -> 0 (Vin1 = Vin2). Due to infinite gain of op amp, the circuit forces Vin2 to be close to Vin1, thus creating a virtual short.
+*/}
+<PdfRefChip file="_references/電子學實作系列/第九週/Ch 8 - Operational Amplifier as A Black Box.pdf" page={7} status="suggested" excerpt={"Virtual short: Vin -> 0 (Vin1 = Vin2). Due to infinite gain of op amp, the circuit forces Vin2 to be close to Vin1, thus creating a virtual short."} client:visible />
+
+**前提盤點**：這一頁不需要新的物理，只需要一個**取極限**的動作，以及一個前提——輸出 $V_{out}$ 是有限值（電路沒有飽和、沒有振盪）。
+
+**數學對應**：把定義式反過來解輸入差，
+
+$$
+V_{in1} - V_{in2} = \frac{V_{out}}{A_0}
+$$
+
+這是一個 $\frac{\text{有限}}{\infty}$ 的極限。只要 $V_{out}$ 不隨 $A_0$ 一起發散，$A_0 \to \infty$ 時右邊趨近 0，於是
+
+$$
+V_{in1} \approx V_{in2}
+$$
+
+**虛短路（virtual short）**：兩個輸入端的電位幾乎相同，像被一條導線短路；但那裡**沒有電流流過**（輸入阻抗無限大），所以是「虛」的。投影片用紅色虛線圈把兩個輸入圈在一起表示這件事。
+
+**這條不是定律，是回授的結果。** 它成立的前提是電路接成**負回授**（輸出經電阻回到負輸入）。若把回授接到正輸入，輸出會一路衝到電源軌，$V_{out}$ 不再有限，上面的極限就不成立。
+
+**因次檢查**：$V_{out}/A_0$ 的單位是 $\mathrm{V}/1 = \mathrm{V}$，和左邊的電位差同單位。以 $A_0 = 10^5$、$V_{out} = 1\ \mathrm{V}$ 估算，兩輸入實際差 $10\ \mu\mathrm{V}$——比三用電表的解析度還小，所以實驗上量起來真的就是「短路」。
+
+![虛短路：Vin 經非反相端進入運放 A0，輸出 Vout 經 R1、R2 分壓回到反相端 Vin2；兩個輸入端之間畫一個紅色虛線橢圓，標示 virtual short](/note-images/ec-week10-ch8/03-virtual-short.png)
+
+*電位相同但沒有電流——「虛」字就是指這一點。*
+
+**一題自測**：$A_0 = 10^4$、輸出為 $2\ \mathrm{V}$ 時，兩個輸入端實際差幾伏？若改用 $A_0 = 10^6$ 的運放呢？
+
+<details>
+  <summary>答案</summary>
+  $V_{in1}-V_{in2} = V_{out}/A_0$，分別是 $200\ \mu\mathrm{V}$ 與 $2\ \mu\mathrm{V}$。兩者都遠小於訊號本身，所以兩種運放都可以套虛短路；差別會出現在下一頁的增益誤差上。
+</details>
+
+### 單位增益放大器：兩種算法（第 8 頁）
+
+{/* @ai-reference
+id: ch8-unity-gain
+file: _references/電子學實作系列/第九週/Ch 8 - Operational Amplifier as A Black Box.pdf
+page: 8
+status: suggested
+excerpt: Unity Gain Amplifier. Method #1: Without using the virtual short concept (finite A0). Method #2: Apply the virtual short concept (infinite A0).
+*/}
+<PdfRefChip file="_references/電子學實作系列/第九週/Ch 8 - Operational Amplifier as A Black Box.pdf" page={8} status="suggested" excerpt={"Unity Gain Amplifier. Method #1: Without using the virtual short concept (finite A0). Method #2: Apply the virtual short concept (infinite A0)."} client:visible />
+
+把輸出**直接**接回負輸入（沒有分壓電阻），就是單位增益放大器（unity gain amplifier），也叫電壓隨耦器（voltage follower）或緩衝器（buffer）。投影片用同一個電路示範兩種算法，目的是讓人相信虛短路不是偷吃步。
+
+**方法一：不用虛短路，$A_0$ 取有限值。** 把 $V_{-} = V_{out}$ 代回定義式：
+
+$$
+\begin{aligned}
+V_{out} &= A_0\,(V_{+} - V_{-}) = A_0\,(V_{in} - V_{out}) \\
+V_{out}(1 + A_0) &= A_0 V_{in} \\
+A_v = \frac{V_{out}}{V_{in}} &= \frac{A_0}{1 + A_0}
+\end{aligned}
+$$
+
+代入投影片的 $A_0 = 1000$：$A_v = 1000/1001 = 0.999 \approx 1$。
+
+**方法二：用虛短路，$A_0$ 取無限大。** $V_{+} = V_{-}$ 直接給出 $V_{in} = V_{out}$，所以 $A_v = 1$。
+
+**兩者的關係**：方法一的結果對 $A_0$ 取極限就是方法二。$\frac{A_0}{1+A_0} = \frac{1}{1 + 1/A_0}$，當 $1/A_0 \to 0$ 時趨近 1。**虛短路就是方法一的零階近似**，差距是 $1/A_0$ 這一階——這個差距在第 11 頁被命名為「增益誤差」。
+
+**為什麼要一個增益等於 1 的放大器**：它不放大電壓，但改變阻抗。輸入端看進去是無限大、輸出端看出來是零，所以能把一個高阻抗的訊號源接到一個重負載而不被拉垮。這和 CH7.4 的源極隨耦器做的是同一件事——本週摘要已經提過，差別只在一個用回授、一個靠元件本身的小訊號特性。
+
+![單位增益放大器：Vin 進非反相端，運放輸出 Vout 直接以一條導線接回反相端，標註 A0 = 1000 與 +1 V 的輸入示例](/note-images/ec-week10-ch8/04-unity-gain.png)
+
+*輸出直接接回負輸入，是回授量最大的接法（迴授因數等於 1）。*
+
+### 電源軌（第 9 頁）
+
+{/* @ai-reference
+id: ch8-supply-rails
+file: _references/電子學實作系列/第九週/Ch 8 - Operational Amplifier as A Black Box.pdf
+page: 9
+status: suggested
+excerpt: Dual power supply (bipolar): to explicitly show the supply voltages, VCC and VEE are shown. Single power supply (unipolar): VEE is zero.
+*/}
+<PdfRefChip file="_references/電子學實作系列/第九週/Ch 8 - Operational Amplifier as A Black Box.pdf" page={9} status="suggested" excerpt={"Dual power supply (bipolar): to explicitly show the supply voltages, VCC and VEE are shown. Single power supply (unipolar): VEE is zero."} client:visible />
+
+前面幾頁為了乾淨，運放符號只畫三隻腳；實際上它至少有五隻，另外兩隻是電源。
+
+- **雙電源（dual power supply，bipolar）**：$V_{CC}$ 接正、$V_{EE}$ 接負（例如 $\pm 15\ \mathrm{V}$），地位在兩者中間。輸出可以在地的上下擺動。
+- **單電源（single power supply，unipolar）**：$V_{EE} = 0$，也就是接地。輸出只能在 0 與 $V_{CC}$ 之間。
+
+**輸出擺幅（output swing）永遠被電源軌夾住**：$V_{EE} < V_{out} < V_{CC}$。公式算出的 $A_v V_{in}$ 一旦超出這個範圍，輸出就被削平（clipping）。這是實驗裡最常見的「波形變方」原因，而且**不是電路接錯**。
+
+**實驗上的對應**：本週實驗若用單電源，正弦訊號的負半週會整個被切掉，必須先給輸出一個中間偏壓（例如 $V_{CC}/2$）當作交流的參考點。
+
+![運放的電源軌：符號上方多出 VCC、下方多出 VEE 兩隻電源腳，輸出 Vout 相對於地量測](/note-images/ec-week10-ch8/05-supply-rails.png)
+
+*前面幾頁省略的這兩隻腳，決定了輸出擺幅的天花板與地板。*
+
+### 非反相放大器（第 10–11 頁）
+
+{/* @ai-reference
+id: ch8-noninverting-amp
+file: _references/電子學實作系列/第九週/Ch 8 - Operational Amplifier as A Black Box.pdf
+page: 10
+status: suggested
+excerpt: A noninverting amplifier returns a fraction of output signal thru a resistor divider to the negative input. With a high Ao, Vout/Vin depends only on ratio of resistors, which is very precise.
+*/}
+<PdfRefChip file="_references/電子學實作系列/第九週/Ch 8 - Operational Amplifier as A Black Box.pdf" page={10} status="suggested" excerpt={"A noninverting amplifier returns a fraction of output signal thru a resistor divider to the negative input. With a high Ao, Vout/Vin depends only on ratio of resistors, which is very precise."} client:visible />
+
+訊號從非反相端進，輸出經 $R_1$（上）與 $R_2$（下）分壓後回到反相端。
+
+**無限 $A_0$ 的算法（第 10 頁）**：虛短路給出 $V_{in} = V_{-}$，而 $V_{-}$ 是分壓結果：
+
+$$
+\begin{aligned}
+V_{in} &= \frac{R_2}{R_1+R_2}\,V_{out} \\
+A_v = \frac{V_{out}}{V_{in}} &= \frac{R_1+R_2}{R_2} = 1 + \frac{R_1}{R_2}
+\end{aligned}
+$$
+
+> **投影片第 10 頁的兩處筆誤**：中間那一行印成 $V_{in} = \frac{R_1}{R_1+R_2}V_{out}$、結論印成 $A_v = \frac{R_1+R_2}{R_1}$，但最後的化簡寫 $1 + \frac{R_1}{R_2}$。三者彼此矛盾。正確的是分壓比 $\frac{R_2}{R_1+R_2}$（$R_2$ 是接地那一顆），$A_v = \frac{R_1+R_2}{R_2} = 1+\frac{R_1}{R_2}$。第 11 頁的推導用的就是這個正確版本（那裡印的是 $\frac{R_2}{R_1+R_2}$），第 12 章回授那一章也一樣（迴授因數 $K = \frac{R_2}{R_1+R_2}$），所以只有第 10 頁中間那兩個式子是錯的。
+
+**增益只由電阻比決定**，不含任何元件參數。這是本章最重要的一句話：$g_m$、$R_D$ 會隨製程與溫度跑 $\pm 20\%$，但同一批製作的兩顆電阻**一起跑**，比值幾乎不動。精度是這樣換來的。
+
+**有限 $A_0$ 的算法（第 11 頁）**：不用虛短路，直接代定義式：
+
+$$
+\begin{aligned}
+V_{out} &= A_0\left(V_{in} - \frac{R_2}{R_1+R_2}V_{out}\right) \\
+A_v &= \frac{A_0}{1 + \dfrac{R_2}{R_1+R_2}A_0}
+\end{aligned}
+$$
+
+把它整理成「理想值乘上一個修正因子」的形式。令 $G \equiv 1 + \frac{R_1}{R_2}$（理想閉迴路增益），注意 $\frac{R_2}{R_1+R_2} = \frac{1}{G}$：
+
+$$
+\begin{aligned}
+A_v &= \frac{A_0}{1 + \dfrac{A_0}{G}} = \frac{G}{1 + \dfrac{G}{A_0}} = \frac{G}{1+\varepsilon},
+\qquad \varepsilon \equiv \frac{G}{A_0}
+\end{aligned}
+$$
+
+**數學對應**：$\varepsilon \ll 1$ 時用一階泰勒展開 $(1+\varepsilon)^{-1} \approx 1-\varepsilon$：
+
+$$
+A_v \approx G\,(1 - \varepsilon) = \left(1+\frac{R_1}{R_2}\right)\left[1 - \left(1+\frac{R_1}{R_2}\right)\frac{1}{A_0}\right]
+$$
+
+中括號裡被減掉的那一項就是**增益誤差（gain error）**：
+
+$$
+\text{gain error} = \left(1+\frac{R_1}{R_2}\right)\frac{1}{A_0} = \frac{G}{A_0}
+$$
+
+**閉迴路增益設得越大，誤差越大。** 直覺是：$G$ 越大代表回授量 $\frac{1}{G}$ 越小，迴路增益 $\frac{A_0}{G}$ 越小，能用來修正的「餘裕」就越少。
+
+**因次檢查**：$R_1/R_2$ 無因次、$A_0$ 無因次，所以增益誤差也無因次，可以直接寫成百分比。
+
+![非反相放大器：Vin 經非反相端進入運放 A0，輸出 Vout 經 R1 與 R2 分壓後接回反相端 Vin2，兩輸入間以紅色虛線橢圓標示 virtual short](/note-images/ec-week10-ch8/03-virtual-short.png)
+
+*第 7、10、11 三頁用的是同一張電路圖；第 11 頁拿掉了 virtual short 的標注，因為那裡 $A_0$ 是有限值，虛短路只是近似。*
+
+### Example 8-3：增益誤差隨閉迴路增益變大（第 12 頁）
+
+{/* @ai-reference
+id: ch8-example-8-3
+file: _references/電子學實作系列/第九週/Ch 8 - Operational Amplifier as A Black Box.pdf
+page: 12
+status: suggested
+excerpt: A noninverting amplifier incorporates an op amp having a gain of 1000. Determine the gain error if the circuit is to provide a nominal gain of (a) 5, or (b) 50. In other words, a higher closed-loop gain inevitably suffers from less accuracy.
+*/}
+<PdfRefChip file="_references/電子學實作系列/第九週/Ch 8 - Operational Amplifier as A Black Box.pdf" page={12} status="suggested" excerpt={"A noninverting amplifier incorporates an op amp having a gain of 1000. Determine the gain error if the circuit is to provide a nominal gain of (a) 5, or (b) 50."} client:visible />
+
+運放的 $A_0 = 1000$，分別把標稱增益設成 5 與 50，求增益誤差。
+
+$$
+\begin{aligned}
+\text{(a)}\quad 1+\frac{R_1}{R_2} = 5 &\;\Rightarrow\; \text{gain error} = \frac{5}{1000} = 0.5\% \\
+\text{(b)}\quad 1+\frac{R_1}{R_2} = 50 &\;\Rightarrow\; \text{gain error} = \frac{50}{1000} = 5\%
+\end{aligned}
+$$
+
+標稱增益放大 10 倍，誤差也放大 10 倍。投影片的結論是「較高的閉迴路增益必然犧牲精度」。
+
+**實驗上的意義**：如果要一個增益 50 又要 1% 以內的精度，單靠一級做不到，得把 $A_0$ 提高（換運放）或分成兩級各做 $\sqrt{50} \approx 7$ 倍。
+
+### $R_2$ 的兩個極端（第 13 頁）
+
+{/* @ai-reference
+id: ch8-extreme-cases
+file: _references/電子學實作系列/第九週/Ch 8 - Operational Amplifier as A Black Box.pdf
+page: 13
+status: suggested
+excerpt: If R2 is zero, the loop is open and Vout/Vin is equal to the intrinsic gain of the op amp. If R2 is infinite, the circuit becomes a unity-gain amplifier and Vout/Vin becomes equal to one.
+*/}
+<PdfRefChip file="_references/電子學實作系列/第九週/Ch 8 - Operational Amplifier as A Black Box.pdf" page={13} status="suggested" excerpt={"If R2 is zero, the loop is open and Vout/Vin is equal to the intrinsic gain of the op amp. If R2 is infinite, the circuit becomes a unity-gain amplifier and Vout/Vin becomes equal to one."} client:visible />
+
+把有限 $A_0$ 的通式 $A_v = \dfrac{A_0}{1 + \frac{R_2}{R_1+R_2}A_0}$ 拿去取兩個極端，可以把前面兩個電路統一起來：
+
+| $R_2$ | 分壓比 $\frac{R_2}{R_1+R_2}$ | $A_v$ | 等同於哪個電路 |
+| --- | --- | --- | --- |
+| $0$（接地端短路） | $0$ | $A_0$ | 開迴路，完全沒有回授 |
+| $\infty$（接地端開路） | $1$ | $\dfrac{A_0}{1+A_0} \approx 1$ | 第 8 頁的單位增益放大器 |
+
+**這張表說明非反相放大器不是一個新電路，而是一個可以連續調整回授量的家族**：回授量從 0 調到 1，閉迴路增益就從 $A_0$ 掉到 1。中間任何一個值都在這條線上。
+
+![R2 的兩個極端：左圖 R2 = 0，分壓節點被短路到地，等於開迴路；右圖 R2 = ∞，分壓節點開路，輸出全部回到反相端，等於單位增益放大器](/note-images/ec-week10-ch8/07-extreme-cases-r2.png)
+
+*同一個拓撲，把回授量從 0 掃到 1，增益就從 $A_0$ 連續掉到 1。*
+
+### 反相放大器與虛接地（第 14 頁）
+
+{/* @ai-reference
+id: ch8-inverting-amp
+file: _references/電子學實作系列/第九週/Ch 8 - Operational Amplifier as A Black Box.pdf
+page: 14
+status: suggested
+excerpt: Infinite A0 forces the negative input to be a virtual ground. Based on the virtual short concept, VX = 0 (virtual ground). Apply the KCL at node X.
+*/}
+<PdfRefChip file="_references/電子學實作系列/第九週/Ch 8 - Operational Amplifier as A Black Box.pdf" page={14} status="suggested" excerpt={"Infinite A0 forces the negative input to be a virtual ground. Based on the virtual short concept, VX = 0 (virtual ground). Apply the KCL at node X."} client:visible />
+
+**這是本週實驗（一）要做的電路。** 訊號從反相端經 $R_2$ 進入節點 $X$，$R_1$ 從 $X$ 接到輸出，非反相端接地。
+
+**虛接地（virtual ground）**：非反相端接地所以 $V_{+} = 0$，虛短路給出 $V_X = V_{-} \approx 0$。節點 $X$ 的電位被釘在零，但**那裡沒有真的接地線**，所以叫「虛」接地。
+
+對節點 $X$ 列 KCL（輸入阻抗無限大，所以沒有電流流進運放）：
+
+$$
+\begin{aligned}
+\frac{V_{in} - V_X}{R_2} &= \frac{V_X - V_{out}}{R_1} \\
+\frac{V_{in}}{R_2} &= \frac{0 - V_{out}}{R_1} \\
+A_v = \frac{V_{out}}{V_{in}} &= -\frac{R_1}{R_2}
+\end{aligned}
+$$
+
+**負號是真的反相**：示波器上輸入與輸出相差 180 度，這是驗證電路接對最快的方法。
+
+**輸入阻抗等於 $R_2$**：訊號源看進去，第一個遇到的是 $R_2$，而 $R_2$ 的另一端是零電位，所以 $R_{in} = R_2$。**這是反相組態相對非反相組態唯一明顯的缺點**（非反相組態的輸入直接進運放，輸入阻抗理論上無限大）。
+
+**投影片 (c) 的槓桿類比**：把 $X$ 當支點，$A$、$B$ 兩端分別是 $V_{in}$ 與 $V_{out}$，兩段力臂是 $R_2$ 與 $R_1$。支點固定（虛接地），一端往上，另一端必定往下，位移比等於力臂比——**這就是 $A_v = -R_1/R_2$ 的幾何版本**。
+
+**因次檢查**：$R_1/R_2$ 無因次。電流 $V_{in}/R_2$ 的單位 $\mathrm{V}/\Omega = \mathrm{A}$，乘回 $R_1$ 得 V，確實是電壓。
+
+![反相放大器三格：(a) Vin 經 R2 進節點 X，R1 跨在 X 與 Vout 之間，非反相端接地；(b) 同一電路標出流入節點的電流 Vin/R2 與 Virtual Ground 箭頭；(c) 槓桿類比，支點在中間，兩段力臂標為 R2 與 R1，兩端標為 A 與 B](/note-images/ec-week10-ch8/08-inverting-amp-virtual-ground.png)
+
+*(c) 的槓桿是整頁的精華：支點不動，兩端的位移比就是力臂比。*
+
+**一題自測**：$R_1 = 40\ \mathrm{k}\Omega$、$R_2 = 10\ \mathrm{k}\Omega$，訊號源內阻 $1\ \mathrm{k}\Omega$。實際量到的增益是多少？
+
+<details>
+  <summary>答案</summary>
+  源阻抗與 $R_2$ 串聯，等效輸入電阻變成 $11\ \mathrm{k}\Omega$，所以 $A_v = -40/11 = -3.64$，而不是 $-4$。誤差 9%，遠大於有限 $A_0$ 造成的增益誤差——**實驗量到增益偏低時，先懷疑源阻抗**。
+</details>
+
+### 另一種看法：反相與非反相的拓撲差異（第 15–16 頁）
+
+{/* @ai-reference
+id: ch8-another-view
+file: _references/電子學實作系列/第九週/Ch 8 - Operational Amplifier as A Black Box.pdf
+page: 15
+status: suggested
+excerpt: Another View of Inverting Amplifier. Inverting / Noninverting.
+*/}
+<PdfRefChip file="_references/電子學實作系列/第九週/Ch 8 - Operational Amplifier as A Black Box.pdf" page={15} status="suggested" excerpt={"Another View of Inverting Amplifier. Inverting / Noninverting."} client:visible />
+
+第 15 頁把兩個電路畫成**同一個骨架**：運放、$R_1$、$R_2$ 的接法完全一樣，差別只在「$V_{in}$ 接在哪裡、哪一點接地」。
+
+| | 訊號接入點 | 接地點 | $A_v$ | 輸入阻抗 |
+| --- | --- | --- | --- | --- |
+| 反相 | $R_2$ 的外端 | 非反相端 | $-\dfrac{R_1}{R_2}$ | $R_2$ |
+| 非反相 | 非反相端 | $R_2$ 的外端 | $1+\dfrac{R_1}{R_2}$ | $\infty$ |
+
+**這和本週 MOS 那半邊的結論是同一句話**：拓撲一樣，決定行為的是訊號從哪裡進、哪一點接地。CS 與 CG 的關係也是如此。
+
+第 16 頁對反相組態做了和第 11 頁相同的有限 $A_0$ 推導，結果形式也相同：
+
+$$
+A_v \approx -\frac{R_1}{R_2}\left[1 - \left(1+\frac{R_1}{R_2}\right)\frac{1}{A_0}\right]
+$$
+
+**注意中括號裡仍然是 $1+\frac{R_1}{R_2}$，不是 $\frac{R_1}{R_2}$。** 增益誤差由**迴路**決定，而反相與非反相兩種接法的迴路（運放加上同一組 $R_1$、$R_2$ 分壓）是同一個，所以誤差項一模一樣——差別只在前面那個理想增益是 $-\frac{R_1}{R_2}$ 還是 $1+\frac{R_1}{R_2}$。
+
+![反相與非反相的拓撲對照：左為反相組態，Vin 經 R2 接到反相端，非反相端接地；右為非反相組態，Vin 直接進非反相端，R2 的外端接地](/note-images/ec-week10-ch8/09-inverting-vs-noninverting.png)
+
+*同一副骨架，換一個訊號入口與接地點，增益的正負與輸入阻抗就完全不同。*
+
+### Example 8-4：反設計一個反相放大器（第 17 頁）
+
+{/* @ai-reference
+id: ch8-example-8-4
+file: _references/電子學實作系列/第九週/Ch 8 - Operational Amplifier as A Black Box.pdf
+page: 17
+status: suggested
+excerpt: Design the inverting amplifier for a nominal gain of 4, a gain error of 0.1%, and an input impedance of at least 10 kohm.
+*/}
+<PdfRefChip file="_references/電子學實作系列/第九週/Ch 8 - Operational Amplifier as A Black Box.pdf" page={17} status="suggested" excerpt={"Design the inverting amplifier for a nominal gain of 4, a gain error of 0.1%, and an input impedance of at least 10 kohm."} client:visible />
+
+三個規格：標稱增益 4、增益誤差 0.1%、輸入阻抗至少 $10\ \mathrm{k}\Omega$。這一題示範的是**三個規格各自鎖住哪一個自由度**：
+
+| 規格 | 鎖住的量 | 結果 |
+| --- | --- | --- |
+| 標稱增益 4 | 電阻比 | $\dfrac{R_1}{R_2} = 4$ |
+| 增益誤差 0.1% | 運放的 $A_0$ | $(1+4)\dfrac{1}{A_0} = 0.001 \Rightarrow A_0 = 5000$ |
+| 輸入阻抗 $\ge 10\ \mathrm{k}\Omega$ | 電阻的絕對值 | $R_2 = 10\ \mathrm{k}\Omega$，$R_1 = 40\ \mathrm{k}\Omega$ |
+
+**順序不能換**：比值決定增益、$A_0$ 決定精度、絕對值決定阻抗。前兩個規格只能給出比值與選件條件，要到第三個規格才把電阻的實際數值定下來。
+
+### 補充：μA741 與米勒補償電容（第 18–20 頁）
+
+{/* @ai-reference
+id: ch8-ua741-history
+file: _references/電子學實作系列/第九週/Ch 8 - Operational Amplifier as A Black Box.pdf
+page: 18
+status: suggested
+excerpt: Miller compensation capacitor - The Big Cap. Differential amplifier, Gain stage, Output stage, Capacitor, Short-circuit protection.
+*/}
+<PdfRefChip file="_references/電子學實作系列/第九週/Ch 8 - Operational Amplifier as A Black Box.pdf" page={18} status="suggested" excerpt={"Miller compensation capacitor - The Big Cap. Differential amplifier, Gain stage, Output stage, Capacitor, Short-circuit protection."} client:visible />
+
+最後三頁離開公式，把黑盒子打開看一眼。
+
+- **μA741**：1968 年由 Dave Fullagar 在 Fairchild Semiconductor 設計的早期運放積體電路。投影片標出晶片上的四個區塊——差動放大器（differential amplifier，輸入級）、增益級（gain stage）、輸出級（output stage），以及佔掉可觀面積的**補償電容（compensation capacitor）**。
+- **為什麼要補償電容**：它讓運放在接成回授之後**不會振盪**。1978 年的規格書寫「內建頻率補償提供穩定度，不需外部元件」——在那之前使用者得自己外接補償電容。
+- **代價是面積**：那顆電容在晶片照片上大得一眼就認得出來，這也是它被叫做「The Big Cap」的原因。
+
+**這一段其實是第 12 章的預告。** 「為什麼負回授會振盪、要補償什麼」完整的答案在回授那一章（相位邊限、頻率補償、米勒補償），見[第 11 週筆記](/notes/電子學實作系列第11週-回授)。這裡先記住一件事：**本章所有公式都假設運放是穩定的**，而穩定性是設計出來的，不是免費的。
+
+![μA741 晶片顯微照片，以彩色框標出差動放大器（輸入級）、增益級、輸出級、補償電容與短路保護電路五個區塊](/note-images/ec-week10-ch8/10-ua741-die.jpg)
+
+*佔掉一大塊面積的那顆電容，就是讓這顆運放不振盪的代價。*
+
+![μA741 的封裝與裸晶照片：左為開蓋的金屬圓殼，可見中央的裸晶與八條打線；中為裸晶特寫；右為未開蓋的 TO-99 金屬罐封裝](/note-images/ec-week10-ch8/11-ua741-package.jpg)
+
+*1978 年的 μA741：金屬圓殼、八條打線、一顆比電晶體還大的補償電容。*
+
+![1970 年代 Fairchild 運放型錄的一頁，列出 μA733 至 μA749 各型號與頁碼，μA741「Frequency Compensated Operational Amplifier」那一列以紅色虛線框標出](/note-images/ec-week10-ch8/13-fairchild-catalog-ua741.jpg)
+
+*型錄上 μA741 的正式名稱就叫「Frequency Compensated Operational Amplifier」——頻率補償是它的賣點，不是附帶功能。*
+
+![Dave Fullagar 的近照，μA741 的設計者](/note-images/ec-week10-ch8/12-dave-fullagar.jpg)
+
+*Dave Fullagar：改良輸出死區與輸入級阻抗，並把補償電容做進晶片裡。*
+
+### 本章與實驗的對照
+
+| 投影片結論 | 本週實驗會看到什麼 |
+| --- | --- |
+| $A_v = -R_1/R_2$（第 14 頁） | 示波器上輸入輸出反相 180 度，振幅比等於電阻比 |
+| 輸入阻抗 $= R_2$（第 14 頁） | 訊號源內阻不可忽略時，量到的增益偏低 |
+| 增益誤差 $= (1+R_1/R_2)/A_0$（第 11、16 頁） | 增益設越大，量到的值離理論值越遠 |
+| 輸出被電源軌夾住（第 9 頁） | 振幅調大後波形被削平，降振幅就恢復 |
+| 無限頻寬是假設（第 6 頁） | 頻率拉高後增益下滑；再高則正弦變三角（迴轉率） |

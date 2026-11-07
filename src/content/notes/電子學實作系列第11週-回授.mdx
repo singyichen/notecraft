@@ -1,0 +1,1209 @@
+---
+title: "電子學實作系列：第 11 週 - 回授"
+description: "CH12 回授的逐頁詳解：負回授系統的四個組件與閉迴路轉移函數、迴路增益的量法、負回授換來的四件好處（增益去敏感化、頻寬延展、阻抗修改、線性化）、四種放大器與其理想／實際模型、感測與回送的四種組合、電壓-電壓與電壓-電流兩種拓撲的閉迴路增益與輸入輸出阻抗，以及穩定度一節的 Bode 規則、Barkhausen 判據、相位邊限與頻率補償（含米勒補償）。"
+tags: ["電子學實作系列"]
+createdAt: "2026-11-21"
+updatedAt: "2026-11-07"
+---
+
+import PdfRefChip from '@/components/islands/PdfRefChip.tsx'
+
+# 第 11 週：回授
+
+*Feedback*
+
+> 本週參考：[《Fundamentals of Microelectronics》](/notes/fundamentals-of-microelectronics) CH12。
+> 講義 `Ch 12 - Feedback.pdf` 共 67 頁，是第 9 週（11/7）一起發下的，收錄在 `_references/電子學實作系列/第九週/`。
+> 第 10 週[運算放大器那一章](/notes/電子學實作系列第10週-mos放大器組態與運放電路)結尾留下的兩個問號——「為什麼電阻比會比元件參數準」與「μA741 裡那顆大電容在補償什麼」——答案都在這一章。
+
+## 本週摘要
+
+### 這一章在補前一章的帳
+
+第 8 章把運放當黑盒子，用兩條規則（虛短路、輸入不吃電流）兩行算完所有電路。那兩條規則成立的理由、代價、以及什麼時候會失效，第 8 章一概沒說。這一章把帳結清：
+
+| 第 8 章的說法 | 第 12 章給的理由 |
+| --- | --- |
+| 虛短路：$V_+ \approx V_-$ | 迴路增益 $KA_1 \gg 1$ 時比較誤差趨近零（第 7 頁） |
+| 增益只由電阻比決定，很精確 | 增益去敏感化：靈敏度是 $\dfrac{1}{1+KA_1}$（第 10–13 頁） |
+| 閉迴路增益比開迴路低很多 | 那是換來的代價，同時換到頻寬、阻抗、線性度（第 13–22 頁） |
+| 增益誤差 $=\dfrac{1+R_1/R_2}{A_0}$ | 就是 $\dfrac{1}{KA_1}$ 改寫一次（第 10 頁） |
+| 運放裡那顆補償電容 | 相位邊限不夠會振盪，補償把 $\omega_{GX}$ 往左搬（第 62–67 頁） |
+
+**一句話總結**：負回授拿「低一點、但可預測的增益」去換「高一點、但失控的增益」，換率是 $1 + KA_1$，而且這個倍率同時出現在五個地方——增益、靈敏度、頻寬、輸入阻抗、輸出阻抗。
+
+### 整章只有一個式子
+
+$$
+H = \frac{Y}{X} = \frac{A_1}{1 + K A_1}
+$$
+
+後面 60 頁都是它的變形：$KA_1 \gg 1$ 時 $H \to 1/K$（去敏感化）；把 $A_1$ 換成 $A_1(s)$ 得到頻寬延展；對 $A_1$ 微分得到靈敏度；把分母寫成 $1+KH(s)$ 並問它什麼時候等於零，就是穩定度。
+
+### 對數學背景讀者的三個對應
+
+| 電子學講法 | 數學上是什麼 |
+| --- | --- |
+| 閉迴路轉移函數 $\dfrac{A_1}{1+KA_1}$ | 仿射映射 $Y = A_1(X - KY)$ 的不動點解 |
+| 增益去敏感化 | 對數靈敏度 $\dfrac{\mathrm{d}\ln H}{\mathrm{d}\ln A_1} = \dfrac{1}{1+KA_1}$ |
+| 不穩定 $1 + KH(j\omega_1) = 0$ | 分母的零點（閉迴路極點）跑到虛軸上或右半平面 |
+
+## CH12：回授（逐頁名詞詳解，中英對照）
+
+> 以下依投影片出現順序，每個名詞先給完整中文解釋、英文原文附在括號裡。講義共 67 頁，涵蓋 12.1 到 12.7 全部七節。
+
+### 章節架構與全章路線（第 1–3 頁）
+
+{/* @ai-reference
+id: ch12-roadmap
+file: _references/電子學實作系列/第九週/Ch 12 - Feedback.pdf
+page: 3
+status: suggested
+excerpt: General Considerations: Elements of Feedback Systems, Loop Gain, Properties of Negative Feedback. Amplifiers and Sense/Return Methods. Analysis of Feedback Circuits. Stability and Compensation.
+*/}
+<PdfRefChip file="_references/電子學實作系列/第九週/Ch 12 - Feedback.pdf" page={3} status="suggested" excerpt={"General Considerations: Elements of Feedback Systems, Loop Gain, Properties of Negative Feedback. Amplifiers and Sense/Return Methods. Analysis of Feedback Circuits. Stability and Compensation."} client:visible />
+
+- **章節架構（Contents）**：第 2 頁列出七節——12.1 一般考量、12.2 放大器的種類、12.3 感測與回送技術、12.4 回授的極性、12.5 回授拓撲、12.6 有限輸入輸出阻抗的影響、12.7 回授系統的穩定度。
+- **全章路線（outline）**：第 3 頁排成四個方塊、由左往右串成一條線：先建立一般觀念（回授系統的組成元件、迴路增益、負回授的性質），再學會辨認（四種放大器、感測與回送的方法、回授的極性），接著分析實際電路（四種回授類型、有限輸入輸出阻抗），最後處理穩定度與補償。
+
+**這四個方塊的順序就是看一個回授電路的順序**：先問「哪一部分是前饋、哪一部分是回授」，再問「感測的是電壓還是電流、回送的是電壓還是電流」，才能套公式。跳過前兩步直接套 $\frac{A}{1+KA}$ 是這一章最常見的錯誤。
+
+![第 12 章路線圖：四個方塊由左至右串接，依序為 General Considerations（Elements of Feedback Systems、Loop Gain、Properties of Negative Feedback）、Amplifiers and Sense/Return Methods（Types of Amplifiers、Amplifier Models、Sense/Return Methods、Polarity of Feedback）、Analysis of Feedback Circuits（Four Types of Feedback、Effect of Finite I/O Impedances）、Stability and Compensation（Loop Instability、Phase Margin、Frequency Compensation）](/note-images/ec-week11-ch12/00-chapter-outline.png)
+
+*四個方塊的順序，就是拿到一個回授電路時該問的四個問題的順序。*
+
+### 負回授系統的四個組件（第 4 頁）
+
+{/* @ai-reference
+id: ch12-four-components
+file: _references/電子學實作系列/第九週/Ch 12 - Feedback.pdf
+page: 4
+status: suggested
+excerpt: A negative feedback system consists of four components: 1) feedforward system, 2) sense mechanism, 3) feedback network, and 4) comparison mechanism.
+*/}
+<PdfRefChip file="_references/電子學實作系列/第九週/Ch 12 - Feedback.pdf" page={4} status="suggested" excerpt={"A negative feedback system consists of four components: 1) feedforward system, 2) sense mechanism, 3) feedback network, and 4) comparison mechanism."} client:visible />
+
+**前提盤點**：這一頁不需要任何物理，只需要「方塊圖（block diagram）」這個約定——方塊代表一個線性映射，箭頭代表訊號流向，圓圈代表加減。
+
+四個組件各司其職：
+
+| 組件 | 英文 | 做什麼 | 在運放電路裡是誰 |
+| --- | --- | --- | --- |
+| 前饋系統 | feedforward system | 提供大但不精確的增益 $A_1$ | 運放本體 |
+| 感測機制 | sense mechanism | 從輸出取出一份訊號 | 分壓電阻接到輸出節點 |
+| 回授網路 | feedback network | 把感測到的訊號縮小 $K$ 倍 | $R_1$、$R_2$ 分壓器 |
+| 比較機制 | comparison mechanism | 把回授訊號從輸入減掉 | 運放的差動輸入對 |
+
+**「負」回授的意思是比較機制做的是減法**，不是加法。圖上那個圓圈的下方標著減號——整章的結論全都建立在這個減號上，換成加號就變成振盪器。
+
+**兩個端口的方向不要看反**：回授網路的**輸入端口**接在放大器的輸出，**輸出端口**接回放大器的輸入。方塊圖裡 $K$ 那個三角形的尖端朝左，就是在提醒訊號是往回走的。
+
+![負回授系統的方塊圖：輸入 X 經比較機制（圓圈，下方為減號）進入前饋系統 A1 得到輸出 Y；感測機制從 Y 取出訊號送進回授網路 K 的輸入端口，K 的輸出端口送出 XF 回到比較機制](/note-images/ec-week11-ch12/01-negative-feedback-system.png)
+
+*四個方塊、一個減號。整章 67 頁都在講這張圖。*
+
+### 閉迴路轉移函數（第 5–6 頁）
+
+{/* @ai-reference
+id: ch12-closed-loop
+file: _references/電子學實作系列/第九週/Ch 12 - Feedback.pdf
+page: 5
+status: suggested
+excerpt: Y = A1(X - XF), XF = KY, close-loop transfer function H = Y/X = A1/(1 + KA1). error E = X - XF, feedback factor K = XF/Y.
+*/}
+<PdfRefChip file="_references/電子學實作系列/第九週/Ch 12 - Feedback.pdf" page={5} status="suggested" excerpt={"Y = A1(X - XF), XF = KY, close-loop transfer function H = Y/X = A1/(1 + KA1). error E = X - XF, feedback factor K = XF/Y."} client:visible />
+
+**數學對應**：這是一個**不動點問題**。$Y$ 同時出現在等式兩邊：
+
+$$
+\begin{aligned}
+Y &= A_1\,(X - X_F), \qquad X_F = K Y \\
+Y &= A_1\,(X - KY) \\
+Y\,(1 + KA_1) &= A_1 X \\
+H \equiv \frac{Y}{X} &= \frac{A_1}{1 + K A_1}
+\end{aligned}
+$$
+
+三個新名詞：
+
+- **閉迴路轉移函數（closed-loop transfer function）$H$**：接上回授後，輸出對輸入的比值。
+- **誤差（error）$E = X - X_F$**：比較機制的輸出，也就是真正送進 $A_1$ 的那個量。
+- **回授因數（feedback factor）$K = X_F / Y$**：回授網路的增益，通常小於 1。
+
+**$K$ 的因次要看訊號種類**：$X$、$Y$ 同為電壓時 $K$ 無因次；$Y$ 是電壓而 $X_F$ 是電流時 $K$ 的單位是 $\mathrm{A/V}=\Omega^{-1}$（第 33 頁的 $K = g_{mF}$ 就是這種）。**$KA_1$ 永遠無因次**，因為它是繞迴路一圈回到原點的比值——這是檢查有沒有套錯公式最快的方法。
+
+![閉迴路轉移函數：與第 4 頁同一張方塊圖，比較機制的輸出端以洋紅色標出誤差 E](/note-images/ec-week11-ch12/02-closed-loop-transfer.png)
+
+*和第 4 頁同一張圖，只多了一個標記：比較機制吐出來的那個量叫做誤差 $E$。*
+
+**Example 12-1（第 6 頁）：把非反相放大器翻譯成回授語言。** 這是第 8 章第 10 頁那個電路，只是換個角度看：
+
+$$
+K = \frac{R_2}{R_1+R_2}, \qquad
+\frac{Y}{X} = \frac{A_1}{1 + \dfrac{R_2}{R_1+R_2}A_1}
+$$
+
+和第 8 章第 11 頁推出來的式子一字不差。**差別只在第 8 章是硬算 KCL，這裡是認出四個組件後直接套通式。**
+
+![Example 12-1：非反相放大器的回授觀點，輸入 X 進運放 A1 的正輸入，輸出 Y 經 R1、R2 分壓得到 XF 回到負輸入](/note-images/ec-week11-ch12/03-example-12-1.png)
+
+*認出四個組件之後，第 8 章那一整頁的 KCL 就變成套一次公式。*
+
+### 比較誤差：為什麼虛短路會成立（第 7 頁）
+
+{/* @ai-reference
+id: ch12-comparison-error
+file: _references/電子學實作系列/第九週/Ch 12 - Feedback.pdf
+page: 7
+status: suggested
+excerpt: As A1K increases, the error between the input and fed back signal decreases. Or the fed back signal approaches a good replica of the input. E = X/(1 + KA1).
+*/}
+<PdfRefChip file="_references/電子學實作系列/第九週/Ch 12 - Feedback.pdf" page={7} status="suggested" excerpt={"As A1K increases, the error between the input and fed back signal decreases. Or the fed back signal approaches a good replica of the input. E = X/(1 + KA1)."} client:visible />
+
+把誤差解出來：
+
+$$
+\begin{aligned}
+E &= X - X_F, \qquad X_F = K A_1 E \\
+E &= X - K A_1 E \\
+E &= \frac{X}{1 + K A_1}
+\end{aligned}
+$$
+
+$KA_1$ 越大，誤差越小，於是 $X_F \to X$——**回授訊號變成輸入訊號的一份好複製品（good replica）**。
+
+**這就是第 8 章虛短路的真正出處。** 在運放電路裡，$X$ 是正輸入的電位、$X_F$ 是負輸入的電位，兩者相差 $E = X/(1+KA_1)$。$A_1 = A_0 = 10^5$、$K = 1/5$ 時，$1+KA_1 = 2 \times 10^4$，誤差是輸入的萬分之零點五——所以兩個輸入端量起來「短路」。
+
+**虛短路不是因為 $A_0$ 大，是因為迴路增益 $KA_1$ 大。** 這個區別在第 13 頁的極端情況會變得很重要：$K \to 0$（沒有回授）時即使 $A_0 = 10^5$ 也沒有虛短路。
+
+![Good Replica：輸入端的正弦波經運放與 R1、R2 分壓器構成的回授環路，回送到負輸入的 XF 波形與輸入波形幾乎重合，標註 Good Replica](/note-images/ec-week11-ch12/04-good-replica.png)
+
+*迴路增益越大，$X_F$ 越像 $X$ 的複製品——「虛短路」四個字講的就是這件事。*
+
+**一題自測**：某非反相放大器 $A_1 = 10^4$，設計成閉迴路增益 20。兩個輸入端的電位差是輸入訊號的幾分之一？
+
+<details>
+  <summary>答案</summary>
+  閉迴路增益 20 代表 $1/K = 20$，即 $K = 0.05$，$KA_1 = 500$，$1+KA_1 = 501$。誤差是輸入的 $1/501 \approx 0.2\%$。若輸入是 $100\ \mathrm{mV}$，兩輸入端差 $0.2\ \mathrm{mV}$。
+</details>
+
+### 迴路增益：怎麼量它（第 8–9 頁）
+
+{/* @ai-reference
+id: ch12-loop-gain
+file: _references/電子學實作系列/第九週/Ch 12 - Feedback.pdf
+page: 8
+status: suggested
+excerpt: When the input is grounded, and the loop is broken at an arbitrary location, the loop gain is measured to be KA1. VN = -KA1 Vtest, KA1 = -VN/Vtest (not to confuse the closed-loop gain).
+*/}
+<PdfRefChip file="_references/電子學實作系列/第九週/Ch 12 - Feedback.pdf" page={8} status="suggested" excerpt={"When the input is grounded, and the loop is broken at an arbitrary location, the loop gain is measured to be KA1. VN = -KA1 Vtest, KA1 = -VN/Vtest."} client:visible />
+
+**迴路增益（loop gain）$KA_1$**：訊號繞迴路走一整圈，回到原點時被放大了幾倍。量法有固定步驟：
+
+1. **把輸入接地**（$X = 0$）——迴路增益是迴路自己的性質，和外加訊號無關。
+2. **在迴路上任選一點切開**。
+3. 在切口的一側灌入測試訊號 $V_{test}$，量另一側的 $V_N$。
+4. 迴路增益是
+
+$$
+K A_1 = -\frac{V_N}{V_{test}}
+$$
+
+**負號是負回授的定義**。繞一圈之後訊號反相，所以 $V_N$ 與 $V_{test}$ 反號，加上負號後 $KA_1$ 為正。**如果量出來 $KA_1$ 是負的，表示接成了正回授**——第 43 頁判斷回授極性用的就是這件事。
+
+**「任選一點」是真的任選**：第 9 頁的 Example 12-3 把測試訊號改灌在 $A_1$ 的輸入端，量出來一樣是 $KA_1 = -V_N/V_{test}$。**迴路增益與切點無關**，這是它比閉迴路增益更基本的原因。
+
+**不要和閉迴路增益搞混**：閉迴路增益是 $\frac{A_1}{1+KA_1}$，迴路增益是 $KA_1$。投影片特地用紅字標了一句 "not to confuse the closed-loop gain"。
+
+![迴路增益的量法：(a) 輸入接地後在 K 與比較機制之間切開迴路，標出斷點 N 與 M；(b) 在切口灌入測試訊號 Vtest，量另一側的 VN](/note-images/ec-week11-ch12/05-loop-gain.png)
+
+*輸入接地、迴路切開、灌一個測試訊號——三個動作量到的就是 $KA_1$。*
+
+![Example 12-3：改把測試訊號灌在 A1 的輸入端（節點 M），回授網路的輸出為節點 N，量到的仍是同一個 KA1](/note-images/ec-week11-ch12/06-loop-gain-alt.png)
+
+*切點換了，答案不變——迴路增益是迴路的性質，不是某個節點的性質。*
+
+### 增益去敏感化：負回授的第一個好處（第 10–13 頁）
+
+{/* @ai-reference
+id: ch12-gain-desensitization
+file: _references/電子學實作系列/第九週/Ch 12 - Feedback.pdf
+page: 10
+status: suggested
+excerpt: Suppose A1 is an amplifier whose gain is poorly controlled. A CS stage provides a voltage gain of gm RD while both gm and RD vary with process and temperature; the gain thus may vary by as much as 20%. If KA1 >> 1, Y/X = 1/K = 1 + R1/R2.
+*/}
+<PdfRefChip file="_references/電子學實作系列/第九週/Ch 12 - Feedback.pdf" page={10} status="suggested" excerpt={"Suppose A1 is an amplifier whose gain is poorly controlled. A CS stage provides a voltage gain of gm RD while both gm and RD vary with process and temperature; the gain thus may vary by as much as 20%. If KA1 >> 1, Y/X = 1/K = 1 + R1/R2."} client:visible />
+
+**問題**：共源級的增益是 $g_m R_D$，而 $g_m$ 與 $R_D$ 都隨製程與溫度跑，整體可能變動 $\pm 20\%$。但規格要的是 4.00 這種精度。怎麼辦？
+
+**解法**：$KA_1 \gg 1$ 時，
+
+$$
+\frac{Y}{X} = \frac{A_1}{1+KA_1} \;\xrightarrow[\;KA_1 \gg 1\;]{}\; \frac{A_1}{KA_1} = \frac{1}{K} = 1 + \frac{R_1}{R_2}
+$$
+
+**$A_1$ 整個消失了。** 閉迴路增益只剩回授網路的倒數，而回授網路是兩顆電阻。
+
+**數學對應：這是靈敏度（sensitivity）。** 把 $H = \frac{A_1}{1+KA_1}$ 對 $A_1$ 微分：
+
+$$
+\begin{aligned}
+\frac{\mathrm{d}H}{\mathrm{d}A_1}
+&= \frac{(1+KA_1) - A_1 K}{(1+KA_1)^2} = \frac{1}{(1+KA_1)^2} \\
+S \equiv \frac{\mathrm{d}\ln H}{\mathrm{d}\ln A_1}
+&= \frac{\mathrm{d}H}{\mathrm{d}A_1}\cdot\frac{A_1}{H}
+= \frac{1}{(1+KA_1)^2}\cdot (1+KA_1)
+= \frac{1}{1 + K A_1}
+\end{aligned}
+$$
+
+**開迴路增益變動 1%，閉迴路增益只變動 $\dfrac{1}{1+KA_1}$%。** 這就是「增益去敏感化（gain desensitization）」的精確敘述，也是整章最值得記住的一條。
+
+**為什麼電阻比會準（第 11 頁）**：$g_m R_D$ 是兩個不同物理量的乘積，兩者各自亂跑；$R_1/R_2$ 是同一種量的比值，而且兩顆電阻用**同一個單位電阻（unit resistor）串並聯做出來**——製程讓它們一起變厚、一起變薄，比值不動。投影片畫的就是這種「用相同小方塊拼出 $R_1 = 3R_2$」的佈局。
+
+**這是一個通則**：類比積體電路的精度幾乎都來自比值匹配（matching），不來自絕對值。絕對值的誤差動輒 $20\%$，匹配可以做到 $0.1\%$。
+
+![電阻匹配的佈局：R1 與 R2 由形狀完全相同的單位電阻方塊串接而成，R1 由三個單位組成、R2 由一個單位組成，比值固定為 3](/note-images/ec-week11-ch12/07-resistor-matching.png)
+
+*用同一種小方塊拼出來的兩顆電阻，絕對值一起漂，比值不動。*
+
+**Example 12-4（第 12 頁）：把靈敏度的數字算出來。** 標稱增益 4，所以 $1+\frac{R_1}{R_2} = 4$、$K = \frac{1}{4}$。
+
+$$
+\begin{aligned}
+A_1 = 1000:&\quad KA_1 = 250, \quad \frac{Y}{X} = \frac{1000}{1+250} = 3.984 \\
+A_1 = 500:&\quad KA_1 = 125, \quad \frac{Y}{X} = \frac{500}{1+125} = 3.968
+\end{aligned}
+$$
+
+**開迴路增益掉一半，閉迴路增益只變 $\dfrac{3.984-3.968}{3.984} = 0.4\%$。**
+
+> **投影片第 12 頁的筆誤**：$A_1 = 500$ 那一行的分子印成 1000（寫作 $\frac{1000}{1+125}$），應為 $\frac{500}{1+125}$。所幸印出來的結果 3.968 是用正確分子算的，結論不受影響。
+
+用靈敏度公式對一下：$S = \frac{1}{1+KA_1}$，在 $A_1 = 500$ 處 $S = \frac{1}{126} = 0.79\%$，乘上 $\Delta A_1/A_1 = -50\%$ 得 $-0.4\%$，與逐點硬算一致。（在 $A_1 = 1000$ 處算得 $-0.2\%$；兩者差一倍是因為 $50\%$ 不是微小變動，微分只是一階估計。）
+
+**第 13 頁把好處列成四條**，後面逐一展開：
+
+| 好處 | 在哪幾頁 | 改善的倍率 |
+| --- | --- | --- |
+| 增益去敏感化 | 第 10–12 頁 | $1+KA_1$ |
+| 頻寬延展（bandwidth enhancement） | 第 14–15 頁 | $1+KA_0$ |
+| 輸入輸出阻抗的修改 | 第 20、38–48 頁 | $1+KA_0$ |
+| 線性化（linearization） | 第 22 頁 | 趨近 $1/K$ |
+
+**四條好處的倍率都是同一個 $1+KA_1$**，而付出的代價（增益下降）也是同一個倍率。**負回授是一場等價交換**。
+
+### 頻寬延展（第 14–15 頁）
+
+{/* @ai-reference
+id: ch12-bandwidth
+file: _references/電子學實作系列/第九週/Ch 12 - Feedback.pdf
+page: 14
+status: suggested
+excerpt: Let us consider a one-pole open-loop amplifier with a transfer function. Although negative feedback lowers the gain by (1+KA0), it also extends the bandwidth by the same amount. Closed-Loop Bandwidth = (1 + KA0) w0.
+*/}
+<PdfRefChip file="_references/電子學實作系列/第九週/Ch 12 - Feedback.pdf" page={14} status="suggested" excerpt={"Although negative feedback lowers the gain by (1+KA0), it also extends the bandwidth by the same amount. Closed-Loop Bandwidth = (1 + KA0) w0."} client:visible />
+
+**前提盤點**：這一頁需要一個新東西——**轉移函數（transfer function）$A_1(s)$**。它是「對每一個頻率，輸出比輸入等於多少」的函數；$s = j\omega$ 時取模長得到振幅響應、取輻角得到相位響應。單極點（one-pole）系統長這樣：
+
+$$
+A_1(s) = \frac{A_0}{1 + \dfrac{s}{\omega_0}}
+$$
+
+$A_0$ 是直流增益、$\omega_0$ 是極點頻率（也就是 $-3\ \mathrm{dB}$ 頻寬）。
+
+**推導**：把 $A_1(s)$ 代進閉迴路公式，上下同乘 $\left(1+\frac{s}{\omega_0}\right)$：
+
+$$
+\begin{aligned}
+\frac{Y}{X}(s)
+&= \frac{A_1(s)}{1+KA_1(s)}
+= \frac{\dfrac{A_0}{1+s/\omega_0}}{1 + \dfrac{KA_0}{1+s/\omega_0}}
+= \frac{A_0}{1 + \dfrac{s}{\omega_0} + KA_0} \\[4pt]
+&= \frac{\dfrac{A_0}{1+KA_0}}{1 + \dfrac{s}{(1+KA_0)\,\omega_0}}
+\end{aligned}
+$$
+
+這還是一個單極點系統，但兩個參數都被同一個倍率改寫：
+
+| | 開迴路 | 閉迴路 |
+| --- | --- | --- |
+| 直流增益 | $A_0$ | $\dfrac{A_0}{1+KA_0}$ |
+| 頻寬 | $\omega_0$ | $(1+KA_0)\,\omega_0$ |
+| 增益頻寬乘積 | $A_0\omega_0$ | $A_0\omega_0$（不變） |
+
+**增益頻寬乘積（gain-bandwidth product）是守恆量。** 回授不會讓放大器變厲害，只是讓你在「高增益窄頻寬」與「低增益寬頻寬」之間換位置。
+
+**因次檢查**：$s/\omega_0$ 無因次（$\mathrm{rad/s}$ 除以 $\mathrm{rad/s}$），$KA_0$ 無因次，所以 $(1+KA_0)\omega_0$ 的單位仍是 $\mathrm{rad/s}$。
+
+**Example 12-5（第 15 頁）**：$A_0 = 200$，掃 $K = 0,\,0.1,\,0.5$：
+
+$$
+K=0:\;1+KA_0 = 1;\qquad K=0.1:\;1+KA_0 = 21;\qquad K=0.5:\;1+KA_0 = 101
+$$
+
+三條曲線在對數座標上**平台高度各降一級、轉角各右移一級，而且斜線段完全重合**——重合的那段就是增益頻寬乘積守恆的圖解。
+
+![Example 12-5 的閉迴路頻率響應：三條曲線分別對應 K = 0、0.1、0.5，平台高度依序降低、轉角頻率依序右移，高頻段的下降斜線三條重合](/note-images/ec-week11-ch12/08-bandwidth-k-sweep.png)
+
+*平台降多少，轉角就右移多少；高頻那段三條疊在一起，因為乘積是守恆的。*
+
+### Example 12-7：把方塊圖換成真的電晶體（第 16–21 頁）
+
+{/* @ai-reference
+id: ch12-example-12-7
+file: _references/電子學實作系列/第九週/Ch 12 - Feedback.pdf
+page: 16
+status: suggested
+excerpt: Figure 12.11 depicts a transistor-level realization of the feedback circuit shown in Fig. 12.2. Assume lambda = 0 and R1 + R2 >> RD for simplicity, (a) Identify the four components of the feedback system, (b) Determine the open-loop and closed-loop voltage gain, (c) Determine the open-loop and closed-loop I/O impedances.
+*/}
+<PdfRefChip file="_references/電子學實作系列/第九週/Ch 12 - Feedback.pdf" page={16} status="suggested" excerpt={"Figure 12.11 depicts a transistor-level realization of the feedback circuit shown in Fig. 12.2. (a) Identify the four components, (b) Determine the open-loop and closed-loop voltage gain, (c) Determine the open-loop and closed-loop I/O impedances."} client:visible />
+
+**這是全章最重要的一題**：前面都是方塊圖，這裡第一次要在真實電路裡**指出**四個組件在哪。電路是一個**共閘級（common-gate，CG）**——$V_{in}$ 從源極進、$V_{out}$ 從汲極出——輸出再經 $R_1$、$R_2$ 分壓接回閘極。
+
+![Example 12-7 的電路：VDD 經 RD 接到汲極節點 Vout，M1 的源極接 Vin，閘極接在 R1 與 R2 的分壓節點上，R1 接 Vout、R2 接地](/note-images/ec-week11-ch12/09-cg-feedback-circuit.png)
+
+*共閘級加一個分壓器——方塊圖裡的四個組件全都藏在這七個元件裡。*
+
+**先複習共閘級（第 17 頁）**：源極電位上升 $\Delta V$ 會讓 $V_{GS}$ 下降，汲極電流變小，$R_D$ 上的壓降變小，$V_{out}$ 上升。**所以共閘級的增益是正的**，$v_{out} = g_m R_D\, v_{in}$（第 10 週摘要已經講過這件事）。
+
+![共閘級的複習：(a) 源極輸入電壓變化 ΔV 時汲極電流的反應；(b) 小訊號模型，受控電流源 gm·v1 與 RD 並聯](/note-images/ec-week11-ch12/10-cg-review.png)
+
+*共閘級的增益為正，是它能在這裡當前饋系統的前提——負號要由別的地方提供。*
+
+**(a) 四個組件在哪（第 18 頁）**：
+
+| 組件 | 在這個電路裡是誰 |
+| --- | --- |
+| 前饋系統 $A_0$ | $M_1$ 與 $R_D$ 構成的共閘級，$A_0 = g_m R_L$ |
+| 感測機制 | $R_1$ 的上端接在 $V_{out}$ 節點，感測的是**電壓** |
+| 回授網路 $K$ | $R_1$、$R_2$ 分壓器，$K = \dfrac{R_2}{R_1+R_2}$ |
+| 比較機制 | **$M_1$ 自己**——它的汲極電流由 $v_{GS} = v_S - v_G = v_{in} - v_F$ 決定 |
+
+**最關鍵的一句是「電晶體本身就是減法器」**。MOS 的電流由**閘源之間的電壓差**控制，而 $v_S$ 是輸入、$v_G$ 是回授訊號，所以元件天生就在做 $v_{in} - v_F$ 這個減法。不需要額外的減法電路。
+
+$$
+v_{out} = -g_m v_1 R_L = g_m R_L\,v_{SG} = g_m R_L\,(v_S - v_G) = \underbrace{g_m R_L}_{A_0}\,(v_{in} - v_F)
+$$
+
+其中 $R_L = R_D \,\|\, (R_1+R_2)$。
+
+![Example 12-7(a) 的四個組件標注：原電路右側以彩色虛線框分別圈出前饋系統（A0）、感測機制、回授網路（K）與比較機制，並標出 vf 與 v1](/note-images/ec-week11-ch12/11-cg-feedback-viewpoint.png)
+
+*四個框一圈，方塊圖與電路圖就對上了——注意比較機制那一框圈的是電晶體本身。*
+
+**(b) 開迴路與閉迴路增益（第 19 頁）**：題目給了 $R_1 + R_2 \gg R_D$，所以 $R_L = R_D \,\|\, (R_1+R_2) \approx R_D$：
+
+$$
+A_0 \approx g_m R_D, \qquad
+K = \frac{R_2}{R_1+R_2}, \qquad
+\frac{v_{out}}{v_{in}} = \frac{g_m R_D}{1 + \dfrac{R_2}{R_1+R_2}g_m R_D}
+$$
+
+**$R_1+R_2 \gg R_D$ 這個條件就是「理想回授網路不應該載入前饋系統」**——第 34 頁會把它升級成一條通則。
+
+**(c) 輸入輸出阻抗（第 20 頁）**：共閘級開迴路時 $R_{in} = \frac{1}{g_m}$、$R_{out} = R_D$。加上回授之後：
+
+$$
+R_{in,closed} = \frac{1}{g_m}\,(1+KA_0) = \frac{1}{g_m}\left(1 + \frac{R_2}{R_1+R_2}g_m R_D\right)
+$$
+
+$$
+R_{out,closed} = \frac{R_D}{1+KA_0} = \frac{R_D}{1 + \dfrac{R_2}{R_1+R_2}g_m R_D}
+$$
+
+**輸入阻抗被乘上 $1+KA_0$、輸出阻抗被除以 $1+KA_0$**，兩者都往「理想電壓放大器」靠攏（輸入阻抗無限大、輸出阻抗零）。**同一個倍率，第三次出現。**
+
+![Example 12-7(c)：(a) 在輸入端灌入測試電流 ix 量 vx 求輸入阻抗；(b) 在輸出端灌入測試電壓 vx 量 ix 求輸出阻抗](/note-images/ec-week11-ch12/12-cg-io-impedance.png)
+
+*兩張測試電路：左邊量輸入阻抗、右邊量輸出阻抗，手法都是灌一個測試源再看另一個量。*
+
+**Example 12-8：負載去敏感化（第 21 頁）**。把負載 $R_L = R_D/2$ 接上去，增益掉多少？
+
+$$
+\begin{aligned}
+\text{無回授：}\quad \frac{v_{out}}{v_{in}} &= g_m\left(R_D \,\|\, \frac{R_D}{2}\right) = \frac{g_m R_D}{3}
+&&\text{（掉為 1/3）} \\[4pt]
+\text{有回授：}\quad \frac{v_{out}}{v_{in}} &= \frac{g_m R_D/3}{1 + K\dfrac{g_m R_D}{3}} = \frac{g_m R_D}{3 + K g_m R_D}
+\end{aligned}
+$$
+
+代入 $K g_m R_D = 10$：無載時閉迴路增益是 $\frac{g_m R_D}{11}$，加載後是 $\frac{g_m R_D}{13}$，**相差約 18%**（$13/11 - 1$）。沒有回授時是掉到三分之一（差 200%）。
+
+**這題的意義**：負載變動本質上也是「開迴路增益變動」，所以同一套去敏感化照樣適用。**「增益的任何變因都被 $1+KA_0$ 稀釋」**——第 13 頁那句話的實例。
+
+![Example 12-8：同一個共閘回授電路，汲極節點額外接上一顆負載電阻 RL = RD/2](/note-images/ec-week11-ch12/13-load-desensitization.png)
+
+*負載變動也是一種「增益變動」，所以也被同一個倍率稀釋。*
+
+### 線性化（第 22 頁）
+
+{/* @ai-reference
+id: ch12-linearity
+file: _references/電子學實作系列/第九週/Ch 12 - Feedback.pdf
+page: 22
+status: suggested
+excerpt: If placed in a negative-feedback loop, the system provides a more uniform gain for different signal levels. gain at xi: Ai/(1+KAi) = (1/K)(1 - 1/(KAi)) = 1/K if KAi >> 1.
+*/}
+<PdfRefChip file="_references/電子學實作系列/第九週/Ch 12 - Feedback.pdf" page={22} status="suggested" excerpt={"If placed in a negative-feedback loop, the system provides a more uniform gain for different signal levels. gain at xi: Ai/(1+KAi) = 1/K if KAi >> 1."} client:visible />
+
+**前提盤點**：「非線性（nonlinear）」在這裡的意思是**局部斜率隨輸入大小改變**。投影片 (a) 畫的開迴路特性曲線在 $x_1$ 處陡、在 $x_2$ 處平，所以小訊號在不同工作點被放大不同倍數——這就是失真（distortion）。
+
+**推導**：在輸入 $x_i$ 處的局部開迴路增益記為 $A_i$，閉迴路的局部增益是
+
+$$
+\frac{A_i}{1+KA_i}
+= \frac{1}{K}\cdot\frac{KA_i}{1+KA_i}
+= \frac{1}{K}\left(1 - \frac{1}{1+KA_i}\right)
+\approx \frac{1}{K}\left(1 - \frac{1}{KA_i}\right)
+\;\xrightarrow[\;KA_i \gg 1\;]{}\; \frac{1}{K}
+$$
+
+**只要每一個工作點的 $KA_i$ 都夠大，閉迴路斜率就一律是 $1/K$**，和 $A_i$ 本身差多少無關。投影片 (b) 把開迴路那條彎曲的線壓成一條接近直線的閉迴路曲線。
+
+**代價仍然是同一個**：$A_1$ 原本在 $x_1$ 處是 $A_1$、在 $x_2$ 處是 $A_2$，閉迴路分別變成 $\frac{A_1}{1+KA_1}$ 與 $\frac{A_2}{1+KA_2}$，兩者都被壓低到 $1/K$ 附近。**線性度是用增益換來的。**
+
+**什麼時候會失效**：$KA_i \gg 1$ 必須在**整個訊號範圍**成立。訊號擺到放大器快飽和的地方時 $A_i$ 急遽變小，$KA_i$ 不再遠大於 1，失真就回來了——這是音訊功放在大音量下失真的標準解釋。
+
+![線性度改善：(a) 開迴路特性曲線在 x1 處陡、在 x2 處趨緩，局部斜率 A1 與 A2 明顯不同；(b) 加上回授後兩處斜率都被壓到 1/K 附近，曲線接近直線](/note-images/ec-week11-ch12/14-linearity-improvement.png)
+
+*彎的那條是開迴路、直的那條是閉迴路；代價是整條線都被壓低。*
+
+**一題自測**：某放大器在小訊號處 $A_1 = 1000$、在大訊號處掉到 $A_2 = 100$。以 $K = 0.1$ 加負回授後，兩處的閉迴路增益各是多少？差幾 %？
+
+<details>
+  <summary>答案</summary>
+  $\frac{1000}{1+100} = 9.90$ 與 $\frac{100}{1+10} = 9.09$，相差 $8.2\%$。開迴路原本差 $90\%$，回授把失真壓到十分之一以下——但代價是增益從 1000 掉到 9.9。
+</details>
+
+### 四種放大器（第 23–26 頁）
+
+{/* @ai-reference
+id: ch12-four-amplifier-types
+file: _references/電子學實作系列/第九週/Ch 12 - Feedback.pdf
+page: 23
+status: suggested
+excerpt: Four Types of Amplifiers: (a) voltage, (b) transimpedance, (c) transconductance, and (d) current amplifiers.
+*/}
+<PdfRefChip file="_references/電子學實作系列/第九週/Ch 12 - Feedback.pdf" page={23} status="suggested" excerpt={"Four Types of Amplifiers: (a) voltage, (b) transimpedance, (c) transconductance, and (d) current amplifiers."} client:visible />
+
+從這裡開始是 12.2 節。**為什麼需要分類**：前面的公式都假設輸入與輸出是「同一種量」，但回授可以感測電壓也可以感測電流、可以回送電壓也可以回送電流。要把四種組合講清楚，得先承認放大器本來就有四種。
+
+分類方式只有兩個問題：**輸入看的是電壓還是電流？輸出給的是電壓還是電流？**
+
+| 種類 | 英文 | 增益符號與因次 | 理想 $R_{in}$ | 理想 $R_{out}$ |
+| --- | --- | --- | --- | --- |
+| 電壓放大器 | voltage amplifier | $A_0 = \dfrac{v_{out}}{v_{in}}$（無因次） | $\infty$ | $0$ |
+| 轉阻放大器 | transimpedance amplifier | $R_0 = \dfrac{v_{out}}{i_{in}}$（$\Omega$） | $0$ | $0$ |
+| 轉導放大器 | transconductance amplifier | $G_m = \dfrac{i_{out}}{v_{in}}$（$\Omega^{-1}$） | $\infty$ | $\infty$ |
+| 電流放大器 | current amplifier | $A_I = \dfrac{i_{out}}{i_{in}}$（無因次） | $0$ | $\infty$ |
+
+**理想阻抗的規則只有一條：不要干擾被量的量。**
+
+- 要**讀電壓**就不能吸電流 → 輸入阻抗無限大。
+- 要**讀電流**就不能有壓降 → 輸入阻抗為零。
+- 要**給電壓**就不能隨負載變 → 輸出阻抗為零。
+- 要**給電流**就不能隨負載變 → 輸出阻抗無限大。
+
+這四條在第 34–35 頁會被原封不動地套到回授網路上。
+
+![四種放大器的理想符號：(a) 電壓放大器 A0，Rin = ∞、Rout = 0；(b) 轉阻放大器 R0，Rin = 0、Rout = 0；(c) 轉導放大器 Gm，Rin = ∞、Rout = ∞；(d) 電流放大器 AI，Rin = 0、Rout = ∞](/note-images/ec-week11-ch12/15-four-amplifier-types.png)
+
+*四種放大器＝輸入讀電壓或電流 × 輸出給電壓或電流。*
+
+**理想模型（第 24 頁）**：把阻抗取到極端之後，四種放大器各自縮成一個受控源——前兩種是受控電壓源，後兩種是受控電流源。
+
+![四種放大器的理想等效模型：(a) 受控電壓源 A0·vin；(b) 受控電壓源 R0·iin；(c) 受控電流源 Gm·vin；(d) 受控電流源 AI·iin](/note-images/ec-week11-ch12/16-ideal-amplifier-models.png)
+
+*理想模型只剩一個受控源，阻抗全被取到極端。*
+
+**實際模型（第 25 頁）**：真實元件的 $R_{in}$ 是有限值、$R_{out}$ 不是零，所以模型要補上這兩顆電阻。**第 12.6 節（有限輸入輸出阻抗的影響）處理的就是這兩顆電阻帶來的偏差。**
+
+![四種放大器的實際等效模型：每一種都在理想受控源之外補上有限的輸入電阻 Rin 與輸出電阻 Rout](/note-images/ec-week11-ch12/17-realistic-amplifier-models.png)
+
+*補上兩顆電阻，理想模型就變成可以對帳的實際模型。*
+
+**四種放大器各由哪個電路實現（第 26 頁）**：
+
+| 種類 | 電路 | 增益 | $R_{in}$ | $R_{out}$ |
+| --- | --- | --- | --- | --- |
+| 電壓 | 共源級 + 源極隨耦器（CS+SF） | $A_V = -g_m R_D$ | $\infty$ | $\dfrac{1}{g_{m2}}$ |
+| 轉阻 | 共閘級 + 源極隨耦器（CG+SF） | $R_T = R_D$ | $\dfrac{1}{g_{m1}}$ | $\dfrac{1}{g_{m2}}$ |
+| 轉導 | 共源級（CS） | $G_m = g_m$ | $\infty$ | $r_O$ |
+| 電流 | 共閘級（CG） | $A_I = 1$ | $\dfrac{1}{g_{m1}}$ | $\infty$ |
+
+**規律很乾淨**：要高輸入阻抗就從**閘極**進（CS），要低輸入阻抗就從**源極**進（CG）；要低輸出阻抗就在後面接**源極隨耦器**，要高輸出阻抗就直接從**汲極**出。這正是第 10 週三種組態那張表的另一種排法。
+
+![四種放大器的電路實現：(a) CS+SF 當電壓放大器；(b) CG+SF 當轉阻放大器；(c) CS 當轉導放大器；(d) CG 當電流放大器，各自標出 Rin 與 Rout](/note-images/ec-week11-ch12/18-amplifier-type-examples.png)
+
+*從閘極進還是從源極進、要不要接隨耦器——四種放大器就是這兩個選擇的四種組合。*
+
+**Example 12-9（第 27 頁）：電流增益等於 1 的放大器有什麼用？** 共閘級當電流放大器時 $A_I = 1$，看起來和一條導線沒兩樣。價值在**輸入阻抗**。
+
+假設訊號源是一個帶寄生電容 $C_p$ 的電流源：
+
+$$
+\text{(a) 直接接 } R_D:\quad \omega_{p,a} = \frac{1}{R_D C_p}
+\qquad\qquad
+\text{(b) 經 CG 級:}\quad \omega_{p,b} = \frac{1}{\dfrac{1}{g_m}C_p} = \frac{g_m}{C_p}
+$$
+
+因為 $\frac{1}{g_m} < R_D$，所以 $\omega_{p,b} > \omega_{p,a}$。**共閘級把輸入極點往高頻搬**，頻寬因此變寬。
+
+**這一題的用處**：它示範了「看一個級不能只看增益」。增益 1 的級可以靠阻抗轉換換到頻寬——和第 8 章單位增益緩衝器的邏輯一模一樣。
+
+![Example 12-9：(a) 電流源與寄生電容 Cp 直接接 RD，輸入極點為 1/(RD·Cp)；(b) 同一個電流源改接共閘級的源極，輸入極點變成 gm/Cp](/note-images/ec-week11-ch12/19-cg-input-pole.png)
+
+*電流增益是 1，但輸入阻抗從 $R_D$ 降到 $1/g_m$，極點因此往高頻搬。*
+
+### 感測與回送技術（第 28–29 頁）
+
+{/* @ai-reference
+id: ch12-sense-return
+file: _references/電子學實作系列/第九週/Ch 12 - Feedback.pdf
+page: 28
+status: suggested
+excerpt: SENSE AND RETURN TECHNIQUES - Voltage. (a) Sensing a voltage by a voltmeter, (b) sensing the output voltage by the feedback network, (c) example of implementation. R1 + R2 approx infinite.
+*/}
+<PdfRefChip file="_references/電子學實作系列/第九週/Ch 12 - Feedback.pdf" page={28} status="suggested" excerpt={"SENSE AND RETURN TECHNIQUES - Voltage. (a) Sensing a voltage by a voltmeter, (b) sensing the output voltage by the feedback network, (c) example of implementation."} client:visible />
+
+12.3 節的目的是：**拿到一個複雜電路，要能一眼認出「這裡在感測電壓還是電流」。** 投影片用三用電表當類比，因為量測和回授要做的事情完全一樣——取得資訊但不干擾。
+
+**感測電壓（第 28 頁）**：
+
+- 電表的做法：**並聯**在待測兩端，而且內阻要無限大。
+- 回授網路的做法：把回授網路的輸入端**並聯**在輸出節點，輸入阻抗要無限大。
+- 實際實現：$R_1$、$R_2$ 分壓器，條件是 $R_1 + R_2 \approx \infty$（相對於輸出節點看到的其他電阻）。
+
+![感測電壓：(a) 以電壓表並聯在待測兩端，內阻無限大；(b) 回授網路的輸入端並聯在輸出節點；(c) 實際實現，R1 與 R2 串聯分壓，要求 R1 + R2 趨近無限大](/note-images/ec-week11-ch12/20-sense-voltage.png)
+
+*量電壓就並聯、而且不能吸電流——回授網路做的是同一件事。*
+
+**感測電流（第 29 頁）**：
+
+- 電表的做法：**把線剪開、串聯**進去；更實際的做法是串一顆小電阻 $r$，再用電壓表量它的壓降。
+- 條件是 $r \ll R_L$，這樣才不干擾原電路。
+- 實際實現：在源極串一顆 $R_S$，條件是 $R_S \ll \dfrac{1}{g_{m1}}$（因為從源極看進去的阻抗就是 $\frac{1}{g_{m1}}$，它扮演投影片裡 $R_L$ 的角色）。
+
+![感測電流：(a) 以電流表串聯在線路中；(b) 實際做法是串一顆小電阻 r 再用電壓表量壓降；(c) 回授網路串在輸出迴路上；(d) 實際實現，源極串一顆 RS](/note-images/ec-week11-ch12/21-sense-current.png)
+
+*量電流要把線剪開串進去——串進去的那顆電阻必須小到不改變原本的電流。*
+
+### 比較機制：電壓減法與電流減法（第 30–31 頁）
+
+{/* @ai-reference
+id: ch12-subtractor
+file: _references/電子學實作系列/第九週/Ch 12 - Feedback.pdf
+page: 30
+status: suggested
+excerpt: Comparison Mechanism: To return a voltage or current to the input, we must employ a mechanism for adding or subtracting such quantities. To add two voltage sources, we place them in series. (c) differential pair as a voltage subtractor, (d) single transistor as a voltage subtractor.
+*/}
+<PdfRefChip file="_references/電子學實作系列/第九週/Ch 12 - Feedback.pdf" page={30} status="suggested" excerpt={"To return a voltage or current to the input, we must employ a mechanism for adding or subtracting such quantities. To add two voltage sources, we place them in series. (c) differential pair as a voltage subtractor, (d) single transistor as a voltage subtractor."} client:visible />
+
+訊號回到輸入之後要被**減掉**。怎麼減，取決於它是電壓還是電流。
+
+**電壓相減 → 串聯（第 30 頁）**：兩個電壓源串聯時電壓相加，所以把回授電壓反向串進輸入迴路就是相減：
+
+$$
+v_{in} = v_e + v_F \;\Longrightarrow\; v_e = v_{in} - v_F
+$$
+
+電路上有兩種實現：**差動對（differential pair）**（兩個輸入分別進兩支電晶體的閘極），或**單顆電晶體**（$v_{in}$ 進源極、$v_F$ 進閘極，元件自己算 $v_{GS}$ 的差——Example 12-7 用的就是這種）。
+
+![電壓減法：(a) 兩個電壓源串聯相加；(b) 回授電壓與輸入電壓串聯，誤差為兩者之差；(c) 差動對當電壓減法器；(d) 單顆電晶體當電壓減法器，vin 進源極、vF 進閘極](/note-images/ec-week11-ch12/22-voltage-subtractor.png)
+
+*電壓要相減就串聯；最省的實現是一顆電晶體——它本來就只看 $v_{GS}$ 這個差。*
+
+**電流相減 → 並聯（第 31 頁）**：兩個電流源並聯時電流相加（這就是 KCL），所以回授電流反向灌進輸入節點就是相減：
+
+$$
+i_{in} = i_e + i_F \;\Longrightarrow\; i_e = i_{in} - i_F
+$$
+
+實現方式有兩種：用一顆**電晶體**把回授電壓轉成電流再灌回去（$i_F = g_m v_F$，這是一個轉導放大器），或用一顆**夠大的電阻 $R_F$** 近似成電流源。
+
+![電流減法：(a) 兩個電流源並聯相加；(b) 回授電流與輸入電流在同一節點匯合，誤差為兩者之差；(c) 以電晶體把回授電壓轉成電流 iF = gm·vF 灌回輸入節點；(d) 以大電阻 RF 近似電流源](/note-images/ec-week11-ch12/23-current-subtractor.png)
+
+*電流要相減就並聯，差別只在「回送的那一支是電晶體還是電阻」。*
+
+**四個字總結 12.3 節**：
+
+| 要處理的量 | 感測（在輸出） | 回送（在輸入） |
+| --- | --- | --- |
+| 電壓 | 並聯（shunt） | 串聯（series） |
+| 電流 | 串聯（series） | 並聯（shunt） |
+
+**同一個量在輸出與輸入的接法剛好相反**，原因是「感測」要讀而不干擾、「回送」要注入而不干擾。這條對稱性是第 36 頁兩套命名法互為鏡像的根源。
+
+### 兩個辨認練習（第 32–33 頁）
+
+{/* @ai-reference
+id: ch12-example-12-10-11
+file: _references/電子學實作系列/第九週/Ch 12 - Feedback.pdf
+page: 32
+status: suggested
+excerpt: Example 12-10: Determine the types of sensed and returned signals in the circuit of Fig. 12.25. The resistive divider senses the output voltage and serves as the feedback network. M1 and M2 operate as both part of the op amp (the forward system) and a voltage subtractor.
+*/}
+<PdfRefChip file="_references/電子學實作系列/第九週/Ch 12 - Feedback.pdf" page={32} status="suggested" excerpt={"Example 12-10: Determine the types of sensed and returned signals in the circuit of Fig. 12.25. The resistive divider senses the output voltage and serves as the feedback network."} client:visible />
+
+**Example 12-10：電壓–電壓回授。** 電路是一個差動對（$M_1$、$M_2$）配電流鏡負載（$M_3$、$M_4$），輸出再經 $R_1$、$R_2$ 分壓回到 $M_2$ 的閘極。
+
+- 分壓器**並聯**在輸出 → 感測的是**電壓**，$v_F = \dfrac{R_2}{R_1+R_2}v_{out}$。
+- $M_1$、$M_2$ 既是運放的一部分，也是**電壓減法器** → 回送的是**電壓**。
+
+![Example 12-10：差動對 M1、M2 配 M3、M4 電流鏡負載，輸出 vout 經 R1、R2 分壓得到 vF 回到 M2 的閘極，圖上以藍色與紅色虛線框分別標出減法器與回授網路](/note-images/ec-week11-ch12/24-example-vv-feedback.png)
+
+*分壓器並聯在輸出＝感測電壓；差動對＝電壓減法器。兩個都是電壓，所以是電壓–電壓回授。*
+
+**Example 12-11：電壓–電流回授。** 這個電路的回授只有一顆電晶體 $M_F$：它的閘極接 $v_{out}$、汲極接到輸入節點。
+
+- $M_F$ 的閘極**並聯**在輸出 → 感測的是**電壓**。
+- $M_F$ 的汲極往輸入節點灌**電流** → 回送的是**電流**。
+
+$$
+i_F = K v_{out} \;\Longrightarrow\; K = \frac{i_F}{v_{out}} = g_{mF}
+$$
+
+**$K$ 的因次是 $\Omega^{-1}$**——這就是前面說「$K$ 的因次要看訊號種類」的實例。檢查方法仍然一樣：$K A_0$ 必須無因次，而這裡的 $A_0$ 是轉阻（單位 $\Omega$），兩者相乘確實無因次。
+
+![Example 12-11：輸入電流 iin 進 M1 的源極，M2 構成第二級，輸出 vout 接到 MF 的閘極，MF 的汲極把電流 iF 灌回輸入節點](/note-images/ec-week11-ch12/25-example-vc-feedback.png)
+
+*一顆電晶體同時做了兩件事：閘極感測輸出電壓、汲極回送電流。*
+
+### 理想回授網路的阻抗（第 34–35 頁）
+
+{/* @ai-reference
+id: ch12-ideal-fb-network
+file: _references/電子學實作系列/第九週/Ch 12 - Feedback.pdf
+page: 34
+status: suggested
+excerpt: To sense a voltage, the input impedance of an ideal feedback network must be infinite. To sense a current, the input impedance of an ideal feedback network must be zero.
+*/}
+<PdfRefChip file="_references/電子學實作系列/第九週/Ch 12 - Feedback.pdf" page={34} status="suggested" excerpt={"To sense a voltage, the input impedance of an ideal feedback network must be infinite. To sense a current, the input impedance of an ideal feedback network must be zero."} client:visible />
+
+把第 23 頁「不要干擾被量的量」那條規則套到回授網路上，得到四條：
+
+| 回授網路在做什麼 | 哪一端 | 理想阻抗 | 理由 |
+| --- | --- | --- | --- |
+| 感測電壓 | 輸入端（接放大器輸出） | $\infty$ | 不從輸出節點吸電流 |
+| 感測電流 | 輸入端 | $0$ | 不在輸出迴路上造成壓降 |
+| 回送電壓 | 輸出端（接放大器輸入） | $0$ | 當一個理想電壓源 |
+| 回送電流 | 輸出端 | $\infty$ | 當一個理想電流源 |
+
+**這四條就是前面每一題那些「假設 $R_1+R_2$ 很大」「假設 $R_F$ 很大」的來源。** 違反它們的後果叫做**載入效應（loading effect）**，正是 12.6 節要處理的事。
+
+![理想回授網路的輸入阻抗：左為感測電壓時輸入阻抗必須無限大，右為感測電流時輸入阻抗必須為零](/note-images/ec-week11-ch12/26-ideal-fb-input-impedance.png)
+
+*感測端的規則：讀電壓就不能吸電流，讀電流就不能有壓降。*
+
+![理想回授網路的輸出阻抗：左為回送電壓時輸出阻抗必須為零，右為回送電流時輸出阻抗必須無限大](/note-images/ec-week11-ch12/27-ideal-fb-output-impedance.png)
+
+*回送端的規則：給電壓要像理想電壓源，給電流要像理想電流源。*
+
+### 電壓–電壓回授（第 36–41 頁）
+
+{/* @ai-reference
+id: ch12-vv-feedback
+file: _references/電子學實作系列/第九週/Ch 12 - Feedback.pdf
+page: 36
+status: suggested
+excerpt: Voltage-Voltage Feedback (Razavi): (Output-Input). The first term refers to the quantity sensed at the output, and the second, to the quantity returned to the input. Series-Shunt Feedback (Sedra/Smith): (Input-Output).
+*/}
+<PdfRefChip file="_references/電子學實作系列/第九週/Ch 12 - Feedback.pdf" page={36} status="suggested" excerpt={"Voltage-Voltage Feedback (Razavi): (Output-Input). Series-Shunt Feedback (Sedra/Smith): (Input-Output)."} client:visible />
+
+12.5 節把四種回授拓撲逐一算過，講義實際講了其中兩種。
+
+**先處理命名的坑。** 同一個電路有兩套名字，而且順序相反：
+
+| 教材 | 名稱 | 第一個詞指的是 | 第二個詞指的是 |
+| --- | --- | --- | --- |
+| Razavi（本課教材） | 電壓–電壓回授（voltage-voltage） | **輸出**感測什麼 | **輸入**回送什麼 |
+| Sedra/Smith | 串聯–並聯回授（series-shunt） | **輸入**怎麼接 | **輸出**怎麼接 |
+
+投影片特地註明 Razavi 這套命名**不是標準用法**。對照方法：回送電壓＝輸入端串聯，感測電壓＝輸出端並聯，所以「電壓–電壓」＝「串聯–並聯」。**看到別人的書寫 series-shunt，要先在心裡翻一次。**
+
+**閉迴路增益（第 36 頁）**：
+
+$$
+\begin{aligned}
+V_1 &= V_{in} - V_F, \quad V_{out} = A_0 V_1, \quad V_F = K V_{out} \\
+V_{out} &= A_0\,(V_{in} - K V_{out}) \\
+\frac{V_{out}}{V_{in}} &= \frac{A_0}{1+KA_0}
+\end{aligned}
+$$
+
+和第 5 頁的通式一字不差——**因為輸入與輸出都是電壓，$K$ 無因次，這是最單純的一種。**
+
+![電壓–電壓回授的方塊圖：Vin 與 VF 串聯相減得到 V1 進入 A0，輸出 Vout 並聯接到 K 的輸入端，K 的輸出端標示阻抗 0、輸入端標示阻抗 ∞](/note-images/ec-week11-ch12/28-vv-topology.png)
+
+*兩個標在角落的 0 與 ∞，就是第 34–35 頁那四條規則在這個拓撲裡的版本。*
+
+**Example 12-15（第 37 頁）**：就是第 32 頁那個差動對電路。$A_0 = g_{mN}(r_{ON}\|r_{OP})$、$K = \frac{R_2}{R_1+R_2}$，所以
+
+$$
+\frac{V_{out}}{V_{in}} = \frac{g_{mN}(r_{ON}\|r_{OP})}{1 + \dfrac{R_2}{R_1+R_2}\,g_{mN}(r_{ON}\|r_{OP})}
+$$
+
+**輸入阻抗被抬高（第 38–39 頁）**：回授是**串聯**接在輸入迴路上，所以同樣的輸入電壓只能擠出更小的電流：
+
+$$
+\begin{aligned}
+I_{in}R_{in} &= V_{in} - V_F = V_{in} - K A_0 I_{in} R_{in} \\
+\frac{V_{in}}{I_{in}} &= R_{in}\,(1 + K A_0)
+\end{aligned}
+$$
+
+**這讓電路更接近理想的電壓放大器**（輸入阻抗無限大）。投影片稱 $1+KA_0$ 為「universal factor」。
+
+Example 12-16（第 39 頁）把它套回共閘級：$R_{in} = \frac{1}{g_m}$、$A_0 = g_m R_D$，得
+
+$$
+\frac{V_{in}}{I_{in}} = \frac{1}{g_m}\left(1 + \frac{R_2}{R_1+R_2}g_m R_D\right)
+$$
+
+和第 20 頁 Example 12-7(c) 的答案相同。**同一個結果用兩條路走到，是教材刻意的安排。**
+
+![電壓–電壓回授的輸入阻抗：輸入電流 Iin 流過前饋系統的輸入電阻 Rin，回授電壓 VF 與 Vin 串聯相減](/note-images/ec-week11-ch12/29-vv-input-impedance.png)
+
+*回授串在輸入迴路上，等效輸入阻抗被乘上 $1+KA_0$。*
+
+![Example 12-16：(a) 共閘級加 R1、R2 回授的完整電路；(b) 標出從輸入端看進去的 Rin](/note-images/ec-week11-ch12/30-example-vv-input-impedance.png)
+
+*和 Example 12-7(c) 同一個答案，從拓撲通式再走一次。*
+
+**輸出阻抗被壓低（第 40–41 頁）**：在輸出端灌測試電壓 $V_X$ 量電流 $I_X$。關鍵是 $V_X$ 會經回授網路跑回輸入，再被 $A_0$ 放大成輸出端的反向電壓：
+
+$$
+\begin{aligned}
+I_X &= \frac{V_X - A_0(-V_F)}{R_{out}}, \qquad V_F = K V_X \\
+I_X &= \frac{V_X + K A_0 V_X}{R_{out}} = \frac{(1+KA_0)V_X}{R_{out}} \\
+\frac{V_X}{I_X} &= \frac{R_{out}}{1 + K A_0}
+\end{aligned}
+$$
+
+**這讓電路更接近理想的電壓源。** Example 12-17（第 41 頁）在 $KA_0 \gg 1$ 的極限下得到一個漂亮的結果：
+
+$$
+R_{out,closed} \approx \frac{r_{ON}\|r_{OP}}{\dfrac{R_2}{R_1+R_2}g_{mN}(r_{ON}\|r_{OP})} = \left(1+\frac{R_1}{R_2}\right)\frac{1}{g_{mN}}
+$$
+
+**$r_{ON}$、$r_{OP}$ 完全消失了。** 開迴路輸出阻抗高達 $r_{ON}\|r_{OP}$（很大、很不準），閉迴路之後只剩 $\frac{1}{g_{mN}}$ 的幾倍——**又一次把不可控的量換成可控的量。**
+
+![電壓–電壓回授的輸出阻抗：在輸出節點 X 灌入測試電壓 VX 量電流 IX，VF = K·VX 經回授網路回到輸入](/note-images/ec-week11-ch12/31-vv-output-impedance.png)
+
+*灌一個測試電壓，回授會產生一個反抗它的輸出——等效輸出阻抗因此被除以 $1+KA_0$。*
+
+### 電壓–電流回授（第 42–48 頁）
+
+{/* @ai-reference
+id: ch12-vc-feedback
+file: _references/電子學實作系列/第九週/Ch 12 - Feedback.pdf
+page: 42
+status: suggested
+excerpt: Voltage-Current Feedback. The first term refers to the quantity sensed at the output, and the second, to the quantity returned to the input. This type is also called "shunt-shunt" feedback. Vout/Iin = R0/(1 + K R0).
+*/}
+<PdfRefChip file="_references/電子學實作系列/第九週/Ch 12 - Feedback.pdf" page={42} status="suggested" excerpt={"Voltage-Current Feedback. This type is also called shunt-shunt feedback. Vout/Iin = R0/(1 + K R0)."} client:visible />
+
+**感測電壓、回送電流**，Sedra/Smith 叫它**並聯–並聯（shunt-shunt）**。前饋系統必須是**轉阻放大器**（輸入收電流、輸出給電壓），所以增益寫成 $R_0$（單位 $\Omega$）。
+
+$$
+\begin{aligned}
+I_e &= I_{in} - I_F, \qquad I_F = K V_{out} \\
+V_{out} &= I_e R_0 = (I_{in} - K V_{out})R_0 \\
+\frac{V_{out}}{I_{in}} &= \frac{R_0}{1 + K R_0}
+\end{aligned}
+$$
+
+**形式完全一樣，只是 $A_1$ 換成 $R_0$。** 因次檢查：$K$ 的單位是 $\Omega^{-1}$、$R_0$ 的單位是 $\Omega$，$KR_0$ 無因次 ✓。
+
+![電壓–電流回授的方塊圖：輸入電流源 Iin 與回授電流 IF 在同一節點並聯相減得到 Ie 進入轉阻放大器 R0，輸出 Vout 並聯接到 K，K 的兩端都標示阻抗 ∞](/note-images/ec-week11-ch12/32-vc-topology.png)
+
+*輸入端並聯、輸出端並聯，所以叫 shunt-shunt；前饋系統是轉阻放大器。*
+
+**Example 12-18（第 43–44 頁）：一個兩級電路。** $M_1$（共閘，收輸入電流）→ 節點 $X$ → $M_2$（共源）→ $v_{out}$，再由 $R_F$ 從 $v_{out}$ 接回輸入節點。
+
+**(a) 先證明回授是負的。** 用第 8 頁的方法繞一圈追符號：
+
+$$
+I_{in}\uparrow \;\Rightarrow\; I_{D1}\downarrow \;\Rightarrow\; V_X\uparrow \;\Rightarrow\; V_{out}\downarrow \;\Rightarrow\; I_F\downarrow
+$$
+
+$I_{in}$ 與 $I_{RF}$ 灌進輸入節點的方向相反，**所以是負回授**。
+
+> **這一步不能跳過。** 前面所有公式都假設減號成立；接錯一個反相級就變成正回授，公式全部失效而且電路會振盪。辨認極性的標準動作就是「假設輸入增加，繞一圈看回來是增加還是減少」。
+
+**(b) 開迴路增益**（把 $R_F$ 拿掉）：
+
+$$
+R_0 = \frac{V_{out}}{I_{in}} = \frac{V_X}{I_{in}}\cdot\frac{V_{out}}{V_X} = R_{D1}\cdot(-g_{m2}R_{D2}) = -g_{m2}R_{D1}R_{D2}
+$$
+
+**(c) 閉迴路增益**：$R_F \gg \frac{1}{g_{m1}}$ 時 $I_F \approx \frac{V_{out}}{R_F}$，而回授電流的方向使 $-I_F \equiv K V_{out}$，所以 $K = -\frac{1}{R_F}$：
+
+$$
+R_{0,closed} = \frac{-g_{m2}R_{D1}R_{D2}}{1 + \dfrac{g_{m2}R_{D1}R_{D2}}{R_F}}
+$$
+
+**$K$ 與 $R_0$ 同號（都帶負號）所以 $KR_0 > 0$**，分母大於 1——這就是負回授在代數上的樣子。
+
+![Example 12-18 的電路：輸入電流 iin 進 M1 的源極，汲極節點 X 接 RD1 並驅動 M2 的閘極，M2 的汲極經 RD2 接 VDD 並輸出 vout，RF 從 vout 接回輸入節點](/note-images/ec-week11-ch12/33-example-vc-circuit.png)
+
+*兩級放大加一顆 $R_F$：$R_F$ 同時做了感測（接在 $v_{out}$）與回送（灌回輸入節點）。*
+
+![Example 12-18 的子電路：(b) 拿掉 RF 後求開迴路轉阻增益的電路；(c) 從 vout 看回授路徑，RF 與 1/gm1 串聯](/note-images/ec-week11-ch12/34-example-12-18-subcircuits.png)
+
+*拆成兩張小圖分別求 $R_0$ 與 $K$，是分析回授電路的標準手法。*
+
+**輸入阻抗被壓低（第 45–46 頁）**：回授是**並聯**灌進輸入節點，同樣的輸入電壓會被多吸走一份電流：
+
+$$
+\begin{aligned}
+I_X &= \frac{V_X}{R_{in}} + I_F, \qquad I_F = K R_0 \frac{V_X}{R_{in}} \\
+I_X &= (1 + K R_0)\frac{V_X}{R_{in}} \\
+R_{in,closed} &= \frac{R_{in}}{1 + K R_0}
+\end{aligned}
+$$
+
+**這讓電路更接近理想的電流感測器**（輸入阻抗為零）。Example 12-19 代入 Example 12-18 的數字：
+
+$$
+R_{in,closed} = \frac{1}{g_{m1}}\cdot\frac{1}{1 + \dfrac{g_{m2}R_{D1}R_{D2}}{R_F}}
+$$
+
+![電壓–電流回授的輸入阻抗：測試電流源 IX 灌進節點 X，一部分流進 Rin、一部分被回授電流 IF 帶走](/note-images/ec-week11-ch12/35-vc-input-impedance.png)
+
+*回授並聯在輸入節點，等效輸入阻抗被除以 $1+KR_0$。*
+
+**輸出阻抗也被壓低（第 47–48 頁）**：
+
+$$
+R_{out,closed} = \frac{R_{out}}{1 + K R_0}
+$$
+
+Example 12-20 的結果是 $R_{out,closed} = \dfrac{R_{D2}}{1 + \dfrac{g_{m2}R_{D1}R_{D2}}{R_F}}$。
+
+![電壓–電流回授的輸出阻抗：在輸出節點 X 灌入測試電壓 VX 量 IX，回授電流 IF = K·VX 經 R0 產生反向電壓 VA](/note-images/ec-week11-ch12/36-vc-output-impedance.png)
+
+*因為感測的是電壓，輸出阻抗和電壓–電壓回授一樣被除以迴路增益。*
+
+### 四種拓撲的阻抗規律
+
+把兩種拓撲的結果並排，規律只有一條：
+
+| 拓撲 | 感測 | 回送 | $R_{in}$ | $R_{out}$ |
+| --- | --- | --- | --- | --- |
+| 電壓–電壓（串聯–並聯） | 電壓 | 電壓 | $\times (1+KA_0)$ | $\div (1+KA_0)$ |
+| 電壓–電流（並聯–並聯） | 電壓 | 電流 | $\div (1+KR_0)$ | $\div (1+KR_0)$ |
+
+**規則**：
+
+- **輸入端**由**回送方式**決定——回送電壓（串聯）就乘，回送電流（並聯）就除。
+- **輸出端**由**感測方式**決定——感測電壓（並聯）就除，感測電流（串聯）就乘。
+
+**而且方向永遠朝著「讓電路更像它該是的那種理想放大器」。** 這就是為什麼第 23 頁要先把四種放大器講完——不先知道目標長什麼樣，就看不出回授在往哪個方向推。
+
+### 穩定度的前置工具：Bode 規則（第 49–51 頁）
+
+{/* @ai-reference
+id: ch12-bode-rules
+file: _references/電子學實作系列/第九週/Ch 12 - Feedback.pdf
+page: 49
+status: suggested
+excerpt: STABILITY IN FEEDBACK SYSTEMS. If designed poorly, negative-feedback amplifiers may behave badly or even oscillate. Review of Bode's Rules: The phase of a transfer function begins to decrease at one-tenth of the pole frequency, incurs a change of -45 degrees at the pole frequency, and experiences a total change of nearly -90 degrees at ten times the pole frequency.
+*/}
+<PdfRefChip file="_references/電子學實作系列/第九週/Ch 12 - Feedback.pdf" page={49} status="suggested" excerpt={"STABILITY IN FEEDBACK SYSTEMS. Review of Bode's Rules: The phase of a transfer function begins to decrease at one-tenth of the pole frequency, incurs a change of -45 degrees at the pole frequency, and experiences a total change of nearly -90 degrees at ten times the pole frequency."} client:visible />
+
+12.7 節開場先承認一件事：**負回授設計不好會「表現很差」甚至振盪**，這時系統稱為臨界穩定（marginally stable）或不穩定（unstable）。
+
+**前提盤點**：這一節需要兩個新工具。
+
+1. **Bode 圖（Bode plot）**：橫軸是 $\log\omega$，上圖畫 $20\log_{10}|H|$（單位 dB）、下圖畫 $\angle H$（單位度）。取對數的好處是**乘法變加法**——多個極點的效果可以逐段疊加。
+2. **Bode 規則（Bode's rules）**：一個極點（pole）對相位的影響是
+
+| 頻率 | 相位變化 |
+| --- | --- |
+| $0.1\,\omega_p$ | 開始下降 |
+| $\omega_p$ | $-45°$ |
+| $10\,\omega_p$ | 接近 $-90°$（總變化） |
+
+零點（zero）同理，但符號相反（$+45°$、$+90°$）。
+
+**數學對應**：單極點 $H(j\omega) = \frac{1}{1+j\omega/\omega_p}$ 的相位是 $-\arctan(\omega/\omega_p)$。$\arctan$ 在 $\log$ 座標上就是那條 S 形曲線：$\arctan(0.1) = 5.7°$、$\arctan(1) = 45°$、$\arctan(10) = 84.3°$。**所謂「規則」其實只是 $\arctan$ 的三個取值。**
+
+![Example 12-34：上圖為振幅響應，依序有極點 ωp1、零點 ωz、極點 ωp2；下圖為依 Bode 規則畫出的相位響應，在 ωp1 處降到 −45°、被零點拉回、再被 ωp2 拉低](/note-images/ec-week11-ch12/37-bode-phase-response.png)
+
+*相位圖是振幅圖每個轉折各自貢獻一段 $\arctan$ 疊加的結果。*
+
+**Example 12-35：極點個數決定相位能掉到多少（第 51 頁）**。這是整節的樞紐：
+
+| 極點數 | 相位最多掉到 | 能不能在有限頻率達到 $-180°$ |
+| --- | --- | --- |
+| 一個 | $-90°$ | 不能 |
+| 兩個 | $-180°$（只在 $\omega\to\infty$） | 不能（有限頻率內達不到） |
+| 三個 | $-270°$ | **能**——某個有限頻率剛好 $-180°$ |
+
+**三極點系統在某個有限頻率上會把訊號完全反相。** 投影片用波形圖強調：輸入一個該頻率的訊號，輸出是倒過來的。這正是負回授變成正回授的機制——比較機制的減號遇上額外的 $180°$，就變成加號。
+
+![Example 12-35：(a) 單極點、(b) 雙極點、(c) 三極點系統的振幅與相位響應並排；(d) 三極點系統在某個有限頻率 ω1 上把輸入波形反相輸出](/note-images/ec-week11-ch12/38-pole-count-phase.png)
+
+*一、二個極點的相位到不了 $-180°$；三個就可以——振盪的大門是在這裡打開的。*
+
+### 不穩定與 Barkhausen 判據（第 52–55 頁）
+
+{/* @ai-reference
+id: ch12-barkhausen
+file: _references/電子學實作系列/第九週/Ch 12 - Feedback.pdf
+page: 52
+status: suggested
+excerpt: Substitute jw for s. If for a certain w1, KH(jw1) reaches -1, the closed loop gain becomes infinite. This implies for a very small input signal at w1, the output can be very large. Thus the system becomes unstable.
+*/}
+<PdfRefChip file="_references/電子學實作系列/第九週/Ch 12 - Feedback.pdf" page={52} status="suggested" excerpt={"If for a certain w1, KH(jw1) reaches -1, the closed loop gain becomes infinite. Thus the system becomes unstable."} client:visible />
+
+把閉迴路公式寫成頻域形式：
+
+$$
+\frac{Y}{X}(s) = \frac{H(s)}{1 + K H(s)}
+$$
+
+**不穩定的條件就是分母為零**：若存在某個 $\omega_1$ 使
+
+$$
+1 + K H(j\omega_1) = 0 \quad\Longleftrightarrow\quad K H(j\omega_1) = -1
+$$
+
+則 $\frac{Y}{X}(j\omega_1) = \infty$——**一個極小的輸入就能產生極大的輸出**，系統不穩定。
+
+![不穩定條件：方塊圖 X 經比較機制進入 H(s) 得到 Y，K 構成回授路徑；當 KH(jω1) = −1 時閉迴路增益發散](/note-images/ec-week11-ch12/39-instability-loop.png)
+
+*分母歸零就是出事的那一刻；整節剩下的內容都在講怎麼離它遠一點。*
+
+**Barkhausen 判據（第 53 頁）**：把複數條件 $KH(j\omega_1) = -1$ 拆成模長與輻角兩條：
+
+$$
+|K H(j\omega_1)| = 1, \qquad \angle K H(j\omega_1) = -180°
+$$
+
+**兩條要同時成立**才會振盪。這個拆法比原式好用，因為 Bode 圖上一張看模長、一張看相位，可以分開讀。
+
+**Example 12-36：為什麼雙極點系統不會振盪（第 54 頁）**。雙極點的相位只有在 $\omega \to \infty$ 時才到 $-180°$，而那裡 $|H| \to 0$，不可能等於 1。**兩條判據永遠無法同時滿足。**
+
+**不穩定是怎麼長出來的（第 55 頁）**：投影片用三格圖說明時間演化——
+
+1. 某個 $\omega_1$ 的雜訊成分出現在輸入端。
+2. 它繞迴路一圈回到減法器，帶著 $180°$ 的相移。
+3. 減法器把「反相的訊號」減掉，等於**加強**了原訊號。
+4. 回到第 1 步，每繞一圈振幅就再大一次。
+
+**只要繞一圈的增益不小於 1，訊號就會一直長大**，直到被電源軌削平為止——這時候輸出就是一個持續的振盪波形。
+
+![不穩定的時間演化：(a) 輸入端出現 ω1 的成分；(b) 該成分繞迴路一圈後帶著 180° 相移回到減法器；(c) 減法器因此加強了節點 B 的訊號，振幅逐圈增長](/note-images/ec-week11-ch12/40-time-evolution-instability.png)
+
+*減號遇上 $180°$ 相移就變成加號，於是每繞一圈訊號就長大一次。*
+
+### 振盪條件與相位邊限（第 56–59 頁）
+
+{/* @ai-reference
+id: ch12-phase-margin
+file: _references/電子學實作系列/第九週/Ch 12 - Feedback.pdf
+page: 58
+status: suggested
+excerpt: A measure commonly used to quantify the stability of feedback systems is the "phase margin" (PM). PM = angle H(wGX) - (-180) = angle H(wGX) + 180. wPX (phase crossover) is the frequency at which KH=-180. wGX (gain crossover) is the frequency at which |KH|=1.
+*/}
+<PdfRefChip file="_references/電子學實作系列/第九週/Ch 12 - Feedback.pdf" page={58} status="suggested" excerpt={"A measure commonly used to quantify the stability of feedback systems is the phase margin (PM). PM = angle H(wGX) + 180. wPX (phase crossover) is the frequency at which KH=-180. wGX (gain crossover) is the frequency at which |KH|=1."} client:visible />
+
+**Example 12-37（第 56 頁）**：一個三極點系統的 Bode 圖上，在相位等於 $-180°$ 的那個頻率，增益還大於 1 → **會振盪**，而且超過最低振盪門檻。
+
+**精確的判準（第 57 頁）**：兩條判據不必在**同一個頻率**同時達成，只要在相位到 $-180°$ 的那個頻率上增益仍 $\ge 1$ 就會出事：
+
+| 在 $\angle KH = -180°$ 處 | 結果 |
+| --- | --- |
+| $\lvert KH \rvert \ge 1$ | 不穩定 |
+| $\lvert KH \rvert < 1$ | 穩定 |
+
+![振盪條件：(a) 相位在迴路增益降到 1 之前就到 −180°，此時 |KH| ≥ 1，系統不穩定；(b) 相位在迴路增益降到 1 之後才到 −180°，此時 |KH| < 1，系統穩定](/note-images/ec-week11-ch12/42-condition-for-oscillation.png)
+
+*看的不是兩個頻率誰大誰小而已，而是「相位到 $-180°$ 時增益剩多少」。*
+
+![Example 12-37：三極點系統的 Bode 圖，相位在 ω1 處通過 −180°，而該頻率上的 20log|KH| 仍大於 0 dB](/note-images/ec-week11-ch12/41-example-oscillation.png)
+
+*相位穿越 $-180°$ 時增益還在 0 dB 以上，這個系統一定振盪。*
+
+**兩個交越頻率（第 58 頁）**：
+
+- **增益交越頻率（gain crossover）$\omega_{GX}$**：$|KH| = 1$（即 0 dB）的頻率。
+- **相位交越頻率（phase crossover）$\omega_{PX}$**：$\angle KH = -180°$ 的頻率。
+
+在增益交越處，**相位邊限**（phase margin，PM）定義為相位距離 $-180°$ 還有多遠：
+
+$$
+\mathrm{PM} = \angle H(\omega_{GX}) - (-180°) = \angle H(\omega_{GX}) + 180°
+$$
+
+在相位交越處，**增益邊限**（gain margin）量的是增益距離 0 dB 還有多少。兩者是同一件事的兩個切面。
+
+![相位邊限的定義：Bode 圖上標出 ωGX（|KH| = 1 處）與 ωPX（∠KH = −180° 處），相位邊限是 ωGX 處的相位距離 −180° 的角度，增益邊限是 ωPX 處的增益距離 0 dB 的量](/note-images/ec-week11-ch12/43-phase-margin.png)
+
+*相位邊限量的是「還差多少角度就出事」，增益邊限量的是「還差多少 dB 就出事」。*
+
+**穩定條件與設計目標（第 59 頁）**：條件是 $\omega_{GX} < \omega_{PX}$，但光是「小於」還不夠：
+
+| 關係 | PM | 階躍響應長什麼樣 | 判定 |
+| --- | --- | --- | --- |
+| $\omega_{GX} = \omega_{PX}$ | $0°$ | 持續振盪不衰減 | 振盪（臨界穩定） |
+| $\omega_{GX} < \omega_{PX}$ | $\approx 45°$ | 明顯過衝、振鈴後才穩定 | 臨界穩定 |
+| $\omega_{GX} \ll \omega_{PX}$ | $> 60°$ | 幾乎沒有過衝 | 穩定 |
+
+**$\mathrm{PM} > 60°$ 是實務上的設計目標。** 只要 PM 大於零在數學上就不會發散，但 PM 太小的系統**雖然不振盪卻「表現很差」**——這正是第 49 頁說的 behave badly：階躍輸入後要振鈴好一陣子才安定。
+
+![穩定條件的三種情形：(a) ωGX = ωPX、PM = 0°，階躍響應持續振盪；(b) ωGX 略小於 ωPX、PM ≈ 45°，階躍響應有明顯過衝與振鈴；(c) ωGX 遠小於 ωPX、PM > 60°，階躍響應平順](/note-images/ec-week11-ch12/44-condition-for-stability.png)
+
+*右邊那三條階躍響應才是「相位邊限」的實際意義：PM 決定你要等多久才安定。*
+
+**Example 12-38：三級放大器要穩定的條件（第 60–61 頁）**。三級相同的共源級，各自的極點都在
+
+$$
+\omega_p = \frac{1}{R_D C_1}
+$$
+
+所以 $H(s)$ 有一個三重極點，直流增益是 $(g_m R_D)^3$。題目取 $K = 1$（單位回授），所以 $|KH| = |H|$。
+
+**穩定條件是 $|H(\omega_{PX})| < 1$。** 三個相同極點各在 $\omega_{PX}$ 處貢獻 $-60°$，而 $\arctan(\sqrt{3}) = 60°$，所以
+
+$$
+\omega_{PX} = \sqrt{3}\,\omega_p
+$$
+
+代回振幅：
+
+$$
+|H(\omega_{PX})| = \frac{(g_m R_D)^3}{\left(\sqrt{1+3}\right)^3} = \frac{(g_m R_D)^3}{8} < 1
+\quad\Longrightarrow\quad
+g_m R_D < 2
+$$
+
+**每一級的增益不能超過 2 倍。** 這是個非常苛刻的限制——所以第 62 頁才需要補償。
+
+![Example 12-38：三級共源放大器，三級共用同樣的 RD 與 C1，單位回授 K = 1](/note-images/ec-week11-ch12/45-three-stage-amp.png)
+
+*三級相同的共源級：極點三重，相位一路掉到 $-270°$，必定穿越 $-180°$。*
+
+![Example 12-38 的解：(b) 三重極點的振幅響應（−60 dB/dec）與相位響應（−135°、−270°）；(c) 以 |H(ωPX)| < 1 作為穩定條件的圖解](/note-images/ec-week11-ch12/46-three-stage-bode.png)
+
+*穩定條件在圖上就是「相位穿越 $-180°$ 的那條虛線，要落在 0 dB 以下」。*
+
+### 頻率補償（第 62–67 頁）
+
+{/* @ai-reference
+id: ch12-frequency-compensation
+file: _references/電子學實作系列/第九週/Ch 12 - Feedback.pdf
+page: 62
+status: suggested
+excerpt: Frequency compensation: By moving wGX closer to the origin while maintaining wPX unchanged, the phase margin can be improved. The solution is to make two of the poles unequal in magnitude.
+*/}
+<PdfRefChip file="_references/電子學實作系列/第九週/Ch 12 - Feedback.pdf" page={62} status="suggested" excerpt={"Frequency compensation: By moving wGX closer to the origin while maintaining wPX unchanged, the phase margin can be improved. The solution is to make two of the poles unequal in magnitude."} client:visible />
+
+**問題**：放大器設計完了才發現相位邊限不夠，怎麼救？例如 Example 12-38 的 $g_m R_D > 2$ 怎麼辦？
+
+**頻率補償（frequency compensation）的核心動作只有一個：把 $\omega_{GX}$ 往原點搬，而 $\omega_{PX}$ 不動。** 增益交越提早發生，到達 $-180°$ 之前增益就已經掉到 1 以下，相位邊限因此變大。
+
+**做法是讓其中一個極點遠低於其他極點**，形成一個**主極點（dominant pole）**。主極點提早讓增益開始下滑，而其他極點的位置沒動，所以 $\omega_{PX}$ 不變。
+
+![頻率補償：(a) 補償後的設計（實線）與原設計（灰線）的迴路增益比較，ωGX 往左搬而 ωPX 不動；(b) 對應的極點位置變化，主極點 ωp1 被往低頻移動](/note-images/ec-week11-ch12/47-frequency-compensation.png)
+
+*把增益曲線整體往左拉，相位曲線不動——相位邊限就是這樣擠出來的。*
+
+**代價**：閉迴路頻寬跟著 $\omega_{GX}$ 一起變小。**穩定度是用頻寬換的**，和前面「精度用增益換」是同一種交易。
+
+**Example 12-42：實際補償一個電路（第 63–64 頁）**。電路是一個疊接級（cascode）接一個共源級，節點 $B$ 的極點是主極點。做法是在節點 $B$ 對地**接一顆電容 $C_{comp}$**：$B$ 點的電阻很大，再加上電容就把主極點壓得更低，$\omega_{GX}$ 跟著往左，相位邊限變大。
+
+![Example 12-42 的電路：M1 到 M4 構成疊接級，節點 B 為主極點所在，M5 與 M6 構成共源輸出級，Ccomp 接在節點 B 上](/note-images/ec-week11-ch12/48-cascode-cs-amp.png)
+
+*補償電容接在主極點那個節點上——因為那裡的電阻最大，同樣的電容壓得最低。*
+
+![Example 12-42 的解：(b) 補償前的振幅與相位響應，三個極點 ωp,B、ωp,out、ωp,A；(c) 補償後主極點 ωp,B 被往左移，增益曲線整體左移](/note-images/ec-week11-ch12/49-cascode-compensation-bode.png)
+
+*補償前後對照：只有主極點動了，後面兩個極點的位置原封不動。*
+
+**系統化的補償步驟（第 65 頁）**：給定想要的相位邊限 PM，反推新的主極點該放哪裡。
+
+1. **由 PM 決定新的增益交越頻率**：相位等於 $-180° + \mathrm{PM}$ 的那個頻率，記作 $\omega_{PM}$。這就是補償後該有的 $\omega_{GX}$。
+2. **從 $\omega_{PM}$ 往回推主極點**：在振幅圖上從 $\omega_{PM}$ 以 $+20\ \mathrm{dB/dec}$ 的斜率往左上延伸，碰到低頻增益那條水平線的地方，往下對到橫軸，就是新的主極點 $\omega_P'$。
+
+**為什麼是 $20\ \mathrm{dB/dec}$**：補償後主極點以下是平的、主極點之後是單極點下滑，斜率就是 $-20\ \mathrm{dB/dec}$。反過來往回推自然是 $+20$。
+
+![系統化補償程序：Bode 圖上先由 −180° + PM 定出 ωPM，再從該點以 +20 dB/dec 的斜率往左上延伸，與低頻增益線相交處對應的頻率即為新的主極點 ωp1'](/note-images/ec-week11-ch12/50-systematic-compensation.png)
+
+*兩個動作：先用相位定 $\omega_{PM}$，再用 $20\ \mathrm{dB/dec}$ 的斜線反推主極點。*
+
+![Example 12-43：多極點放大器補償到 45° 相位邊限，K = 1，圖上標出原始的三個極點與補償後往左移的主極點，相位圖對應到 −135°](/note-images/ec-week11-ch12/51-example-45deg-pm.png)
+
+*$45°$ 相位邊限對應相位 $-135°$，從那裡反推就得到該放的主極點位置。*
+
+**米勒補償（第 67 頁）**：按上面的方法算出來的 $C_{comp}$ 往往**非常大**，在積體電路上要佔掉可觀面積。
+
+**解法是利用米勒效應（Miller effect）把一顆小電容放大。** 把電容 $C_c$ 跨接在一個增益為 $-A_v$ 的級的輸入與輸出之間，從輸入端看到的等效電容是
+
+$$
+C_{eq} = \left[1 + g_{m5}(r_{O5}\|r_{O6})\right] C_c
+$$
+
+中括號裡就是輸出級的增益。**用一顆小電容換到一顆大電容的效果，省下的是晶片面積。**
+
+> **這就是第 10 週 μA741 晶片照片上那顆「The Big Cap」。** 1968 年的 μA741 把補償電容做進晶片裡（內建頻率補償），使用者不必外接，代價是那顆電容在版圖上一眼就認得出來——而且它已經是米勒放大過的版本，否則還要更大。
+
+![米勒補償：左圖的補償電容 Cc 跨接在輸出級 M5 的閘極與汲極之間；右圖為等效，從節點 X 看進去等於一顆放大後的電容 Ceq 接地](/note-images/ec-week11-ch12/52-miller-compensation.png)
+
+*跨接在增益級兩端的小電容，從輸入端看等於一顆被增益放大過的大電容。*
+
+**一題自測**：某放大器的輸出級增益是 $-50$。要得到 $10\ \mathrm{pF}$ 的等效補償電容，跨接的實體電容要多大？
+
+<details>
+  <summary>答案</summary>
+  $C_{eq} = (1+50)C_c = 51 C_c$，所以 $C_c = 10/51 \approx 0.2\ \mathrm{pF}$。面積省了 51 倍——這就是米勒補償普遍被採用的理由。
+</details>
+
+## 關鍵定義
+
+| 名詞 | 英文 | 定義 | 出處 |
+| --- | --- | --- | --- |
+| 前饋系統 | feedforward system | 提供主要增益 $A_1$ 的放大器本體 | 第 4 頁 |
+| 回授因數 | feedback factor | $K = X_F/Y$，回授網路的增益 | 第 5 頁 |
+| 閉迴路增益 | closed-loop gain | $\dfrac{A_1}{1+KA_1}$ | 第 5 頁 |
+| 迴路增益 | loop gain | $KA_1$，繞迴路一圈的增益，與切點無關 | 第 8 頁 |
+| 比較誤差 | comparison error | $E = \dfrac{X}{1+KA_1}$ | 第 7 頁 |
+| 增益去敏感化 | gain desensitization | 靈敏度 $\dfrac{\mathrm{d}\ln H}{\mathrm{d}\ln A_1}=\dfrac{1}{1+KA_1}$ | 第 10–13 頁 |
+| 增益頻寬乘積 | gain-bandwidth product | $A_0\omega_0$，回授不改變它 | 第 14 頁 |
+| 載入效應 | loading effect | 回授網路的非理想阻抗對前饋系統的干擾 | 第 34–35 頁 |
+| 增益交越頻率 | gain crossover | $\omega_{GX}$，$\lvert KH\rvert = 1$ 的頻率 | 第 58 頁 |
+| 相位交越頻率 | phase crossover | $\omega_{PX}$，$\angle KH = -180°$ 的頻率 | 第 58 頁 |
+| 相位邊限 | phase margin | $\mathrm{PM} = \angle H(\omega_{GX}) + 180°$ | 第 58 頁 |
+| Barkhausen 判據 | Barkhausen's criteria | $\lvert KH(j\omega_1)\rvert = 1$ 且 $\angle KH(j\omega_1) = -180°$ | 第 53 頁 |
+| 主極點 | dominant pole | 遠低於其他極點的那一個，決定 $\omega_{GX}$ | 第 62 頁 |
+| 米勒補償 | Miller compensation | 以跨接電容的米勒放大效果取代大電容 | 第 67 頁 |
+
+## 公式
+
+| 項目 | 公式 | 頁次 |
+| --- | --- | --- |
+| 閉迴路轉移函數 | $H = \dfrac{A_1}{1+KA_1}$ | 5 |
+| 比較誤差 | $E = \dfrac{X}{1+KA_1}$ | 7 |
+| 迴路增益的量法 | $KA_1 = -\dfrac{V_N}{V_{test}}$ | 8 |
+| 增益靈敏度 | $\dfrac{\mathrm{d}\ln H}{\mathrm{d}\ln A_1} = \dfrac{1}{1+KA_1}$ | 10–12 |
+| 閉迴路頻寬 | $\omega_{-3\mathrm{dB}} = (1+KA_0)\,\omega_0$ | 14 |
+| 線性化後的局部增益 | $\dfrac{A_i}{1+KA_i} \to \dfrac{1}{K}$ | 22 |
+| 電壓–電壓：輸入阻抗 | $R_{in}(1+KA_0)$ | 38 |
+| 電壓–電壓：輸出阻抗 | $\dfrac{R_{out}}{1+KA_0}$ | 40 |
+| 電壓–電流：閉迴路增益 | $\dfrac{V_{out}}{I_{in}} = \dfrac{R_0}{1+KR_0}$ | 42 |
+| 電壓–電流：輸入阻抗 | $\dfrac{R_{in}}{1+KR_0}$ | 45 |
+| 電壓–電流：輸出阻抗 | $\dfrac{R_{out}}{1+KR_0}$ | 47 |
+| 不穩定條件 | $KH(j\omega_1) = -1$ | 52 |
+| 相位邊限 | $\mathrm{PM} = \angle H(\omega_{GX}) + 180°$ | 58 |
+| 三級相同共源的穩定條件 | $g_m R_D < 2$（$K=1$） | 60–61 |
+| 米勒等效電容 | $C_{eq} = [1+g_{m5}(r_{O5}\|r_{O6})]\,C_c$ | 67 |
+
+## 講義裡要注意的兩個地方
+
+| 位置 | 情況 | 正確的版本 |
+| --- | --- | --- |
+| 第 12 頁 | $A_1 = 500$ 那一行的分子印成 1000（$\frac{1000}{1+125}$） | 應為 $\frac{500}{1+125}$；印出來的結果 3.968 本身是對的 |
+| 第 36 頁 | Razavi 的「電壓–電壓」是「輸出–輸入」順序，與 Sedra/Smith 的「串聯–並聯」（輸入–輸出）相反 | 投影片自己註明 "This terminology is not standard"；看其他教材要先翻譯一次 |
