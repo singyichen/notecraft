@@ -36,6 +36,8 @@ LTspice 網表與圖。LTspice 全部用內建元件庫的 **BS170** 模型（`.
 | `annotate_current_path.py` | 在上面三張接線圖疊電流分析（輸出加 `-current`） | — |
 | `annotate_schematic.py` | 在講義第 19 頁的原理圖上疊直流偏壓與交流訊號兩種電流路徑 | — |
 | `build_record_xlsx.py` | 產生當天填數據用的 `measured/Lab3-數據記錄.xlsx`（七個分頁、七張圖，預報欄讀 `.raw`）。必做的實驗一、二是 0～5 V 每 0.5 V 共 11 點，選做的三張表維持講義版面 | — |
+| `report/build_lab3_data_results.py` | 當天上傳用的「實驗數據結果」`.docx`：讀 `measured/Lab3-數據記錄.xlsx` 的快取值，排出實驗一、二的數據表、對照圖與現場照片 | — |
+| `report/build_lab3_report.py` | 結報 `.docx`：章節照助教範本，正文照 `report-voice.md` 的學生口吻，數據與上面那份同源 | — |
 
 ## 跑法
 
@@ -51,6 +53,22 @@ cd simulations/lab3
 ../lab1/.venv/bin/python build_record_xlsx.py --force  # 丟掉舊檔重產
 node ../../.claude/skills/lab-workflow/scripts/circuitjs-link.mjs circuitjs/*.txt   # 印 CircuitJS 連結
 ```
+
+- **當天上傳用的「實驗數據結果」**：`report/build_lab3_data_results.py --id <學號> --name <姓名>` 讀
+  `measured/Lab3-數據記錄.xlsx` 的實測欄（**要先在 Excel 存檔**，openpyxl 才讀得到公式的快取值），
+  照片讀 `<notesDir>/_outputs/lab3/photos/`（`--photos` 可改），
+  輸出 `_outputs/lab3/<學號>_<姓名>_Lab 3 實驗數據結果.docx`；已存在時加 `--force`。
+  2026-11-07 當天只完成必做的實驗一、二，所以這份只有那兩節。
+- **結報**：`report/build_lab3_report.py --id <學號> --name <姓名>`，數據與上面那份同源（都讀同一個
+  xlsx），輸出 `_outputs/lab3/<學號>_<姓名>_Lab 3 結報.docx`，目前 9 頁。
+
+### 記錄簿被 Excel 存過之後的兩個坑
+
+1. **填色會從 `FFF2CC` 變成 8 碼的 `FFFFF2CC`**。`build_record_xlsx.py` 的 `--update` 靠黃底認輸入格，
+   所以比對一律取後六碼；真的一格都認不出來時會直接中止，不會覆蓋。
+2. **手改過的公式會被蓋回產生器的版本**。2026-11-07 的實測值填在實驗二「實測 V_D」那一欄，但量的其實是
+   $R_1$ 的壓降，所以當天把 `I_D` 的公式改成直接除 $R_1$；照原版公式重算會變成 $(V_{DS}-V_{R_1})/R_1$，
+   電流差 75 倍。`--update` 現在會把所有被手改過的公式列出來提醒。
 
 `.raw`／`.log` 不進版控（見 `.gitignore`），重新 clone 後先跑 `run-lt.sh` 再跑 `plot.py`。
 `draw_breadboard.py` 直接 import `../lab2/draw_real_breadboard.py` 的繪圖原語（同一塊 60 欄全尺寸板、

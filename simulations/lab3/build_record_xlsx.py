@@ -44,9 +44,9 @@ OUT = os.path.join(HERE, 'measured', 'Lab3-數據記錄.xlsx')
 PRED_JSON = os.path.join(HERE, 'ltspice-pred.json')
 
 FONT = 'Arial'
-IN_RGB = ('FFF2CC', '00FFF2CC')
-HD_RGB = ('D9E2F3', '00D9E2F3')
-GP_RGB = ('EDF1F9', '00EDF1F9')
+# 比對一律取後六碼：openpyxl 寫出去是 'FFF2CC'，Excel 重存後會變成 8 碼 ARGB 'FFFFF2CC'，
+# 直接比字串會對不上 → --update 會把所有輸入格當成「不是輸入格」，整份數據靜默消失。
+IN_RGB, HD_RGB, GP_RGB = 'FFF2CC', 'D9E2F3', 'EDF1F9'
 FILL_IN = PatternFill('solid', fgColor='FFF2CC')     # 當天要填
 FILL_HD = PatternFill('solid', fgColor='D9E2F3')     # 表頭
 FILL_GP = PatternFill('solid', fgColor='EDF1F9')     # 欄組標題
@@ -293,7 +293,8 @@ def _rgb(cell):
     f = cell.fill
     if f is None or f.fill_type != 'solid':
         return None
-    return getattr(f.start_color, 'rgb', None)
+    v = getattr(f.start_color, 'rgb', None)
+    return v[-6:].upper() if isinstance(v, str) else None
 
 
 def _norm(v):
@@ -349,12 +350,12 @@ def scan_inputs(ws):
     """
     hdr_rows = []
     for row in ws.iter_rows():
-        if sum(1 for c in row if _rgb(c) in HD_RGB) >= 3:
+        if sum(1 for c in row if _rgb(c) == HD_RGB) >= 3:
             hdr_rows.append(row[0].row)
     out = {}
     for row in ws.iter_rows():
         for cell in row:
-            if _rgb(cell) not in IN_RGB:
+            if _rgb(cell) != IN_RGB:
                 continue
             above = [h for h in hdr_rows if h < cell.row]
             hdr = max(above) if above else None
@@ -362,7 +363,7 @@ def scan_inputs(ws):
             if hdr is not None and _contiguous(ws, hdr, cell.row, cell.column) \
                     and isinstance(colname, str) and colname.strip():
                 grp = ''
-                if hdr - 1 >= 1 and any(_rgb(c) in GP_RGB for c in ws[hdr - 1]):
+                if hdr - 1 >= 1 and any(_rgb(c) == GP_RGB for c in ws[hdr - 1]):
                     grp = _merged_left(ws, hdr - 1, cell.column)
                 a = ws.cell(row=cell.row, column=1).value
                 rowlab = _norm(a)
@@ -379,14 +380,46 @@ def harvest(path):
     """讀舊檔，回傳 {(分頁, 語意鍵): 值}（只收真的有值的黃底格）。"""
     old = load_workbook(path, data_only=False)
     got = {}
+    cells = 0
     for ws in old:
         if ws.title == '說明':        # 說明頁的黃底格只是填寫範例，不是資料
             continue
-        for key, (r, c) in scan_inputs(ws).items():
+        found = scan_inputs(ws)
+        cells += len(found)
+        for key, (r, c) in found.items():
             v = ws.cell(row=r, column=c).value
             if v not in (None, ''):
                 got[(ws.title, key)] = v
+    if cells == 0:
+        # 認不出任何輸入格就不要往下走：舊檔的填色或版面被改過，硬搬會把數據全丟掉。
+        sys.exit(f'{path} 裡找不到任何黃底輸入格，不敢覆蓋。請先確認舊檔的格式有沒有被改過。')
     return got
+
+
+def diff_formulas(old_path, wb):
+    """列出舊檔裡被手改過的公式格：新版會把它們蓋回產生器的版本。
+
+    2026-11-07 踩到的：實驗二的 I_D 公式被改成直接除 R1（因為實測值填在「實測 V_D」那一欄，
+    實際量的卻是 R1 的壓降）。照原版公式重算會變成 (V_DS − V_R1)/R1，電流差 75 倍。
+    """
+    def norm(x):
+        # Excel 會把 0.0 正規化成 0、去掉多餘空白；那不算手改，不要報。
+        return re.sub(r'(?<![\d.])(\d+)\.0(?![\d])', r'\1', x.replace(' ', ''))
+
+    old = load_workbook(old_path, data_only=False)
+    out = []
+    for ws in wb:
+        if ws.title not in old.sheetnames:
+            continue
+        o = old[ws.title]
+        for row in ws.iter_rows():
+            for c in row:
+                if not (isinstance(c.value, str) and c.value.startswith('=')):
+                    continue
+                ov = o.cell(row=c.row, column=c.column).value
+                if isinstance(ov, str) and ov.startswith('=') and norm(ov) != norm(c.value):
+                    out.append((ws.title, c.coordinate, ov, c.value))
+    return out
 
 
 def replay(wb, got):
@@ -1455,12 +1488,20 @@ if exists and not ({'--force', '--update'} & set(sys.argv)):
 moved, lost = 0, []
 if exists and '--update' in sys.argv:
     got = harvest(OUT)
+    changed = diff_formulas(OUT, wb)
     moved, lost = replay(wb, got)
     shutil.copy2(OUT, OUT + '.bak')
     print(f'舊檔備份到 {OUT}.bak')
     print(f'舊檔有值的黃底格 {len(got)} 個，搬移 {moved} 個。')
     for k, v in lost:
         print(f'  ⚠ 對不上、沒有搬移：{k} = {v!r}')
+    if changed:
+        print(f'⚠ 舊檔有 {len(changed)} 格公式被手改過，新版會蓋回產生器的版本；'
+              f'如果那是為了配合實際填法改的，請改完再存一次：')
+        for t, coord, ov, nv in changed[:12]:
+            print(f'    {t}!{coord}\n      舊 {ov}\n      新 {nv}')
+        if len(changed) > 12:
+            print(f'    …另外還有 {len(changed) - 12} 格')
 wb.save(OUT)
 print('wrote', OUT, '（實驗一、二預報來自', '.raw）' if SRC_RAW else 'ltspice-pred.json）')
 print(f'  實驗一：{len(VGS_GROUPS)} 組 V_GS × {len(VDS_ROWS)} 點 V_DS'
