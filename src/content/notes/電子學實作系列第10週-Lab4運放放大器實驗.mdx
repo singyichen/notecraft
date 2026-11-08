@@ -1,0 +1,736 @@
+---
+title: "電子學實作系列：第 10 週 - Lab 4 運放放大器實驗"
+description: "Lab 4（非反相放大器與反相放大器）的講義詳解與執行手冊：兩個實驗各附講義目標與步驟的中文改寫、CircuitJS 一鍵模擬連結、Tinkercad 接線配方、實體麵包板接線圖與電流分析圖、uA741 巨集模型與規格書的四項對照、LTspice 預報值、實驗室記錄表與檢查點；另收錄輸入振幅掃描（找削平門檻）與頻率掃描（講義問題 3 的數據）、三個講義問題與 Bonus 的完整推導、輸入偏壓電流造成的直流偏移與補償電阻，以及講義第 8／9 頁文字互換、式子少乘號、「Ampl: 4」是峰值不是峰對峰值這三處要點破的地方。"
+tags: ["電子學實作系列"]
+createdAt: "2026-11-08"
+updatedAt: "2026-11-08"
+---
+
+import PdfRefChip from '@/components/islands/PdfRefChip.tsx'
+
+# 第 10 週：Lab 4 運放放大器實驗
+
+*Lab 4: Noninverting Amplifier & Inverting Amplifier*
+
+> 本週參考：[《Fundamentals of Microelectronics》](/notes/fundamentals-of-microelectronics) CH8.2。
+> 理論部分已在[第 10 週理論筆記](/notes/電子學實作系列第10週-mos放大器組態與運放電路)逐頁詳解，本篇只負責「實驗當天要翻的那一頁」。
+> 儀器操作見[實驗器材速查](/notes/電子學實作系列-實驗器材速查)。
+>
+> **實驗日期：11/14（六）。** 助教公告的計分方式是**完成一個實驗 70 分、兩個都完成 85 分**，再依實驗操作與數據結果記錄的完整度加分。所以當天的順序一定是：先把實驗一做到有讀值，再做實驗二，最後才回頭補掃描表。
+
+## Lab 4 實驗總覽
+
+{/* @ai-reference
+id: w10-lab4-objective
+file: _references/電子學實作系列/第九週/App_Lab4_5.pdf
+page: 4
+status: confirmed
+excerpt: Ideal model for op-amp must satisfied this five condition: infinite input impedance, zero output impedance, zero common-mode gain, infinite open-loop gain, infinite bandwidth.
+*/}
+<PdfRefChip file="_references/電子學實作系列/第九週/App_Lab4_5.pdf" page={4} status="confirmed" excerpt={"Theory overview: Ideal model for op-amp must satisfied this five condition - infinite input impedance, zero output impedance, zero common-mode gain (infinite CMRR), infinite open-loop gain, infinite bandwidth."} client:visible />
+
+### 這次實驗在解什麼
+
+整份講義只在驗證一句話：**接上負回授之後，增益由外接電阻決定，和運放本身無關**。
+
+這句話聽起來像廢話，實際上它是整個類比電路設計的根基。uA741 的開迴路增益在不同批次之間可以差好幾倍（規格書寫典型 200 V/mV、最小 20 V/mV，相差十倍），但接成這兩個電路之後，量到的增益會穩穩停在 3.00 與 2.00——**因為那是兩顆電阻的比值，不是晶片的性質**。
+
+兩個實驗就是在看這件事的兩種拓撲：
+
+| 實驗 | 訊號從哪一腳進 | 增益 | 輸入阻抗 | 相位 |
+| --- | --- | --- | --- | --- |
+| 實驗一 非反相 | 腳 3（非反相端） | $1 + R_2/R_1 = +3$ | 極高（運放自己的輸入阻抗） | 同相 |
+| 實驗二 反相 | 經 $R_1$ 進腳 2 | $-R_2/R_1 = -2$ | 就是那顆 $R_1$ = 100 kΩ | 反相 |
+
+**兩個實驗的元件一模一樣，差別只在訊號從哪裡進、哪一端接地。** 這和第 10 週理論筆記那個「看電路要先問訊號從哪一隻腳進」的檢查題是同一回事，只是換到了運放這一層。
+
+### 兩個實驗、同一塊板
+
+| 實驗 | 講義頁 | 電路差在哪 | 要填的表 |
+| --- | --- | --- | --- |
+| 實驗一 非反相放大器 | 第 8、10 頁 | 訊號進腳 3；$R_1$ 從腳 2 接到地 | 振幅掃描 14 點＋頻率掃描 8 點 |
+| 實驗二 反相放大器 | 第 9、11 頁 | 訊號進 $R_1$ 左端；腳 3 接地 | 同上 |
+
+講義的資料表其實只要一組讀值（輸入波形、輸出波形、理論增益、實測增益）。掃描表是為了拿加分加的，但也不只是為了加分——**增益是不是常數這件事，一個點看不出來**。
+
+### 當天用的 Excel 記錄簿
+
+兩張記錄表做成活頁簿了，當天用筆電直接填：
+
+[simulations/lab4/measured/Lab4-數據記錄.xlsx](simulations/lab4/measured/Lab4-數據記錄.xlsx)
+
+- **黃底的格子才要填**，其餘是公式或 LTspice 預報值（藍字），填完圖會自己更新。
+- 每張工作表上方有一個資訊區：先把 $R_1$、$R_2$ 的**實測阻值**量好填進去，下面所有「理論增益」就會用實測電阻重算。標稱 100 k／200 k 算出來是 3.000，但兩顆各差 1% 的話理論值就會變成 3.02 或 2.98——**那不是誤差，那是你手上這兩顆電阻真正的比值**。
+- 每張工作表最下面有一格照講義第 10／11 頁排好的摘要，交報告直接抄。
+- 產生腳本是 `simulations/lab4/build_record_xlsx.py`，預報欄讀 `ltspice-pred.json`。
+
+### 器材清單
+
+{/* @ai-reference
+id: w10-lab4-components
+file: _references/電子學實作系列/第九週/App_Lab4_5.pdf
+page: 12
+status: confirmed
+excerpt: Component list: Op-Amp UA741 x1, Resistor 100 kohm x1, 200 kohm x1, DC Power Supply GPE-3323, Signal Source AFG-2225, Oscilloscope EDUX1052G, Multimeter GDM-532.
+*/}
+<PdfRefChip file="_references/電子學實作系列/第九週/App_Lab4_5.pdf" page={12} status="confirmed" excerpt={"Component list: Op-Amp UA741 x1; Resistor 100 kohm (1/4 W) x1, 200 kohm (1/4 W) x1; DC Power Supply GW Instek GPE-3323; Signal Source (Function Generator) GW Instek AFG-2225; Oscilloscope Keysight EDUX1052G; Multimeter GW Instek GDM-532."} client:visible />
+
+| 元件 | 規格 | 數量 | 備註 |
+| --- | --- | --- | --- |
+| 運算放大器 | uA741 | 1 | DIP-8 封裝，缺口朝左 |
+| 電阻 | 100 kΩ（1/4 W） | 1 | 色環 棕黑黑橙棕 |
+| 電阻 | 200 kΩ（1/4 W） | 1 | 色環 紅黑黑橙棕 |
+| 直流電源 | GW Instek GPE-3323 | 1 | 兩個通道串起來做 ±15 V |
+| 訊號產生器 | GW Instek AFG-2225 | 1 | 只用 CH1 |
+| 示波器 | Keysight EDUX1052G | 1 | CH1 看輸入、CH2 看輸出 |
+| 三用電表 | GW Instek GDM-532 | 1 | 量電阻與電源軌 |
+
+### uA741 的腳位：缺口朝左，腳 1 在左下
+
+DIP-8 封裝橫跨麵包板中央溝槽，**本體上的半圓缺口朝左**時，腳位是這樣數的：
+
+| 腳 | 名稱 | 這次怎麼用 |
+| --- | --- | --- |
+| 1、5 | 偏移歸零（offset null） | 不接 |
+| 2 | 反相輸入 | 回授電阻與 $R_1$ 都接這裡 |
+| 3 | 非反相輸入 | 實驗一吃訊號、實驗二接地 |
+| 4 | V− | 接 −15 V |
+| 6 | 輸出 | 接回授電阻與示波器 CH2 |
+| 7 | V+ | 接 +15 V |
+| 8 | 空腳（NC） | 不接 |
+
+下半部（靠近溝槽那一列，列 e）由左到右是腳 1、2、3、4；上半部（列 f）由左到右是腳 8、7、6、5。**腳 4 在下半部、腳 7 在上半部，兩條電源線一條往下、一條往上**，這是接線時最容易弄反的地方。
+
+**腳 3 絕對不可以懸空。** 運放是差動放大器，兩個輸入端都必須有確定的直流路徑；腳 3 浮著的話輸出會直接貼到某一條電源軌，看起來像晶片壞了。
+
+### 講義裡三處對不起來的地方
+
+講義照接沒問題，但有三處要先知道，否則會以為自己看錯：
+
+**第一，第 8 頁與第 9 頁的文字互換了。** 第 8 頁標題寫 Non-inverting amplifier，底下卻寫「the input signal input by inverting terminal」；第 9 頁標題寫 inverting amplifier，底下寫「input by non-inverting terminal」。**兩頁的說明文字對調了，圖是對的**。以圖為準：第 8 頁的 $V_{in}$ 確實接在「＋」那一腳。
+
+**第二，第 8 頁那兩條式子少了乘號。** 講義印的是
+
+$$
+V_- = V_O + \frac{R_1}{R_1+R_2}
+$$
+
+照這樣推不出下面那條 $A_V = 1 + R_2/R_1$。正確的是乘號：
+
+$$
+V_- = V_O \cdot \frac{R_1}{R_1+R_2}
+$$
+
+這就是「輸出經 $R_2$、$R_1$ 分壓回到反相端」的意思。配上虛短路 $V_- = V_{in}$ 就得到
+
+$$
+V_{in} = V_O \cdot \frac{R_1}{R_1+R_2}
+\quad\Longrightarrow\quad
+A_V = \frac{V_O}{V_{in}} = \frac{R_1+R_2}{R_1} = 1 + \frac{R_2}{R_1}
+$$
+
+**第三，「Ampl: 4」是峰值，不是峰對峰值。** 這點在第 10／11 頁看不出來，但第 21 頁（Lab 5 的電路）同時印了電路圖與 LTspice 波形：那張圖上 `Ampl:2` 的那條曲線確實畫到 $\pm 2$ V。所以第 10／11 頁的 4 是 **4 V 峰值 ＝ 8 V$_{pp}$**。AFG-2225 面板輸入的是 V$_{pp}$，所以要填 8.00。
+
+這第三點很重要，因為**非反相組態在這組參數下離削平只剩 2.6 V**：8 V$_{pp}$ 進去、24 V$_{pp}$ 出來，而模型的輸出擺幅上限是 29.2 V$_{pp}$。要是誤把 4 當成 4 V$_{pp}$ 再乘以 2 填成 8 V 峰值（16 V$_{pp}$），輸出就會整個平頂。
+
+## 實驗一：非反相放大器 Non-inverting Amplifier
+
+{/* @ai-reference
+id: w10-lab4-exp1
+file: _references/電子學實作系列/第九週/App_Lab4_5.pdf
+page: 10
+status: confirmed
+excerpt: Circuit schematic. Build the circuit and using Vin and also supply two DC voltage sources. Measure the output voltage and waveform. Calculate the voltage gain Av = Vo/Vin = 1 + R2/R1.
+*/}
+<PdfRefChip file="_references/電子學實作系列/第九週/App_Lab4_5.pdf" page={10} status="confirmed" excerpt={"Circuit schematic (non-inverting amplifier): R1 = 100 kohm, R2 = 200 kohm, Vin = sine 1 kHz Ampl 4, supplies +15 V / -15 V. 1. Build the circuit and using Vin and also supply two DC voltage sources. 2. Measure the output voltage and waveform of the circuit. 3. Calculate the voltage gain (Av) of the circuit configuration. Av = Vo/Vin = 1 + R2/R1."} client:visible />
+
+### 先讀懂這張圖
+
+![講義第 10 頁的非反相放大器：Vin 正弦波進運放的＋端，R1 100 kΩ 從−端接地，R2 200 kΩ 從輸出接回−端，電源 ±15 V](/note-images/ec-week10-handout/lab4-exp1-schematic.png)
+
+*講義第 10 頁的電路。訊號直接進「＋」那一腳；$R_1$ 與 $R_2$ 串成一條從輸出到地的分壓支路，中間那一點接回「−」腳。*
+
+| 符號 | 是什麼 | 這次的值 | 為什麼放它 |
+| --- | --- | --- | --- |
+| $V_{in}$ | 訊號源 | 1 kHz 正弦波，4 V 峰值（8 V$_{pp}$） | 進非反相端 |
+| $R_1$ | 接地那顆 | 100 kΩ | 和 $R_2$ 一起決定回授分壓比 |
+| $R_2$ | 回授那顆 | 200 kΩ | 從輸出接回反相端，造成負回授 |
+| $\pm V_{cc}$ | 電源 | $+15$ V／$-15$ V | 決定輸出擺幅上限 |
+
+**這個電路的關鍵在「分壓比」。** 輸出電壓被 $R_2$、$R_1$ 分壓之後送回反相端，運放會一直調整輸出，直到反相端的電位和非反相端（也就是 $V_{in}$）一樣為止。所以
+
+$$
+\underbrace{V_{out} \cdot \frac{R_1}{R_1+R_2}}_{\text{分壓回來的}} = \underbrace{V_{in}}_{\text{非反相端}}
+\quad\Longrightarrow\quad
+V_{out} = \Bigl(1+\frac{R_2}{R_1}\Bigr) V_{in} = 3\,V_{in}
+$$
+
+**增益永遠大於等於 1。** 這是非反相組態的結構性限制：分壓比最多是 1（$R_2 = 0$），所以增益最少是 1。要衰減就只能用反相組態或先加一級分壓。
+
+### 講義詳解（第 8、10 頁）
+
+**理論**（第 8 頁）
+
+講義列了理想運放的五個條件：輸入阻抗無限大、輸出阻抗為零、共模增益為零（共模拒斥比無限大）、開迴路增益無限大、頻寬無限大。這五條之中，**這次實驗只會用到前兩條與第四條**；第三條要到 Lab 5 的減法器才看得到，第五條則是講義問題 3 的主角。
+
+由「輸入阻抗無限大」推出的結論是：**沒有電流流進腳 2 與腳 3**。所以 $R_1$ 與 $R_2$ 上流的是同一股電流，可以當成單純的串聯分壓。
+
+由「開迴路增益無限大」推出的是虛短路（virtual short）：既然 $V_{out} = A_0 (V_+ - V_-)$ 而 $A_0 \to \infty$，要讓 $V_{out}$ 保持有限，就只能 $V_+ - V_- \to 0$。**虛短路不是物理上的短路**，兩腳之間沒有導線、也沒有電流流過，只是電位被回授逼成一樣。
+
+**操作步驟**（第 10 頁）
+
+1. 照第 10 頁接線，並提供兩個直流電源（$+15$ V 與 $-15$ V）。
+2. 量輸出電壓與波形。
+3. 算出這個組態的電壓增益 $A_v$。
+
+講義要填的表格是：輸入波形、輸出波形、理論增益、實測增益，另加一格 $v_o$。
+
+#### 級距要取幾點
+
+講義只指定一組設定（8 V$_{pp}$、1 kHz），那一點必做。另外兩張掃描表是本篇自己加的：
+
+| | 內容 | 這是誰的要求 |
+| --- | --- | --- |
+| 講義最低要求 | 8 V$_{pp}$、1 kHz 一組讀值，填四格表 | 講義第 10 頁 |
+| 本篇建議（表 A） | 輸入 **2～15 V$_{pp}$ 每 1 V 一點，共 14 點** | 自己加的，為了看增益是不是常數、以及幾伏開始削平 |
+| 本篇建議（表 B） | **100 Hz 到 1 MHz 共 8 點**，輸入固定 2 V$_{pp}$ | 自己加的，這就是講義問題 3 的數據 |
+| 時間不夠時 | 表 A 只量 4／6／8／10／12 V$_{pp}$ 五點，表 B 只量 1 k／100 k／1 M 三點 | 折衷 |
+
+**表 A 的重點不在每一點，而在那個轉折。** LTspice 的預報是：9 V$_{pp}$ 進去還是線性（27.0 V$_{pp}$ 出來），10 V$_{pp}$ 就被壓成 29.2 V$_{pp}$ 不再長大。**削平門檻落在 9～10 V$_{pp}$ 之間**，掃過這一段才看得到「輸出被電源軌夾住」這件事。
+
+**表 B 的輸入要壓到 2 V$_{pp}$。** 這不是隨便挑的：1 MHz 時若還用 8 V$_{pp}$，輸出需要的斜率是 $2\pi \times 10^6 \times 8 = 50$ V/µs，而 uA741 的迴轉率只有 0.5 V/µs——輸出會被鎖成三角波，量到的就不是頻寬而是迴轉率。詳見[講義問題 3](#問題-31-khz-拉到-1-mhz還準嗎)。
+
+### 先看懂：CircuitJS
+
+[開啟實驗一的 CircuitJS 電路](https://www.falstad.com/circuit/circuitjs.html?ctz=CQAgjCAMB0l3BWcMBMcUHYMGZIA4UA2ATmIxAUnCQBZsKBTAWjDACgBDEXGkNPboQH8QAsEhZIw8eGwBufBIW5pFylCl5UI0uCC1Qo0BGwDuavpu6ReGrWeu8wxFOAzLnryGwBObjy7+KlTaMt7m2EJ8+Pp6IuGxVCI0emAoAt5+KdrpQWkZ0TIOYO7guSUBXg7Z0QI0NMIxmfoNtS0C2KqhsuYVwRadIQ4oSv2D-Qnj4-UdXWwA5mOqUwheUGwA9uB8hjQozoSUFEYQVABqAPoAlgB2m8g7VHsHR0gwOiCXGwCuAC5sQA)
+
+- 左下角示波器是 $V_{in}$、右下角是 $V_{out}$。按 RUN 之後兩條都是正弦波。
+- 要看的是：**兩條同相**（同時往上、同時往下），而且 $V_{out}$ 的 P−P 剛好是 $V_{in}$ 的三倍（24 V 對 8 V）。
+- 右鍵訊號源 → 編輯，把振幅從 4 V 拉到 6 V，輸出會變成 36 V$_{pp}$——**但真實電路到不了那裡**，因為 CircuitJS 的運放預設上下限是 ±15 V 而且沒有飽和壓降。想看削平要把運放的 max/min output 改小。
+- **不要抄 CircuitJS 的數值當預報值**：它的運放是理想模型（增益 10$^6$、無頻寬限制），預報一律以 LTspice 的 uA741 巨集模型為準。
+
+### 預演：Tinkercad 接線配方
+
+已經建好的設計：[Lab 4 Exp 1: Non-inverting Amplifier](https://www.tinkercad.com/things/gLGjppMZq2E)
+
+![Tinkercad 的實驗一接線：741 運放橫跨溝槽插在第 12–15 欄，100 kΩ 在下半部 b 列、200 kΩ 在上半部 h 列，兩台電源串成 ±15 V，函數波產生器 1 kHz 8 Vpp，兩台示波器分別量輸入與輸出](/note-images/ec-week10-tinkercad/lab4-exp1-tinkercad.png)
+
+*模擬中的實驗一。左邊示波器是 $V_{in}$（滿格 10 V），右邊是 $V_{out}$（滿格 40 V）——從波形高度換算是 7.9 V$_{pp}$ 與 23.6 V$_{pp}$，比值 3.00。*
+
+![Tinkercad 線路圖檢視的實驗一：U1 運放、RR1 100k、RR2 200k、FUNCVIN 訊號源與 P+15V／P−15V 兩個電源](/note-images/ec-week10-tinkercad/lab4-exp1-schematic.png)
+
+*同一份設計切到「線路圖」檢視。接線對不對，看這張比看麵包板快。*
+
+Tinkercad 的元件庫裡有 741 運算放大器（搜尋 `op amp`），**它的腳位和實機 DIP-8 完全一致**：本體橫跨中央溝槽、缺口朝左時，下半部那一列由左到右是腳 1／2／3／4，上半部是腳 8／7／6／5。**腳位仍以懸停提示為準**，不要靠左右位置猜。
+
+| 元件／接線 | 插在哪裡 | 備註 |
+| --- | --- | --- |
+| 741 運放 | 橫跨中央溝槽，缺口朝左 | 懸停確認腳 2／3／4／6／7 的位置 |
+| 電阻 100 kΩ | 一端與腳 2 同一欄，另一端往左跨十幾欄 | 在「基本」分類第一格 |
+| 電阻 200 kΩ | 一端與腳 2 同一欄，另一端與腳 6 同一欄 | 回授 |
+| 跳線 | 100 kΩ 左端那一欄 → − 軌（地） | 實驗一才接這條 |
+| 跳線 | 腳 7 那一欄 → ＋ 軌 | $+15$ V |
+| 跳線 | 腳 4 那一欄 → 下方 − 軌 | $-15$ V |
+| 電源供應器 ×2 | 放板子左側 | 一台 ＋ 接 ＋ 軌、另一台 − 接下方 − 軌，兩台的另一端共接 0 V 軌 |
+| 函數波產生器 | 放板子上方 | 正弦波、1 kHz、**Amplitude 填 8**（Tinkercad 的 Amplitude 是峰對峰值） |
+| 示波器 | 放板子右上 | CH1 跨訊號源與地、CH2 跨腳 6 與地 |
+
+**Tinkercad 的 Amplitude 是峰對峰值，LTspice 的 Ampl 是峰值**——這兩個工具的欄位同名但意思不同，是這次最容易搞錯的一格。講義寫 `Ampl:4`（LTspice，峰值），Tinkercad 要填 8。
+
+**Tinkercad 的電源供應器一次只有一組輸出**，所以 ±15 V 要放兩台，兩台的「另一端」必須接在同一條 0 V 軌上，否則兩個迴路沒有共同參考點。
+
+搭這兩張圖的時候還踩到三件事，先寫在這裡：
+
+| 狀況 | 實際情形 |
+| --- | --- |
+| 示波器只有一個通道 | 要同時看輸入與輸出就得放**兩台**。兩台各自觸發、時基不同步，所以**看不出相位差**——反相與否要靠增益大小（2 對 3）或 CircuitJS 判斷，不要指望在 Tinkercad 上看到 180° |
+| 電阻的跨距是固定的 | 一顆電阻剛好橫跨**五欄**（兩腳相距四格），不能拉長縮短。要連到更遠的欄位就得加跳線 |
+| 示波器的時基預設 100 ms | 1 kHz 的波形在這個時基下是一條直線。每放一台就先把「每次分離的時間」改成 **0.5 ms** |
+
+**Tinkercad 的示波器不給數值讀數**，只給波形。上面那些 V$_{pp}$ 是從波形的像素高度換算的，誤差約 2–4%；**預報值一律以 LTspice 為準**，Tinkercad 只負責確認接線與儀器接法。
+
+### 實體麵包板：接在哪
+
+實驗室那塊板是 60 欄全尺寸，和 Tinkercad 的 30 欄小板孔位對不上，所以另外畫一張：
+
+![Lab 4 實驗一的實體麵包板接線圖：uA741 插在第 26–29 欄橫跨溝槽，100 kΩ 在上半部 i 列第 14 到 21 欄、200 kΩ 在 g 列第 21 到 28 欄，訊號進第 33 欄，電源 ±15 V 分別從上下電源軌進腳 7 與腳 4](/note-images/ec-week10-breadboard/lab4-exp1-breadboard.png)
+
+*接線圖只回答「接在哪」。晶片的腳 2 與腳 3 在下半部，先用跳線拉到第 21／33 欄再跨溝槽拉到上半部，兩顆電阻才有地方放、探棒也才夾得到。*
+
+這塊板的四條軌是這樣分配的：
+
+| 軌 | 當什麼 | 怎麼來的 |
+| --- | --- | --- |
+| 上方「−」軌 | 0 V 共地 | 電源 CH1− 與 CH2+ 串接的那一點 |
+| 上方「＋」軌 | $+15$ V | 電源 CH1+ |
+| 下方「−」軌 | $-15$ V | 電源 CH2− |
+| 下方「＋」軌 | 0 V 共地（第二條地） | 從上方「−」軌拉一條線過來 |
+
+**GPE-3323 串成 ±15 V 的做法**：兩個通道都設 15.000 V，然後把 CH1− 與 CH2+ 用一條短線接起來——那一點就是 0 V。CH1+ 變成 $+15$ V、CH2− 變成 $-15$ V。接線前先把輸出關掉。
+
+### 同一張圖，標出電流實際流動路徑
+
+綠色粗線是電流走的迴路、紅色三角形是方向、紅底白字編號對應下方表格的列、綠色虛線是「理論上有路但實際幾乎沒有電流」的那一段。疊圖腳本在 `simulations/lab4/annotate_current_path.py`。
+
+![Lab 4 實驗一的電流分析圖：訊號進腳 3 的那條路用虛線標成幾乎沒有電流，真正的電流是從輸出經 200 kΩ 到第 21 欄、再經 100 kΩ 回到地，另有一條橘色的電源電流從＋軌進腳 7、從腳 4 回 −15 V 軌](/note-images/ec-week10-breadboard/lab4-exp1-breadboard-current.png)
+
+*這張圖的重點：**訊號源那一路幾乎不出電流，真正在跑的是「輸出 → $R_2$ → $R_1$ → 地」這條分壓支路**。*
+
+| 編號 | 電流走到哪 | 為什麼走這裡 |
+| --- | --- | --- |
+| 1 | 訊號源 → 第 33 欄 → 腳 3 | 只負責把電位送過去；uA741 的輸入偏壓電流典型 80 nA |
+| 2 | 腳 6 輸出 → $R_2$ → 第 21 欄 | 輸出推出去的電流，$I = V_{out}/(R_1+R_2)$ |
+| 3 | 第 21 欄 → $R_1$ → 第 14 欄 → 上方「−」軌 | 同一股電流，沒有岔路 |
+| 4 | ＋軌 → 腳 7；腳 4 → 下方「−」軌 | 輸出的電流由電源供應，不是訊號源給的 |
+
+**為什麼輸入端沒有電流。** uA741 的輸入級是一對 NPN 電晶體的基極，基極電流典型 80 nA、最大 500 nA。拿來和分壓支路的電流比：
+
+$$
+I_{\text{分壓}} = \frac{V_{out}}{R_1+R_2} = \frac{12\ \text{V}}{300\ \text{k}\Omega} = 40\ \mu\text{A}
+$$
+
+80 nA 只有它的 1/500，所以「沒有電流流進輸入端」這個近似在這裡誤差不到 0.2%。**這正是為什麼非反相組態的輸入阻抗可以當成無限大**。
+
+**電流流過 $R_1$ 的壓降必須等於 $V_{in}$。** 這是驗算虛短路最直接的方法：
+
+$$
+V_{R_1} = I \times R_1 = 40\ \mu\text{A} \times 100\ \text{k}\Omega = 4\ \text{V}
+$$
+
+剛好等於 $V_{in}$ 的峰值。如果當天量到的 $V_{R_1}$ 明顯不等於 $V_{in}$，不是回授壞了就是接錯了。
+
+**兩台儀器各量什麼。** 示波器 CH1 夾第 33 欄（$V_{in}$）、CH2 夾第 28 欄的 j 孔（$V_{out}$），地夾接上方「−」軌。**三台儀器的地必須是同一點**：電源的 0 V、產生器的黑夾、示波器的地夾，少接一條回路就不完整，波形會整個亂掉。
+
+電表只在通電後用一次：直流電壓檔，量腳 7 與腳 4 對地，確認是 $+15$ V 與 $-15$ V，再接訊號。
+
+### LTspice 預報值
+
+LTspice 的標準庫沒有 uA741（只有 `UniversalOpAmp` 這種理想化的模型），所以網表內嵌 TI 的 Boyle 巨集模型。跑過四項對照，和規格書對得上：
+
+| 項目 | 巨集模型 | uA741 規格書（±15 V、25 °C） |
+| --- | --- | --- |
+| 開迴路增益 | 106.0 dB（約 200 k） | 典型 200 V/mV ＝ 106 dB |
+| 主極點 | 4.97 Hz | 約 5 Hz |
+| 增益頻寬積 | 889 kHz | 典型 1 MHz |
+| 迴轉率 | 0.52 V/µs | 典型 0.5 V/µs |
+| 輸出擺幅（$R_L$ = 10 kΩ） | $\pm 14.6$ V | 典型 $\pm 14$ V、最小 $\pm 12$ V |
+
+**輸出擺幅是模型比實機樂觀的地方**，所以筆記的削平門檻一律寫成「9～10 V$_{pp}$ 之間」，而不是一個確定的數字。手上那顆若剛好是 $V_{OM}$ 接近下限的批次，8 V$_{pp}$ 就可能開始平頂。
+
+![Lab 4 兩個實驗的 LTspice 時域波形：左邊非反相，輸入 8 Vpp、輸出 24 Vpp 同相；右邊反相，輸出 16 Vpp 反相，虛線標出模型的輸出飽和邊界 ±14.6 V](/note-images/ec-week10-ltspice/lab4-waveforms.png)
+
+*LTspice 的時域結果。左邊非反相的輸出峰值 12.02 V，距飽和邊界只剩 2.6 V。*
+
+| 量 | 理論公式 | LTspice（uA741 巨集模型） | CircuitJS（理想運放） |
+| --- | --- | --- | --- |
+| $A_v$（1 kHz） | $1+R_2/R_1 = 3.000$ | 2.9999 | 3.000 |
+| $V_{out}$ 峰對峰 | $3 \times 8 = 24.0$ V$_{pp}$ | 23.999 V$_{pp}$ | 23.999 V$_{pp}$ |
+| $V_{out}$ 峰值 | $\pm 12.0$ V | $+12.02 / -11.98$ V | $\pm 12$ V |
+| $-3$ dB 頻寬 | $\text{GBW}/3 \approx 300$ kHz | 374 kHz | 無（理想模型） |
+| 1 MHz 的增益 | — | 0.899 | 3.000 |
+| 相位 | 同相 | $-0.2°$（1 kHz） | 同相 |
+
+![Lab 4 的輸入振幅掃描：非反相組態的輸出隨輸入線性上升到 9 Vpp，之後貼在 29.2 Vpp 不再長大](/note-images/ec-week10-ltspice/lab4-clipping.png)
+
+*輸入振幅掃描。綠色虛線是講義指定的 8 V$_{pp}$，還在線性段裡；過了 9 V$_{pp}$ 之後輸出就貼著電源軌。*
+
+### 實驗室：記錄表
+
+照 Excel 記錄簿的表 A 與表 B 填，這裡列出對照用的預報值。
+
+**表 A 振幅掃描**（1 kHz 固定）：
+
+| 輸入 V$_{pp}$ | 2 | 4 | 6 | 8 | 9 | 10 | 12 | 15 |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| LTspice 輸出 V$_{pp}$ | 6.000 | 12.000 | 18.000 | 23.999 | 26.999 | 29.224 | 29.227 | 29.227 |
+| 實測 $|A_v|$ | | | | | | | | |
+
+**表 B 頻率掃描**（輸入固定 2 V$_{pp}$）：
+
+| 頻率 | 100 Hz | 1 kHz | 10 kHz | 50 kHz | 100 kHz | 200 kHz | 500 kHz | 1 MHz |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| LTspice $|A_v|$ | 3.0000 | 2.9999 | 2.9989 | 2.9752 | 2.9042 | 2.6596 | 1.7667 | 0.8991 |
+| 實測 $|A_v|$ | | | | | | | | |
+
+**交報告那一格**（講義第 10 頁版面，取 8 V$_{pp}$ 那一列）：
+
+| 欄位 | 填什麼 |
+| --- | --- |
+| Input waveform | 8.0 V$_{pp}$ 正弦波，1 kHz |
+| Output waveform | 24 V$_{pp}$，同相 |
+| $A_v$（theoretical） | $1 + R_2/R_1$，用實測電阻算 |
+| $A_v$（experimental） | 實測 $V_{out,pp} / V_{in,pp}$ |
+
+### 檢查點
+
+- **輸入與輸出同相。** 示波器上兩條曲線同時過零、同時到峰。看到反相就是接到腳 2 去了。
+- **增益是 3.00，不是 2.00。** 量到 2 就是把電路接成反相組態（訊號進了 $R_1$ 左端），或是 $R_1$ 與 $R_2$ 裝反。
+- **腳 7 對地 $+15$ V、腳 4 對地 $-15$ V。** 這兩個值不對的話後面什麼都不用量。
+- **輸出沒有平頂。** 若有，先確認輸入真的只有 8 V$_{pp}$（示波器讀值，不是面板設定值）。
+- 增益的驗算式：
+
+$$
+A_v = \frac{V_{out,pp}}{V_{in,pp}} = 1 + \frac{R_2}{R_1}
+\qquad
+\text{用實測阻值算，不要用標稱值}
+$$
+
+## 實驗二：反相放大器 Inverting Amplifier
+
+{/* @ai-reference
+id: w10-lab4-exp2
+file: _references/電子學實作系列/第九週/App_Lab4_5.pdf
+page: 11
+status: confirmed
+excerpt: Circuit schematic (inverting amplifier). Av = Vo/Vin = -R2/R1. Build the circuit and using Vin and also supply two DC voltage sources.
+*/}
+<PdfRefChip file="_references/電子學實作系列/第九週/App_Lab4_5.pdf" page={11} status="confirmed" excerpt={"Circuit schematic (inverting amplifier): R1 = 100 kohm in series with Vin into the inverting input, R2 = 200 kohm feedback, supplies +15 V / -15 V, Vin = sine 1 kHz Ampl 4. Av = Vo/Vin = -R2/R1."} client:visible />
+
+### 先讀懂這張圖：和實驗一只差兩條線
+
+![講義第 11 頁的反相放大器：Vin 經 R1 100 kΩ 進運放的−端，R2 200 kΩ 從輸出接回−端，＋端接地，電源 ±15 V](/note-images/ec-week10-handout/lab4-exp2-schematic.png)
+
+*講義第 11 頁的電路。$R_1$ 從「接地」改成「吃訊號」，「＋」腳從「吃訊號」改成「接地」——元件位置完全沒動。*
+
+| | 實驗一 非反相 | 實驗二 反相 |
+| --- | --- | --- |
+| $R_1$ 的左端 | 接地 | 接訊號源 |
+| 腳 3（＋） | 接訊號源 | 接地 |
+| $R_2$ | 輸出 ↔ 腳 2 | 輸出 ↔ 腳 2（不變） |
+| 增益 | $1 + R_2/R_1 = +3$ | $-R_2/R_1 = -2$ |
+
+**把這張表背下來比背公式有用。** 當天只要把兩條跳線對調就換好電路了，不必拆板重接。
+
+### 講義詳解（第 9、11 頁）
+
+**理論**（第 9 頁）
+
+講義只給一條節點方程式：
+
+$$
+\frac{V_{in}-0}{R_1} = \frac{0-V_O}{R_2}
+$$
+
+那兩個 0 就是**虛接地**（virtual ground）：腳 3 接地所以 $V_+ = 0$，虛短路逼著 $V_- = 0$。但腳 2 **並沒有真的接到地**——它只是電位是 0，沒有導線、也不會把電流導走。
+
+兩步法：
+
+1. $R_1$ 上的壓降是 $V_{in} - 0 = V_{in}$，所以流進來的電流是 $I = V_{in}/R_1$。
+2. 這股電流沒有別的路可走（輸入端不吃電流），全部流進 $R_2$，所以 $V_{out} = 0 - I R_2 = -\dfrac{R_2}{R_1}V_{in}$。
+
+**負號不是符號遊戲。** 電流從虛接地點往輸出端流，所以輸出端的電位必須比 0 V 低——輸出波形和輸入波形真的上下顛倒。
+
+**輸入阻抗就是那顆 $R_1$。** 訊號源看到的是「一顆 100 kΩ 接到一個永遠是 0 V 的點」，所以輸入阻抗正好是 $R_1$ = 100 kΩ。這是反相組態相對非反相組態唯一明顯的缺點，也是[講義問題 2](#問題-2非反相的輸入阻抗比較高嗎好處是什麼) 在問的事。
+
+**操作步驟**（第 11 頁）
+
+和第 10 頁完全相同的三步：接線並提供兩個直流電源、量輸出電壓與波形、算出電壓增益。
+
+### 先看懂：CircuitJS
+
+[開啟實驗二的 CircuitJS 電路](https://www.falstad.com/circuit/circuitjs.html?ctz=CQAgjCAMB0l3BWcMBMcUHYMGZIA4UA2ATmIxAUnCQBZsKBTAWjDACgBDEXGkNPboQH8QAsEhZIw8eGwBu4FAOxpFY4iijhkcELyoHoCNgCc14DXxS8wlqtJlsA7lZuWeFzZGfdIvFNa+vCoGPthCfPh6uiLeLjQxUQn2SlCm0SnCgWCpVGiOLgE2qUWeafGJAjQ0wlHeZtW1VTXcqvYF5iGuraGFgV0eXXFBPXotQ2wA5t1dpdgIXmkA9tqLNCi2hJQUUNAQVABqAPoAlgB2bCvSfFrrm9tIMBAQx0sArgAubEA)
+
+- 兩個示波器：左邊 $V_{in}$、右邊 $V_{out}$。
+- 要看的是：**兩條反相**（一條往上、另一條同時往下），而且 $V_{out}$ 的 P−P 是 $V_{in}$ 的兩倍（16 V 對 8 V）。
+- 把滑鼠移到 $R_1$ 與 $R_2$ 上面看電流讀值，會發現**兩顆的電流一模一樣**——這就是「沒有電流進晶片」的直接證據。
+- 同樣**不要抄 CircuitJS 的數值**。
+
+### 預演：Tinkercad 接線配方（和實驗一的差異）
+
+只有兩條線要改：
+
+| 改什麼 | 實驗一 | 實驗二 |
+| --- | --- | --- |
+| 100 kΩ 左端那一欄 | 跳線接 0 V 軌 | 改接函數波產生器的蕊線 |
+| 腳 3 那一欄 | 接函數波產生器的蕊線 | 改用跳線接 0 V 軌 |
+| 示波器 CH1 | 夾腳 3 那一欄 | 改夾 100 kΩ 左端那一欄 |
+
+產生器的設定（正弦波、1 kHz、Amplitude 8）與電源完全不動。
+
+已經建好的設計：[Lab 4 Exp 2: Inverting Amplifier](https://www.tinkercad.com/things/8vsDbYcDYgT)
+
+![Tinkercad 的實驗二接線：和實驗一同一塊板，訊號改接 100 kΩ 的左端、腳 3 改用跳線接地](/note-images/ec-week10-tinkercad/lab4-exp2-tinkercad.png)
+
+*模擬中的實驗二。左邊 $V_{in}$ 滿格 10 V、右邊 $V_{out}$ 滿格 20 V，換算是 7.7 V$_{pp}$ 與 15.3 V$_{pp}$，比值 2.00——**這個 2.00 就是「接的是反相組態」最直接的證據**（非反相會是 3.00）。*
+
+![Tinkercad 線路圖檢視的實驗二](/note-images/ec-week10-tinkercad/lab4-exp2-schematic.png)
+
+### 實體麵包板：接在哪
+
+![Lab 4 實驗二的實體麵包板接線圖：和實驗一同一塊板，第 33 欄改用跳線接上方 −軌、第 14 欄改接訊號產生器的蕊線](/note-images/ec-week10-breadboard/lab4-exp2-breadboard.png)
+
+*和實驗一同一塊板、元件位置一模一樣，只改三條跳線：第 33 欄（腳 3）改接地、第 14 欄（$R_1$ 左端）改吃訊號，示波器 CH1 也跟著移到第 14 欄。*
+
+### 同一張圖，標出電流實際流動路徑
+
+![Lab 4 實驗二的電流分析圖：一股電流從訊號源出發，經 100 kΩ 到第 21 欄的虛接地點，再經 200 kΩ 流向輸出，中途沒有任何岔路進到晶片裡](/note-images/ec-week10-breadboard/lab4-exp2-breadboard-current.png)
+
+*這次是**一股電流從頭走到尾**：訊號源 → $R_1$ → 虛接地 → $R_2$ → 輸出。兩顆電阻上的電流完全相同。*
+
+| 編號 | 電流走到哪 | 為什麼走這裡 |
+| --- | --- | --- |
+| 1 | 訊號源 → $R_1$ → 第 21 欄 | 腳 2 被釘在 0 V，所以 $R_1$ 的壓降就是 $V_{in}$，$I = V_{in}/R_1 = 40\ \mu$A 峰值 |
+| 2 | 第 21 欄：沒有岔路 | 往晶片那條路輸入阻抗極高，等同斷路 |
+| 3 | 第 21 欄 → $R_2$ → 腳 6 | 同一股電流，$V_{out} = -I R_2 = -8$ V 峰值 |
+| 4 | 腳 3 → 地 | 只負責定電位，不走電流 |
+| 5 | ＋軌 → 腳 7；腳 4 → 下方「−」軌 | 輸出的電流一樣由電源供應 |
+
+**訊號源這次真的要出 40 µA。** 和實驗一最大的差別就在這裡：非反相組態的訊號源幾乎不出電流，反相組態的訊號源要推動那顆 $R_1$。如果訊號源本身有內阻，它會和 $R_1$ 串起來一起分壓——這正是[講義問題 2](#問題-2非反相的輸入阻抗比較高嗎好處是什麼) 的重點。
+
+### LTspice 預報值
+
+| 量 | 理論公式 | LTspice（uA741 巨集模型） | CircuitJS（理想運放） |
+| --- | --- | --- | --- |
+| $A_v$（1 kHz） | $-R_2/R_1 = -2.000$ | $-2.0000$ | $-2.000$ |
+| $V_{out}$ 峰對峰 | $2 \times 8 = 16.0$ V$_{pp}$ | 16.000 V$_{pp}$ | 16.000 V$_{pp}$ |
+| $V_{out}$ 峰值 | $\pm 8.0$ V | $+8.02 / -7.98$ V | $\pm 8$ V |
+| $-3$ dB 頻寬 | $\text{GBW}/3 \approx 300$ kHz | 374 kHz | 無 |
+| 1 MHz 的增益 | — | 0.600 | 2.000 |
+| 輸入阻抗 | $R_1$ = 100 kΩ | 100 kΩ | 100 kΩ |
+
+**反相組態的 $-3$ dB 頻寬和非反相組態一樣是 374 kHz，不是 $\text{GBW}/2$。** 決定頻寬的是**雜訊增益**（noise gain，也就是回授分壓比的倒數 $1 + R_2/R_1 = 3$），不是訊號增益。這兩個電路的回授網路一模一樣，所以頻寬相同——這是很容易弄錯的一點。
+
+![Lab 4 兩種組態的閉迴路增益隨頻率下滑：1 kHz 還是平的，兩條的 −3 dB 點都在 374 kHz，1 MHz 時非反相剩 0.90、反相剩 0.60](/note-images/ec-week10-ltspice/lab4-bode.png)
+
+*兩條曲線的轉折點重疊在同一個頻率，因為回授網路相同。*
+
+### 實驗室：記錄表
+
+**表 A 振幅掃描**（1 kHz 固定）：
+
+| 輸入 V$_{pp}$ | 2 | 4 | 6 | 8 | 10 | 12 | 14 | 15 |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| LTspice 輸出 V$_{pp}$ | 4.000 | 8.000 | 12.000 | 16.000 | 20.000 | 24.000 | 27.999 | 29.224 |
+| 實測 $|A_v|$ | | | | | | | | |
+
+**反相組態要到 15 V$_{pp}$ 才開始削平**（因為增益只有 2），所以這張表整段幾乎都是線性的。想看削平就得把輸入再往上推。
+
+**表 B 頻率掃描**（輸入固定 2 V$_{pp}$）：
+
+| 頻率 | 100 Hz | 1 kHz | 10 kHz | 50 kHz | 100 kHz | 200 kHz | 500 kHz | 1 MHz |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| LTspice $|A_v|$ | 2.0000 | 2.0000 | 1.9993 | 1.9835 | 1.9361 | 1.7731 | 1.1779 | 0.5995 |
+| 實測 $|A_v|$ | | | | | | | | |
+
+### 檢查點
+
+- **輸入與輸出反相。** 示波器上一條到峰時另一條到谷。這是確認電路接對最快的方法。
+- **增益是 2.00，不是 3.00。**
+- **腳 3 真的接到地。** 用電表直流電壓檔量腳 3 對地，應該是 0.000 V；若讀到好幾伏，那條跳線沒插好。
+- **腳 2 的電位也應該接近 0 V。** 這是虛接地的直接驗證。量到的值會是幾 mV 到幾十 mV（輸入偏移電壓造成的），不會剛好是 0。
+- 增益的驗算式：
+
+$$
+A_v = -\frac{R_2}{R_1}
+\qquad
+|A_v| = \frac{V_{out,pp}}{V_{in,pp}}
+$$
+
+## 講義問題與 Bonus
+
+{/* @ai-reference
+id: w10-lab4-questions
+file: _references/電子學實作系列/第九週/App_Lab4_5.pdf
+page: 13
+status: confirmed
+excerpt: 1. What are the practical differences between inverting and non-inverting amplifiers? 2. Does a non-inverting amplifier have a higher or lower input impedance compared to an inverting amplifier? 3. If the input signal frequency is increased from 1 kHz to 1 MHz, will the circuit still provide accurate amplification?
+*/}
+<PdfRefChip file="_references/電子學實作系列/第九週/App_Lab4_5.pdf" page={13} status="confirmed" excerpt={"Question: 1. What are the practical differences between inverting and non-inverting amplifiers? 2. Does a non-inverting amplifier have a higher or lower input impedance compared to an inverting amplifier, and what advantages does this characteristic offer in circuit design? 3. In Inverting Amplifier, if the input signal frequency is increased from 1 kHz to 1 MHz, will the circuit still provide accurate amplification?"} client:visible />
+
+### 問題 1：反相與非反相在實務上的差別
+
+講義問的是「practical differences」，所以答案不該只列公式。四個真正會影響選型的差別：
+
+| | 反相組態 | 非反相組態 |
+| --- | --- | --- |
+| 增益範圍 | 可以小於 1（衰減），也可以很大 | **最少是 1**，做不出衰減 |
+| 輸入阻抗 | 就是那顆 $R_1$，有限且已知 | 運放自己的輸入阻抗，$\text{M}\Omega$ 等級 |
+| 共模電壓 | 兩個輸入端都固定在 0 V，**完全沒有共模變化** | 兩個輸入端跟著 $V_{in}$ 一起動，吃共模拒斥比 |
+| 多路輸入 | 加幾顆電阻就變加法器，各路互不干擾 | 多路會互相負載（Lab 5 實驗二會量到） |
+
+**最常被忽略的是第三列。** 反相組態的兩個輸入端永遠停在 0 V，所以運放的共模拒斥能力完全沒被用到；非反相組態的輸入端會跟著訊號上下擺，共模誤差會直接混進輸出。精密量測電路多半選反相組態就是這個原因。
+
+**這次實驗能直接觀察到的差別**是相位（180° 對 0°）與增益公式（$-R_2/R_1$ 對 $1+R_2/R_1$）。輸入阻抗要再加一顆電阻才量得到，做法見問題 2。
+
+### 問題 2：非反相的輸入阻抗比較高嗎？好處是什麼
+
+**比較高，而且高非常多。** 反相組態的輸入阻抗就是那顆 $R_1$ = 100 kΩ；非反相組態是運放自己的輸入阻抗，uA741 規格書寫典型 2 MΩ，接上負回授之後還會再被迴路增益放大。
+
+**好處是不會把訊號源拉垮。** 任何訊號源都有內阻 $R_s$。訊號源的內阻會和放大器的輸入阻抗串成分壓：
+
+$$
+V_{\text{實際進到放大器}} = V_s \cdot \frac{Z_{in}}{R_s + Z_{in}}
+$$
+
+$Z_{in}$ 越大，這個分壓比越接近 1，量到的增益就越準。LTspice 在訊號源前面串一顆 $R_s$ 掃過四個值：
+
+| 訊號源內阻 $R_s$ | 反相組態 $|A_v|$ | 誤差 | 非反相組態 $|A_v|$ | 誤差 |
+| --- | --- | --- | --- | --- |
+| 0 | 2.0000 | — | 2.9999 | — |
+| 1 kΩ | 1.9802 | $-0.99\%$ | 2.9999 | $-0.003\%$ |
+| 10 kΩ | 1.8181 | $-9.09\%$ | 2.9999 | $-0.003\%$ |
+| 100 kΩ | 1.0000 | $-50\%$ | 2.9998 | $-0.007\%$ |
+
+反相組態在 $R_s = R_1$ 時增益直接掉一半（因為 $A_v = -R_2/(R_s+R_1)$），非反相組態則幾乎不動。**這就是為什麼感測器、麥克風這類高內阻訊號源一定先接一級非反相（或單位增益緩衝器）**。
+
+**想在實驗室驗證這件事**：在訊號源與電路之間串一顆 100 kΩ，再量一次兩個組態的增益。反相那邊會從 2.00 掉到 1.00，非反相那邊紋風不動。這是很值得加分的一筆數據，只要多一顆電阻、多兩分鐘。
+
+### 問題 3：1 kHz 拉到 1 MHz，還準嗎
+
+**不準，而且會以兩種不同的方式不準**——這題的完整答案必須把兩者分開講。
+
+**第一種：頻寬不夠（小訊號）。** uA741 的增益頻寬積約 1 MHz，閉迴路增益被壓到 2 倍時（雜訊增益 3），$-3$ dB 頻寬只有約 374 kHz。拉到 1 MHz 時增益從 2.00 掉到 0.60，**而且相位也跟著轉**。波形還是正弦波，只是變小、變慢。
+
+**第二種：迴轉率不夠（大訊號）。** 如果輸入還是講義指定的 8 V$_{pp}$，輸出要在 1 µs 內走完 16 V 的來回，需要的斜率是
+
+$$
+\left|\frac{dV_{out}}{dt}\right|_{\max} = 2\pi f V_{peak} = 2\pi \times 10^6 \times 8 = 50\ \text{V}/\mu\text{s}
+$$
+
+而 uA741 的迴轉率只有 0.5 V/µs——**差了一百倍**。輸出根本來不及動，LTspice 量到的輸出只剩 0.19 V$_{pp}$，而且波形變成三角波（斜率被鎖死的典型症狀）。
+
+![Lab 4 問題 3 的兩種失真：左邊 1 MHz 大訊號時輸出只剩 0.19 Vpp 的三角波，右邊 1 MHz 小訊號時還是正弦波但振幅剩 0.58 倍](/note-images/ec-week10-ltspice/lab4-slew-vs-bandwidth.png)
+
+*同一個 1 MHz，振幅不同就是兩種完全不同的失真。左邊的三角波是迴轉率，右邊的衰減是頻寬。*
+
+| 條件 | LTspice 的 $|A_v|$ | 輸出波形 | 最大斜率 | 瓶頸 |
+| --- | --- | --- | --- | --- |
+| 1 kHz、8 V$_{pp}$ | 2.000 | 正弦波 | 0.05 V/µs | 無 |
+| 1 MHz、100 mV$_{pp}$ | 0.582 | 正弦波 | 0.18 V/µs | 頻寬 |
+| 1 MHz、8 V$_{pp}$ | 0.024 | 三角波 | 0.498 V/µs | 迴轉率 |
+
+**怎麼在實驗室分辨這兩種。** 把輸入振幅降一半：
+
+- 輸出振幅也跟著降一半、波形維持正弦 → 是**頻寬**問題（線性失真）。
+- 輸出振幅降得比一半多、而且波形從三角變回正弦 → 是**迴轉率**問題（非線性失真）。
+
+表 B 之所以把輸入壓到 2 V$_{pp}$，就是為了量到乾淨的頻寬數據。**兩種都記下來，報告會完整很多。**
+
+### Bonus：單位增益電路，並以開迴路增益 $A_0$ 表示增益
+
+{/* @ai-reference
+id: w10-lab4-bonus
+file: _references/電子學實作系列/第九週/App_Lab4_5.pdf
+page: 14
+status: confirmed
+excerpt: Bonus: Design a non-inverting amplifier circuit with a voltage gain is equal to 1 (unity gain) and derive the gain in terms of open-loop gain Ao.
+*/}
+<PdfRefChip file="_references/電子學實作系列/第九週/App_Lab4_5.pdf" page={14} status="confirmed" excerpt={"Bonus: Design a non-inverting amplifier circuit with a voltage gain is equal to 1 (unity gain) and derive the gain in terms of open-loop gain Ao."} client:visible />
+
+**電路：把輸出直接接回反相端，$R_1$ 開路、$R_2$ 短路。** 代進 $A_v = 1 + R_2/R_1$ 得到 $1 + 0/\infty = 1$。實體上就是一條線從腳 6 接到腳 2，腳 3 吃訊號——連電阻都不用。這個電路叫電壓隨耦器（voltage follower）或單位增益緩衝器。
+
+**用有限的開迴路增益 $A_0$ 推一次。** 不假設虛短路，從運放的定義出發：
+
+$$
+\begin{aligned}
+V_{out} &= A_0 \,(V_+ - V_-) = A_0 \,(V_{in} - V_{out}) \\[4pt]
+V_{out}(1 + A_0) &= A_0 V_{in} \\[6pt]
+A_{cl} = \frac{V_{out}}{V_{in}} &= \frac{A_0}{1 + A_0}
+\end{aligned}
+$$
+
+這條式子是整個負回授理論的最小例子：**回授因子 $\beta = 1$（全部送回去），所以閉迴路增益 $= A_0/(1+A_0\beta) = A_0/(1+A_0)$**。$A_0 \to \infty$ 時它趨近 1，但永遠**小於** 1。
+
+LTspice 用理想壓控源掃過 $A_0$ 驗證：
+
+| $A_0$ | 1 | 10 | 100 | $10^3$ | $10^4$ | $2\times10^5$ |
+| --- | --- | --- | --- | --- | --- | --- |
+| $A_{cl} = A_0/(1+A_0)$ | 0.500000 | 0.909091 | 0.990099 | 0.999001 | 0.999900 | 0.999995 |
+| 與 1 的誤差 | 50% | 9.1% | 1.0% | 0.1% | 0.01% | 5 ppm |
+
+uA741 的典型 $A_0$ 是 $2\times10^5$，所以實際增益是 0.999995——**誤差 5 ppm，任何一台示波器都量不出來**。這也回答了「為什麼實務上可以直接把虛短路當成等號」。
+
+**一般情形的推廣**（寫進報告會更完整）：非反相組態的回授因子是 $\beta = R_1/(R_1+R_2)$，所以
+
+$$
+A_{cl} = \frac{A_0}{1 + A_0 \beta}
+= \frac{1}{\beta} \cdot \frac{A_0\beta}{1+A_0\beta}
+\approx \Bigl(1+\frac{R_2}{R_1}\Bigr)\Bigl(1 - \frac{1}{A_0\beta}\Bigr)
+$$
+
+後面那個括號就是**增益誤差**。閉迴路增益設得越大（$\beta$ 越小），誤差越明顯——這正是[第 10 週理論筆記](/notes/電子學實作系列第10週-mos放大器組態與運放電路)的 Example 8-3 在講的事。這次實驗的 $A_v$ = 3（$\beta$ = 1/3），誤差是 $1/(2\times10^5 \times 1/3) = 0.0015\%$，量不出來。
+
+### 補充：輸出的直流偏移從哪來
+
+這一項講義沒問，但實驗時一定會看到：**把訊號源拿掉、輸入接地，輸出不會剛好是 0 V**。
+
+兩個來源：
+
+1. **輸入偏移電壓**（input offset voltage）：兩個輸入端本來就有幾 mV 的不對稱，典型 1 mV、最大 5 mV，再乘上雜訊增益 3 倍。
+2. **輸入偏壓電流**（input bias current）：兩個輸入端各流 80 nA，流過不同大小的等效電阻就產生不同的壓降。
+
+第二項在這個電路特別明顯，因為**腳 2 看到的等效電阻是 $R_1 \parallel R_2 = 66.7$ kΩ，腳 3 看到的卻是 0 Ω**（直接接地）。LTspice 的 `.op` 給：
+
+| 接法 | 輸出直流偏移 |
+| --- | --- |
+| 照講義接（腳 3 直接接地） | $+16.0$ mV |
+| 腳 3 串一顆 $R_3 = R_1 \parallel R_2 = 66.7$ kΩ 再接地 | $+0.07$ mV |
+
+**差了 230 倍。** 補償電阻的作用就是讓兩個輸入端看到一樣的等效電阻，偏壓電流造成的壓降才會互相抵消。這次實驗不必加（16 mV 對 24 V$_{pp}$ 的訊號可以忽略），但直流放大或高精度電路一定要加——**這題很適合寫進報告的心得**。
+
+## 交出去的東西
+
+| 項目 | 內容 | 怎麼產 |
+| --- | --- | --- |
+| 實驗數據結果 | 兩張工作表的資料表、對照圖、現場照片 | 從 `Lab4-數據記錄.xlsx` 匯出 |
+| 示波器畫面 | 每個實驗至少 2 張（8 V$_{pp}$ 工作點、削平或 1 MHz） | `[Save/Recall]` 存 USB，不要手機翻拍 |
+| 麵包板照片 | 每個實驗 1 張，看得出缺口方向與跳線 | 手機 |
+| 電阻實測值 | $R_1$、$R_2$ 各一筆 | GDM-532 電阻檔 |
+
+## 附錄：模擬檔與 CircuitJS 原始碼
+
+模擬檔在 `simulations/lab4/`，說明與 uA741 模型的驗證過程見 `simulations/lab4/README.md`。
+
+### CircuitJS 文字檔
+
+連結失效時可用「檔案 → 從文字匯入」貼進去。原始檔在 `simulations/lab4/circuitjs/`。
+
+:::code-group
+
+```text title="lab4-exp1-noninv.txt"
+$ 1 0.000005 10.20027730826997 50 15 43 5e-11
+a 304 208 368 208 8 15 -15 1000000
+v 256 320 256 224 0 1 1000 4 0 0 0.5
+w 256 224 304 224 0
+w 304 192 176 192 0
+r 176 192 176 320 0 100000
+w 368 208 400 208 0
+w 400 208 400 128 0
+r 400 128 176 128 0 200000
+w 176 128 176 192 0
+w 400 208 448 208 0
+r 448 208 448 320 0 10000
+w 176 320 256 320 0
+w 256 320 320 320 0
+w 320 320 448 320 0
+g 320 320 320 352 0 0
+o 1 2 0 4219650 5 0.1 0 V_in
+o 10 2 0 4219650 5 0.1 1 V_out
+```
+
+```text title="lab4-exp2-inv.txt"
+$ 1 0.000005 10.20027730826997 50 15 43 5e-11
+a 304 208 368 208 8 15 -15 1000000
+v 128 320 128 192 0 1 1000 4 0 0 0.5
+r 128 192 224 192 0 100000
+w 224 192 304 192 0
+w 304 224 304 320 0
+w 368 208 400 208 0
+w 400 208 400 128 0
+r 400 128 224 128 0 200000
+w 224 128 224 192 0
+w 400 208 448 208 0
+r 448 208 448 320 0 10000
+w 128 320 224 320 0
+w 224 320 304 320 0
+w 304 320 448 320 0
+g 224 320 224 352 0 0
+o 1 2 0 4219650 5 0.1 0 V_in
+o 10 2 0 4219650 5 0.1 1 V_out
+```
+
+:::
+
+### 下一週
+
+Lab 5（11/21）是加法器與減法器，用同一顆 uA741、同樣的 ±15 V 接法，只是電阻全部換成 10 kΩ、訊號源變成兩路。手冊在[第 11 週 Lab 5 筆記](/notes/電子學實作系列第11週-lab5加法與減法放大器實驗)。

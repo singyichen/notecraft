@@ -1,0 +1,13 @@
+* Lab 4：輸入偏壓電流造成的輸出直流偏移（反相組態）
+* U1 = 照講義接法（+ 端直接接地）；U2 = 加上補償電阻 R3 = R1//R2
+VP   vcc 0 DC 15
+VN   vee 0 DC -15
+XU1  0 inm1 vcc vee vo1 uA741
+R11  0 inm1 100k
+R21  vo1 inm1 200k
+XU2  np2 inm2 vcc vee vo2 uA741
+R32  np2 0 66.67k
+R12  0 inm2 100k
+R22  vo2 inm2 200k
+.op
+.end

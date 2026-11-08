@@ -1,0 +1,14 @@
+* Lab 4 實驗一：輸入振幅掃描，找反相放大器開始削平的位置
+.param A=4
+VP   vcc 0 DC 15
+VN   vee 0 DC -15
+VIN  vin 0 SINE(0 {A} 1k)
+XU1  0 inm vcc vee vo uA741
+R1   vin inm 100k
+R2   vo  inm 200k
+RL   vo  0   10k
+.step param A 1 7.5 0.5
+.tran 0 5m 1m 200n
+.meas tran vo_pp PP V(vo) FROM 1m TO 5m
+.meas tran av PARAM vo_pp/(2*A)
+.end

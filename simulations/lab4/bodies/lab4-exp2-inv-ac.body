@@ -1,0 +1,15 @@
+* Lab 4 實驗二：反相放大器的頻率響應（講義問題 3：1 kHz 拉到 1 MHz）
+VP   vcc 0 DC 15
+VN   vee 0 DC -15
+VIN  vin 0 DC 0 AC 1
+XU1  0 inm vcc vee vo uA741
+R1   vin inm 100k
+R2   vo  inm 200k
+RL   vo  0   10k
+.ac dec 50 1 10Meg
+.meas ac av_mid FIND mag(V(vo)) AT=1k
+.meas ac av_mid_dB PARAM 20*log10(av_mid)
+.meas ac f3dB WHEN mag(V(vo))=av_mid/sqrt(2)
+.meas ac av_1MHz FIND mag(V(vo)) AT=1Meg
+.meas ac ph_1MHz FIND ph(V(vo)) AT=1Meg
+.end

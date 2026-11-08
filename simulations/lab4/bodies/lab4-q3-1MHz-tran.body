@@ -1,0 +1,13 @@
+* Lab 4 講義問題 3：反相放大器在 1 MHz 的實際波形（頻寬＋迴轉率一起上場）
+VP   vcc 0 DC 15
+VN   vee 0 DC -15
+VIN  vin 0 SINE(0 4 1Meg)
+XU1  0 inm vcc vee vo uA741
+R1   vin inm 100k
+R2   vo  inm 200k
+RL   vo  0   10k
+.tran 0 10u 0 1n
+.meas tran vo_pp PP V(vo) FROM 6u TO 10u
+.meas tran vin_pp PP V(vin) FROM 6u TO 10u
+.meas tran av PARAM vo_pp/vin_pp
+.end

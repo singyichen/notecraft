@@ -1,0 +1,23 @@
+* Lab 4 講義問題 1、2：訊號源內阻 Rs 對兩種組態增益的影響
+* 反相：Rs 與 R1 串聯一起參與分壓；非反相：Rs 幾乎不影響
+.param RS=1k
+VP   vcc 0 DC 15
+VN   vee 0 DC -15
+VS   vs 0 DC 0 AC 1
+RSI  vs vinI {RS}
+RSN  vs vinN {RS}
+* --- 反相組態 ---
+XUI  0 inmI vcc vee voI uA741
+R1I  vinI inmI 100k
+R2I  voI  inmI 200k
+RLI  voI 0 10k
+* --- 非反相組態 ---
+XUN  vinN inmN vcc vee voN uA741
+R1N  inmN 0 100k
+R2N  voN inmN 200k
+RLN  voN 0 10k
+.step param RS list 1m 1k 10k 100k
+.ac dec 20 100 100k
+.meas ac av_inv FIND mag(V(voI)) AT=1k
+.meas ac av_non FIND mag(V(voN)) AT=1k
+.end

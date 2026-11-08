@@ -1,0 +1,16 @@
+* Lab 4 實驗一：非反相放大器 R1=100k R2=200k Av=1+R2/R1=3
+* Vin = 1 kHz 正弦，4 V 峰值（講義 Ampl:4，對照 P.21 的 LTspice 圖可知是峰值）
+VP   vcc 0 DC 15
+VN   vee 0 DC -15
+VIN  vin 0 SINE(0 4 1k)
+XU1  vin inm vcc vee vo uA741
+R1   inm 0   100k
+R2   vo  inm 200k
+RL   vo  0   10k
+.tran 0 5m 0 200n
+.meas tran vin_pp PP V(vin) FROM 1m TO 5m
+.meas tran vo_pp  PP V(vo)  FROM 1m TO 5m
+.meas tran av PARAM vo_pp/vin_pp
+.meas tran vo_max MAX V(vo) FROM 1m TO 5m
+.meas tran vo_min MIN V(vo) FROM 1m TO 5m
+.end

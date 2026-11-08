@@ -1,0 +1,13 @@
+* Lab 5 講義問題 2：反相加法器，Vin1 權重 3、Vin2 權重 0.5
+* 取 Rf = 30k → R1 = Rf/3 = 10k、R2 = Rf/0.5 = 60k
+VP   vcc 0 DC 15
+VN   vee 0 DC -15
+V1   vin1 0 SINE(0 2 1k)
+V2   vin2 0 SINE(0 3 1k)
+XU1  0 inm vcc vee vo uA741
+R1   vin1 inm 10k
+R2   vin2 inm 60k
+RF   vo   inm 30k
+RL   vo 0 10k
+.tran 0 5m 0 200n
+.end

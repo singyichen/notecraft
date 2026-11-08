@@ -1,0 +1,8 @@
+*.raw
+*.log
+*.log.raw
+*.op.raw
+*.db
+.venv/
+report/build/
+__pycache__/

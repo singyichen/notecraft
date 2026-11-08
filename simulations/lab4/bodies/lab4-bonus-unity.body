@@ -1,0 +1,9 @@
+* Lab 4 Bonus：單位增益（電壓隨耦器）與開迴路增益 A0 的關係
+* A_cl = A0/(1+A0)；用理想壓控源掃 A0 看閉迴路增益怎麼逼近 1
+.param A0=1e5
+Vin  vin 0 DC 1 AC 1
+E1   vo 0 vin vo {A0}
+RL   vo 0 10k
+.step param A0 list 1 10 100 1e3 1e4 1e5 2e5 1e6
+.op
+.end

@@ -1,0 +1,15 @@
+* Lab 5 講義問題 1：減法器兩端接同一個訊號（Vin1 = Vin2），理想輸出 0
+* 掃 R4 的誤差（0 / 0.5 / 1 / 5 %）看共模訊號漏出多少 → 這就是電阻誤差主導的 CMRR
+.param TOL=0
+VP   vcc 0 DC 15
+VN   vee 0 DC -15
+VCM  vcm 0 SINE(0 5 1k) AC 1
+XU1  inp inm vcc vee vo uA741
+R1   vcm inp 10k
+R2   inp 0   10k
+R3   vcm inm 10k
+R4   vo  inm {10k*(1+TOL/100)}
+RL   vo 0 10k
+.step param TOL list 0 0.5 1 5
+.tran 0 5m 0 200n
+.end

@@ -1,0 +1,17 @@
+* Lab 5 Bonus：立體聲混成單聲道 Vmono = -(aL + bR)，a = b = 0.5
+* 第一級 Rf = 10k、RL_in = RR_in = 20k → 輸出 -(0.5L + 0.5R)
+* 第二級單位增益反相器把極性轉回來（示範用，講義只要求第一級）
+VP   vcc 0 DC 15
+VN   vee 0 DC -15
+VL   vl 0 SINE(0 4 1k)
+VR   vr 0 SINE(0 3 1k 0 0 90)
+XU1  0 inm1 vcc vee vm1 uA741
+RLI  vl inm1 20k
+RRI  vr inm1 20k
+RF1  vm1 inm1 10k
+XU2  0 inm2 vcc vee vmono uA741
+RA   vm1 inm2 10k
+RB   vmono inm2 10k
+RLD  vmono 0 10k
+.tran 0 5m 0 200n
+.end

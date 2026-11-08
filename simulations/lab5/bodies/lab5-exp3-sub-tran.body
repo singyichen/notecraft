@@ -1,0 +1,14 @@
+* Lab 5 實驗三：減法器 R1=R2=R3=R4=10k
+* Vin1 = 5 V 峰值走非反相端、Vin2 = 2 V 峰值走反相端 → Vout = Vin1 - Vin2 = 3 V 峰值
+VP   vcc 0 DC 15
+VN   vee 0 DC -15
+V1   vin1 0 SINE(0 5 1k)
+V2   vin2 0 SINE(0 2 1k)
+XU1  inp inm vcc vee vo uA741
+R1   vin1 inp 10k
+R2   inp  0   10k
+R3   vin2 inm 10k
+R4   vo   inm 10k
+RL   vo 0 10k
+.tran 0 5m 0 200n
+.end

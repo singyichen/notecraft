@@ -29,6 +29,24 @@ def read_raw(path):
         steps.append({n: v[s:e] for n, v in cols.items()})
     return names, steps
 
+def read_ac(path):
+    """LTspice .ac .raw (complex) -> (names, [step, ...])；每個 step 是 {name: complex ndarray}，
+    頻率那一欄取實部。`.step` 的分段靠頻率重新由小變大判斷。"""
+    b = open(path, 'rb').read()
+    enc = 'utf-16-le' if b[1:2] == b'\x00' else 'latin-1'
+    key = 'Binary:\n'.encode(enc)
+    i = b.find(key)
+    header = b[:i].decode(enc); data = b[i + len(key):]
+    nvars = int(re.search(r'No\. Variables:\s+(\d+)', header).group(1))
+    npts = int(re.search(r'No\. Points:\s+(\d+)', header).group(1))
+    names = [l.split('\t')[2] for l in header.split('\nVariables:\n')[1].strip('\n').split('\n')]
+    arr = np.frombuffer(data, dtype='<c16', count=npts * nvars).reshape(npts, nvars)
+    cols = {names[k]: arr[:, k].copy() for k in range(nvars)}
+    f = cols[names[0]].real.copy(); cols[names[0]] = f
+    starts = [0] + [k for k in range(1, npts) if f[k] <= f[0] + 1e-12 and f[k] < f[k - 1]]
+    starts = sorted(set(starts))
+    return names, [{n: v[s:e] for n, v in cols.items()} for s, e in zip(starts, starts[1:] + [npts])]
+
 def stats(t, v, f=60, cycles=2):
     """peak / rms / avg over the last `cycles` periods (time-weighted)."""
     T = cycles / f; m = t >= t[-1] - T

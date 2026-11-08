@@ -1,0 +1,11 @@
+* Lab 4 講義問題 3：同樣是 1 MHz，但把振幅降到 50 mV 峰值
+* → 迴轉率不再是瓶頸，剩下的衰減純粹來自頻寬
+VP   vcc 0 DC 15
+VN   vee 0 DC -15
+VIN  vin 0 SINE(0 50m 1Meg)
+XU1  0 inm vcc vee vo uA741
+R1   vin inm 100k
+R2   vo  inm 200k
+RL   vo  0   10k
+.tran 0 10u 0 1n
+.end

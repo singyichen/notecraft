@@ -1,0 +1,22 @@
+* Lab 5：三個電路在輸入全部接地時的輸出直流偏移（偏壓電流 × 等效電阻）
+VP   vcc 0 DC 15
+VN   vee 0 DC -15
+* 反相加法器
+XU1  0 inm1 vcc vee vo1 uA741
+R11  0 inm1 10k
+R21  0 inm1 10k
+R31  vo1 inm1 10k
+* 同相加法器
+XU2  inp2 inm2 vcc vee vo2 uA741
+R12  0 inp2 10k
+R22  0 inp2 10k
+R42  0 inm2 10k
+R32  vo2 inm2 10k
+* 減法器
+XU3  inp3 inm3 vcc vee vo3 uA741
+R13  0 inp3 10k
+R23  inp3 0 10k
+R33  0 inm3 10k
+R43  vo3 inm3 10k
+.op
+.end
