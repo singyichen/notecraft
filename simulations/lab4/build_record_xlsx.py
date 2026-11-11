@@ -107,7 +107,10 @@ def amp_table(ws, row, exp, av_cell):
     r1 = r0 + len(AMP) - 1
     rx.note(ws, r1 + 1,
             '非反相組態的 LTspice 預報在 9 V_pp 還是線性（27.0 V_pp）、10 V_pp 就被壓到 29.2 V_pp；'
-            '當天若更早削平，先確認電源真的是 ±15 V。')
+            '當天若更早削平，先確認電源真的是 ±15 V。'
+            if exp == 1 else
+            '反相組態的增益只有 2，LTspice 預報到 14 V_pp 都還是線性（28.0 V_pp），'
+            '要 15 V_pp 才被壓到 29.2 V_pp；想在這張表上看到削平，得把輸入再往上推。')
     rx.note(ws, r1 + 2,
             '實測 V_in 用示波器 CH1 的 Pk-Pk 讀值，不要抄產生器面板的設定值'
             '（開路時面板值約為實際的兩倍）。')

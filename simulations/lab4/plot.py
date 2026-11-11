@@ -134,8 +134,8 @@ pred['q3_small']['av'] = pred['q3_small']['vo_pp'] / pred['q3_small']['vin_pp']
 save(f, 'lab4-slew-vs-bandwidth')
 
 # ── 輸入振幅掃描：非反相組態幾伏開始削平 ─────────────────────────────────────
-amps = np.arange(2, 7.01, 0.5)
 st = raw('lab4-exp1-amp-sweep.raw')[1]
+amps = 1 + 0.5 * np.arange(len(st))        # 對齊網表的 .step param A 1 7.5 0.5（峰值）
 rows = []
 for amp, s in zip(amps, st):
     s = win(s, 1.5e-3)
