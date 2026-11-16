@@ -1,9 +1,9 @@
 ---
 title: "電子學實作系列：第 10 週 - MOS 放大器組態與運放電路"
-description: ""
+description: "CH7.3–7.4 的共閘級與源極隨耦器，加上 CH8 運算放大器逐頁精讀：開路增益與受控電壓源、理想運放的四個條件、虛短路與虛接地的極限推導、非反相與反相組態的增益與輸入阻抗、有限 A0 造成的增益誤差，以及電源軌與 μA741 的補償電容；文末附期末考用的關鍵定義、公式與 12 題觀念選擇題。"
 tags: ["電子學實作系列"]
 createdAt: "2026-11-14"
-updatedAt: "2026-11-08"
+updatedAt: "2026-11-16"
 ---
 
 import PdfRefChip from '@/components/islands/PdfRefChip.tsx'
@@ -616,3 +616,284 @@ excerpt: Miller compensation capacitor - The Big Cap. Differential amplifier, Ga
 | 增益誤差 $= (1+R_1/R_2)/A_0$（第 11、16 頁） | 增益設越大，量到的值離理論值越遠 |
 | 輸出被電源軌夾住（第 9 頁） | 振幅調大後波形被削平，降振幅就恢復 |
 | 無限頻寬是假設（第 6 頁） | 頻率拉高後增益下滑；再高則正弦變三角（迴轉率） |
+
+## 關鍵定義
+
+> 本節整理 CH8（投影片第 1–20 頁）的核心範圍：運放的定義與四個理想條件、虛短路與虛接地、非反相與反相組態、增益誤差，以及電源軌與補償電容。MOS 三種組態的對照見本頁「本週摘要」。
+
+| 名詞 | 定義 |
+| --- | --- |
+| 運算放大器（operational amplifier，op amp） | 兩個輸入、一個輸出的電路，放大的是兩個輸入的**差**：$V_{out}=A_0(V_{in1}-V_{in2})$。 |
+| 開路增益（open-loop gain，$A_0$） | 還沒接回授時的增益，無因次；教材的 $A_0=1000$ 與 60 dB 是同一件事。 |
+| 閉迴路（closed-loop） | 輸出經電阻接回輸入之後的狀態；閉迴路增益由外部電阻決定，不再是 $A_0$。 |
+| 非反相端（noninverting input） | 把負輸入接地後，$V_{out}=+A_0V_{in1}$ 的那一端；符號上的「＋」記的是斜率為正，與電源極性無關。 |
+| 反相端（inverting input） | 把正輸入接地後，$V_{out}=-A_0V_{in2}$ 的那一端。 |
+| 理想運放的四個條件 | $A_0=\infty$、$R_{in}=\infty$、$R_{out}=0$、$\mathrm{BW}=\infty$；四條各自允許忽略一件事，由 8.4 節逐條拆掉。 |
+| 虛短路（virtual short） | $V_{in1}-V_{in2}=V_{out}/A_0 \to 0$，兩輸入電位幾乎相同但沒有電流流過。**不是定律，是負回授加上輸出有限的結果。** |
+| 虛接地（virtual ground） | 非反相端接地時的反相端：電位被釘在 0 V，但那裡沒有真的接地線。 |
+| 單位增益放大器（unity-gain amplifier） | 輸出直接接回負輸入；$A_v=\dfrac{A_0}{1+A_0}\approx1$。也叫電壓隨耦器或緩衝器，改變的是阻抗不是電壓。 |
+| 增益誤差（gain error） | 有限 $A_0$ 造成的相對偏差 $\dfrac{G}{A_0}$，其中 $G=1+\dfrac{R_1}{R_2}$ 是理想閉迴路增益；反相與非反相兩種接法的誤差項相同。 |
+| 電源軌（supply rails） | $V_{CC}$ 與 $V_{EE}$；輸出擺幅永遠被夾在兩者之間，超出就被削平（clipping），這不是電路接錯。 |
+| 雙電源／單電源 | 雙電源 $V_{EE}<0$，輸出可在地的上下擺動；單電源 $V_{EE}=0$，交流訊號必須先給一個中間偏壓。 |
+| 補償電容（compensation capacitor） | μA741 晶片上佔掉可觀面積的那顆電容，作用是讓運放接成回授後不振盪；完整理由在 CH12。 |
+
+## 公式
+
+- 運放的定義式：$V_{out}=A_0\,(V_{in1}-V_{in2})$。
+- 虛短路的來源：$V_{in1}-V_{in2}=\dfrac{V_{out}}{A_0}\xrightarrow[\;A_0\to\infty\;]{}0$。
+- 單位增益放大器：$A_v=\dfrac{A_0}{1+A_0}=\dfrac{1}{1+1/A_0}$。
+- 非反相放大器（$A_0=\infty$）：$A_v=\dfrac{R_1+R_2}{R_2}=1+\dfrac{R_1}{R_2}$，其中 $R_2$ 是接地那一顆。
+- 非反相放大器（有限 $A_0$）：$A_v=\dfrac{A_0}{1+\dfrac{R_2}{R_1+R_2}A_0}=\dfrac{G}{1+G/A_0}$，$G\equiv1+\dfrac{R_1}{R_2}$。
+- 增益誤差：$\text{gain error}=\left(1+\dfrac{R_1}{R_2}\right)\dfrac{1}{A_0}=\dfrac{G}{A_0}$。
+- 反相放大器（$A_0=\infty$）：$A_v=-\dfrac{R_1}{R_2}$，輸入阻抗 $R_{in}=R_2$。
+- 反相放大器（有限 $A_0$）：$A_v\approx-\dfrac{R_1}{R_2}\left[1-\left(1+\dfrac{R_1}{R_2}\right)\dfrac{1}{A_0}\right]$。
+- 加法器（各路經 $R_k$ 進同一個虛接地點）：$V_{out}=-\displaystyle\sum_k \frac{R_f}{R_k}V_k$。
+- 輸出擺幅的限制：$V_{EE}<V_{out}<V_{CC}$。
+
+## 考題
+
+> 期末考全部是選擇題、考觀念，所以這裡只寫 `選擇題` 一節。題目取材自投影片第 4–17 頁與本頁「本週摘要」；Example 8-3、8-4 改寫自投影片原題（已註明），其餘為自創練習題。
+>
+> 線上作答：[選擇題練習頁](/quiz/ec-final-mcq.html)（三章共 36 題，可依章節作答、對答案算分）。範圍與跨章串連見[期末考題庫總覽](/notes/電子學實作系列-期末考題庫)。
+
+### 選擇題
+
+#### 選擇題 1
+
+> 「無限輸入阻抗」這一條理想假設，直接允許我們忽略下列哪一件事？
+> :en[Which quantity does the ideal assumption of infinite input impedance let us ignore?]
+
+:::choices{answer="B"}
+- 兩個輸入端之間的電位差 :en[The voltage difference between the two input terminals]
+- 輸入端從訊號源吸走的電流 :en[The current the input terminals draw from the source]
+- 負載對輸出電壓的影響 :en[The effect of the load on the output voltage]
+- 增益隨頻率升高而下滑 :en[The roll-off of the gain at high frequency]
+:::
+
+:::tip{collapsible title="詳解"}
+四個理想條件各自對應一件「可以不去想的事」：$A_0=\infty$ 讓我們忽略兩輸入的電位差（虛短路），$R_{in}=\infty$ 讓我們忽略輸入端吃掉的電流，$R_{out}=0$ 讓我們忽略負載的影響，$\mathrm{BW}=\infty$ 讓我們忽略增益隨頻率下滑與迴轉率。
+
+最誘人的錯誤選項是 (A)：虛短路確實讓兩輸入電位幾乎相同，但那是**無限增益**的功勞，不是無限輸入阻抗。兩者常被合併成「運放的兩條規則」一起背，考試時就分不開了——分辨法是看極限式：$V_{in1}-V_{in2}=V_{out}/A_0$ 裡只有 $A_0$，沒有 $R_{in}$。
+
+**考的觀念**：四個理想條件與各自負責的近似
+:::
+
+#### 選擇題 2
+
+> 虛短路（$V_+ \approx V_-$）要成立，需要什麼前提？
+> :en[What is required for the virtual short ($V_+ \approx V_-$) to hold?]
+
+:::choices{answer="C"}
+- 只要元件是運放就成立，與外部怎麼接無關 :en[It holds for any op amp regardless of the external connections]
+- 兩個輸入端都必須接到直流偏壓 :en[Both input terminals must be tied to a DC bias]
+- 電路接成負回授，而且輸出沒有飽和 :en[The circuit is in negative feedback and the output is not saturated]
+- 閉迴路增益必須等於 1 :en[The closed-loop gain must be equal to one]
+:::
+
+:::tip{collapsible title="詳解"}
+虛短路來自把定義式倒過來解：$V_{in1}-V_{in2}=V_{out}/A_0$。要讓右邊在 $A_0\to\infty$ 時趨近 0，**分子必須是有限值**——也就是輸出沒有衝到電源軌。而輸出會停在有限值，靠的是負回授把誤差拉回來；把回授接到正輸入就變成正回授，輸出一路衝到軌上，極限不成立。
+
+(A) 是最常見的誤解：把虛短路當成運放的內建性質。它是**電路的性質**，不是元件的性質。(D) 則把「單位增益放大器剛好滿足虛短路」誤讀成必要條件——任何閉迴路增益下虛短路都成立。
+
+**考的觀念**：虛短路是負回授的結果，不是定律
+:::
+
+#### 選擇題 3
+
+> 關於虛短路算法與「有限 $A_0$ 的精確解」，下列敘述哪一項正確？
+> :en[Which statement correctly relates the virtual-short method to the exact finite-$A_0$ solution?]
+
+:::choices{answer="D"}
+- 兩者是互相獨立的理論，結果沒有關係 :en[They are independent theories whose results are unrelated]
+- 精確解只適用反相組態，虛短路只適用非反相組態 :en[The exact solution applies only to the inverting configuration]
+- 兩者在任何 $A_0$ 下都給出完全相同的數值 :en[They give identical numbers for any value of $A_0$]
+- 虛短路是精確解在 $A_0\to\infty$ 的極限，差一個 $1/A_0$ 的階 :en[The virtual short is the $A_0\to\infty$ limit of the exact solution, differing at order $1/A_0$]
+:::
+
+:::tip{collapsible title="詳解"}
+以單位增益放大器為例，精確解是 $A_v=\dfrac{A_0}{1+A_0}=\dfrac{1}{1+1/A_0}$，對 $A_0$ 取極限就得到虛短路的 $A_v=1$。被丟掉的 $1/A_0$ 那一階，正是第 11 頁命名的增益誤差。
+
+(C) 看起來保守所以誘人，但它正好抹掉了這一章後半的全部內容：$A_0=1000$ 時單位增益放大器實際是 0.999，不是 1。**虛短路是零階近似，不是等式**——記住這句話，第 11、16 頁的誤差公式就不必硬背。
+
+**考的觀念**：虛短路是零階近似，增益誤差是它的一階修正
+:::
+
+#### 選擇題 4
+
+> 運放符號上的「＋」與「−」標記的是什麼？
+> :en[What do the + and − signs on an op-amp symbol denote?]
+
+:::choices{answer="A"}
+- 兩條轉移特性曲線的斜率正負 :en[The sign of the slope of the two transfer characteristics]
+- 電源供應的正極與負極 :en[The positive and negative terminals of the power supply]
+- 輸入訊號必須為正或必須為負 :en[Whether the input signal must be positive or negative]
+- 輸出電壓的上限與下限 :en[The upper and lower limits of the output voltage]
+:::
+
+:::tip{collapsible title="詳解"}
+把其中一個輸入接地，就得到兩條單輸入的轉移特性：負輸入接地時 $V_{out}=+A_0V_{in1}$（斜率為正），正輸入接地時 $V_{out}=-A_0V_{in2}$（斜率為負）。符號記的就是這兩個斜率。
+
+(B) 是初學最容易踩的坑——運放的電源腳是另外兩隻（$V_{CC}$ 與 $V_{EE}$，見第 9 頁），和輸入端的 ± 完全是兩回事。把訊號接到「＋」端不代表那裡電位比較高，接到「−」端也不需要負電壓。
+
+**考的觀念**：輸入端的 ± 是斜率符號，與電源極性無關
+:::
+
+#### 選擇題 5
+
+> 非反相放大器用 $A_0=1000$ 的運放，標稱增益從 5 改成 50，增益誤差會怎麼變？
+> :en[A noninverting amplifier uses an op amp with $A_0 = 1000$. How does the gain error change when the nominal gain goes from 5 to 50?]
+
+:::choices{answer="B"}
+- 不變，增益誤差只由 $A_0$ 決定 :en[Unchanged, since the gain error depends only on $A_0$]
+- 從 0.5% 變成 5%，與標稱增益成正比 :en[From 0.5% to 5%, proportional to the nominal gain]
+- 從 0.5% 變成 0.05%，標稱增益越大誤差越小 :en[From 0.5% to 0.05%, smaller for larger nominal gain]
+- 從 0.5% 變成 1.6%，與標稱增益的平方根成正比 :en[From 0.5% to 1.6%, proportional to the square root of the nominal gain]
+:::
+
+:::tip{collapsible title="詳解"}
+增益誤差是 $\dfrac{G}{A_0}$，其中 $G=1+\dfrac{R_1}{R_2}$ 是標稱閉迴路增益。$G=5$ 時是 $5/1000=0.5\%$，$G=50$ 時是 $50/1000=5\%$——標稱增益放大 10 倍，誤差也放大 10 倍。
+
+(C) 的直覺是「增益越大越不受小誤差影響」，方向正好相反。背後的理由是回授量：$G$ 越大代表回送的比例 $1/G$ 越小，迴路增益 $A_0/G$ 越小，能用來修正的餘裕就越少。想要高增益又要高精度，只能換 $A_0$ 更大的運放，或拆成兩級。
+
+**考的觀念**：增益誤差正比於閉迴路增益（投影片 Example 8-3）
+:::
+
+#### 選擇題 6
+
+> 反相與非反相兩種接法的增益誤差項都是 $\left(1+\dfrac{R_1}{R_2}\right)\dfrac{1}{A_0}$，而不是各自的理想增益除以 $A_0$。為什麼？
+> :en[Why do the inverting and noninverting configurations share the same gain-error term $(1+R_1/R_2)/A_0$ rather than each using its own ideal gain?]
+
+:::choices{answer="C"}
+- 因為兩種接法的理想增益大小本來就相同 :en[Because the two ideal gains happen to have the same magnitude]
+- 因為投影片只推導非反相，反相是直接套用 :en[Because only the noninverting case was derived and the result was reused]
+- 因為誤差由迴路決定，而兩者的迴路是同一個 :en[Because the error is set by the loop, and both share the same loop]
+- 因為反相組態的輸入阻抗等於 $R_2$ :en[Because the input impedance of the inverting configuration equals $R_2$]
+:::
+
+:::tip{collapsible title="詳解"}
+誤差項來自「運放加上 $R_1$、$R_2$ 分壓」這個迴路，而兩種接法的迴路完全一樣——差別只在訊號從哪裡注入。所以誤差項相同，前面那個理想增益才不同（$-\dfrac{R_1}{R_2}$ 對 $1+\dfrac{R_1}{R_2}$）。
+
+(A) 是最誘人的錯誤：增益 4 的反相放大器（$R_1/R_2=4$）其理想增益是 $-4$，而同樣電阻接成非反相是 $+5$，兩者大小並不相同，誤差項卻一樣是 $5/A_0$。這正好說明誤差跟著迴路走，不跟著訊號入口走——這個觀念到 CH12 會變成「迴路增益 $KA_1$ 與切點無關」。
+
+**考的觀念**：增益誤差由迴路決定，與訊號注入點無關
+:::
+
+#### 選擇題 7
+
+> 反相組態相對於非反相組態，最明顯的缺點是什麼？
+> :en[What is the most obvious drawback of the inverting configuration compared with the noninverting one?]
+
+:::choices{answer="D"}
+- 閉迴路增益不能超過 1 :en[The closed-loop gain cannot exceed one]
+- 無法使用負回授，所以虛短路不成立 :en[Negative feedback cannot be used, so the virtual short fails]
+- 增益誤差比非反相組態大很多 :en[Its gain error is much larger than the noninverting case]
+- 輸入阻抗等於 $R_2$，而不是無限大 :en[Its input impedance equals $R_2$ instead of being infinite]
+:::
+
+:::tip{collapsible title="詳解"}
+訊號源看進反相組態，第一個遇到的是 $R_2$，而 $R_2$ 的另一端是虛接地（0 V），所以輸入阻抗就是 $R_2$。非反相組態的訊號直接進運放輸入端，理論上輸入阻抗無限大。
+
+(C) 在上一題已經排除：兩者的誤差項一模一樣。實務上這個缺點很具體——$R_1=40\ \text{k}\Omega$、$R_2=10\ \text{k}\Omega$ 時只要訊號源內阻有 $1\ \text{k}\Omega$，它就與 $R_2$ 串起來一起分壓，增益從 4 掉到 3.64，誤差 9%，比有限 $A_0$ 造成的誤差大一個數量級。
+
+**考的觀念**：反相組態的輸入阻抗等於輸入電阻
+:::
+
+#### 選擇題 8
+
+> $R_1=40\ \text{k}\Omega$、$R_2=10\ \text{k}\Omega$ 的反相放大器，訊號源內阻為 $1\ \text{k}\Omega$。實測的增益大小最接近下列哪一個？
+> :en[An inverting amplifier has $R_1 = 40\ \text{k}\Omega$ and $R_2 = 10\ \text{k}\Omega$, driven by a source with $1\ \text{k}\Omega$ output resistance. Which value is closest to the measured gain magnitude?]
+
+:::choices{answer="A"}
+- $3.64$
+- $4.00$
+- $4.40$
+- $3.98$
+:::
+
+:::tip{collapsible title="詳解"}
+源內阻與 $R_2$ 串聯，等效的輸入電阻變成 $11\ \text{k}\Omega$，所以 $|A_v|=\dfrac{40}{11}=3.64$。
+
+(D) 的 3.98 是「只考慮有限 $A_0$ 的增益誤差」會得到的量級（$A_0=1000$ 時誤差 0.5%，$4\times0.995=3.98$）——它是誘答項，因為那是這一章花最多篇幅推導的效應。但實驗室裡**源阻抗造成的偏差通常大得多**，量到增益偏低時應該先懷疑它。(C) 的 4.40 方向相反：串聯電阻只會讓增益變小，不會變大。
+
+**考的觀念**：量到增益偏低時，先查源阻抗再查有限 $A_0$
+:::
+
+#### 選擇題 9
+
+> 非反相放大器把接地那一顆電阻 $R_2$ 改成開路（$R_2\to\infty$），電路會變成什麼？
+> :en[In a noninverting amplifier, the grounded resistor $R_2$ is left open ($R_2 \to \infty$). What does the circuit become?]
+
+:::choices{answer="B"}
+- 開迴路放大器，增益等於 $A_0$ :en[An open-loop amplifier with gain $A_0$]
+- 單位增益緩衝器，增益趨近 1 :en[A unity-gain buffer with gain approaching one]
+- 反相放大器，增益變成負值 :en[An inverting amplifier with negative gain]
+- 回授消失，輸出衝到電源軌 :en[Feedback disappears and the output slams into the rail]
+:::
+
+:::tip{collapsible title="詳解"}
+把有限 $A_0$ 的通式 $A_v=\dfrac{A_0}{1+\frac{R_2}{R_1+R_2}A_0}$ 取兩個極端就能把前面幾個電路統一起來：$R_2=0$ 時分壓比為 0，回授消失，$A_v=A_0$（開迴路）；$R_2\to\infty$ 時分壓比為 1，輸出全部回送，$A_v=\dfrac{A_0}{1+A_0}\approx1$，就是第 8 頁的單位增益放大器。
+
+(A) 與 (B) 正好互換，是這題唯一的陷阱——記法是看**回送的比例**：接地電阻開路代表輸出沒有被分掉，整個回送，回授量最大，所以增益被壓到最低的 1。
+
+**考的觀念**：非反相組態是一個回授量可連續調整的家族
+:::
+
+#### 選擇題 10
+
+> 反相放大器的輸出正弦波頂部與底部被切平，把輸入振幅調小後波形恢復正常。最可能的原因是？
+> :en[The output sine of an inverting amplifier is flattened at the top and bottom; reducing the input amplitude restores it. What is the most likely cause?]
+
+:::choices{answer="C"}
+- 電路接錯，回授接到了非反相端 :en[Miswiring: the feedback was returned to the noninverting input]
+- 輸入偏壓電流在回授電阻上造成直流壓降 :en[Input bias current creating a DC drop across the feedback resistor]
+- 輸出撞到電源軌 :en[The output is hitting the supply rails]
+- 撞到迴轉率，輸出的斜率被鎖死 :en[Slew-rate limiting, which caps the output slope]
+:::
+
+:::tip{collapsible title="詳解"}
+輸出擺幅永遠被夾在 $V_{EE}$ 與 $V_{CC}$ 之間，$A_vV_{in}$ 一旦超出就被削平。這**不是電路接錯**，降振幅就會恢復。
+
+(D) 是最誘人的錯誤選項，因為迴轉率同樣會在大訊號時出問題、同樣能靠降振幅改善。分辨法看**波形長相**：削平是頂部被切成水平線、其餘部分仍是正弦；迴轉率是整條波形的斜率被鎖死，正弦變成三角波。另一個分辨法是降頻率——迴轉率的症狀會改善，電源軌削平不會。
+
+**考的觀念**：輸出擺幅被電源軌夾住，與迴轉率的症狀不同
+:::
+
+#### 選擇題 11
+
+> 為什麼「增益只由電阻比決定」會比「增益由 $g_mR_D$ 決定」精確得多？
+> :en[Why is a gain set by a resistor ratio far more accurate than one set by $g_m R_D$?]
+
+:::choices{answer="D"}
+- 因為電阻的絕對值可以做得很準 :en[Because the absolute value of a resistor can be made very accurate]
+- 因為電阻完全不受溫度影響 :en[Because resistors are entirely insensitive to temperature]
+- 因為 $g_m$ 與 $R_D$ 都是無因次量 :en[Because both $g_m$ and $R_D$ are dimensionless]
+- 因為同一批做出的兩顆電阻一起漂移，比值幾乎不動 :en[Because two resistors made together drift together, leaving their ratio nearly fixed]
+:::
+
+:::tip{collapsible title="詳解"}
+積體電路裡電阻的**絕對值**誤差動輒 $\pm20\%$，但兩顆用同一種單位電阻拼出來的電阻會一起變厚、一起變薄，**比值**可以做到 0.1%。$g_mR_D$ 則是兩個不同物理量的乘積，各自亂跑，沒有互相抵銷的機制。
+
+(A) 把結論講反了——正是因為絕對值不準，設計才要想辦法只依賴比值。這個「精度來自匹配，不來自絕對值」是類比積體電路的通則，到 CH12 會被正式命名為增益去敏感化。
+
+**考的觀念**：精度來自比值匹配，不是絕對值
+:::
+
+#### 選擇題 12
+
+> μA741 晶片照片上那顆佔掉可觀面積的補償電容，作用是什麼？
+> :en[What is the purpose of the large compensation capacitor visible on the μA741 die?]
+
+:::choices{answer="B"}
+- 濾掉電源軌上的雜訊 :en[Filtering noise on the supply rails]
+- 讓運放接成回授之後不會振盪 :en[Keeping the op amp from oscillating once feedback is applied]
+- 提高運放的開路增益 :en[Raising the open-loop gain of the op amp]
+- 把輸入偏壓電流導走 :en[Shunting away the input bias current]
+:::
+
+:::tip{collapsible title="詳解"}
+型錄上 μA741 的正式名稱就叫 Frequency Compensated Operational Amplifier——頻率補償是它的賣點。在它之前，使用者得自己外接補償電容才能讓回授電路穩定。
+
+(C) 的方向相反：補償是把主極點往低頻搬，**犧牲**高頻的開路增益換穩定度，不會讓增益變高。完整的理由（相位邊限、Barkhausen 判據、米勒補償）在 CH12；這一章只要記住一件事——本章所有公式都假設運放是穩定的，而穩定性是設計出來的，不是免費的。
+
+**考的觀念**：補償電容換的是穩定度，代價是高頻增益與晶片面積
+:::

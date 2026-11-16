@@ -3,7 +3,7 @@ title: "電子學實作系列：第 11 週 - 回授"
 description: "CH12 回授的逐頁詳解：負回授系統的四個組件與閉迴路轉移函數、迴路增益的量法、負回授換來的四件好處（增益去敏感化、頻寬延展、阻抗修改、線性化）、四種放大器與其理想／實際模型、感測與回送的四種組合、電壓-電壓與電壓-電流兩種拓撲的閉迴路增益與輸入輸出阻抗，以及穩定度一節的 Bode 規則、Barkhausen 判據、相位邊限與頻率補償（含米勒補償）。"
 tags: ["電子學實作系列"]
 createdAt: "2026-11-21"
-updatedAt: "2026-11-07"
+updatedAt: "2026-11-16"
 ---
 
 import PdfRefChip from '@/components/islands/PdfRefChip.tsx'
@@ -1204,6 +1204,260 @@ $$
 | 相位邊限 | $\mathrm{PM} = \angle H(\omega_{GX}) + 180°$ | 58 |
 | 三級相同共源的穩定條件 | $g_m R_D < 2$（$K=1$） | 60–61 |
 | 米勒等效電容 | $C_{eq} = [1+g_{m5}(r_{O5}\|r_{O6})]\,C_c$ | 67 |
+
+## 考題
+
+> 期末考全部是選擇題、考觀念，所以這裡只寫 `選擇題` 一節。題目取材自投影片第 4–67 頁與本頁的「本週摘要」「關鍵定義」「公式」三節；Example 12-4、12-5、12-38 改寫自投影片原題（已註明），其餘為自創練習題。
+>
+> 線上作答：[選擇題練習頁](/quiz/ec-final-mcq.html)（三章共 36 題，可依章節作答、對答案算分）。範圍與跨章串連見[期末考題庫總覽](/notes/電子學實作系列-期末考題庫)。
+
+### 選擇題
+
+#### 選擇題 1
+
+> 負回授系統的閉迴路轉移函數是 $H=\dfrac{A_1}{1+KA_1}$。當 $KA_1\gg1$ 時，$H$ 趨近什麼？
+> :en[For a negative-feedback system with $H = A_1/(1+KA_1)$, what does $H$ approach when $KA_1 \gg 1$?]
+
+:::choices{answer="B"}
+- 趨近 $A_1$，也就是開迴路增益 :en[It approaches $A_1$, the open-loop gain]
+- 趨近 $\dfrac{1}{K}$，只由回授網路決定 :en[It approaches $1/K$, set solely by the feedback network]
+- 趨近 $KA_1$，也就是迴路增益 :en[It approaches $KA_1$, the loop gain]
+- 趨近 0，因為回授把訊號抵消掉 :en[It approaches zero, since feedback cancels the signal]
+:::
+
+:::tip{collapsible title="詳解"}
+$KA_1\gg1$ 時分母的 1 可以略去，$H\to\dfrac{A_1}{KA_1}=\dfrac{1}{K}$。**$A_1$ 整個消失了**——這正是整章的核心：閉迴路增益只剩回授網路的倒數，而回授網路通常是兩顆電阻，$\dfrac{1}{K}=1+\dfrac{R_1}{R_2}$。
+
+(D) 把「負回授」誤解成「把訊號減掉所以變小」。回授確實把輸出的一部分減回輸入，但那只是把增益從 $A_1$ 壓到 $1/K$，不是壓到零；壓下去的倍率 $1+KA_1$ 正好換回四樣好處。
+
+**考的觀念**：閉迴路增益只由回授網路決定
+:::
+
+#### 選擇題 2
+
+> 迴路增益 $KA_1$ 有一個常被考的性質，是什麼？
+> :en[Which property of the loop gain $KA_1$ is frequently tested?]
+
+:::choices{answer="C"}
+- 它等於閉迴路增益的倒數 :en[It equals the reciprocal of the closed-loop gain]
+- 它只能在回授網路的輸出端量得到 :en[It can only be measured at the output of the feedback network]
+- 它與把迴路切開的位置無關 :en[It is independent of where the loop is broken]
+- 它一定是無因次的負數 :en[It is always a dimensionless negative number]
+:::
+
+:::tip{collapsible title="詳解"}
+量迴路增益的做法是把迴路切開、從切口注入 $V_{test}$、繞一圈回來量 $V_N$，得到 $KA_1=-\dfrac{V_N}{V_{test}}$。**不論從哪裡切，結果都一樣**——因為繞一圈經過的元件是同一組，只是順序不同。
+
+(A) 看起來很像去敏感化的結論，但那是 $H\to1/K$，分母是回授因數 $K$ 不是迴路增益 $KA_1$。(D) 也不對：轉阻或轉導回授裡的 $K$ 帶有單位（$\Omega^{-1}$ 或 $\Omega$），只有 $KA_1$ 這個乘積保證無因次。
+
+**考的觀念**：迴路增益與切點無關
+:::
+
+#### 選擇題 3
+
+> 第 8 章的「虛短路」在第 12 章得到什麼樣的解釋？
+> :en[How does Chapter 12 explain the "virtual short" assumed in Chapter 8?]
+
+:::choices{answer="A"}
+- 比較誤差 $E=\dfrac{X}{1+KA_1}$ 在迴路增益夠大時趨近零 :en[The comparison error $E = X/(1+KA_1)$ vanishes when the loop gain is large]
+- 兩個輸入端之間真的有一條低阻抗路徑 :en[There is genuinely a low-impedance path between the two inputs]
+- 回授網路把兩個輸入端的電位強制相等 :en[The feedback network forces the two input potentials to be exactly equal]
+- 運放的輸入阻抗無限大，所以電位差必為零 :en[The infinite input impedance forces the voltage difference to zero]
+:::
+
+:::tip{collapsible title="詳解"}
+負回授系統裡，進到前饋放大器的其實是「輸入減去回送量」這個比較誤差 $E=X-KY$，解出來是 $E=\dfrac{X}{1+KA_1}$。迴路增益越大，誤差越接近零——在運放裡，這個誤差就是兩個輸入端的電位差。所以虛短路是**迴路增益很大的結果**，而不是元件性質。
+
+(D) 是第 8 章最常見的混淆：無限輸入阻抗保證的是**沒有電流**（「虛」字的來源），電位相等靠的是無限增益。(C) 的「強制相等」太滿了——實際永遠差一個 $1/(1+KA_1)$ 的量。
+
+**考的觀念**：虛短路＝比較誤差被迴路增益壓小
+:::
+
+#### 選擇題 4
+
+> 開迴路增益 $A_1$ 變動 1%，閉迴路增益會變動多少？
+> :en[If the open-loop gain $A_1$ changes by 1%, by how much does the closed-loop gain change?]
+
+:::choices{answer="D"}
+- 同樣是 1%，回授不改變靈敏度 :en[Also 1%; feedback does not change the sensitivity]
+- $(1+KA_1)$% ，被放大了 :en[By $(1+KA_1)$%, amplified by the loop]
+- $KA_1$%，與迴路增益成正比 :en[By $KA_1$%, proportional to the loop gain]
+- $\dfrac{1}{1+KA_1}$%，被壓小了 :en[By $1/(1+KA_1)$%, reduced by the loop]
+:::
+
+:::tip{collapsible title="詳解"}
+把 $H=\dfrac{A_1}{1+KA_1}$ 對 $A_1$ 取對數靈敏度：
+
+$$
+S=\frac{\mathrm{d}\ln H}{\mathrm{d}\ln A_1}=\frac{\mathrm{d}H}{\mathrm{d}A_1}\cdot\frac{A_1}{H}=\frac{1}{(1+KA_1)^2}\cdot(1+KA_1)=\frac{1}{1+KA_1}
+$$
+
+這就是增益去敏感化。投影片 Example 12-4 把數字算出來：標稱增益 4（$K=1/4$），$A_1$ 從 1000 掉到 500（掉一半），閉迴路增益只從 3.984 變成 3.968，變動 0.4%。
+
+(B) 與 (C) 方向都相反——**回授把靈敏度壓小，不是放大**。$1+KA_1$ 是改善倍率，出現在分母。
+
+**考的觀念**：靈敏度 $=\dfrac{1}{1+KA_1}$（投影片 Example 12-4）
+:::
+
+#### 選擇題 5
+
+> 單極點放大器接上負回授後，直流增益與頻寬各自怎麼變？
+> :en[After negative feedback is applied to a one-pole amplifier, how do the DC gain and the bandwidth change?]
+
+:::choices{answer="A"}
+- 增益除以 $(1+KA_0)$，頻寬乘上 $(1+KA_0)$ :en[Gain divided by $(1+KA_0)$, bandwidth multiplied by $(1+KA_0)$]
+- 增益與頻寬都除以 $(1+KA_0)$ :en[Both gain and bandwidth divided by $(1+KA_0)$]
+- 增益與頻寬都乘上 $(1+KA_0)$ :en[Both gain and bandwidth multiplied by $(1+KA_0)$]
+- 增益除以 $(1+KA_0)$，頻寬不變 :en[Gain divided by $(1+KA_0)$, bandwidth unchanged]
+:::
+
+:::tip{collapsible title="詳解"}
+把 $A_1(s)=\dfrac{A_0}{1+s/\omega_0}$ 代進閉迴路公式整理後仍是單極點系統，但直流增益變成 $\dfrac{A_0}{1+KA_0}$、極點變成 $(1+KA_0)\omega_0$。兩者被**同一個倍率**一降一升，所以增益頻寬乘積 $A_0\omega_0$ 守恆。
+
+(C) 是最誘人的錯誤，因為「負回授有四個好處」聽起來像什麼都變好；但增益**下降**正是付出的代價。投影片 Example 12-5 的三條曲線把這件事畫得很清楚：平台降一級、轉角右移一級，高頻那段的斜線三條完全重合——重合的那一段就是乘積守恆的圖解。
+
+**考的觀念**：增益頻寬乘積守恆（投影片 Example 12-5）
+:::
+
+#### 選擇題 6
+
+> 關於負回授帶來的四個好處（去敏感化、頻寬延展、阻抗修改、線性化），下列敘述哪一項正確？
+> :en[Regarding the four benefits of negative feedback, which statement is correct?]
+
+:::choices{answer="B"}
+- 四者的改善倍率各不相同，要分別記 :en[Each benefit improves by a different factor and must be memorised separately]
+- 四者的改善倍率都是 $1+KA_1$，與增益下降的倍率相同 :en[All four improve by $1+KA_1$, the same factor by which the gain drops]
+- 四者都是免費的，負回授沒有代價 :en[All four are free; negative feedback has no cost]
+- 四者只有在迴路增益小於 1 時才成立 :en[They hold only when the loop gain is below unity]
+:::
+
+:::tip{collapsible title="詳解"}
+整章只有一個倍率 $1+KA_1$：增益除以它、靈敏度除以它、頻寬乘以它、電壓-電壓回授的輸入阻抗乘以它、輸出阻抗除以它。**付出的代價（增益下降）與換到的好處用的是同一個倍率**，所以負回授是一場等價交換，不是白拿。
+
+(C) 把「好處」當成沒有代價，正是這一章最想糾正的直覺。(D) 則把條件寫反：去敏感化要的是 $KA_1\gg1$，迴路增益小於 1 的話回授幾乎沒作用。
+
+**考的觀念**：$1+KA_1$ 是同一個倍率，好處與代價等價交換
+:::
+
+#### 選擇題 7
+
+> 理想的「轉阻放大器（transimpedance amplifier）」的輸入與輸出阻抗分別應該是多少？
+> :en[What are the ideal input and output impedances of a transimpedance amplifier?]
+
+:::choices{answer="C"}
+- $R_{in}=\infty$、$R_{out}=0$ :en[$R_{in} = \infty$, $R_{out} = 0$]
+- $R_{in}=\infty$、$R_{out}=\infty$ :en[$R_{in} = \infty$, $R_{out} = \infty$]
+- $R_{in}=0$、$R_{out}=0$ :en[$R_{in} = 0$, $R_{out} = 0$]
+- $R_{in}=0$、$R_{out}=\infty$ :en[$R_{in} = 0$, $R_{out} = \infty$]
+:::
+
+:::tip{collapsible title="詳解"}
+不必背四組，只要一條規則：**不要干擾被量的量**。轉阻放大器「讀電流、給電壓」，所以讀電流端不能有壓降（$R_{in}=0$），給電壓端不能隨負載變（$R_{out}=0$）。
+
+(A) 是電壓放大器那一組，也是最常被誤填的，因為「輸入阻抗越大越好」被當成通則背起來了。那隻適用於**讀電壓**的場合；要讀電流時輸入阻抗反而必須為零。這條規則到第 34–35 頁會被原封不動套在回授網路上——感測電壓的回授網路輸入阻抗要無限大，感測電流的要趨近零。
+
+**考的觀念**：理想阻抗的唯一規則是不要干擾被量的量
+:::
+
+#### 選擇題 8
+
+> 回授網路要「感測輸出電流」時，它應該怎麼接、要滿足什麼條件？
+> :en[When a feedback network senses the output current, how is it connected and what must it satisfy?]
+
+:::choices{answer="A"}
+- 串聯進輸出迴路，串進去的電阻要遠小於該處原本的阻抗 :en[In series with the output loop, with a resistance far smaller than the local impedance]
+- 並聯在輸出節點，輸入阻抗要無限大 :en[In parallel with the output node, with infinite input impedance]
+- 串聯進輸出迴路，串進去的電阻要遠大於該處原本的阻抗 :en[In series with the output loop, with a resistance far larger than the local impedance]
+- 並聯在輸出節點，輸入阻抗要趨近零 :en[In parallel with the output node, with near-zero input impedance]
+:::
+
+:::tip{collapsible title="詳解"}
+投影片用三用電表當類比：量電流要把線剪開、**串聯**進去，而且串進去的那顆電阻要小到不改變原本的電流（$r\ll R_L$）。實際實現是在源極串一顆 $R_S$，條件是 $R_S\ll\dfrac{1}{g_{m1}}$——因為從源極看進去的阻抗就是 $\dfrac{1}{g_{m1}}$，它扮演投影片裡 $R_L$ 的角色。
+
+(B) 是**感測電壓**的做法（並聯、輸入阻抗無限大），兩者最容易互換。(C) 的接法對、條件反了：串一顆大電阻等於把原來的電流掐掉，量到的就不是原本那個電流了。
+
+**考的觀念**：感測電壓就並聯、感測電流就串聯，都不能干擾被量的量
+:::
+
+#### 選擇題 9
+
+> 電壓-電壓回授（感測輸出電壓、回送電壓）對輸入與輸出阻抗各有什麼作用？
+> :en[What does voltage-voltage feedback do to the input and output impedances?]
+
+:::choices{answer="D"}
+- 兩者都乘上 $(1+KA_0)$ :en[Both are multiplied by $(1+KA_0)$]
+- 兩者都除以 $(1+KA_0)$ :en[Both are divided by $(1+KA_0)$]
+- 輸入阻抗除以 $(1+KA_0)$，輸出阻抗乘上 $(1+KA_0)$ :en[Input divided by $(1+KA_0)$, output multiplied by $(1+KA_0)$]
+- 輸入阻抗乘上 $(1+KA_0)$，輸出阻抗除以 $(1+KA_0)$ :en[Input multiplied by $(1+KA_0)$, output divided by $(1+KA_0)$]
+:::
+
+:::tip{collapsible title="詳解"}
+$R_{in}\to R_{in}(1+KA_0)$、$R_{out}\to\dfrac{R_{out}}{1+KA_0}$。記法不必背公式：**回授把電路推向它所模仿的那種理想放大器**。電壓-電壓回授做出來的是一個更理想的電壓放大器，而理想電壓放大器的 $R_{in}=\infty$、$R_{out}=0$，所以輸入阻抗被推高、輸出阻抗被壓低。
+
+(C) 把兩者對調，是唯一需要防的陷阱。順帶一提，Razavi 的「電壓-電壓」是「輸出-輸入」的順序，與 Sedra/Smith 的「串聯-並聯」（輸入-輸出）相反——投影片自己註明這個用法不是標準，看其他教材要先翻譯一次。
+
+**考的觀念**：回授把電路推向它所模仿的理想放大器
+:::
+
+#### 選擇題 10
+
+> Barkhausen 判據描述的是什麼？
+> :en[What do Barkhausen's criteria describe?]
+
+:::choices{answer="B"}
+- 負回授讓增益去敏感化的條件 :en[The condition under which feedback desensitises the gain]
+- 系統在某個頻率振盪的條件 :en[The condition for the system to oscillate at some frequency]
+- 放大器進入飽和的條件 :en[The condition for the amplifier to saturate]
+- 增益頻寬乘積守恆的條件 :en[The condition for the gain-bandwidth product to be conserved]
+:::
+
+:::tip{collapsible title="詳解"}
+閉迴路轉移函數的分母是 $1+KH(s)$。當某個頻率 $\omega_1$ 讓 $KH(j\omega_1)=-1$，分母變成零、增益發散，系統就在那個頻率振盪。寫成兩個條件就是 Barkhausen 判據：$|KH(j\omega_1)|=1$ **且** $\angle KH(j\omega_1)=-180°$。
+
+數學上這就是「分母的零點（閉迴路極點）跑到虛軸上」。注意兩個條件要**同時**成立：相位轉到 $-180°$ 但增益已經掉到 0 dB 以下，系統仍然穩定——這正是下一題相位邊限在量的東西。
+
+**考的觀念**：$KH(j\omega_1)=-1$ 時閉迴路分母為零
+:::
+
+#### 選擇題 11
+
+> 某個負回授系統的相位邊限只有 $10°$。關於它的行為，下列敘述哪一項正確？
+> :en[A negative-feedback system has only $10°$ of phase margin. Which statement about its behaviour is correct?]
+
+:::choices{answer="C"}
+- 它一定會持續振盪，因為相位邊限小於 $45°$ :en[It will oscillate continuously, since the phase margin is below $45°$]
+- 它的階躍響應完全沒有過衝，只是比較慢 :en[Its step response has no overshoot, merely a slower settling]
+- 它不會發散，但階躍響應會嚴重過衝、振鈴很久才安定 :en[It does not diverge, but its step response overshoots badly and rings for a long time]
+- 相位邊限不影響時域行為，只影響頻域 :en[Phase margin affects only the frequency domain, not the time domain]
+:::
+
+:::tip{collapsible title="詳解"}
+相位邊限 $\mathrm{PM}=\angle H(\omega_{GX})+180°$，只要大於零，閉迴路極點就還在左半平面，系統**不會發散**。但 PM 太小的系統「雖然不振盪卻表現很差」：$\mathrm{PM}\approx45°$ 就已經有明顯過衝與振鈴，$10°$ 更嚴重。實務上的設計目標是 $\mathrm{PM}>60°$，那時階躍響應幾乎沒有過衝。
+
+(A) 把「穩定」與「好用」混為一談——數學上的穩定門檻是 PM $>0°$，不是 $45°$。(D) 正好相反：PM 的實際意義就在時域，它決定你要等多久才安定。
+
+**考的觀念**：PM 決定安定時間，不只決定穩不穩
+:::
+
+#### 選擇題 12
+
+> 三級完全相同的共源級接成單位回授（$K=1$），穩定條件是每一級的增益 $g_mR_D<2$。這個結果說明了什麼？
+> :en[Three identical common-source stages in unity feedback ($K=1$) are stable only if $g_m R_D < 2$ per stage. What does this imply?]
+
+:::choices{answer="A"}
+- 多級高增益放大器幾乎一定需要頻率補償 :en[A multi-stage high-gain amplifier almost always needs frequency compensation]
+- 三級放大器永遠比單級穩定 :en[A three-stage amplifier is always more stable than a single stage]
+- 只要每級增益夠大就不會振盪 :en[Large per-stage gain guarantees no oscillation]
+- 單位回授是最不容易振盪的接法 :en[Unity feedback is the configuration least prone to oscillation]
+:::
+
+:::tip{collapsible title="詳解"}
+三個相同極點各在相位交越處貢獻 $-60°$，所以 $\omega_{PX}=\sqrt{3}\,\omega_p$；代回振幅得 $\dfrac{(g_mR_D)^3}{8}<1$，也就是 $g_mR_D<2$。**每一級的增益不能超過 2 倍**——這對放大器來說苛刻到幾乎沒有實用價值，所以才需要第 62 頁開始的頻率補償：把主極點往低頻搬，讓增益在相位轉到 $-180°$ 之前就掉到 0 dB 以下。
+
+(C) 的方向完全相反：每級增益越大，$|KH|$ 在 $\omega_{PX}$ 處越可能還在 0 dB 以上，越容易振盪。(D) 也錯——$K=1$ 是回授量最大的接法，迴路增益最大，**最容易**振盪；這也是為什麼運放的單位增益緩衝器接法是穩定度最嚴苛的測試條件，μA741 裡那顆大電容就是為它準備的。
+
+**考的觀念**：多級放大器的相位累積使補償成為必需（投影片 Example 12-38）
+:::
 
 ## 講義裡要注意的兩個地方
 

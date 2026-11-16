@@ -66,6 +66,8 @@
     "sync-skill": "node scripts/sync-skill-template.mjs",
     "check-plugins": "node scripts/check-plugins.mjs",
     "check-bold": "node --experimental-strip-types scripts/check-bold.mjs",
+  "build-quiz": "node --experimental-strip-types --disable-warning=ExperimentalWarning scripts/build-quiz.mjs",
+  "check:quiz": "node --experimental-strip-types --disable-warning=ExperimentalWarning scripts/build-quiz.mjs --check",
     "test": "node --experimental-strip-types --test src/lib/*.test.ts src/lib/*.test.mjs",
     "check:er": "node --experimental-strip-types --disable-warning=ExperimentalWarning scripts/checks/er-derive.mjs && node --experimental-strip-types --disable-warning=ExperimentalWarning scripts/checks/er-markdown.mjs && node --experimental-strip-types --disable-warning=ExperimentalWarning scripts/checks/er-styles.mjs && node --experimental-strip-types --disable-warning=ExperimentalWarning scripts/checks/app-strip-markdown.mjs && node --experimental-strip-types --disable-warning=ExperimentalWarning scripts/checks/app-plugin-meta.mjs",
     "check:oar": "node --experimental-strip-types --disable-warning=ExperimentalWarning scripts/checks/oar-derive.mjs && node --experimental-strip-types --disable-warning=ExperimentalWarning scripts/checks/oar-examples.mjs && node --experimental-strip-types --disable-warning=ExperimentalWarning scripts/checks/oar-markdown.mjs && node --experimental-strip-types --disable-warning=ExperimentalWarning scripts/checks/oar-styles.mjs",

@@ -3,7 +3,7 @@ title: "電子學實作系列：第 7 週 - MOS 電晶體與 CS 放大器"
 description: "Razavi CH6 逐頁精讀：從 MOS 電容、反轉層與夾止，推出三極管區與飽和區的電流方程式、轉導三式、通道長度調變與體效應，再到大／小訊號模型、PMOS 與 CMOS，並與 BJT 逐項對照。"
 tags: ["電子學實作系列"]
 createdAt: "2026-10-24"
-updatedAt: "2026-10-31"
+updatedAt: "2026-11-16"
 ---
 
 import PdfRefChip from '@/components/islands/PdfRefChip.tsx'
@@ -1125,3 +1125,251 @@ $$
 - 二極體連接元件的阻值：$R = \dfrac{1}{g_m}\,\parallel\,r_o \approx \dfrac{1}{g_m}$。
 - PMOS（絕對值寫法）：$I_{D,sat} = \dfrac{1}{2}\mu_p C_{ox}\dfrac{W}{L}\left(|V_{GS}|-|V_{TH}|\right)^2\left(1+\lambda|V_{DS}|\right)$。
 - CS 級增益（見本週摘要）：電阻負載 $A_V = -g_m(R_D\parallel r_o)$；電流源負載 $A_V = -g_m(r_{o1}\parallel r_{o2})$；二極體連接負載 $A_V = -\dfrac{g_{m1}}{g_{m2}} = -\sqrt{\dfrac{\left(\frac{W}{L}\right)_1}{\left(\frac{W}{L}\right)_2}}$。
+
+## 考題
+
+> 期末考全部是選擇題、考觀念，所以這裡只寫 `選擇題` 一節。題目取材自本頁的「本週摘要」「關鍵定義」「公式」三節，全部是依投影片內容改編的自創練習題，不是教授公布的考古題。
+>
+> 線上作答：[選擇題練習頁](/quiz/ec-final-mcq.html)（三章共 36 題，可依章節作答、對答案算分）。範圍與跨章串連見[期末考題庫總覽](/notes/電子學實作系列-期末考題庫)。
+
+### 選擇題
+
+#### 選擇題 1
+
+> MOSFET 與 BJT 在結構上最根本的差別是什麼？
+> :en[What is the most fundamental structural difference between a MOSFET and a BJT?]
+
+:::choices{answer="C"}
+- MOSFET 用電子導電，BJT 用電洞導電 :en[A MOSFET conducts with electrons while a BJT conducts with holes]
+- MOSFET 只有三隻腳，BJT 有四隻腳 :en[A MOSFET has three terminals while a BJT has four]
+- MOSFET 的核心是一顆電容，BJT 的核心是 PN 接面 :en[The MOSFET is built around a capacitor, the BJT around PN junctions]
+- MOSFET 的電流由擴散主導，BJT 的電流由漂移主導 :en[MOSFET current is diffusion-dominated while BJT current is drift-dominated]
+:::
+
+:::tip{collapsible title="詳解"}
+MOSFET 的核心結構是閘極、氧化層、基板構成的平行板電容（MOS 電容），整顆元件的行為都從它推出來；BJT 的核心則是兩個背靠背的 PN 接面。
+
+(D) 正好說反了：MOS 通道裡的電流是**漂移**電流（電場推著通道電子跑），BJT 基極區裡才是**擴散**主導。(A) 也不對——NMOS 用電子、PMOS 用電洞，BJT 同樣有 NPN 與 PNP 兩種；載子種類是極性問題，不是元件類別的差別。(B) 則把腳數記反了：MOSFET 多一隻本體（body），是四端元件。
+
+**考的觀念**：MOS 的起點是電容，不是接面
+:::
+
+#### 選擇題 2
+
+> 在 P 型基板的 NMOS 上，把閘極電壓從 0 慢慢往上加，表面依序發生什麼？
+> :en[As the gate voltage of an NMOS on a p-type substrate is raised from zero, what happens at the surface in order?]
+
+:::choices{answer="A"}
+- 先把電洞推開形成空乏區，再把電子吸到界面形成反轉層 :en[Holes are repelled to form a depletion region, then electrons are attracted to form an inversion layer]
+- 先形成反轉層，再把電洞推開形成空乏區 :en[An inversion layer forms first, then holes are repelled to form a depletion region]
+- 電洞與電子同時被吸到界面，形成中性的通道 :en[Holes and electrons arrive together, forming a neutral channel]
+- 基板摻雜被改變，P 型永久變成 N 型 :en[The substrate doping is altered, permanently turning p-type into n-type]
+:::
+
+:::tip{collapsible title="詳解"}
+兩個階段的順序是推導臨界電壓的起點：先是多數載子（電洞）被正電壓推開，留下帶負電的固定受體離子，形成空乏區；電壓再高一些，少數載子（電子）才被吸到氧化層界面，形成反轉層。讓反轉層剛好成形的那個閘極-源極電壓就是臨界電壓 $V_{TH}$。
+
+(D) 是對「反轉」兩個字最常見的誤讀：表面只是**在偏壓下**暫時表現得像 N 型，摻雜本身完全沒變，撤掉電壓就恢復。空乏區這一階段也不是可有可無——它正是體效應（body effect）的來源。
+
+**考的觀念**：先空乏、再反轉；「反轉」是偏壓下的表面狀態
+:::
+
+#### 選擇題 3
+
+> 理想 NMOS 已經導通（$V_{GS}>V_{TH}$）。判斷它落在三極管區還是飽和區的條件是什麼？
+> :en[An ideal NMOS is already on ($V_{GS} > V_{TH}$). What distinguishes the triode region from saturation?]
+
+:::choices{answer="D"}
+- $V_{GS}<V_{TH}$ 為三極管區，$V_{GS}\ge V_{TH}$ 為飽和區 :en[Triode when $V_{GS} < V_{TH}$, saturation when $V_{GS} \ge V_{TH}$]
+- $V_{DS}<V_{TH}$ 為三極管區，$V_{DS}\ge V_{TH}$ 為飽和區 :en[Triode when $V_{DS} < V_{TH}$, saturation when $V_{DS} \ge V_{TH}$]
+- $V_{DS}\ge V_{GS}-V_{TH}$ 為三極管區，$V_{DS}<V_{GS}-V_{TH}$ 為飽和區 :en[Triode when $V_{DS} \ge V_{GS} - V_{TH}$, saturation when $V_{DS} < V_{GS} - V_{TH}$]
+- $V_{DS}<V_{GS}-V_{TH}$ 為三極管區，$V_{DS}\ge V_{GS}-V_{TH}$ 為飽和區 :en[Triode when $V_{DS} < V_{GS} - V_{TH}$, saturation when $V_{DS} \ge V_{GS} - V_{TH}$]
+:::
+
+:::tip{collapsible title="詳解"}
+分界點是汲極端剛好夾止的那一刻：$V_{GD}=V_{TH}$，移項就是 $V_{DS}=V_{GS}-V_{TH}$。汲極電壓還低於這個值時通道完整，元件像一顆電壓控制的電阻（三極管區）；超過之後汲極端的通道消失，電流幾乎不再隨 $V_{DS}$ 增加（飽和區）。
+
+(C) 把兩個區完全對調，是最誘人的錯誤——因為「飽和」這個詞聽起來像「電壓很高、塞滿了」，但在 MOS 裡**飽和指的是電流飽和**，所以要的是汲極電壓**夠高**。(B) 則是把過驅動電壓 $V_{GS}-V_{TH}$ 誤記成 $V_{TH}$，判準裡真正出現的是過驅動電壓，不是臨界電壓本身。
+
+**考的觀念**：夾止條件 $V_{DS}=V_{GS}-V_{TH}$ 是兩個工作區的分界
+:::
+
+#### 選擇題 4
+
+> 關於「飽和區」這個詞在 MOSFET 與 BJT 上的意思，下列敘述哪一項正確？
+> :en[Regarding the term "saturation" for MOSFETs versus BJTs, which statement is correct?]
+
+:::choices{answer="B"}
+- 兩者意思相同，都是不能用來放大的區域 :en[They mean the same thing: a region unusable for amplification]
+- 意思相反：MOS 的飽和區用來放大，BJT 的飽和區不能放大 :en[They are opposite: MOS saturation is the amplifying region, BJT saturation is not]
+- 意思相反：BJT 的飽和區用來放大，MOS 的飽和區不能放大 :en[They are opposite: BJT saturation is the amplifying region, MOS saturation is not]
+- 兩者意思相同，都是放大器要用的區域 :en[They mean the same thing: both are the region used for amplification]
+:::
+
+:::tip{collapsible title="詳解"}
+MOS 的飽和區對應 BJT 的**順向主動區**——電流由輸入端電壓決定、幾乎與輸出端電壓無關，這才是放大器要用的區域。BJT 的飽和區則是集極電壓太低、兩個接面都順偏的狀態，增益塌掉，是要避開的。
+
+(C) 把兩者對調，是這題唯一需要防的陷阱；分辨法是回到「飽和」指的是什麼飽和——MOS 指**電流**飽和（好事），BJT 指**電晶體被灌飽**、集極無法再控制（壞事）。同一個詞在兩種元件上的意思正好相反，這是跨章節最容易被出題的點。
+
+**考的觀念**：同一個詞在 MOS 與 BJT 上意思相反
+:::
+
+#### 選擇題 5
+
+> 在相同的汲極／集極電流下，MOS 的轉導通常比 BJT 小。最根本的原因是什麼？
+> :en[At the same bias current, a MOSFET usually has lower transconductance than a BJT. What is the root cause?]
+
+:::choices{answer="A"}
+- MOS 是平方律關係，BJT 是指數關係，平方律弱得多 :en[The MOS square law is much weaker than the BJT exponential law]
+- MOS 的閘極不吃直流電流 :en[The MOS gate draws no DC current]
+- MOS 的輸出電阻比 BJT 小 :en[The MOS output resistance is smaller than the BJT's]
+- MOS 的載子遷移率比 BJT 低 :en[Carrier mobility is lower in a MOSFET than in a BJT]
+:::
+
+:::tip{collapsible title="詳解"}
+轉導是電流對輸入電壓的偏導數。BJT 的 $I_C$ 隨 $V_{BE}$ 指數上升，微分之後仍是指數（$g_m=I_C/V_T$）；MOS 的 $I_D$ 只隨過驅動電壓平方上升，微分之後是一次式（$g_m=2I_D/(V_{GS}-V_{TH})$）。**指數的斜率遠陡於平方**，所以同電流下 MOS 的 $g_m$ 較小。
+
+(B) 是 MOS 真正的優點之一，但那跟轉導大小無關——它講的是輸入端吃不吃電流，不是輸出電流對輸入電壓有多敏感。想提高 MOS 的 $g_m$ 只有三條路：加大電流、加大 $W/L$、降低過驅動電壓，三者都有代價。
+
+**考的觀念**：平方律 vs 指數律決定轉導的量級
+:::
+
+#### 選擇題 6
+
+> 下列哪一組量是 MOS 轉導的三種等價寫法？
+> :en[Which set gives three equivalent expressions for the MOS transconductance?]
+
+:::choices{answer="C"}
+- $\mu_nC_{ox}\dfrac{W}{L}(V_{GS}-V_{TH})^2$、$\sqrt{2\mu_nC_{ox}\dfrac{W}{L}I_D}$、$\dfrac{I_D}{V_{GS}-V_{TH}}$ :en[Overdrive squared; root of $I_D$; $I_D$ over overdrive]
+- $\dfrac{1}{\lambda I_D}$、$\dfrac{2}{\lambda(V_{GS}-V_{TH})}$、$\dfrac{1}{g_m}\parallel r_o$ :en[Output resistance, intrinsic gain and diode-connected resistance]
+- $\mu_nC_{ox}\dfrac{W}{L}(V_{GS}-V_{TH})$、$\sqrt{2\mu_nC_{ox}\dfrac{W}{L}I_D}$、$\dfrac{2I_D}{V_{GS}-V_{TH}}$ :en[Overdrive form; root of $I_D$ form; twice $I_D$ over overdrive]
+- $\mu_nC_{ox}\dfrac{W}{L}$、$\dfrac{I_D}{V_T}$、$\dfrac{2I_D}{V_{GS}}$ :en[Process factor; the BJT form; twice $I_D$ over $V_{GS}$]
+:::
+
+:::tip{collapsible title="詳解"}
+三式分別在「固定寬長比」「固定過驅動電壓」「固定電流」三種題型好用，但它們是同一個量。(A) 的第一項把平方留著沒微分掉（那是 $I_D$ 的形狀不是 $g_m$ 的），第三項少了係數 2。(D) 的 $I_D/V_T$ 是 **BJT** 的轉導，$V_T=kT/q$ 在 MOS 的平方律裡根本不出現——這是跨章節最容易混用的一條。(B) 三項全是輸出電阻與本質增益那一組，不是轉導。
+
+檢查法最快：$g_m$ 的因次是 $\text{A/V}$。(C) 第三項 $\dfrac{2I_D}{V_{GS}-V_{TH}}$ 是電流除以電壓，立刻合格。
+
+**考的觀念**：轉導三式與因次檢查
+:::
+
+#### 選擇題 7
+
+> 通道長度調變（channel-length modulation）在 BJT 上的對應效應，以及它在小訊號模型中的表現，分別是什麼？
+> :en[What is the BJT counterpart of channel-length modulation, and how does it show up in the small-signal model?]
+
+:::choices{answer="A"}
+- 爾利效應；表現為有限的輸出電阻 $r_o$ :en[The Early effect; it appears as a finite output resistance $r_o$]
+- 爾利效應；表現為有限的輸入電阻 $r_\pi$ :en[The Early effect; it appears as a finite input resistance $r_\pi$]
+- 體效應；表現為臨界電壓隨偏壓上升 :en[The body effect; it raises the threshold voltage with bias]
+- 基極寬度調變；表現為轉導隨電流上升 :en[Base-width modulation; it makes $g_m$ rise with current]
+:::
+
+:::tip{collapsible title="詳解"}
+汲極電壓升高使夾止點往源極移動、有效通道變短、電流微升——這與 BJT 裡集極電壓升高使有效基極寬度變窄的爾利效應完全對應。兩者在小訊號模型裡都變成一顆與負載並聯的輸出電阻，$r_o\approx\dfrac{1}{\lambda I_D}$，它限制了單級能拿到的最大增益。
+
+(D) 的「基極寬度調變」其實是爾利效應的另一個名字，但後半句錯了——它造成的是有限輸出電阻，不是轉導隨電流變化。(C) 的體效應是另一回事：那是源極-本體逆偏讓 $V_{TH}$ 上升，與汲極電壓無關。
+
+**考的觀念**：通道長度調變 ↔ 爾利效應 ↔ 有限輸出電阻
+:::
+
+#### 選擇題 8
+
+> 本質增益 $g_mr_o=\dfrac{2}{\lambda(V_{GS}-V_{TH})}$ 有一個常被考的性質，是什麼？
+> :en[The intrinsic gain $g_m r_o = 2/[\lambda(V_{GS}-V_{TH})]$ has a frequently tested property. Which one?]
+
+:::choices{answer="D"}
+- 它正比於汲極電流，電流越大增益越高 :en[It is proportional to drain current, so more current gives more gain]
+- 它正比於寬長比 $W/L$ :en[It is proportional to the aspect ratio $W/L$]
+- 它正比於過驅動電壓，過驅動越大增益越高 :en[It is proportional to the overdrive voltage]
+- 它與偏壓電流無關，只看過驅動電壓與 $\lambda$ :en[It is independent of bias current, depending only on overdrive and $\lambda$]
+:::
+
+:::tip{collapsible title="詳解"}
+把 $g_m=\dfrac{2I_D}{V_{GS}-V_{TH}}$ 與 $r_o\approx\dfrac{1}{\lambda I_D}$ 相乘，$I_D$ 剛好消掉。這就是「單顆元件能提供的最大電壓增益」——想提高它只能降低過驅動電壓或降低 $\lambda$（把通道畫長），**加大電流沒有用**。
+
+(A) 是最誘人的錯誤，因為 $g_m$ 確實隨電流上升；但 $r_o$ 同時以相同的速率下降，兩者相抵。(C) 的方向也反了：過驅動電壓在分母，越大增益越小。至於靠拉長通道換增益，回報遞減得很快——長通道同時讓電流變小，CS 級的最大增益大約只正比於通道長度的平方根。
+
+**考的觀念**：本質增益與偏壓電流無關
+:::
+
+#### 選擇題 9
+
+> 把 MOSFET 的寬長比 $W/L$ 中的 $W$ 加大一倍（$L$ 不變），下列哪一組後果是正確的？
+> :en[Doubling the width $W$ of a MOSFET (with $L$ fixed) leads to which pair of consequences?]
+
+:::choices{answer="B"}
+- 電流變小，閘極電容變小 :en[Smaller current, smaller gate capacitance]
+- 電流變大，閘極電容變大 :en[Larger current, larger gate capacitance]
+- 電流變大，閘極電容不變 :en[Larger current, unchanged gate capacitance]
+- 電流不變，閘極電容變大 :en[Unchanged current, larger gate capacitance]
+:::
+
+:::tip{collapsible title="詳解"}
+加大 $W$ 等於把好幾顆元件並聯：$I_D\propto\dfrac{W}{L}$，所以電流變大；但閘極面積同時變大，$C_{gate}\propto WL$，電容也跟著變大，元件變慢。
+
+(C) 是最誘人的錯誤——只記住「$W$ 大電流大」這半句的人會選它。這一組取捨是類比設計裡永遠在調的參數：要電流（轉導）就得付出速度。$W/L$ 是設計者唯一能自由選的幾何自由度，但它不是免費的。
+
+**考的觀念**：$I_D\propto W/L$ 但 $C_{gate}\propto WL$
+:::
+
+#### 選擇題 10
+
+> 深三極管區（deep triode region）的 MOSFET 最適合拿來做什麼？
+> :en[What is a MOSFET in the deep triode region best used for?]
+
+:::choices{answer="C"}
+- 電壓放大器，因為此時增益最大 :en[A voltage amplifier, since the gain is largest there]
+- 電流源，因為電流與 $V_{DS}$ 無關 :en[A current source, since the current is independent of $V_{DS}$]
+- 電子開關，因為它就是一顆阻值 $R_{on}$ 的線性電阻 :en[An electronic switch, since it behaves as a linear resistor $R_{on}$]
+- 電容，因為閘極與通道之間絕緣 :en[A capacitor, since the gate is insulated from the channel]
+:::
+
+:::tip{collapsible title="詳解"}
+$V_{DS}\ll2(V_{GS}-V_{TH})$ 時，三極管區電流式裡的 $V_{DS}^2$ 項可以略去，$I_D$ 與 $V_{DS}$ 成正比，元件就是一顆阻值 $R_{on}=\dfrac{1}{\mu_nC_{ox}\frac{W}{L}(V_{GS}-V_{TH})}$ 的線性電阻，而且這個阻值由閘極電壓控制。數位電路的開關就工作在這裡。
+
+(B) 把兩個工作區搞混了：電流與 $V_{DS}$ 無關是**飽和區**的特徵，深三極管區正好相反——電流與 $V_{DS}$ 成正比。(A) 也不對，放大要用飽和區。
+
+**考的觀念**：深三極管區＝閘極電壓控制的線性電阻
+:::
+
+#### 選擇題 11
+
+> 共源級（CS）在閘極串一顆電阻，對低頻的電壓增益有什麼影響？
+> :en[A resistor is placed in series with the gate of a common-source stage. What is the effect on the low-frequency voltage gain?]
+
+:::choices{answer="C"}
+- 增益變小，因為它與輸入電阻分壓 :en[The gain drops because it forms a divider with the input resistance]
+- 增益變大，因為輸入阻抗提高 :en[The gain rises because the input impedance increases]
+- 完全沒有影響，因為閘極在低頻不導電流 :en[No effect, because the gate draws no current at low frequency]
+- 增益變成零，因為閘極被隔離 :en[The gain becomes zero because the gate is isolated]
+:::
+
+:::tip{collapsible title="詳解"}
+閘極與通道之間隔著氧化層，低頻下完全不導電流。沒有電流就沒有壓降，所以串再大的閘極電阻對增益、輸入阻抗、輸出阻抗都沒有影響（高頻才會與閘極電容形成極點）。
+
+(A) 之所以誘人，是因為**BJT 的基極電阻確實會分壓**——基極有電流 $I_B=I_C/\beta$，串電阻就會掉電壓。這正是 MOS 與 BJT 最實用的一個差別：MOS 的輸入端是「只看電壓、不收費」的。
+
+**考的觀念**：閘極不吃直流電流，所以閘極電阻不影響低頻增益
+:::
+
+#### 選擇題 12
+
+> CS 放大器改用「二極體連接元件」當負載（閘極與汲極短接），相對於電阻負載的主要取捨是什麼？
+> :en[Replacing the resistive load of a CS stage with a diode-connected device gives what main trade-off?]
+
+:::choices{answer="A"}
+- 增益較小，但只由兩個寬長比的比值決定，對製程不敏感 :en[Lower gain, but set by a ratio of aspect ratios and insensitive to process]
+- 增益較大，而且對製程參數不敏感 :en[Higher gain and also insensitive to process parameters]
+- 增益較小，而且對製程參數更敏感 :en[Lower gain and more sensitive to process parameters]
+- 增益不變，只是省下晶片面積 :en[Unchanged gain, merely saving chip area]
+:::
+
+:::tip{collapsible title="詳解"}
+二極體連接元件看進去的阻值是 $\dfrac{1}{g_{m2}}\parallel r_{o2}\approx\dfrac{1}{g_{m2}}$，所以增益變成 $A_V=-\dfrac{g_{m1}}{g_{m2}}=-\sqrt{\dfrac{(W/L)_1}{(W/L)_2}}$。這是**兩個同種量的比值**，製程漂移會一起漂、互相抵銷，所以精度好；但 $1/g_m$ 比一般負載電阻小得多，增益也就小。
+
+(B) 想要兩頭好處，但這一章的三種負載是一組取捨：電阻負載簡單卻在增益與擺幅之間打架；電流源負載（PMOS 主動負載）輸出電阻高、直流壓降小，一次解決增益與擺幅的兩難；二極體連接負載則是**用增益換精度**。這個「精度來自比值」的想法和 CH8 的電阻比、CH12 的增益去敏感化是同一件事。
+
+**考的觀念**：二極體連接負載用增益換製程不敏感性
+:::

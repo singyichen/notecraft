@@ -1,0 +1,210 @@
+<!doctype html>
+<html lang="zh-Hant"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>電子學期末選擇題練習</title>
+<link rel="stylesheet" href="katex/katex.min.css">
+<style>
+:root {
+  --bg: #f6f7f9; --card: #fff; --ink: #1a1a1a; --muted: #666; --line: #dde1e7;
+  --brand: #1f4e9c; --accent: #e8862a; --sel: #e7eefb; --sel-line: #1f4e9c;
+  --ok: #1d7a3a; --ok-bg: #e5f4ea; --bad: #b3261e; --bad-bg: #fbe9e7; --code-bg: #f2f3f6;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #15171b; --card: #1e2127; --ink: #e6e6e6; --muted: #9aa0a8; --line: #333842;
+    --brand: #7fa8ec; --accent: #f0a35a; --sel: #23324d; --sel-line: #7fa8ec;
+    --ok: #6fcf8e; --ok-bg: #1d3326; --bad: #f28b82; --bad-bg: #3a2220; --code-bg: #262a31;
+  }
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.6 "PingFang TC", "Noto Sans TC", sans-serif; }
+.bar { position: sticky; top: 0; z-index: 5; background: var(--card); border-bottom: 1px solid var(--line); padding: 10px 16px; }
+.bar-in { max-width: 860px; margin: 0 auto; display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; }
+.back { font-size: 13px; color: var(--brand); text-decoration: none; }
+.bar h1 { font-size: 17px; margin: 0; color: var(--brand); flex: 1 1 auto; }
+.stat { font-size: 13px; color: var(--muted); }
+.chips { flex-basis: 100%; display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { border: 1px solid var(--line); background: transparent; color: var(--ink); border-radius: 999px; padding: 3px 11px; font: inherit; font-size: 13px; cursor: pointer; }
+.chip[aria-pressed="true"] { background: var(--brand); border-color: var(--brand); color: var(--card); }
+.chip .done { color: var(--ok); margin-left: 4px; }
+.chip[aria-pressed="true"] .done { color: inherit; }
+.btn { border: 1px solid var(--brand); background: var(--brand); color: var(--card); border-radius: 6px; padding: 5px 12px; font: inherit; font-size: 14px; cursor: pointer; }
+.btn.ghost { background: transparent; color: var(--brand); }
+.btn:disabled { opacity: .45; cursor: default; }
+.toggle { font-size: 13px; color: var(--muted); display: flex; gap: 4px; align-items: center; }
+main { max-width: 860px; margin: 0 auto; padding: 12px 16px 80px; }
+.intro { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 12px 16px; margin: 8px 0 4px; font-size: 14px; color: var(--muted); }
+.intro p { margin: 4px 0; }
+.intro strong { color: var(--ink); }
+.result { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 12px 16px; margin: 8px 0 16px; }
+.result h2 { margin: 0 0 6px; font-size: 16px; }
+.result .big { font-size: 28px; font-weight: 700; color: var(--brand); }
+.result table { border-collapse: collapse; width: 100%; font-size: 14px; margin-top: 8px; }
+.result th, .result td { border-bottom: 1px solid var(--line); padding: 4px 6px; text-align: right; }
+.result th:first-child, .result td:first-child { text-align: left; }
+.ch > h2 { font-size: 18px; color: var(--brand); border-left: 4px solid var(--accent); padding-left: 8px; margin: 24px 0 10px; display: flex; flex-wrap: wrap; gap: 8px; align-items: baseline; }
+.ch > h2 .src { margin-left: auto; font-size: 13px; font-weight: 400; color: var(--muted); text-decoration: none; }
+.ch > h2 .src:hover { color: var(--brand); }
+.q { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 12px 16px; margin: 10px 0; }
+.q.is-right { border-color: var(--ok); }
+.q.is-wrong, .q.is-blank { border-color: var(--bad); }
+.qn { font-weight: 700; color: var(--brand); font-size: 13px; display: flex; gap: 8px; align-items: center; }
+.verdict { font-size: 12px; border-radius: 4px; padding: 0 6px; }
+.is-right .verdict { background: var(--ok-bg); color: var(--ok); }
+.is-wrong .verdict, .is-blank .verdict { background: var(--bad-bg); color: var(--bad); }
+blockquote { margin: 4px 0 8px; padding: 0; }
+blockquote p, .sol p { margin: 4px 0; }
+.nc-en { display: block; color: var(--muted); font-size: .9em; }
+.nc-choices { list-style: none; margin: 6px 0 0; padding: 0; display: grid; gap: 6px; }
+.nc-choice { display: flex; gap: 10px; align-items: flex-start; border: 1px solid var(--line); border-radius: 8px; padding: 7px 10px; cursor: pointer; }
+.nc-choice:hover { border-color: var(--sel-line); }
+.nc-choice:focus-visible { outline: 2px solid var(--sel-line); outline-offset: 1px; }
+.nc-choice.is-sel { background: var(--sel); border-color: var(--sel-line); }
+.nc-choice.is-correct { background: var(--ok-bg); border-color: var(--ok); }
+.nc-choice.is-miss { background: var(--bad-bg); border-color: var(--bad); }
+.locked .nc-choice { cursor: default; }
+.locked .nc-choice:hover { border-color: var(--line); }
+.locked .nc-choice.is-correct:hover { border-color: var(--ok); }
+.locked .nc-choice.is-miss:hover { border-color: var(--bad); }
+.nc-choice__key { flex: none; width: 24px; height: 24px; border: 1px solid var(--muted); border-radius: 50%; text-align: center; line-height: 22px; font-size: 13px; font-weight: 600; }
+.is-sel .nc-choice__key { background: var(--sel-line); border-color: var(--sel-line); color: var(--card); }
+.is-correct .nc-choice__key { background: var(--ok); border-color: var(--ok); color: var(--card); }
+.is-miss .nc-choice__key { background: var(--bad); border-color: var(--bad); color: var(--card); }
+.nc-choice__text { flex: 1; min-width: 0; }
+.sol { margin-top: 10px; border-top: 1px dashed var(--line); padding-top: 8px; font-size: 14px; }
+.sol > .lbl { font-weight: 700; color: var(--accent); }
+.sol > .ref { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap;
+  margin: 6px 0 8px; padding: 5px 9px; border-left: 3px solid var(--accent);
+  background: var(--code-bg); border-radius: 0 4px 4px 0; font-size: 13px; }
+.sol > .ref b { color: var(--accent); }
+code { font-family: "SF Mono", Menlo, monospace; font-size: .92em; }
+:not(pre) > code { background: var(--code-bg); padding: 0 4px; border-radius: 3px; }
+.katex-display { overflow-x: auto; overflow-y: hidden; }
+[hidden] { display: none !important; }
+</style></head><body>
+<div class="bar"><div class="bar-in">
+  <a class="back" href="/notes/電子學實作系列-期末考題庫">← 期末考題庫</a>
+  <h1>電子學期末選擇題練習</h1>
+  <span class="stat" id="progress"></span>
+  <button class="btn" id="grade" type="button">對答案</button>
+  <button class="btn ghost" id="reset" type="button">重新答題</button>
+  <div class="chips" id="chips"><button class="chip" data-ch="all" aria-pressed="true" type="button">全部 <span class="done" data-cnt="all"></span></button><button class="chip" data-ch="CH6" aria-pressed="false" type="button">CH6 <span class="done" data-cnt="CH6"></span></button><button class="chip" data-ch="CH8" aria-pressed="false" type="button">CH8 <span class="done" data-cnt="CH8"></span></button><button class="chip" data-ch="CH12" aria-pressed="false" type="button">CH12 <span class="done" data-cnt="CH12"></span></button></div>
+  <label class="toggle" id="onlyWrongWrap" hidden><input type="checkbox" id="onlyWrong">只看答錯／未答</label>
+</div></div>
+<main>
+  <div class="intro">
+    <p><strong>36 題全部是觀念選擇題</strong>，範圍是期中考之後的 CH6、CH8、CH12。題幹與選項中英並列，因為教授可能出英文卷。</p>
+    <p>選完按「對答案」才揭曉；詳解會說明其他選項錯在哪裡。作答紀錄存在這台裝置的瀏覽器，按「重新答題」才會清除目前範圍的紀錄。</p>
+    <p>Example 8-3、8-4、12-4、12-5、12-38 改寫自課程投影片原題，其餘為依投影片內容自創的練習題，<strong>不是教授公布的考古題</strong>。</p>
+  </div>
+  <div class="result" id="result" hidden></div>
+<!--QUESTIONS-->
+</main>
+<script>
+(function () {
+  var KEY = 'ec-final-mcq-v1';
+  var qs = Array.prototype.slice.call(document.querySelectorAll('.q'));
+  var chips = Array.prototype.slice.call(document.querySelectorAll('.chip'));
+  var picks = {}, graded = false, scope = 'all';
+  try { var raw = localStorage.getItem(KEY); if (raw) picks = JSON.parse(raw) || {}; } catch (e) {}
+  function save() { try { localStorage.setItem(KEY, JSON.stringify(picks)); } catch (e) {} }
+  function inScope(q) { return scope === 'all' || q.dataset.ch === scope; }
+  function visible() { return qs.filter(inScope); }
+
+  function paint() {
+    qs.forEach(function (q) {
+      var pick = picks[q.dataset.id] || null;
+      q.querySelectorAll('.nc-choice').forEach(function (c) {
+        var k = c.dataset.k, sel = k === pick;
+        c.classList.toggle('is-sel', sel && !graded);
+        c.setAttribute('aria-checked', String(sel));
+        c.classList.toggle('is-correct', graded && k === q.dataset.answer);
+        c.classList.toggle('is-miss', graded && sel && k !== q.dataset.answer);
+      });
+      q.classList.toggle('locked', graded);
+      q.querySelector('.sol').hidden = !graded;
+      var v = q.querySelector('.verdict');
+      q.classList.remove('is-right', 'is-wrong', 'is-blank');
+      if (graded) {
+        var cls = !pick ? 'is-blank' : (pick === q.dataset.answer ? 'is-right' : 'is-wrong');
+        q.classList.add(cls);
+        v.hidden = false;
+        v.textContent = cls === 'is-right' ? '答對' : (cls === 'is-wrong' ? '答錯 · 你選 ' + pick : '未作答');
+      } else { v.hidden = true; }
+      var hide = !inScope(q) || (graded && onlyWrong.checked && q.classList.contains('is-right'));
+      q.hidden = hide;
+    });
+    document.querySelectorAll('.ch').forEach(function (s) {
+      s.hidden = !Array.prototype.slice.call(s.querySelectorAll('.q')).some(function (q) { return !q.hidden; });
+    });
+    chips.forEach(function (c) {
+      c.setAttribute('aria-pressed', String(c.dataset.ch === scope));
+      var set = c.dataset.ch === 'all' ? qs : qs.filter(function (q) { return q.dataset.ch === c.dataset.ch; });
+      var n = set.filter(function (q) { return picks[q.dataset.id]; }).length;
+      c.querySelector('.done').textContent = n ? n + '/' + set.length : '';
+    });
+    var vis = visible(), done = vis.filter(function (q) { return picks[q.dataset.id]; }).length;
+    document.getElementById('progress').textContent = '已作答 ' + done + ' / ' + vis.length + ' 題';
+    document.getElementById('grade').disabled = graded || done === 0;
+    document.getElementById('onlyWrongWrap').hidden = !graded;
+  }
+
+  function grade() {
+    graded = true;
+    var vis = visible();
+    var ok = vis.filter(function (q) { return picks[q.dataset.id] === q.dataset.answer; }).length;
+    var blank = vis.filter(function (q) { return !picks[q.dataset.id]; }).length;
+    var rows = chips.filter(function (c) { return c.dataset.ch !== 'all'; }).map(function (c) {
+      var set = vis.filter(function (q) { return q.dataset.ch === c.dataset.ch; });
+      if (!set.length) return '';
+      var o = set.filter(function (q) { return picks[q.dataset.id] === q.dataset.answer; }).length;
+      return '<tr><td>' + c.dataset.ch + '</td><td>' + o + '</td><td>' + set.length +
+        '</td><td>' + Math.round(o / set.length * 100) + '%</td></tr>';
+    }).join('');
+    document.getElementById('result').innerHTML =
+      '<h2>這一輪的結果</h2><p class="big">' + ok + ' / ' + vis.length + '</p>' +
+      '<p>答對率 ' + (vis.length ? Math.round(ok / vis.length * 100) : 0) + '%' +
+      (blank ? '，另有 ' + blank + ' 題未作答' : '') + '。</p>' +
+      '<table><tr><th>章節</th><th>答對</th><th>題數</th><th>答對率</th></tr>' + rows + '</table>';
+    document.getElementById('result').hidden = false;
+    paint();
+    document.getElementById('result').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  document.querySelectorAll('.nc-choice').forEach(function (c) {
+    function choose() {
+      if (graded) return;
+      var q = c.closest('.q');
+      picks[q.dataset.id] = c.dataset.k;
+      save(); paint();
+    }
+    c.addEventListener('click', choose);
+    c.addEventListener('keydown', function (e) {
+      if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); choose(); }
+    });
+  });
+  chips.forEach(function (c) {
+    c.addEventListener('click', function () {
+      scope = c.dataset.ch;
+      graded = false;
+      document.getElementById('result').hidden = true;
+      onlyWrong.checked = false;
+      paint();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+  });
+  var onlyWrong = document.getElementById('onlyWrong');
+  onlyWrong.addEventListener('change', paint);
+  document.getElementById('grade').addEventListener('click', grade);
+  document.getElementById('reset').addEventListener('click', function () {
+    visible().forEach(function (q) { delete picks[q.dataset.id]; });
+    graded = false;
+    document.getElementById('result').hidden = true;
+    onlyWrong.checked = false;
+    save(); paint();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+  paint();
+})();
+</script>
+</body></html>
