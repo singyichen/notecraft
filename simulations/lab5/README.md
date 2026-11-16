@@ -20,6 +20,7 @@
 | `lab5-bonus-mono.cir` | Bonus：立體聲混單聲道，a = b = 0.5，第二級把極性轉回來 | `.tran` |
 | `lab5-offset.cir` | 三個電路輸入全部接地時的輸出直流偏移 | `.op` |
 | `plot.py` | 出三張 PNG 到 `public/note-images/ec-week11-ltspice/`，並寫出 `ltspice-pred.json` | — |
+| `crop_handout.py` | 截講義第 19／20 頁的理論區塊（公式＋電路）到 `public/note-images/ec-week11-handout/` | — |
 | `draw_breadboard.py` | 從零畫三張實體麵包板接線圖到 `public/note-images/ec-week11-breadboard/` | — |
 | `annotate_current_path.py` | 在上面三張接線圖疊電流分析（輸出加 `-current`） | — |
 | `build_record_xlsx.py` | 產生 `measured/Lab5-數據記錄.xlsx`（三張工作表） | — |
@@ -33,6 +34,7 @@ cd simulations/lab5
 ./build-cir.sh
 ../tools/run-lt.sh lab5-*.cir
 ../lab1/.venv/bin/python plot.py
+../lab1/.venv/bin/python crop_handout.py
 ../lab1/.venv/bin/python draw_breadboard.py
 ../lab1/.venv/bin/python annotate_current_path.py
 ../lab1/.venv/bin/python build_record_xlsx.py --force
@@ -63,6 +65,11 @@ node ../../.claude/skills/lab-workflow/scripts/circuitjs-link.mjs circuitjs/*.tx
    這是它和反相加法器最大的差別，講義沒有寫。
 4. **實驗二與實驗三是同一塊板**：元件位置完全一樣，只要把「接地」與「吃訊號」
    那兩條線對調。做完實驗二不要拆板。
+5. **第 20 頁的減法器公式印錯**：寫 `(1 + R3/R4)`，但該頁圖上 R4 是回授、R3 是「−」
+   側的輸入電阻，應為 `(1 + R4/R3)`（看起來是把第 19 頁下半的式子搬過來、忘了那一頁
+   R3／R4 的角色相反）。四顆相等時兩種寫法都等於 2，紅字的化簡結果仍然成立。
+6. **第 20 頁與第 23 頁的電阻編號不一樣**：第 20 頁是「＋」側 R1／R2、「−」側 R3／R4；
+   第 23 頁是「＋」側 R1／R3、「−」側 R2／R4。筆記一律用第 23 頁那一套（接線時看的是它）。
 
 ## Tinkercad 的預演設計
 
