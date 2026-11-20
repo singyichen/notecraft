@@ -1130,7 +1130,7 @@ $$
 
 > 期末考全部是選擇題、考觀念，所以這裡只寫 `選擇題` 一節。題目取材自本頁的「本週摘要」「關鍵定義」「公式」三節，全部是依投影片內容改編的自創練習題，不是教授公布的考古題。
 >
-> 線上作答：[選擇題練習頁](/quiz/ec-final-mcq.html)（三章共 36 題，可依章節作答、對答案算分）。範圍與跨章串連見[期末考題庫總覽](/notes/電子學實作系列-期末考題庫)。
+> 線上作答：[選擇題練習頁](/quiz/ec-final-mcq.html)（三章共 100 題，可依章節作答、對答案算分）。範圍與跨章串連見[期末考題庫總覽](/notes/電子學實作系列-期末考題庫)。
 
 ### 選擇題
 
@@ -1372,4 +1372,426 @@ $V_{DS}\ll2(V_{GS}-V_{TH})$ 時，三極管區電流式裡的 $V_{DS}^2$ 項可�
 (B) 想要兩頭好處，但這一章的三種負載是一組取捨：電阻負載簡單卻在增益與擺幅之間打架；電流源負載（PMOS 主動負載）輸出電阻高、直流壓降小，一次解決增益與擺幅的兩難；二極體連接負載則是**用增益換精度**。這個「精度來自比值」的想法和 CH8 的電阻比、CH12 的增益去敏感化是同一件事。
 
 **考的觀念**：二極體連接負載用增益換製程不敏感性
+:::
+
+#### 選擇題 13
+
+> 製程把氧化層厚度 $t_{ox}$ 做得更薄，其他條件不變，會有什麼結果？
+> :en[A process makes the oxide thinner while everything else stays the same. What is the result?]
+
+:::choices{answer="B"}
+- 閘極電容下降，同樣的過驅動電壓給出較小的電流 :en[The gate capacitance drops, giving less current at the same overdrive]
+- 閘極電容上升，同樣的過驅動電壓給出較大的電流 :en[The gate capacitance rises, giving more current at the same overdrive]
+- 閘極電容不變，只有臨界電壓上升 :en[The gate capacitance is unchanged and only the threshold rises]
+- 只影響切換速度，不影響電流大小 :en[It affects switching speed only, not the current]
+:::
+
+:::tip{collapsible title="詳解"}
+單位面積的閘極電容是 $C_{ox}=\dfrac{\varepsilon_{ox}}{t_{ox}}$，分母變小、$C_{ox}$ 就變大。通道電荷密度 $Q=WC_{ox}(V_{GS}-V_{TH})$ 跟著變大，飽和區電流 $I_D=\frac{1}{2}\mu_nC_{ox}\frac{W}{L}(V_{GS}-V_{TH})^2$ 也變大。**「把平行板拉近，同樣電壓存更多電荷」就是整件事的全部**。
+
+(A) 是把電容公式記成正比而不是反比——$t_{ox}$ 在分母。(D) 的直覺來自數位電路「氧化層薄＝速度快」的印象，速度確實會快，但那是電流變大的結果，不是另一件獨立的事。
+
+**考的觀念**：$C_{ox}=\varepsilon_{ox}/t_{ox}$，氧化層越薄電容越大
+:::
+
+#### 選擇題 14
+
+> 為什麼所有電流與轉導公式用的是過驅動電壓 $V_{GS}-V_{TH}$，而不是 $V_{GS}$ 本身？
+> :en[Why do all the current and transconductance formulas use the overdrive $V_{GS} - V_{TH}$ rather than $V_{GS}$ itself?]
+
+:::choices{answer="D"}
+- 因為 $V_{TH}$ 不隨製程變動，扣掉只是為了方便 :en[Because $V_{TH}$ never varies with process, so subtracting it is just convenient]
+- 因為 $V_{GS}$ 在電路裡不容易量測 :en[Because $V_{GS}$ is hard to measure in a circuit]
+- 因為這樣可以讓公式對 PMOS 與 NMOS 寫成同一式 :en[Because it lets one formula cover both PMOS and NMOS]
+- 因為只有超過 $V_{TH}$ 的那一部分電壓才在吸引通道電荷 :en[Because only the portion above $V_{TH}$ actually attracts channel charge]
+:::
+
+:::tip{collapsible title="詳解"}
+閘極電壓要先把表面的電洞推開（形成空乏區），到 $V_{TH}$ 時反轉層才剛好成形。**$V_{TH}$ 以下那一段電壓是「入場費」，沒有貢獻任何可以導電的電子**；超過的部分才按 $Q=WC_{ox}(V_{GS}-V_{TH})$ 線性地吸引電荷。所以過驅動電壓不是數學上的平移技巧，它有實體意義。
+
+(A) 把它講成純粹的記號方便，但 $V_{TH}$ 本身就會隨製程與體效應改變——真正固定的是「超過才算數」這件事。
+
+**考的觀念**：過驅動電壓才是真正產生通道電荷的那一段
+:::
+
+#### 選擇題 15
+
+> 在理想的基本 NMOS 結構裡，哪一端算源極、哪一端算汲極，由什麼決定？
+> :en[In the ideal symmetric NMOS structure, what decides which terminal is the source and which is the drain?]
+
+:::choices{answer="A"}
+- 由外加偏壓決定，電位較低的那一端是源極 :en[The applied bias: the terminal at the lower potential is the source]
+- 由佈局時的製程決定，做好就不能改 :en[The layout fixes it at fabrication and it cannot change]
+- 由摻雜濃度較高的那一端當源極 :en[The more heavily doped terminal is the source]
+- 由離閘極接點較近的那一端當源極 :en[The terminal closer to the gate contact is the source]
+:::
+
+:::tip{collapsible title="詳解"}
+理想結構裡兩個 $n^+$ 區是同型、同摻雜、對稱的，所以元件本身分不出source與drain——**是偏壓在分**。NMOS 的載子是電子，電子從低電位端流入，所以電位較低的那一端是源極。實際量產的元件不一定完全對稱（例如輕摻雜汲極結構），但投影片這一章討論的是理想基本結構。
+
+(C) 聽起來很合理，因為「源極」聽起來該是提供載子的那一端，但兩端摻雜本來就一樣。這一題的價值在於提醒：**$V_{GS}$、$V_{DS}$ 這些下標是相對於「目前誰是源極」而言的**，偏壓一換，判準也跟著換。
+
+**考的觀念**：源汲極由偏壓決定，不是元件的固有屬性
+:::
+
+#### 選擇題 16
+
+> NMOS 的本體（第四隻腳）為什麼要接到電路的最低電位？
+> :en[Why is the body terminal of an NMOS tied to the most negative supply?]
+
+:::choices{answer="C"}
+- 為了讓通道的導通電阻降到最小 :en[To minimize the channel on-resistance]
+- 為了提高元件的轉導 :en[To raise the transconductance of the device]
+- 為了讓源極、汲極與基板之間的兩個 PN 接面保持逆偏 :en[To keep the source-body and drain-body junctions reverse biased]
+- 為了消除通道長度調變 :en[To eliminate channel-length modulation]
+:::
+
+:::tip{collapsible title="詳解"}
+源極、汲極是 $n^+$，基板是 P 型，兩者之間各有一個 PN 接面。這兩個接面**本來就不該導通**——它們只是元件結構的副產品。把基板接到最低電位，就保證這兩個接面永遠反偏、只有逆向漏電流，電流只能走我們要的那條通道。基板一旦比源極高，接面順偏，電流會直接從基板灌進來，元件的行為就完全不是放大器了。
+
+(A) 的方向其實相反：基板電位越低，$V_{SB}$ 越大、體效應讓 $V_{TH}$ 上升、電流反而變小。**接最低電位是為了安全，不是為了性能。**
+
+**考的觀念**：本體接最低電位是為了讓寄生接面保持逆偏
+:::
+
+#### 選擇題 17
+
+> NMOS 的源極電位比本體高（$V_{SB}>0$）時會發生什麼？
+> :en[What happens to an NMOS when its source sits above the body potential ($V_{SB} > 0$)?]
+
+:::choices{answer="B"}
+- 臨界電壓下降，同樣的 $V_{GS}$ 給出較大的電流 :en[The threshold falls, so the same $V_{GS}$ gives more current]
+- 臨界電壓上升，同樣的 $V_{GS}$ 給出較小的電流 :en[The threshold rises, so the same $V_{GS}$ gives less current]
+- 臨界電壓不變，但輸出電阻下降 :en[The threshold is unchanged but the output resistance falls]
+- 元件立刻進入截止區 :en[The device immediately enters cutoff]
+:::
+
+:::tip{collapsible title="詳解"}
+$V_{SB}$ 加大等於把源極–本體接面的逆偏加深，接面的空乏區變厚、裡面的固定負電荷變多。這些電荷本來就「用掉」了一部分閘極電場，所以閘極要出更多電壓才能把反轉層拉出來——$V_{TH}$ 上升。公式是 $V_{TH}=V_{TH0}+\gamma\left(\sqrt{2\varphi_F+V_{SB}}-\sqrt{2\varphi_F}\right)$，$V_{SB}=0$ 時括號歸零、退回 $V_{TH0}$。
+
+(A) 是把方向記反了。記憶的掛鉤是：**體效應只會讓元件變難開，不會讓它變好開**。這也是為什麼堆疊的電晶體（源極墊高的那一顆）性能會打折。
+
+**考的觀念**：體效應讓 $V_{TH}$ 隨 $V_{SB}$ 上升
+:::
+
+#### 選擇題 18
+
+> 汲極端的通道已經夾止之後，為什麼汲極電流不會歸零？
+> :en[Once the channel is pinched off at the drain end, why does the drain current not go to zero?]
+
+:::choices{answer="D"}
+- 因為通道其實沒有真的在任何一點斷開 :en[Because the channel never actually breaks anywhere]
+- 因為電流改由閘極流進來補足 :en[Because the gate starts supplying the current instead]
+- 因為基板提供了另一條並聯的導電路徑 :en[Because the body provides a parallel conduction path]
+- 因為載子被夾止區的強電場掃進汲極 :en[Because carriers are swept across the pinch-off region by its strong field]
+:::
+
+:::tip{collapsible title="詳解"}
+夾止的意思是**反轉層在汲極那一端消失**，不是通道整條不見。電子仍然沿著通道走到夾止點，那裡的電位差全部落在一小段距離上、電場極強，電子一到就被掃過去進入汲極。所以電流照流，只是**不再由 $V_{DS}$ 決定**——再加 $V_{DS}$ 只是把夾止點往源極推一點點（那就是通道長度調變）。
+
+(B) 違反 MOS 最基本的性質：閘極隔著氧化層，直流電流是零。這個選項很好用來自我檢查——**任何說「電流從閘極流」的敘述都是錯的**。
+
+**考的觀念**：夾止後電流由夾止區的強電場維持，與 $V_{DS}$ 幾乎無關
+:::
+
+#### 選擇題 19
+
+> 一顆 NMOS 的 $V_{TH}=0.4\ \text{V}$，偏壓是 $V_{GS}=1.0\ \text{V}$、$V_{DS}=0.4\ \text{V}$，它工作在哪一區？
+> :en[An NMOS has $V_{TH} = 0.4\ \text{V}$ and is biased at $V_{GS} = 1.0\ \text{V}$, $V_{DS} = 0.4\ \text{V}$. Which region is it in?]
+
+:::choices{answer="A"}
+- 三極管區，因為 $V_{DS}$ 小於過驅動電壓 $0.6\ \text{V}$ :en[Triode, because $V_{DS}$ is below the overdrive of $0.6\ \text{V}$]
+- 飽和區，因為 $V_{GS}$ 已經大於 $V_{TH}$ :en[Saturation, because $V_{GS}$ already exceeds $V_{TH}$]
+- 截止區，因為 $V_{DS}$ 小於 $V_{TH}$ :en[Cutoff, because $V_{DS}$ is below $V_{TH}$]
+- 飽和區，因為 $V_{DS}$ 小於 $V_{GS}$ :en[Saturation, because $V_{DS}$ is less than $V_{GS}$]
+:::
+
+:::tip{collapsible title="詳解"}
+判準分兩步。**第一步看導不導通**：$V_{GS}=1.0>V_{TH}=0.4$，有通道。**第二步看在哪一區**：過驅動電壓是 $1.0-0.4=0.6\ \text{V}$，而 $V_{DS}=0.4<0.6$，所以是三極管區。等價的寫法是 $V_{GD}=V_{GS}-V_{DS}=0.6>V_{TH}$，汲極端的閘通道壓差仍足以維持反轉層，通道完整。
+
+(B) 是最常見的錯誤：**$V_{GS}>V_{TH}$ 只決定導不導通，不決定在哪一區**。(C) 把 $V_{DS}$ 拿去和 $V_{TH}$ 比，但判斷截止只看 $V_{GS}$。
+
+**考的觀念**：兩步判準——先 $V_{GS}$ 比 $V_{TH}$，再 $V_{DS}$ 比過驅動電壓
+:::
+
+#### 選擇題 20
+
+> 三極管區電流式 $I_D=\frac{1}{2}\mu_nC_{ox}\frac{W}{L}\left[2(V_{GS}-V_{TH})V_{DS}-V_{DS}^2\right]$ 裡的 $-V_{DS}^2$ 項，在 $V_{DS}$ 很小時扮演什麼角色？
+> :en[In the triode current expression, what role does the $-V_{DS}^2$ term play when $V_{DS}$ is very small?]
+
+:::choices{answer="B"}
+- 它是主導項，電流幾乎全由它決定 :en[It dominates and essentially sets the current]
+- 它可以忽略，電流退化成與 $V_{DS}$ 成正比 :en[It is negligible, so the current becomes proportional to $V_{DS}$]
+- 它讓電流隨 $V_{DS}$ 上升而反而下降 :en[It makes the current fall as $V_{DS}$ rises]
+- 它是通道長度調變在三極管區的表現 :en[It is how channel-length modulation shows up in triode]
+:::
+
+:::tip{collapsible title="詳解"}
+$V_{DS}\ll 2(V_{GS}-V_{TH})$ 時，方括號裡第一項是一次式、第二項是二次式，二次項相對小到可以丟掉，於是 $I_D\approx\mu_nC_{ox}\frac{W}{L}(V_{GS}-V_{TH})V_{DS}$——**電流與電壓成正比，就是一顆電阻**。這正是深三極管區與 $R_{on}$ 的來源。
+
+(C) 誤讀了負號：負號造成的是**曲線往上彎的幅度被壓下來**（拋物線在頂點前的爬升變慢），電流仍隨 $V_{DS}$ 上升，只是越來越慢，直到夾止點達到頂點。
+
+**考的觀念**：丟掉二次項就得到深三極管區的線性電阻
+:::
+
+#### 選擇題 21
+
+> 深三極管區的導通電阻 $R_{on}$，在閘極電壓升高時怎麼變？
+> :en[How does the on-resistance $R_{on}$ in deep triode change as the gate voltage increases?]
+
+:::choices{answer="D"}
+- 上升，因為通道裡的電場變強 :en[It rises because the channel field gets stronger]
+- 不變，因為它完全由製程與尺寸決定 :en[It stays fixed because process and geometry set it]
+- 先下降後上升，在某個 $V_{GS}$ 有最小值 :en[It falls then rises, with a minimum at some $V_{GS}$]
+- 下降，因為通道裡的電荷密度變大 :en[It falls because the channel charge density increases]
+:::
+
+:::tip{collapsible title="詳解"}
+$R_{on}=\dfrac{1}{\mu_nC_{ox}\frac{W}{L}(V_{GS}-V_{TH})}$，過驅動電壓在分母，所以 $V_{GS}$ 越高、電阻越小。物理上很直觀：閘極拉得越用力、通道裡的電子越多、導電越容易。**這就是為什麼數位電路的電源電壓降低時，開關會變慢**——$V_{GS}$ 的上限跟著降，$R_{on}$ 升高。
+
+(B) 的誘人之處在於「電阻是元件的性質」這個來自被動元件的直覺。MOS 開關的關鍵正好相反：**它是一顆可以用電壓調的電阻**，這也是它能當開關與可變衰減器的原因。
+
+**考的觀念**：$R_{on}$ 與過驅動電壓成反比，是電壓控制的電阻
+:::
+
+#### 選擇題 22
+
+> 用 MOS 當類比開關時，為什麼要求導通電阻遠小於它串聯的負載電阻？
+> :en[When a MOS device is used as an analog switch, why must its on-resistance be far smaller than the load it feeds?]
+
+:::choices{answer="C"}
+- 否則開關本身會發熱而燒毀 :en[Otherwise the switch overheats and is destroyed]
+- 否則切換的速度會慢到無法使用 :en[Otherwise the switching speed becomes unusable]
+- 否則訊號會被 $R_{on}$ 與負載分壓而衰減 :en[Otherwise the signal is attenuated by the divider formed with the load]
+- 否則元件會離開飽和區而失去增益 :en[Otherwise the device leaves saturation and loses gain]
+:::
+
+:::tip{collapsible title="詳解"}
+開關導通時，$R_{on}$ 與負載串成一個分壓器：$\dfrac{V_{out}}{V_{in}}=\dfrac{R_{ant}}{R_{ant}+R_{on}}$。$R_{on}$ 相對負載不可忽略時，訊號在開關上就先掉一截——開關「通了」卻不透明。要做到 1% 以內的誤差，$R_{on}$ 必須小於負載的 1%。
+
+(D) 把兩種用法混在一起了：**當開關時元件刻意待在深三極管區，根本不談飽和區與增益**。同一顆元件，當放大器要飽和區、當開關要深三極管區，這兩種用法在投影片裡是分開的兩節。
+
+**考的觀念**：開關的 $R_{on}$ 與負載分壓，決定訊號透過率
+:::
+
+#### 選擇題 23
+
+> 推導汲極電流時，沿通道的電荷密度寫成 $Q(x)=WC_{ox}\left[V_{GS}-V(x)-V_{TH}\right]$，為什麼要減掉 $V(x)$？
+> :en[In deriving the drain current, why does the channel charge density $Q(x) = WC_{ox}[V_{GS} - V(x) - V_{TH}]$ subtract $V(x)$?]
+
+:::choices{answer="B"}
+- 因為氧化層的厚度沿通道逐漸變化 :en[Because the oxide thickness varies along the channel]
+- 因為通道電位從源極往汲極升高，閘極與通道的壓差越往汲極越小 :en[Because the channel potential rises toward the drain, shrinking the gate-to-channel voltage there]
+- 因為載子遷移率沿通道逐漸下降 :en[Because carrier mobility decreases along the channel]
+- 因為通道寬度 $W$ 沿通道逐漸收窄 :en[Because the channel width $W$ narrows along the channel]
+:::
+
+:::tip{collapsible title="詳解"}
+吸引電荷的是**閘極與該點通道之間的壓差**，不是閘極對源極的壓差。源極端通道電位是 0，壓差就是 $V_{GS}$；走到座標 $x$ 時通道已經升到 $V(x)$，壓差只剩 $V_{GS}-V(x)$，再扣掉入場費 $V_{TH}$ 才是有效的那一段。這條式子是整段推導的起點，而且**夾止條件就是它的直接推論**：$V(x)$ 升到 $V_{GS}-V_{TH}$ 時 $Q$ 歸零。
+
+(D) 混淆了 $W$ 與電荷密度：$W$ 是版圖畫好的固定幾何尺寸，沿通道不變；變的是每單位面積的電荷。
+
+**考的觀念**：通道電位沿途升高，使電荷密度從源極往汲極遞減
+:::
+
+#### 選擇題 24
+
+> 推導裡的 $I=Q\cdot v$，其中的 $Q$ 是哪一種電荷量？
+> :en[In the relation $I = Q \cdot v$ used in the derivation, what kind of charge quantity is $Q$?]
+
+:::choices{answer="A"}
+- 每單位長度的電荷，單位 $\text{C/m}$ :en[Charge per unit length, in $\text{C/m}$]
+- 通道裡的總電荷，單位 $\text{C}$ :en[The total charge in the channel, in $\text{C}$]
+- 每單位面積的電荷，單位 $\text{C/m}^2$ :en[Charge per unit area, in $\text{C/m}^2$]
+- 每單位體積的電荷，單位 $\text{C/m}^3$ :en[Charge per unit volume, in $\text{C/m}^3$]
+:::
+
+:::tip{collapsible title="詳解"}
+用因次檢查最快：要得到電流（$\text{C/s}$），而速度的單位是 $\text{m/s}$，所以 $Q$ 必須是 $\text{C/m}$。對照式子 $Q=WC_{ox}(V_{GS}-V_{TH})$ 也對得上——$C_{ox}$ 是每單位面積（$\text{F/m}^2$），乘上寬度 $W$（$\text{m}$）變成每單位長度，再乘電壓得到 $\text{C/m}$。
+
+(C) 是最容易選的，因為 $C_{ox}$ 本身就是每單位面積的量。關鍵在於**它已經被 $W$ 乘過一次**：剩下的那一維就是沿通道的長度方向。這種「乘了什麼、剩下什麼維度」的追蹤，在整章的推導裡會反覆用到。
+
+**考的觀念**：$I=Q\cdot v$ 的因次檢查，$Q$ 是每單位長度的電荷
+:::
+
+#### 選擇題 25
+
+> 設計者想降低通道長度調變對電路的影響，最直接的做法是？
+> :en[What is the most direct way for a designer to reduce the impact of channel-length modulation?]
+
+:::choices{answer="C"}
+- 加大通道寬度 $W$ :en[Increase the channel width $W$]
+- 縮小通道寬度 $W$ :en[Decrease the channel width $W$]
+- 加大通道長度 $L$ :en[Increase the channel length $L$]
+- 提高汲極電壓 $V_{DS}$ :en[Increase the drain voltage $V_{DS}$]
+:::
+
+:::tip{collapsible title="詳解"}
+通道長度調變的本質是「夾止點移動了 $\Delta L$，而 $\Delta L$ 相對於 $L$ 有多大」。$L$ 本來就長的話，同樣的 $\Delta L$ 佔的比例就小，$\lambda$ 跟著小、$r_o$ 跟著大。所以類比設計裡**需要高輸出電阻的電晶體常刻意畫得比最小尺寸長**，代價是面積與寄生電容。
+
+(A)、(B) 動的是 $W$，它只按比例縮放電流，對「夾止點移動佔多少比例」毫無影響。(D) 方向相反：$V_{DS}$ 越高夾止點推得越遠，電流偏離得更多。
+
+**考的觀念**：加大 $L$ 使 $\lambda$ 下降、$r_o$ 上升
+:::
+
+#### 選擇題 26
+
+> 其他條件不變，把偏壓電流 $I_D$ 加倍，輸出電阻 $r_o$ 會怎麼變？
+> :en[If the bias current $I_D$ is doubled with everything else fixed, how does the output resistance $r_o$ change?]
+
+:::choices{answer="D"}
+- 加倍 :en[It doubles]
+- 不變 :en[It is unchanged]
+- 變成原來的 $\sqrt{2}$ 倍 :en[It increases by a factor of $\sqrt{2}$]
+- 減半 :en[It is halved]
+:::
+
+:::tip{collapsible title="詳解"}
+$r_o\approx\dfrac{1}{\lambda I_D}$，$I_D$ 在分母，加倍就減半。
+
+這一題真正的重點在於它和[選擇題 8](#選擇題-8)（本質增益與偏壓電流無關）配成一組：加大 $I_D$ 時 $g_m$ 按 $\sqrt{I_D}$ 上升、$r_o$ 按 $1/I_D$ 下降，乘起來 $g_mr_o\propto 1/\sqrt{I_D}$——**在固定過驅動電壓下看則完全抵消**。所以「多灌電流換增益」在單級 MOS 上行不通，這是 MOS 類比設計最反直覺也最常考的一點。
+
+(A) 是把分母當成分子。檢查法：電流越大、元件越「導通」，電阻當然該越小。
+
+**考的觀念**：$r_o\approx 1/(\lambda I_D)$，與偏壓電流成反比
+:::
+
+#### 選擇題 27
+
+> 同樣的寬長比與過驅動電壓下，PMOS 的電流比 NMOS 小，主要原因是？
+> :en[With the same aspect ratio and overdrive, why does a PMOS carry less current than an NMOS?]
+
+:::choices{answer="B"}
+- PMOS 的氧化層在製程上做得比較厚 :en[The PMOS oxide is made thicker by the process]
+- 電洞的遷移率比電子低 :en[Hole mobility is lower than electron mobility]
+- PMOS 的臨界電壓絕對值一定比較大 :en[The magnitude of the PMOS threshold is always larger]
+- PMOS 的有效通道長度比較長 :en[The effective channel length of a PMOS is longer]
+:::
+
+:::tip{collapsible title="詳解"}
+PMOS 的載子是電洞，而電洞在矽裡的遷移率大約只有電子的三分之一到二分之一。電流式裡的製程轉導參數因此從 $\mu_nC_{ox}$ 換成 $\mu_pC_{ox}$，整體電流按同樣比例縮小。**實務上的補償方式是把 PMOS 畫得比較寬**——CMOS 反相器的 PMOS 通常是 NMOS 的二到三倍寬，就是在補這個差距。
+
+(A) 不成立：同一片晶圓上兩種元件共用同一層閘極氧化層。這一題的價值在於區分「製程差異」與「材料物性」：**遷移率是矽本身的性質，不是製程選擇**。
+
+**考的觀念**：$\mu_p<\mu_n$ 使 PMOS 同尺寸電流較小
+:::
+
+#### 選擇題 28
+
+> PMOS 的小訊號模型和 NMOS 相比如何？
+> :en[How does the small-signal model of a PMOS compare with that of an NMOS?]
+
+:::choices{answer="A"}
+- 完全相同，極性差異只出現在偏壓與電流方向上 :en[Identical; the polarity difference appears only in the bias and current directions]
+- 轉導電流源的方向必須反過來畫 :en[The transconductance source must be drawn in the opposite direction]
+- 少掉輸出電阻 $r_o$ 這一項 :en[It drops the output resistance $r_o$]
+- 多一個從閘極流入的電流源 :en[It gains an extra current source into the gate]
+:::
+
+:::tip{collapsible title="詳解"}
+小訊號模型描述的是**工作點附近的微小變化之間的關係**，而 $i_d=g_mv_{gs}$ 這個關係在兩種元件上形式一樣。極性的差別全都吸收進偏壓條件（PMOS 要 $V_{GS}<0$、源極接高電位）與 $g_m$、$r_o$ 的數值裡，模型的拓樸完全相同。這是這一章少數「不必多記一套」的地方。
+
+(B) 很誘人，因為大訊號的電流方向確實相反。但小訊號模型算的是增量：$v_{gs}$ 變正時 $|I_D|$ 的變化方向在兩種元件上是一致的，畫出來的電流源方向也就一致。**大訊號要分極性，小訊號不必**。
+
+**考的觀念**：PMOS 與 NMOS 的小訊號模型完全相同
+:::
+
+#### 選擇題 29
+
+> CMOS 製程在 P 型基板上挖出 N 型井，目的是什麼？
+> :en[Why does a CMOS process create an n-well inside the p-type substrate?]
+
+:::choices{answer="D"}
+- 降低 NMOS 的臨界電壓 :en[To lower the NMOS threshold voltage]
+- 增加晶片的散熱面積 :en[To increase the die area available for heat removal]
+- 讓兩種元件可以共用同一個閘極接點 :en[To let both device types share one gate contact]
+- 讓需要 N 型基板的 PMOS 與 NMOS 共存在同一片晶圓上 :en[To let PMOS, which needs an n-type body, coexist with NMOS on one wafer]
+:::
+
+:::tip{collapsible title="詳解"}
+NMOS 要 P 型基板、PMOS 要 N 型基板，但一片晶圓只能有一種基板型態。解法是在 P 型基板上做出局部的 N 型區域（井），PMOS 就蓋在井裡，井本身當它的本體、接到最高電位。**整個 CMOS 技術就建立在這一個結構技巧上**，今日絕大多數數位與類比積體電路都是這樣做的。
+
+(A) 搞錯了對象：井是給 PMOS 用的，不影響 NMOS 的臨界電壓。記憶的掛鉤是「井裡住的是誰」——是極性和基板相反的那一種。
+
+**考的觀念**：N 型井是 PMOS 的本體，讓兩種極性共存
+:::
+
+#### 選擇題 30
+
+> 電阻負載的 CS 放大器，為什麼把 $R_D$ 一直加大並不能讓增益無限上升？
+> :en[For a resistively loaded CS stage, why does increasing $R_D$ without limit fail to raise the gain without limit?]
+
+:::choices{answer="B"}
+- 因為 $R_D$ 變大時 $g_m$ 會同步下降 :en[Because $g_m$ falls as $R_D$ grows]
+- 因為增益是 $-g_m(R_D\parallel r_o)$，$R_D$ 再大也被 $r_o$ 卡住 :en[Because the gain is $-g_m(R_D \parallel r_o)$ and $r_o$ caps it]
+- 因為 $R_D$ 太大會讓元件掉進截止區 :en[Because a large $R_D$ pushes the device into cutoff]
+- 因為 $R_D$ 太大會讓通道長度調變消失 :en[Because a large $R_D$ removes channel-length modulation]
+:::
+
+:::tip{collapsible title="詳解"}
+$R_D$ 和 $r_o$ 是並聯的，並聯值永遠小於兩者中較小的那一個。$R_D\to\infty$ 時增益趨近 $-g_mr_o$，也就是本質增益——**那是這顆元件的天花板**，外面再怎麼加電阻都翻不過去。
+
+(C) 的方向弄錯了，但它背後其實有一個真實的限制值得記住：$R_D$ 加大時直流壓降 $I_DR_D$ 變大、汲極電位下降，元件會從飽和區掉進**三極管區**（不是截止區），增益反而崩掉。所以實際設計裡 $R_D$ 受限於偏壓餘裕，往往連 $r_o$ 這個天花板都還摸不到——這正是下一題「改用電流源負載」要解決的問題。
+
+**考的觀念**：$R_D\parallel r_o$ 的上限是本質增益 $g_mr_o$
+:::
+
+#### 選擇題 31
+
+> CS 級改用電流源負載，增益變成 $-g_m(r_{o1}\parallel r_{o2})$，主要好處是什麼？
+> :en[A CS stage with a current-source load has gain $-g_m(r_{o1} \parallel r_{o2})$. What is the main advantage?]
+
+:::choices{answer="C"}
+- 增益不再受製程變動影響 :en[The gain no longer varies with process]
+- 可以把增益精確地壓到 1 :en[It can set the gain precisely to unity]
+- 在同樣的直流壓降下得到遠高於電阻負載的等效負載電阻 :en[It gives a far larger load resistance for the same DC drop]
+- 把通道長度調變完全消除 :en[It eliminates channel-length modulation entirely]
+:::
+
+:::tip{collapsible title="詳解"}
+上一題點出電阻負載的困境：要大電阻就要大壓降，但電源電壓有限。電流源負載解開了這個矛盾——它的**直流壓降由偏壓決定、交流電阻由 $r_{o2}$ 決定，兩者解耦**。所以可以同時做到「壓降只有幾百 mV」與「等效負載是幾十 kΩ 以上」，增益因此逼近兩顆元件本質增益的並聯結果。
+
+(A) 正好相反：$r_o$ 隨製程與偏壓跑得很兇，電流源負載的增益**比電阻負載更不穩定**。想要增益不受製程影響，走的是二極體連接負載那條路（增益變成兩個寬長比的比值），代價是增益小得多。這組「高增益但不準」對「低增益但準」的取捨，是 CS 三種負載的主線。
+
+**考的觀念**：電流源負載把直流壓降與交流電阻解耦
+:::
+
+#### 選擇題 32
+
+> 偏壓電流 $I_D$ 固定時，想提高轉導 $g_m$ 應該怎麼做？
+> :en[With the bias current $I_D$ fixed, how can the transconductance $g_m$ be increased?]
+
+:::choices{answer="D"}
+- 提高過驅動電壓 :en[Raise the overdrive voltage]
+- 縮小寬長比 $W/L$ :en[Shrink the aspect ratio $W/L$]
+- 提高汲極電壓 $V_{DS}$ :en[Raise the drain voltage $V_{DS}$]
+- 加大寬長比 $W/L$，也就是降低過驅動電壓 :en[Enlarge $W/L$, which lowers the overdrive]
+:::
+
+:::tip{collapsible title="詳解"}
+固定 $I_D$ 時用 $g_m=\dfrac{2I_D}{V_{GS}-V_{TH}}$ 這一式最清楚：過驅動電壓在分母，要 $g_m$ 大就要過驅動電壓小。而固定電流下要降低過驅動電壓，唯一的手段是把元件做寬——$I_D=\frac{1}{2}\mu_nC_{ox}\frac{W}{L}(V_{GS}-V_{TH})^2$，$W/L$ 加大，同樣電流只需要更小的過驅動電壓。
+
+(A) 是直覺的陷阱：「電壓加大、電流應該更敏感」。但那是**沒固定電流**時的結論（$g_m=\mu_nC_{ox}\frac{W}{L}(V_{GS}-V_{TH})$ 確實正比於過驅動電壓）。轉導三式彼此等價，**選錯式子就會得到相反的答案**——這也是為什麼要記住每一式適用的是哪一種「固定什麼」的情境。
+
+**考的觀念**：固定 $I_D$ 時 $g_m$ 與過驅動電壓成反比
+:::
+
+#### 選擇題 33
+
+> 什麼情況下不能用小訊號模型分析電路？
+> :en[Under what condition does small-signal analysis break down?]
+
+:::choices{answer="A"}
+- 訊號振幅大到讓工作點明顯移動時 :en[When the signal is large enough to move the operating point appreciably]
+- 訊號頻率低於 $1\ \text{kHz}$ 時 :en[When the signal frequency is below $1\ \text{kHz}$]
+- 元件工作在飽和區時 :en[When the device operates in saturation]
+- 偏壓電流小於 $1\ \text{mA}$ 時 :en[When the bias current is below $1\ \text{mA}$]
+:::
+
+:::tip{collapsible title="詳解"}
+小訊號模型是把 $I_D$ 對 $V_{GS}$ 的非線性曲線在工作點做一階泰勒展開，$g_m$ 就是那一點的斜率。前提是訊號小到曲線那一段可以當直線看——振幅一大，斜率在擺動過程中明顯改變，線性近似就失效，輸出開始出現諧波失真。
+
+(C) 把前提講反了：**飽和區正是小訊號模型要用的區域**，因為放大器就偏在那裡。這個選項很容易被 BJT 的用語誤導（BJT 的飽和區是不能放大的區域），但 MOS 的飽和區意思相反。
+
+**考的觀念**：小訊號模型是工作點附近的線性化，振幅大就失效
 :::

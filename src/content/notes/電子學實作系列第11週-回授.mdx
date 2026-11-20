@@ -1209,7 +1209,7 @@ $$
 
 > 期末考全部是選擇題、考觀念，所以這裡只寫 `選擇題` 一節。題目取材自投影片第 4–67 頁與本頁的「本週摘要」「關鍵定義」「公式」三節；Example 12-4、12-5、12-38 改寫自投影片原題（已註明），其餘為自創練習題。
 >
-> 線上作答：[選擇題練習頁](/quiz/ec-final-mcq.html)（三章共 36 題，可依章節作答、對答案算分）。範圍與跨章串連見[期末考題庫總覽](/notes/電子學實作系列-期末考題庫)。
+> 線上作答：[選擇題練習頁](/quiz/ec-final-mcq.html)（三章共 100 題，可依章節作答、對答案算分）。範圍與跨章串連見[期末考題庫總覽](/notes/電子學實作系列-期末考題庫)。
 
 ### 選擇題
 
@@ -1465,3 +1465,443 @@ $R_{in}\to R_{in}(1+KA_0)$、$R_{out}\to\dfrac{R_{out}}{1+KA_0}$。記法不必�
 | --- | --- | --- |
 | 第 12 頁 | $A_1 = 500$ 那一行的分子印成 1000（$\frac{1000}{1+125}$） | 應為 $\frac{500}{1+125}$；印出來的結果 3.968 本身是對的 |
 | 第 36 頁 | Razavi 的「電壓–電壓」是「輸出–輸入」順序，與 Sedra/Smith 的「串聯–並聯」（輸入–輸出）相反 | 投影片自己註明 "This terminology is not standard"；看其他教材要先翻譯一次 |
+
+#### 選擇題 13
+
+> 比較誤差 $E=\dfrac{X}{1+KA_1}$ 這條式子告訴我們什麼？
+> :en[What does the comparison error $E = X/(1 + KA_1)$ tell us?]
+
+:::choices{answer="A"}
+- 迴路增益越大，前饋系統實際收到的誤差訊號越小 :en[The larger the loop gain, the smaller the error the forward system actually receives]
+- 迴路增益越大，誤差訊號越大 :en[The larger the loop gain, the larger the error signal]
+- 誤差與迴路增益無關，只由輸入決定 :en[The error is set by the input alone, independent of loop gain]
+- 誤差永遠等於輸入的一半 :en[The error is always half the input]
+:::
+
+:::tip{collapsible title="詳解"}
+$1+KA_1$ 在分母，迴路增益越大、誤差越小。這件事聽起來像壞消息（放大器拿到的訊號變小了），其實是整個負回授的運作方式：**系統自動把誤差壓到剛好足以維持輸出的那一點**。$A_1$ 很大時，只要極小的誤差就能撐出完整的輸出。
+
+這條式子也是 CH8 虛短路的真正來源：運放兩輸入之間的電位差就是這裡的 $E$，$KA_1$ 大到幾萬時 $E$ 小到幾十 μV，量起來就像「兩端相等」。(C) 的誘人之處在於「誤差當然由輸入決定」的直覺，但回授的重點正是**輸出會回來參與決定誤差**。
+
+**考的觀念**：比較誤差被 $1+KA_1$ 壓小
+:::
+
+#### 選擇題 14
+
+> 一個開路增益 $A_0$、頻寬 $\omega_0$ 的放大器加上回授後，閉迴路頻寬變成多少？
+> :en[An amplifier with open-loop gain $A_0$ and bandwidth $\omega_0$ is placed in feedback. What is the closed-loop bandwidth?]
+
+:::choices{answer="C"}
+- 仍然是 $\omega_0$，回授不影響頻寬 :en[Still $\omega_0$; feedback does not affect bandwidth]
+- $\dfrac{\omega_0}{1+KA_0}$，頻寬被壓縮 :en[$\omega_0/(1 + KA_0)$, narrowed by feedback]
+- $(1+KA_0)\,\omega_0$，頻寬被展寬 :en[$(1 + KA_0)\,\omega_0$, widened by feedback]
+- $\omega_0^2$，與原頻寬成平方關係 :en[$\omega_0^2$, scaling with the square of the original]
+:::
+
+:::tip{collapsible title="詳解"}
+增益被除以 $1+KA_0$，頻寬就被乘以 $1+KA_0$，兩者剛好抵消——**乘積 $A_0\omega_0$ 不變**。這是回授最重要的交換之一：犧牲增益換頻寬，匯率就是 $1+KA_0$。
+
+(B) 的方向反了，但值得注意它為什麼直覺上誘人：既然增益被壓小，好像什麼都該變小。記憶的掛鉤是**面積守恆**——波德圖上增益曲線往下移，轉折點就必然往右移，長方形的面積（增益頻寬乘積）保持不變。這也解釋了為什麼運放的資料表只給一個增益頻寬積：知道它，任何閉迴路增益下的頻寬都能算出來。
+
+**考的觀念**：閉迴路頻寬 $=(1+KA_0)\omega_0$，增益頻寬乘積守恆
+:::
+
+#### 選擇題 15
+
+> 回授分析裡的「載入效應」指的是什麼？
+> :en[What does loading effect refer to in feedback analysis?]
+
+:::choices{answer="D"}
+- 輸出端接了太重的負載，使輸出電壓下降 :en[Too heavy a load at the output pulls the output voltage down]
+- 電源供應不足，使放大器無法輸出足夠電流 :en[An inadequate supply prevents the amplifier delivering enough current]
+- 輸入訊號過大，使放大器進入飽和 :en[An oversized input drives the amplifier into saturation]
+- 回授網路本身的阻抗反過來干擾前饋系統 :en[The feedback network's own impedance perturbs the forward system]
+:::
+
+:::tip{collapsible title="詳解"}
+理想分析假設回授網路只負責「取樣輸出、送回輸入」，自己不耗電流、不改變任何節點。真實的回授網路由電阻組成，它會從輸出端吸電流、也會在輸入端並上阻抗，於是前饋系統的增益與阻抗都被改變，實際結果偏離 $1/K$。**$H\approx 1/K$ 這個漂亮結論的前提，就是這一項可以忽略。**
+
+(A) 描述的是一般的負載效應，和回授網路無關。兩者的差別在於「誰造成的」：**載入效應是回授網路自己造成的，是回授分析內部的誤差來源**，所以第 34–35 頁要專門處理它。
+
+**考的觀念**：載入效應是回授網路的非理想阻抗造成的誤差
+:::
+
+#### 選擇題 16
+
+> 增益交越頻率 $\omega_{GX}$ 的定義是什麼？
+> :en[How is the gain crossover frequency $\omega_{GX}$ defined?]
+
+:::choices{answer="B"}
+- 相位達到 $-180°$ 的頻率 :en[The frequency at which the phase reaches $-180°$]
+- 迴路增益的大小降到 1 的頻率 :en[The frequency at which the loop-gain magnitude falls to one]
+- 閉迴路增益降到 $-3\ \text{dB}$ 的頻率 :en[The frequency at which the closed-loop gain is $-3\ \text{dB}$ down]
+- 主極點所在的頻率 :en[The frequency of the dominant pole]
+:::
+
+:::tip{collapsible title="詳解"}
+$\omega_{GX}$ 是 $\lvert KH\rvert=1$（也就是 $0\ \text{dB}$）的那一點。它重要的原因是：**迴路增益小於 1 之後，繞一圈的訊號會越繞越小，振盪就不可能維持**。所以只要在 $\omega_{GX}$ 這一點相位還沒轉到 $-180°$，系統就安全——這正是相位邊限 $\mathrm{PM}=\angle H(\omega_{GX})+180°$ 的量法。
+
+(A) 是相位交越頻率 $\omega_{PX}$，兩者常被弄混。分辨法看名字：**「增益」交越看的是增益、「相位」交越看的是相位**，而穩定性判斷要同時用到這兩個頻率——誰先到，決定了系統穩不穩。
+
+**考的觀念**：$\omega_{GX}$ 是迴路增益大小降到 1 的頻率
+:::
+
+#### 選擇題 17
+
+> 一個系統的 $\omega_{PX}$（相位交越）出現在 $\omega_{GX}$（增益交越）之前，代表什麼？
+> :en[In a system where $\omega_{PX}$ occurs below $\omega_{GX}$, what does this mean?]
+
+:::choices{answer="D"}
+- 系統非常穩定，相位邊限很大 :en[The system is very stable with a large phase margin]
+- 系統剛好在臨界穩定的邊緣 :en[The system sits exactly at the edge of stability]
+- 無法判斷，還要知道直流增益 :en[It cannot be judged without knowing the DC gain]
+- 相位已經轉到 $-180°$ 時迴路增益還大於 1，系統不穩定 :en[The loop gain still exceeds one when the phase hits $-180°$, so the system is unstable]
+:::
+
+:::tip{collapsible title="詳解"}
+不穩定的條件是「相位轉到 $-180°$ 的那一刻，繞一圈的訊號還沒衰減」。$\omega_{PX}<\omega_{GX}$ 正好描述這個情形：到了 $\omega_{PX}$ 相位已經滿足 Barkhausen 的相位條件，而增益條件（$\lvert KH\rvert\ge1$）也還成立，訊號繞一圈回來同相且不衰減，振盪自己就長起來了。
+
+安全的排列是相反的：$\omega_{GX}<\omega_{PX}$，也就是**增益先掉到 1，相位才轉到 $-180°$**。此時 $\mathrm{PM}>0$。這一題與上一題合起來就是全章穩定性判斷的操作程序：先找兩個交越頻率，再看誰先到。
+
+**考的觀念**：$\omega_{PX}<\omega_{GX}$ 等價於相位邊限為負
+:::
+
+#### 選擇題 18
+
+> 主極點補償的做法是什麼？
+> :en[What does dominant-pole compensation actually do?]
+
+:::choices{answer="C"}
+- 把所有極點一起往高頻推 :en[It pushes every pole to higher frequency]
+- 增加一個零點抵消掉最高頻的極點 :en[It adds a zero to cancel the highest-frequency pole]
+- 把其中一個極點刻意推到很低的頻率，讓增益提早開始下滑 :en[It deliberately moves one pole very low so the gain starts rolling off early]
+- 降低回授因數 $K$ 直到系統穩定 :en[It reduces the feedback factor $K$ until the system is stable]
+:::
+
+:::tip{collapsible title="詳解"}
+目標是讓 $\omega_{GX}$ 落在「其他極點還沒開始貢獻相位」的區域。做法是加一顆大電容把某一個極點壓到很低的頻率，增益從那裡就以 $-20\ \text{dB/dec}$ 單調下滑，在遇到第二個極點之前就已經掉到 $0\ \text{dB}$。**代價是頻寬大幅縮小**——這是拿速度換穩定。
+
+(D) 確實也能讓系統穩定（降低 $K$ 等於降低迴路增益、把 $\omega_{GX}$ 往左移），但那同時把增益去敏感化、阻抗改善等所有好處一起放棄了，而且使用者通常無法選擇 $K$（它由應用決定）。補償的價值在於**讓同一顆運放在任何 $K$ 下都穩定**，這就是為什麼 μA741 內建補償電容。
+
+**考的觀念**：主極點補償以犧牲頻寬換取相位邊限
+:::
+
+#### 選擇題 19
+
+> 米勒補償相對於直接加一顆大電容，好處是什麼？
+> :en[What is the advantage of Miller compensation over simply adding a large capacitor?]
+
+:::choices{answer="A"}
+- 小電容被米勒效應放大成大等效電容，省下大量晶片面積 :en[A small capacitor is multiplied by the Miller effect, saving a great deal of die area]
+- 完全不需要電容，用電阻就能達成 :en[It needs no capacitor at all, only resistors]
+- 可以同時把頻寬變大 :en[It also increases the bandwidth]
+- 讓系統不再需要相位邊限 :en[It removes the need for any phase margin]
+:::
+
+:::tip{collapsible title="詳解"}
+電容跨接在一個增益為 $-A$ 的級的輸入與輸出之間時，從輸入端看進去的等效電容是 $(1+A)C_c$。所以只要一顆小電容，配上該級本身的增益，就能得到幾十到幾百倍的等效值：$C_{eq}=\left[1+g_{m5}(r_{O5}\parallel r_{O6})\right]C_c$。**在晶片上電容按面積計價，這個差別直接反映在成本上。**
+
+(C) 方向相反：補償一定讓頻寬變小，米勒補償只是用比較便宜的方式達成同樣的補償，不是免費午餐。這一題也和 CH8 的觀察呼應——μA741 晶片照片上那顆肉眼可見的電容，就是這個機制的實物。
+
+**考的觀念**：米勒效應把小電容放大成大等效電容
+:::
+
+#### 選擇題 20
+
+> 米勒等效電容 $C_{eq}=\left[1+g_{m5}(r_{O5}\parallel r_{O6})\right]C_c$ 裡，方括號那一項代表什麼？
+> :en[In $C_{eq} = [1 + g_{m5}(r_{O5} \parallel r_{O6})]C_c$, what does the bracketed factor represent?]
+
+:::choices{answer="B"}
+- 電容的製程誤差 :en[The process tolerance of the capacitor]
+- 跨接那一級的電壓增益大小，加 1 :en[The magnitude of that stage's voltage gain, plus one]
+- 回授因數的倒數 :en[The reciprocal of the feedback factor]
+- 兩個極點的頻率比 :en[The ratio of the two pole frequencies]
+:::
+
+:::tip{collapsible title="詳解"}
+$g_{m5}(r_{O5}\parallel r_{O6})$ 就是那一級共源放大器的增益大小——$g_m$ 乘上輸出端看到的總電阻，這個形式在 CH6 的 CS 級增益公式裡出現過。米勒倍率就是「增益加 1」。
+
+這一題的價值在於把三章接起來：**CH6 算出 $g_m r_o$ 是什麼，CH12 拿它來當米勒倍率**。認得這個形式之後，看到任何「$1+$ 某個增益」的係數都會先問「這是不是米勒」。(C) 的 $1/K$ 是閉迴路增益的近似值，和這裡完全無關，但因為兩者都是「某個東西的倒數或加一」，形式上容易混。
+
+**考的觀念**：米勒倍率就是跨接那一級的增益加 1
+:::
+
+#### 選擇題 21
+
+> 一個理想的電壓放大器，輸入與輸出阻抗應該各是多少？
+> :en[What should the input and output impedances of an ideal voltage amplifier be?]
+
+:::choices{answer="C"}
+- 輸入為零、輸出為零 :en[Zero input, zero output]
+- 輸入為零、輸出無限大 :en[Zero input, infinite output]
+- 輸入無限大、輸出為零 :en[Infinite input, zero output]
+- 輸入無限大、輸出無限大 :en[Infinite input, infinite output]
+:::
+
+:::tip{collapsible title="詳解"}
+唯一要記的規則是**不要干擾被量或被送的量**。輸入端要「讀取電壓」，所以不能吸電流，阻抗必須無限大；輸出端要「送出電壓」，所以接上任何負載電壓都不能變，阻抗必須為零。
+
+把這條規則套到另外三種放大器就自動得到答案：電流放大器是輸入為零、輸出無限大；轉阻放大器（讀電流、送電壓）是輸入為零、輸出為零；轉導放大器（讀電壓、送電流）是輸入無限大、輸出無限大。**四種組合剛好是這題四個選項**，所以這一題與其背答案，不如記住「讀電壓就要高阻抗、讀電流就要低阻抗」這一句。
+
+**考的觀念**：理想阻抗由「不干擾被量的量」決定
+:::
+
+#### 選擇題 22
+
+> 電壓–電壓回授（感測輸出電壓、回送電壓）對輸入與輸出阻抗各有什麼影響？
+> :en[How does voltage-voltage feedback change the input and output impedances?]
+
+:::choices{answer="D"}
+- 兩者都被乘上 $1+KA_0$ :en[Both are multiplied by $1 + KA_0$]
+- 兩者都被除以 $1+KA_0$ :en[Both are divided by $1 + KA_0$]
+- 輸入除以、輸出乘上 $1+KA_0$ :en[The input is divided and the output multiplied by $1 + KA_0$]
+- 輸入乘上、輸出除以 $1+KA_0$ :en[The input is multiplied and the output divided by $1 + KA_0$]
+:::
+
+:::tip{collapsible title="詳解"}
+$R_{in}\to R_{in}(1+KA_0)$、$R_{out}\to\dfrac{R_{out}}{1+KA_0}$。方向不必死背——**回授把電路推向它所模仿的那個理想放大器**。電壓–電壓回授要做的是理想電壓放大器，而理想電壓放大器的輸入阻抗無限大、輸出阻抗為零，所以輸入往上、輸出往下。
+
+這條規則套到轉阻放大器（電壓–電流回授）就得到相反的輸入端行為：$R_{in}\to\dfrac{R_{in}}{1+KR_0}$，因為理想轉阻放大器的輸入阻抗要為零。(A)、(B) 之所以誘人，是因為「同一個因子」容易被誤記成「同一個方向」——**倍率相同，方向由理想目標決定**。
+
+**考的觀念**：回授把阻抗推向所模仿的理想放大器
+:::
+
+#### 選擇題 23
+
+> 把回授加在一個增益隨訊號大小而改變的非線性放大器上，為什麼輸出的失真會下降？
+> :en[Why does feedback reduce distortion in an amplifier whose gain varies with signal level?]
+
+:::choices{answer="A"}
+- 因為局部增益 $\dfrac{A_i}{1+KA_i}$ 在 $A_i$ 夠大時都趨近 $\dfrac{1}{K}$，各段斜率被拉成一樣 :en[Because each local gain $A_i/(1+KA_i)$ tends to $1/K$ for large $A_i$, flattening the slope differences]
+- 因為回授網路把高頻的諧波濾掉了 :en[Because the feedback network filters out the harmonics]
+- 因為回授降低了輸出振幅，使電路不進入非線性區 :en[Because feedback lowers the output swing so the circuit stays linear]
+- 因為回授讓放大器的工作點自動置中 :en[Because feedback automatically centres the operating point]
+:::
+
+:::tip{collapsible title="詳解"}
+把轉移曲線切成幾段，每一段有自己的斜率 $A_i$。加上回授之後，每一段的斜率變成 $\dfrac{A_i}{1+KA_i}$；只要 $KA_i\gg1$，這個值就都趨近 $\dfrac{1}{K}$——**原本差很多的斜率被壓成幾乎相同，曲線就被拉直了**。
+
+(B) 的機制聽起來合理但不對：回授網路通常是純電阻，不具備濾波能力，而且諧波是在放大器內部產生的、不是外部混進來的。(C) 也不對，振幅由輸入決定，不是回授決定。**線性化的根源是「只要迴路增益夠大，增益就由 $K$ 決定、與 $A_i$ 無關」這同一句話**，和增益去敏感化其實是同一個現象的兩種說法。
+
+**考的觀念**：各段局部增益都被壓向 $1/K$，曲線被拉直
+:::
+
+#### 選擇題 24
+
+> 三級相同的共源級串起來、以 $K=1$ 加上回授，穩定條件是 $g_mR_D<2$。這個條件說明了什麼？
+> :en[Three identical CS stages in cascade with $K = 1$ are stable only if $g_m R_D < 2$. What does this show?]
+
+:::choices{answer="B"}
+- 回授因數必須小於 2 才安全 :en[The feedback factor must be below two to be safe]
+- 每一級的增益不能太大，否則相位累積到 $-180°$ 時迴路增益仍大於 1 :en[Each stage's gain must be limited, or the loop gain still exceeds one when the phase reaches $-180°$]
+- 三級放大器一定不穩定，不能加回授 :en[Three-stage amplifiers are always unstable and cannot take feedback]
+- 只要電源電壓夠高就能穩定 :en[A high enough supply voltage guarantees stability]
+:::
+
+:::tip{collapsible title="詳解"}
+三個相同的極點，各自最多貢獻 $-90°$，總共 $-270°$，所以 $-180°$ 一定會出現。問題只剩「到那個頻率時迴路增益還剩多少」。每級增益 $g_mR_D$ 越大，增益曲線整體越高、掉到 $0\ \text{dB}$ 的頻率越往右，就越可能在相位轉到 $-180°$ 之後才掉下來。$g_mR_D<2$ 就是把增益壓低到「來得及先掉下來」。
+
+(C) 太絕對：三級能不能加回授取決於增益與補償，不是級數本身。這一題（投影片 Example 12-38）的意義在於給出一個具體數字——**$g_mR_D<2$ 這種增益上限低到幾乎沒有實用價值，正是為什麼多級放大器非補償不可**。
+
+**考的觀念**：級數越多相位累積越快，每級增益必須受限（投影片 Example 12-38）
+:::
+
+#### 選擇題 25
+
+> 其他條件不變、把回授因數 $K$ 調大（回授變強），對穩定性有什麼影響？
+> :en[With everything else fixed, how does increasing the feedback factor $K$ affect stability?]
+
+:::choices{answer="C"}
+- 變穩定，因為誤差被壓得更小 :en[More stable, because the error is suppressed further]
+- 沒有影響，穩定性只由前饋系統的極點決定 :en[No effect; stability depends only on the forward system's poles]
+- 變不穩定，因為迴路增益整體抬高、$\omega_{GX}$ 往高頻移 :en[Less stable, because the loop gain rises and $\omega_{GX}$ moves to higher frequency]
+- 變不穩定，因為極點的位置被 $K$ 改變 :en[Less stable, because $K$ shifts the pole locations]
+:::
+
+:::tip{collapsible title="詳解"}
+$K$ 變大使 $\lvert KH\rvert$ 整條曲線往上平移，與 $0\ \text{dB}$ 的交點（$\omega_{GX}$）因此往右移。相位曲線不動，所以在更高的頻率上量到的相位更落後，相位邊限變小。**極端情形就是單位增益組態（$K=1$）：那是回授最強、最難穩定的接法**，所以運放的規格書會特別標明「unity-gain stable」。
+
+(A) 是最常見的直覺錯誤：把「誤差被壓小」當成「系統變穩」。這兩件事在負回授裡其實是對立的——**$1+KA_1$ 越大，靜態精度越好，動態越容易振盪**。(D) 的敘述方向對但理由錯：$K$ 不改變開迴路極點的位置，改變的是閉迴路極點，而那是結果不是原因。
+
+**考的觀念**：回授越強，$\omega_{GX}$ 越高、相位邊限越小
+:::
+
+#### 選擇題 26
+
+> 回授能不能提高一個放大器的增益頻寬乘積？
+> :en[Can feedback increase an amplifier's gain-bandwidth product?]
+
+:::choices{answer="D"}
+- 可以，只要迴路增益夠大 :en[Yes, provided the loop gain is large enough]
+- 可以，但需要搭配補償電容 :en[Yes, if a compensation capacitor is added]
+- 不行，但串接兩級可以 :en[No, but cascading two stages can]
+- 不行，回授只能在增益與頻寬之間重新分配 :en[No; feedback only redistributes between gain and bandwidth]
+:::
+
+:::tip{collapsible title="詳解"}
+增益除以 $1+KA_0$、頻寬乘以 $1+KA_0$，乘積不變。**增益頻寬乘積是前饋系統本身的性質，由元件與偏壓決定**；回授是外面加的，它改變的是這個總量怎麼分配，不是總量本身。想提高乘積只能換更好的元件或更大的偏壓電流。
+
+(C) 很值得停下來想：串接兩級確實能讓總增益與總頻寬的組合超過單級，但那是因為**加了第二顆放大器**，等於投入了新的資源，不是回授變出來的。這一題的核心是分辨「重新分配」與「增加總量」——這個區別在 CH12 反覆出現，$1+KA_1$ 帶來的每一項好處都伴隨等價的代價。
+
+**考的觀念**：增益頻寬乘積是前饋系統的性質，回授只能重新分配
+:::
+
+#### 選擇題 27
+
+> 一個只有單一極點的系統，加上負回授之後有沒有可能振盪？
+> :en[Can a single-pole system oscillate when negative feedback is applied?]
+
+:::choices{answer="A"}
+- 不可能，單極點的相位最多落後 $90°$，到不了 $-180°$ :en[No: one pole lags at most $90°$, never reaching $-180°$]
+- 有可能，只要迴路增益夠大 :en[Yes, if the loop gain is large enough]
+- 有可能，取決於極點的頻率高低 :en[Yes, depending on where the pole sits]
+- 無法判斷，要看回授網路的型式 :en[It cannot be determined without knowing the feedback topology]
+:::
+
+:::tip{collapsible title="詳解"}
+Barkhausen 判據要兩個條件同時成立：大小為 1、相位為 $-180°$。單極點系統的相位從 $0°$ 單調趨近 $-90°$，永遠到不了 $-180°$，相位條件無法滿足，所以不管迴路增益多大都不會振盪。
+
+(B) 把「增益大」當成不穩定的充分條件，但增益只影響 $\omega_{GX}$ 的位置，不產生額外的相位落後。這一題解釋了主極點補償為什麼有效：**它不是消滅其他極點，而是讓系統在 $\omega_{GX}$ 之前「看起來像」單極點系統**。也因此運放的開迴路波德圖永遠是一條長長的 $-20\ \text{dB/dec}$ 直線。
+
+**考的觀念**：單極點最多 $-90°$，相位條件無法滿足
+:::
+
+#### 選擇題 28
+
+> 實務上把相位邊限設計在 $60°$ 左右，主要理由是什麼？
+> :en[Why is a phase margin of about $60°$ a common design target?]
+
+:::choices{answer="C"}
+- 這是能達到的最大相位邊限 :en[It is the largest phase margin achievable]
+- $60°$ 以下的系統一定會振盪 :en[Anything below $60°$ will oscillate]
+- 在速度與過衝之間取得平衡：階躍響應過衝小、安定快 :en[It balances speed and overshoot: little ringing, fast settling]
+- 相位邊限低於 $60°$ 時增益會變成負的 :en[Below $60°$ the gain becomes negative]
+:::
+
+:::tip{collapsible title="詳解"}
+相位邊限不只決定穩不穩，還決定**穩得多好看**。邊限很小（例如 $10°$）時系統技術上穩定，但階躍響應會嚴重過衝、振鈴很久才安定；邊限很大（例如 $90°$）時完全不過衝，但代價是頻寬被壓得很低、反應遲鈍。$60°$ 附近是兩者的折衷點。
+
+(B) 把設計目標誤認成穩定判準：**穩定的門檻是 $\mathrm{PM}>0$，$60°$ 是品質目標而非及格線**。這個區別很重要——看到 $\mathrm{PM}=30°$ 不該說「會振盪」，而該說「會過衝得很厲害」。
+
+**考的觀念**：相位邊限決定過衝與安定時間，不只決定穩定與否
+:::
+
+#### 選擇題 29
+
+> 要在電路上量迴路增益 $KA_1$，做法是什麼？
+> :en[How is the loop gain $KA_1$ measured in a circuit?]
+
+:::choices{answer="B"}
+- 量輸入與輸出的比值 :en[Take the ratio of output to input]
+- 把迴路切開、從切口注入 $V_{test}$，量回來的 $V_N$，取 $-V_N/V_{test}$ :en[Break the loop, inject $V_{test}$, measure the returning $V_N$, and take $-V_N/V_{test}$]
+- 把回授網路拆掉後量放大器的增益 :en[Remove the feedback network and measure the amplifier gain]
+- 量輸出阻抗再乘上 $K$ :en[Measure the output impedance and multiply by $K$]
+:::
+
+:::tip{collapsible title="詳解"}
+迴路增益是「繞一圈的增益」，所以量法就是真的繞一圈：切開迴路、注入測試訊號、看繞回來變成多少。負號來自負回授本身——回來的訊號與注入的反相。**關鍵性質是結果與切在哪裡無關**，切在放大器輸入端、輸出端或回授網路中間，量到的 $KA_1$ 都一樣，因為乘積的順序不影響結果。
+
+(C) 量到的是 $A_1$，少了 $K$ 那一項。(A) 量到的是閉迴路增益 $H$。三個量在這一章裡角色完全不同：$H$ 是使用者關心的、$A_1$ 是元件的性質、$KA_1$ 是決定一切好處與代價的那個量。
+
+**考的觀念**：迴路增益由切口注入測試訊號量得，與切點無關
+:::
+
+#### 選擇題 30
+
+> 前饋系統的增益 $A_1$ 因為溫度上升而變成原來的 2 倍，在 $KA_1=99$ 的回授系統裡，閉迴路增益大約變化多少？
+> :en[The forward gain $A_1$ doubles with temperature in a system with $KA_1 = 99$. Roughly how much does the closed-loop gain change?]
+
+:::choices{answer="D"}
+- 約 2 倍 :en[About twofold]
+- 約 1.5 倍 :en[About 1.5-fold]
+- 幾乎不變，小於 $0.1\%$ :en[Essentially unchanged, under $0.1\%$]
+- 約 $1\%$ :en[About $1\%$]
+:::
+
+:::tip{collapsible title="詳解"}
+靈敏度是 $\dfrac{\mathrm{d}\ln H}{\mathrm{d}\ln A_1}=\dfrac{1}{1+KA_1}=\dfrac{1}{100}$，代表 $A_1$ 的相對變化被壓縮成百分之一傳到 $H$。$A_1$ 變 2 倍是 $100\%$ 的相對變化，所以 $H$ 的變化約 $100\%\times\dfrac{1}{100}=1\%$。
+
+(C) 的誘人之處在於「回授讓增益很穩定」這個印象被推得太遠——**壓縮一百倍不等於完全消除**。這個數量級很值得記住：想把 $100\%$ 的元件變動壓到 $0.1\%$，需要 $1+KA_1\approx1000$，也就是迴路增益要到 $60\ \text{dB}$。這也說明為什麼運放的開路增益要做到十萬以上。
+
+**考的觀念**：靈敏度 $=\dfrac{1}{1+KA_1}$，相對變化被同樣倍率壓縮
+:::
+
+#### 選擇題 31
+
+> 閉迴路增益在迴路增益夠大時趨近 $\dfrac{1}{K}$。為什麼這個結果在工程上特別有價值？
+> :en[The closed-loop gain tends to $1/K$ for large loop gain. Why is that result so valuable in practice?]
+
+:::choices{answer="C"}
+- 因為 $K$ 可以做得比 $A_1$ 大很多 :en[Because $K$ can be made much larger than $A_1$]
+- 因為 $K$ 不隨頻率改變 :en[Because $K$ does not vary with frequency]
+- 因為 $K$ 通常由被動元件的比值決定，比主動元件的增益準確且穩定得多 :en[Because $K$ is set by a ratio of passive components, far more accurate and stable than an active gain]
+- 因為 $K$ 可以用軟體隨時調整 :en[Because $K$ can be adjusted in software at any time]
+:::
+
+:::tip{collapsible title="詳解"}
+$A_1$ 由電晶體的 $g_m$、$r_o$ 決定，隨製程批次跑 $\pm20\%$、隨溫度漂移；$K$ 通常是兩顆電阻的分壓比，而**同一片晶圓上相鄰電阻的比值可以做到 $1\%$ 以內，即使絕對值跑掉也會一起跑掉、比值不變**。把增益交給 $K$ 決定，等於把它從「不準的量」換到「準的量」上。
+
+這正是三章共同的主線：CH6 的二極體連接負載讓增益變成兩個寬長比的比值，CH8 讓增益變成兩顆電阻的比值，CH12 說明這個交換的匯率是 $1+KA_1$。(B) 的敘述在純電阻回授網路上大致成立，但那不是價值的來源——真正的理由是**比值比絕對值準**。
+
+**考的觀念**：$1/K$ 由被動元件比值決定，精度遠高於主動增益
+:::
+
+#### 選擇題 32
+
+> μA741 晶片上那顆肉眼就看得出來的大電容，作用是什麼？
+> :en[What is the purpose of the visibly large capacitor on a μA741 die?]
+
+:::choices{answer="A"}
+- 補償：把主極點壓低，確保接成任何回授組態都不振盪 :en[Compensation: it lowers the dominant pole so any feedback configuration stays stable]
+- 濾除電源上的雜訊 :en[It filters noise on the supply rails]
+- 儲存能量，提供瞬間的大輸出電流 :en[It stores energy to supply large transient output currents]
+- 隔絕輸入端的直流成分 :en[It blocks DC at the input]
+:::
+
+:::tip{collapsible title="詳解"}
+它是內部補償電容。μA741 的設計目標是**連 $K=1$（單位增益、回授最強）都要穩定**，所以必須把主極點壓到很低——低到增益在遇到第二個極點之前就已經掉到 $0\ \text{dB}$。代價是增益頻寬積只有約 $1\ \text{MHz}$，在今天看來很慢，但換來的是「怎麼接都不會振盪」這個對使用者極友善的性質。
+
+這顆電容在 CH8 出現過，但當時只能說「作用是讓運放接成回授後不振盪，完整理由在 CH12」。現在理由齊了：**它用米勒效應把一顆小電容放大成大等效電容，把相位邊限買回來，付出的是頻寬。** (C) 的誤解來自把它當成電源的旁路電容，那種電容在晶片外面、容值大上好幾個數量級。
+
+**考的觀念**：內建補償電容確保單位增益組態也穩定，代價是頻寬
+:::
+
+#### 選擇題 33
+
+> 一個感測器輸出的是微弱電流，後級需要的是電壓。應該用哪一種回授組態？
+> :en[A sensor outputs a weak current and the next stage needs a voltage. Which feedback topology fits?]
+
+:::choices{answer="D"}
+- 感測輸出電壓、回送電壓 :en[Sense the output voltage, return a voltage]
+- 感測輸出電流、回送電流 :en[Sense the output current, return a current]
+- 感測輸出電流、回送電壓 :en[Sense the output current, return a voltage]
+- 感測輸出電壓、回送電流 :en[Sense the output voltage, return a current]
+:::
+
+:::tip{collapsible title="詳解"}
+需要的是「吃電流、吐電壓」的轉阻放大器。選組態的規則有兩步：**輸出要什麼就感測什麼，輸入是什麼就回送什麼**。輸出要電壓 → 感測電壓（並聯在輸出端取樣）；輸入是電流 → 回送電流（並聯在輸入端相減）。所以是電壓–電流回授，閉迴路增益 $\dfrac{V_{out}}{I_{in}}=\dfrac{R_0}{1+KR_0}$。
+
+阻抗的變化也跟著理想目標走：理想轉阻放大器輸入阻抗為零、輸出阻抗為零，所以兩端都被除以 $1+KR_0$——這是四種組態裡唯一兩端同方向的一種。(A) 是運放最常見的電壓–電壓接法，但它的輸入阻抗會被**抬高**，對電流源訊號正好是錯的方向。
+
+**考的觀念**：輸出要什麼就感測什麼，輸入是什麼就回送什麼
+:::
+
+#### 選擇題 34
+
+> 回授帶來的好處（去敏感化、頻寬展寬、阻抗改善）與代價（增益下降、穩定性變差），彼此是什麼關係？
+> :en[How are feedback's benefits (desensitization, wider bandwidth, better impedances) related to its costs (lower gain, worse stability)?]
+
+:::choices{answer="B"}
+- 互相獨立，可以各自調整到想要的程度 :en[Independent, each tunable on its own]
+- 由同一個因子 $1+KA_1$ 決定，是一組等價交換 :en[Governed by the same factor $1 + KA_1$: one single trade]
+- 好處與代價的倍率不同，好處通常大於代價 :en[The benefits scale faster than the costs]
+- 只有在迴路增益很小時才有代價 :en[The costs appear only when the loop gain is small]
+:::
+
+:::tip{collapsible title="詳解"}
+整章的每一條式子都掛著同一個 $1+KA_1$：增益除以它、頻寬乘以它、靈敏度等於它的倒數、輸入阻抗乘以它、輸出阻抗除以它、比較誤差除以它。**想要更多好處，就只能把它調大，而代價也同比例變大**——這不是巧合，而是因為它們全都是同一個迴路方程式的不同切面。
+
+(A) 是最想要的答案，但也是最錯的：以為可以「只要頻寬不要失增益」的人，會在設計時反覆撞牆。這一題是 CH12 的總結，也是期末考最可能出的切面——**把整章濃縮成一句話，就是「所有東西的匯率都是 $1+KA_1$」**。
+
+**考的觀念**：$1+KA_1$ 是同一個倍率，好處與代價等價交換
+:::

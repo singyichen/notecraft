@@ -3,7 +3,7 @@
  * 由筆記的 `#### 選擇題 N` 區塊產生 public/quiz/ 底下的線上作答頁。
  *
  *   ml  → public/quiz/ml-mcq.html        機器學習期中（Lectures 1–6，106 題）
- *   ec  → public/quiz/ec-final-mcq.html  電子學期末（CH6／CH8／CH12，36 題）
+ *   ec  → public/quiz/ec-final-mcq.html  電子學期末（CH6／CH8／CH12，100 題）
  *
  * **只產生題目區段**，頁面外殼（CSS、計分 JS、頁首、說明）放在 `scripts/quiz/*.template.html`
  * 的 `<!--QUESTIONS-->` 前後，原封不動沿用——兩頁的互動本來就不一樣，不要硬合併。

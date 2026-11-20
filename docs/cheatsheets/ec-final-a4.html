@@ -1,0 +1,407 @@
+<!doctype html>
+<!--
+  電子學實作 期末考 A4 雙面小抄（範圍：CH6 MOS 電晶體、CH8 運算放大器、CH12 回授）
+  產出 PDF：
+    "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --headless --no-pdf-header-footer --allow-file-access-from-files \
+      --virtual-time-budget=5000 --print-to-pdf="src/content/notes/_references/電子學實作系列/電子學期末A4小抄.pdf" \
+      "file://$PWD/docs/cheatsheets/ec-final-a4.html"
+  驗證：pdfinfo 該 PDF 的 Pages 必須是 2；畫面右下若出現紅色 OVERFLOW 標記代表該頁塞爆，要刪減內容或調小 body 的 font-size。
+  注意：螢幕（--dump-dom）與列印的版面不一致，字級上限只能看「印出來的 PDF 有沒有 OVERFLOW 方塊」。
+  目前 8.4pt 是不溢出的最大值（8.6pt 第一面會爆）。數學式裡的 < 一律寫 \lt：裸的 <V 會被當成 HTML 標籤起頭，吃掉後面的內容。
+  期末考全部是觀念選擇題，所以這份小抄的重點是「判準、對照、陷阱」，不是推導過程。
+-->
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<title>電子學期末小抄</title>
+<link rel="stylesheet" href="../../node_modules/katex/dist/katex.min.css">
+<script defer src="../../node_modules/katex/dist/katex.min.js"></script>
+<script defer src="../../node_modules/katex/dist/contrib/auto-render.min.js"></script>
+<style>
+  @page { size: A4; margin: 0; }
+  :root {
+    --ink: #1a1f2b; --muted: #5b6475; --blue: #1d4ed8; --blue-bg: #eef3ff;
+    --orange: #c2410c; --orange-bg: #fff4ec; --line: #c9d2e3; --green: #15803d;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: #fff; color: var(--ink); }
+  body {
+    font-family: "PingFang TC", "Heiti TC", "Noto Sans TC", sans-serif;
+    font-size: 8.4pt; line-height: 1.3;
+    -webkit-print-color-adjust: exact; print-color-adjust: exact;
+  }
+  .page {
+    width: 210mm; height: 297mm; padding: 5.5mm 6mm 5mm;
+    overflow: hidden; position: relative; page-break-after: always; break-after: page;
+  }
+  .page:last-child { page-break-after: auto; break-after: auto; }
+  .head {
+    display: flex; justify-content: space-between; align-items: baseline;
+    border-bottom: 1.4pt solid var(--blue); padding-bottom: 1mm; margin-bottom: 1.4mm;
+  }
+  .head b { font-size: 9.5pt; color: var(--blue); letter-spacing: .02em; }
+  .head span { font-size: 7pt; color: var(--muted); }
+  .cols {
+    display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 3.2mm;
+    height: calc(297mm - 5.5mm - 5mm - 7mm);
+  }
+  .col { min-width: 0; min-height: 0; padding-right: 1mm; border-right: .4pt solid var(--line); overflow: hidden; }
+  .col:last-child { border: 0; padding-right: 0; }
+  section { margin-bottom: 1.4mm; }
+  h2 {
+    font-size: 8.8pt; margin: 0 0 .6mm; padding: .35mm 1.2mm; color: #fff; background: var(--blue);
+    border-radius: 1mm; break-after: avoid;
+  }
+  h2 .n { opacity: .75; margin-right: .8mm; }
+  h3 { font-size: 8.2pt; margin: .9mm 0 .3mm; color: var(--blue); break-after: avoid; }
+  p { margin: .3mm 0; }
+  ul { margin: .2mm 0; padding-left: 3mm; }
+  li { margin: 0; }
+  table { width: 100%; border-collapse: collapse; margin: .4mm 0; }
+  th, td { border: .35pt solid var(--line); padding: .25mm .7mm; vertical-align: top; text-align: left; }
+  th { background: var(--blue-bg); font-weight: 600; }
+  .trap { background: var(--orange-bg); border-left: 1.4pt solid var(--orange); padding: .4mm 1mm; margin: .5mm 0; }
+  .trap b, .k { color: var(--orange); }
+  .ans { color: var(--green); font-weight: 600; }
+  .muted { color: var(--muted); }
+  .katex { font-size: 1.04em; }
+  .ovf { position: absolute; right: 2mm; bottom: 1mm; color: #fff; background: #d00; font-size: 8pt; padding: .5mm 1mm; }
+</style>
+</head>
+<body>
+
+<!-- ===================== 第一面：CH6 + CH8 ===================== -->
+<div class="page">
+  <div class="head"><b>電子學實作｜期末小抄（一）CH6 MOS 電晶體・CH8 運算放大器</b><span>全部選擇題｜考觀念不考推導｜主軸：理想假設在什麼時候失效</span></div>
+  <div class="cols">
+
+  <div class="col">
+  <section>
+    <h2><span class="n">1</span>MOS 的起點是電容，不是接面</h2>
+    <ul>
+      <li>閘極／氧化層／基板＝平行板電容，$C_{ox}=\varepsilon_{ox}/t_{ox}$（每單位面積，$\text{F/cm}^2$）。氧化層越薄 → $C_{ox}$ 越大 → 同樣電壓存更多電荷 → 電流越大</li>
+      <li>通道形成兩階段：<b>先空乏</b>（電洞被推開，留下固定負受體離子）<b>再反轉</b>（電子被吸到界面形成 N 型薄層）</li>
+      <li>「反轉」只是<b>偏壓下的表面狀態</b>，摻雜本身沒變，撤掉電壓就恢復</li>
+      <li>$V_{TH}$＝反轉層剛好成形所需的 $V_{GS}$，典型 $300\text{–}500\ \text{mV}$</li>
+      <li><b>過驅動電壓</b> $V_{GS}-V_{TH}$：$V_{TH}$ 以下那段是入場費，不產生任何可導電的電子</li>
+      <li>源汲極由<b>偏壓</b>決定（NMOS 電位低者為源極），不是製程決定</li>
+      <li>本體（第四隻腳）NMOS 接最低電位、PMOS 接最高電位 → 讓寄生 PN 接面保持<b>逆偏</b>（為安全，不是為性能）</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2><span class="n">2</span>工作區判準（兩步，別跳）</h2>
+    <table>
+      <tr><th>區</th><th>條件（NMOS）</th></tr>
+      <tr><td>截止</td><td>$V_{GS}\le V_{TH}$</td></tr>
+      <tr><td>三極管</td><td>導通後 $V_{DS}\lt V_{GS}-V_{TH}$（等價 $V_{GD}>V_{TH}$）</td></tr>
+      <tr><td>深三極管</td><td>$V_{DS}\ll 2(V_{GS}-V_{TH})$ → 線性電阻</td></tr>
+      <tr><td>飽和</td><td>導通後 $V_{DS}\ge V_{GS}-V_{TH}$（等價 $V_{GD}\le V_{TH}$）</td></tr>
+    </table>
+    <div class="trap"><b>陷阱</b>：$V_{GS}>V_{TH}$ 只決定<b>導不導通</b>，不決定在哪一區。先比 $V_{GS}$ 與 $V_{TH}$，<b>再</b>比 $V_{DS}$ 與過驅動電壓。</div>
+    <div class="trap"><b>陷阱</b>：MOS 的「飽和區」＝可放大的區域，和 BJT 的「飽和區」<b>意思相反</b>（BJT 飽和＝不能放大）。</div>
+  </section>
+
+  <section>
+    <h2><span class="n">3</span>電流與轉導</h2>
+    <ul>
+      <li>三極管：$I_D=\frac12\mu_nC_{ox}\frac{W}{L}\left[2(V_{GS}-V_{TH})V_{DS}-V_{DS}^2\right]$</li>
+      <li>飽和：$I_D=\frac12\mu_nC_{ox}\frac{W}{L}(V_{GS}-V_{TH})^2(1+\lambda V_{DS})$</li>
+      <li>深三極管丟掉二次項 → $R_{on}=\dfrac{1}{\mu_nC_{ox}\frac{W}{L}(V_{GS}-V_{TH})}$（$V_{GS}$ 越高電阻越小）</li>
+      <li>開關衰減 $\dfrac{V_{out}}{V_{in}}=\dfrac{R_{ant}}{R_{ant}+R_{on}}$</li>
+      <li>通道電荷 $Q=WC_{ox}(V_{GS}-V_{TH})$；沿途 $Q(x)=WC_{ox}[V_{GS}-V(x)-V_{TH}]$，$Q$ 歸零處＝夾止</li>
+      <li>$I=Q\cdot v$ 的 $Q$ 是<b>每單位長度</b>電荷（$\text{C/m}$），因次：$\text{C/m}\times\text{m/s}=\text{A}$</li>
+      <li><b>轉導三式</b>（等價，挑「固定什麼」用）：<br>
+        $g_m=\mu_nC_{ox}\frac{W}{L}(V_{GS}-V_{TH})=\sqrt{2\mu_nC_{ox}\frac{W}{L}I_D}=\dfrac{2I_D}{V_{GS}-V_{TH}}$</li>
+    </ul>
+    <div class="trap"><b>陷阱</b>：固定 $I_D$ 時 $g_m$ 與過驅動電壓<b>成反比</b>（要加大 $W/L$）；沒固定電流時才是正比。<b>選錯式子答案相反。</b></div>
+  </section>
+  </div>
+
+  <div class="col">
+  <section>
+    <h2><span class="n">4</span>通道長度調變・輸出電阻・本質增益</h2>
+    <ul>
+      <li>$V_{DS}$ 升高 → 夾止點往源極移 → 有效通道變短 → 電流微升；因子 $(1+\lambda V_{DS})$，$\lambda$ 單位 $\text{V}^{-1}$</li>
+      <li>對應 BJT 的<b>爾利效應</b>（Early effect）</li>
+      <li>$r_o\approx\dfrac{1}{\lambda I_D}$（與 $I_D$ <b>成反比</b>）</li>
+      <li>本質增益 $g_mr_o=\dfrac{2}{\lambda(V_{GS}-V_{TH})}$ → <b>與偏壓電流無關</b>（$g_m\propto\sqrt{I_D}$ 升、$r_o\propto1/I_D$ 降，抵消）</li>
+      <li>想降低 $\lambda$ → <b>加大 $L$</b>（$W$ 無效，$W$ 只按比例縮放電流）</li>
+      <li>$I_D\propto W/L$，但閘極電容 $\propto WL$ → $W$ 加倍：電流加倍、電容也加倍</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2><span class="n">5</span>體效應・小訊號・PMOS／CMOS</h2>
+    <ul>
+      <li>$V_{TH}=V_{TH0}+\gamma\left(\sqrt{2\varphi_F+V_{SB}}-\sqrt{2\varphi_F}\right)$，$V_{SB}=V_S-V_B$</li>
+      <li>$V_{SB}\uparrow$ → 空乏區變厚 → $V_{TH}\uparrow$ → 同 $V_{GS}$ 電流變小。<b>體效應只會讓元件變難開</b></li>
+      <li>小訊號模型＝工作點附近的一階線性化；<b>振幅大到工作點明顯移動就失效</b></li>
+      <li>二極體連接（閘汲短接）：$R=\frac{1}{g_m}\parallel r_o\approx\frac{1}{g_m}$</li>
+      <li>PMOS：$\mu_p\lt\mu_n$ → 同尺寸電流較小（常畫寬 2–3 倍補償）；<b>小訊號模型與 NMOS 完全相同</b></li>
+      <li>CMOS：P 型基板挖 <b>N 型井</b>放 PMOS，兩種極性共存於同一片晶圓</li>
+    </ul>
+    <div class="trap"><b>陷阱</b>：任何「電流從閘極流進來」的敘述都是錯的——閘極隔著氧化層，直流電流為零。</div>
+  </section>
+
+  <section>
+    <h2><span class="n">6</span>CS 放大器：三種負載的取捨</h2>
+    <table>
+      <tr><th>負載</th><th>增益</th><th>特性</th></tr>
+      <tr><td>電阻 $R_D$</td><td>$-g_m(R_D\parallel r_o)$</td><td>簡單；增益上限＝$g_mr_o$，且 $R_D$ 大 → 壓降大 → 掉進<b>三極管區</b></td></tr>
+      <tr><td>電流源</td><td>$-g_m(r_{o1}\parallel r_{o2})$</td><td>直流壓降與交流電阻<b>解耦</b>，增益最高但最不準</td></tr>
+      <tr><td>二極體連接</td><td>$-\dfrac{g_{m1}}{g_{m2}}=-\sqrt{\dfrac{(W/L)_1}{(W/L)_2}}$</td><td>增益小但<b>只由比值決定</b>、對製程不敏感</td></tr>
+    </table>
+    <p class="muted">同一組取捨在 CH8（電阻比）與 CH12（$1/K$）再出現一次：<b>精度來自比值，不是絕對值</b>。</p>
+  </section>
+
+  <section>
+    <h2><span class="n">7</span>MOS vs BJT</h2>
+    <table>
+      <tr><th></th><th>MOS</th><th>BJT</th></tr>
+      <tr><td>控制律</td><td>平方律</td><td>指數律</td></tr>
+      <tr><td>$g_m$（同 $I$）</td><td>小</td><td>大</td></tr>
+      <tr><td>輸入直流電流</td><td>零</td><td>$I_B\ne0$</td></tr>
+      <tr><td>有限 $r_o$ 來源</td><td>通道長度調變</td><td>爾利效應</td></tr>
+      <tr><td>「飽和區」</td><td>可放大</td><td>不可放大</td></tr>
+    </table>
+  </section>
+  </div>
+
+  <div class="col">
+  <section>
+    <h2><span class="n">8</span>運放與四個理想條件</h2>
+    <ul>
+      <li>定義式 $V_{out}=A_0(V_{in1}-V_{in2})$ → 放大的是<b>差</b>，共模被消掉</li>
+      <li>輸入端的 $\pm$ 記的是<b>轉移特性的斜率正負</b>，與電源極性無關（電源是另外兩隻腳）</li>
+      <li>$A_0$ 無因次；$60\ \text{dB}=1000$（電壓用 $20\log_{10}A$）</li>
+    </ul>
+    <table>
+      <tr><th>理想條件</th><th>允許忽略</th><th>失效時看到</th></tr>
+      <tr><td>$A_0=\infty$</td><td>兩輸入的電位差</td><td>增益誤差 $G/A_0$</td></tr>
+      <tr><td>$R_{in}=\infty$</td><td>輸入吸走的電流</td><td>偏壓電流造成直流偏移</td></tr>
+      <tr><td>$R_{out}=0$</td><td>負載的影響</td><td>換重負載增益掉下來</td></tr>
+      <tr><td>$\mathrm{BW}=\infty$</td><td>頻率響應與迴轉率</td><td>高頻增益下滑；大訊號正弦變三角</td></tr>
+    </table>
+  </section>
+
+  <section>
+    <h2><span class="n">9</span>虛短路與虛接地</h2>
+    <ul>
+      <li>$V_{in1}-V_{in2}=\dfrac{V_{out}}{A_0}\to0$</li>
+      <li><b>「電位相同」來自 $A_0=\infty$；「沒有電流」來自 $R_{in}=\infty$</b>（兩條規則來源不同，常被拆開考）</li>
+      <li>成立前提：<b>負回授</b>＋<b>輸出沒飽和</b>。回授接到「＋」端 → 正回授 → 輸出貼軌、虛短路失效</li>
+      <li>虛短路是<b>電路的性質</b>，不是元件的性質；是零階近似，<b>不是等式</b></li>
+      <li>虛接地＝電位被釘在 0 V，但<b>沒有實體接地線</b>（真接地的話電路就不成立）</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2><span class="n">10</span>基本組態</h2>
+    <table>
+      <tr><th>電路</th><th>增益</th><th>$R_{in}$</th></tr>
+      <tr><td>非反相</td><td>$1+\dfrac{R_1}{R_2}$（$R_2$＝<b>接地</b>那顆）</td><td>極高</td></tr>
+      <tr><td>反相</td><td>$-\dfrac{R_1}{R_2}$</td><td><b>$=R_2$</b></td></tr>
+      <tr><td>單位增益</td><td>$\dfrac{A_0}{1+A_0}\approx1$</td><td>極高</td></tr>
+      <tr><td>反相加法器</td><td>$-\sum_k\dfrac{R_f}{R_k}V_k$</td><td>各路 $R_k$</td></tr>
+    </table>
+    <ul>
+      <li>同組電阻下<b>非反相比反相的增益大 1</b>（訊號有一條不經放大的直通路徑）</li>
+      <li>非反相增益<b>下限是 1</b>，做不出小於 1</li>
+      <li>單位增益放大器改變的是<b>阻抗</b>不是電壓（緩衝器：電壓不變，電流改由運放供應）</li>
+      <li>反相加法＝<b>電流在虛接地點相加</b>，各路互不影響；同相加法器是「先分壓再放大回來」，兩路<b>會</b>互相負載</li>
+    </ul>
+    <div class="trap"><b>陷阱</b>：反相組態的 $R_{in}$ 是 $R_2$，不是運放的無限輸入阻抗 → 高阻抗訊號源會被分壓拉垮，要先加緩衝器。</div>
+  </section>
+
+  <section>
+    <h2><span class="n">11</span>增益誤差與擺幅</h2>
+    <ul>
+      <li>$\text{gain error}=\dfrac{G}{A_0}$，$G=1+\dfrac{R_1}{R_2}$。<b>只看比值，與電阻絕對值無關</b>；反相與非反相的誤差項相同</li>
+      <li>$G$ 越大誤差越大 → 增益 100 拆成兩級各 10：$10\%\to$ 約 $2\%$</li>
+      <li>擺幅 $V_{EE}\lt V_{out}\lt V_{CC}$；超出＝<b>削平</b>（正常物理限制，不是接錯）</li>
+      <li>單電源（$V_{EE}=0$）：交流訊號要先抬到約 $V_{CC}/2$</li>
+      <li>削平＝<b>頂部平</b>；迴轉率不足＝<b>正弦變三角</b>。兩者不同</li>
+      <li>「運算」來自外部元件：電阻→加減、電容在回授→積分、電容在輸入→微分</li>
+    </ul>
+  </section>
+  </div>
+
+  </div>
+</div>
+
+<!-- ===================== 第二面：CH12 + 跨章 ===================== -->
+<div class="page">
+  <div class="head"><b>電子學實作｜期末小抄（二）CH12 回授・跨章主軸</b><span>整章只有一條式子 $H=\frac{A_1}{1+KA_1}$，其餘都是它的變形</span></div>
+  <div class="cols">
+
+  <div class="col">
+  <section>
+    <h2><span class="n">12</span>回授的骨架</h2>
+    <ul>
+      <li>前饋系統 $A_1$（主要增益）、回授因數 $K=X_F/Y$</li>
+      <li>閉迴路 $H=\dfrac{A_1}{1+KA_1}\xrightarrow[KA_1\gg1]{}\dfrac{1}{K}$</li>
+      <li>迴路增益 $KA_1$＝繞一圈的增益，<b>與切點無關</b>；量法：切開迴路注入 $V_{test}$，$KA_1=-\dfrac{V_N}{V_{test}}$</li>
+      <li>比較誤差 $E=\dfrac{X}{1+KA_1}$ → 這就是 CH8 虛短路的真正來源</li>
+      <li>三個量別混：$H$（使用者關心）、$A_1$（元件性質）、$KA_1$（決定一切好處與代價）</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2><span class="n">13</span>同一個 $1+KA_1$ 的五種面貌</h2>
+    <table>
+      <tr><th>量</th><th>變化</th></tr>
+      <tr><td>增益</td><td>$\div(1+KA_1)$</td></tr>
+      <tr><td>頻寬</td><td>$\times(1+KA_0)$</td></tr>
+      <tr><td>靈敏度 $\frac{\mathrm d\ln H}{\mathrm d\ln A_1}$</td><td>$=\dfrac{1}{1+KA_1}$</td></tr>
+      <tr><td>比較誤差</td><td>$\div(1+KA_1)$</td></tr>
+      <tr><td>阻抗</td><td>$\times$ 或 $\div(1+KA_0)$，見 §15</td></tr>
+    </table>
+    <ul>
+      <li><b>增益頻寬乘積 $A_0\omega_0$ 守恆</b>：回授只能重新分配，不能增加（那是前饋系統的性質）</li>
+      <li>靈敏度例：$KA_1=99$、$A_1$ 變 2 倍（$100\%$）→ $H$ 只變約 $1\%$</li>
+      <li>好處與代價<b>等價交換</b>，不能只拿一邊</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2><span class="n">14</span>線性化（失真下降）</h2>
+    <ul>
+      <li>轉移曲線分段，各段局部增益 $\dfrac{A_i}{1+KA_i}\to\dfrac{1}{K}$ → 原本差很多的斜率被壓成一樣 → 曲線被拉直</li>
+      <li>和增益去敏感化是<b>同一現象的兩種說法</b></li>
+    </ul>
+    <div class="trap"><b>陷阱</b>：不是「回授網路濾掉諧波」，也不是「振幅變小所以沒進非線性區」。</div>
+  </section>
+
+  <section>
+    <h2><span class="n">15</span>四種放大器與理想阻抗</h2>
+    <table>
+      <tr><th>放大器</th><th>$R_{in}$</th><th>$R_{out}$</th></tr>
+      <tr><td>電壓（V→V）</td><td>$\infty$</td><td>$0$</td></tr>
+      <tr><td>電流（I→I）</td><td>$0$</td><td>$\infty$</td></tr>
+      <tr><td>轉阻（I→V）</td><td>$0$</td><td>$0$</td></tr>
+      <tr><td>轉導（V→I）</td><td>$\infty$</td><td>$\infty$</td></tr>
+    </table>
+    <p><b>唯一規則：不要干擾被量／被送的量。</b>讀電壓就要高阻抗（不吸電流），讀電流就要低阻抗。</p>
+  </section>
+  </div>
+
+  <div class="col">
+  <section>
+    <h2><span class="n">16</span>回授組態與阻抗變化</h2>
+    <ul>
+      <li><b>選法</b>：輸出要什麼就<b>感測</b>什麼；輸入是什麼就<b>回送</b>什麼</li>
+      <li>感測電壓 → <b>並聯</b>在輸出端取樣；感測電流 → <b>串聯</b>進輸出迴路。都不能干擾被量的量</li>
+      <li>電壓–電壓：$R_{in}\to R_{in}(1+KA_0)$、$R_{out}\to\dfrac{R_{out}}{1+KA_0}$</li>
+      <li>電壓–電流（轉阻）：$\dfrac{V_{out}}{I_{in}}=\dfrac{R_0}{1+KR_0}$，$R_{in}\to\dfrac{R_{in}}{1+KR_0}$、$R_{out}\to\dfrac{R_{out}}{1+KR_0}$（<b>兩端同向</b>）</li>
+      <li><b>方向不必背</b>：回授把電路推向<b>它所模仿的那個理想放大器</b>（倍率相同，方向由理想目標決定）</li>
+    </ul>
+    <div class="trap"><b>注意</b>：Razavi 的「電壓–電流」是<b>輸出–輸入</b>順序，與 Sedra/Smith 的「串聯–並聯」（輸入–輸出）相反；投影片自己註明此命名非標準。</div>
+  </section>
+
+  <section>
+    <h2><span class="n">17</span>穩定性</h2>
+    <ul>
+      <li><b>Barkhausen</b>（振盪條件，兩條同時成立）：$\lvert KH(j\omega_1)\rvert=1$ <b>且</b> $\angle KH(j\omega_1)=-180°$，等價於 $KH(j\omega_1)=-1$（閉迴路分母為零）</li>
+      <li>$\omega_{GX}$ 增益交越：$\lvert KH\rvert=1$（$0\ \text{dB}$）</li>
+      <li>$\omega_{PX}$ 相位交越：$\angle KH=-180°$</li>
+      <li><b>安全</b>：$\omega_{GX}\lt\omega_{PX}$（增益先掉到 1）；<b>不穩定</b>：$\omega_{PX}\lt\omega_{GX}$</li>
+      <li>$\mathrm{PM}=\angle H(\omega_{GX})+180°$</li>
+      <li>PM 不只決定穩不穩，還決定<b>過衝與安定時間</b>：PM 小 → 振鈴久；PM 大 → 不過衝但慢。實務目標約 $60°$</li>
+      <li><b>單極點系統永遠穩定</b>（相位最多 $-90°$，到不了 $-180°$），不論迴路增益多大</li>
+      <li>$K$ 變大（回授變強）→ $\lvert KH\rvert$ 整條上移 → $\omega_{GX}$ 右移 → <b>PM 變小、更難穩定</b>（$K=1$ 最難，故規格書標 unity-gain stable）</li>
+      <li>三級相同共源、$K=1$：穩定條件 $g_mR_D\lt 2$ → 增益上限低到沒有實用價值，<b>所以多級非補償不可</b></li>
+    </ul>
+    <div class="trap"><b>陷阱</b>：「誤差被壓小」≠「系統變穩」。$1+KA_1$ 越大，靜態精度越好但<b>動態越容易振盪</b>——兩者是對立的。</div>
+  </section>
+
+  <section>
+    <h2><span class="n">18</span>補償</h2>
+    <ul>
+      <li><b>主極點補償</b>：把某一個極點刻意壓到很低，讓增益從那裡單調以 $-20\ \text{dB/dec}$ 下滑，在遇到第二個極點前就掉到 $0\ \text{dB}$ → 系統在 $\omega_{GX}$ 之前「看起來像單極點」。<b>代價是頻寬大減</b></li>
+      <li><b>米勒補償</b>：$C_{eq}=\left[1+g_{m5}(r_{O5}\parallel r_{O6})\right]C_c$，方括號＝跨接那一級的<b>增益加 1</b>。用小電容換大等效值，省晶片面積（電容按面積計價）</li>
+      <li>μA741 上肉眼可見的大電容＝<b>內建補償電容</b>，確保連 $K=1$ 都穩定，代價是 GBW 只有約 $1\ \text{MHz}$</li>
+    </ul>
+  </section>
+  </div>
+
+  <div class="col">
+  <section>
+    <h2><span class="n">19</span>跨章主軸：理想條件何時失效</h2>
+    <table>
+      <tr><th>理想</th><th>失效時</th><th>章</th></tr>
+      <tr><td>$A_0=\infty$</td><td>增益誤差 $G/A_0$</td><td>CH8</td></tr>
+      <tr><td>$R_{in}=\infty$</td><td>偏壓電流→直流偏移</td><td>CH8</td></tr>
+      <tr><td>$R_{out}=0$</td><td>接重負載增益下降</td><td>CH8</td></tr>
+      <tr><td>$\mathrm{BW}=\infty$</td><td>高頻下滑＋迴轉率</td><td>CH8／12</td></tr>
+      <tr><td>回授網路不載入</td><td><b>載入效應</b>：實際偏離 $1/K$</td><td>CH12</td></tr>
+      <tr><td>系統穩定</td><td>過衝、振鈴、振盪</td><td>CH12</td></tr>
+    </table>
+    <p class="muted">最後兩列是 CH8 賒的帳，CH12 才結清：虛短路是誤差被 $1+KA_1$ 壓小的結果，而穩定性是設計出來的、不是免費的。</p>
+  </section>
+
+  <section>
+    <h2><span class="n">20</span>三章其實是同一個故事</h2>
+    <ul>
+      <li><b>CH6</b>：算出一顆元件的參數（$g_m$、$r_o$），而它們隨製程跑 $\pm20\%$</li>
+      <li><b>CH8</b>：用回授把增益換成<b>兩顆電阻的比值</b>（比值準得多）</li>
+      <li><b>CH12</b>：說明這筆交換的匯率是 $1+KA_1$，以及它的代價</li>
+      <li>$1/K$ 之所以可靠：同片晶圓相鄰元件的<b>比值</b>可做到 $1\%$ 內，即使絕對值一起跑掉比值不變</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2><span class="n">21</span>最容易選錯的對照</h2>
+    <table>
+      <tr><th>看起來像</th><th>其實是</th></tr>
+      <tr><td>MOS 飽和區＝不能放大</td><td>可放大（BJT 才相反）</td></tr>
+      <tr><td>虛短路是運放的內建性質</td><td>是<b>電路</b>（負回授）的性質</td></tr>
+      <tr><td>虛接地有接地線</td><td>只有電位，沒有電流路徑</td></tr>
+      <tr><td>反相組態 $R_{in}$ 無限大</td><td>$=R_2$</td></tr>
+      <tr><td>增益大→誤差小</td><td>誤差 $=G/A_0$，<b>增益大誤差大</b></td></tr>
+      <tr><td>$g_m$ 隨過驅動電壓增加</td><td>固定 $I_D$ 時<b>成反比</b></td></tr>
+      <tr><td>$r_o$ 隨 $I_D$ 增加</td><td>$\propto 1/I_D$，<b>減半</b></td></tr>
+      <tr><td>本質增益可用電流換</td><td>與 $I_D$ <b>無關</b></td></tr>
+      <tr><td>回授可提高 GBW</td><td>只能重新分配</td></tr>
+      <tr><td>回授越強越穩</td><td>越強<b>越不穩</b></td></tr>
+      <tr><td>PM&lt;60° 會振盪</td><td>門檻是 PM&gt;0；60° 是品質目標</td></tr>
+      <tr><td>單位增益放大器會放大</td><td>增益 1，改變的是阻抗</td></tr>
+      <tr><td>削平＝迴轉率不足</td><td>削平是頂部平，迴轉率是正弦變三角</td></tr>
+    </table>
+  </section>
+
+  <section>
+    <h2><span class="n">22</span>數值與換算</h2>
+    <ul>
+      <li>電壓增益 $20\log_{10}A$：$\times10\to20\ \text{dB}$；$60\ \text{dB}=1000$、$100\ \text{dB}=10^5$</li>
+      <li>$V_{TH}$ 典型 $300\text{–}500\ \text{mV}$</li>
+      <li>μA741：$A_0\approx 200\ \text{V/mV}$（$106\ \text{dB}$）、主極點約 $5\ \text{Hz}$、GBW 約 $1\ \text{MHz}$、迴轉率約 $0.5\ \text{V/μs}$、$R_L=10\ \text{k}\Omega$ 時擺幅典型 $\pm14\ \text{V}$（最小 $\pm12\ \text{V}$）</li>
+      <li>單極點閉迴路頻寬 $\omega_{-3\text{dB}}=(1+KA_0)\omega_0$</li>
+    </ul>
+  </section>
+  </div>
+
+  </div>
+</div>
+
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    renderMathInElement(document.body, {
+      delimiters: [{ left: "$", right: "$", display: false }],
+      ignoredTags: ["script", "noscript", "style", "textarea", "pre", "code"],
+      throwOnError: false,
+    });
+    document.querySelectorAll(".cols").forEach((c) => {
+      if (c.scrollWidth > c.clientWidth + 2 || c.scrollHeight > c.clientHeight + 2 ||
+          [...c.querySelectorAll(".col")].some(col =>
+            col.scrollHeight > col.clientHeight + 2 || col.scrollWidth > col.clientWidth + 2)) {
+        const m = document.createElement("div");
+        m.className = "ovf";
+        m.textContent = "OVERFLOW";
+        c.parentElement.appendChild(m);
+      }
+    });
+  });
+</script>
+</body>
+</html>
