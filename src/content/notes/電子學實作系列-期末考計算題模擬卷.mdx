@@ -1,0 +1,935 @@
+---
+title: "電子學實作系列：期末考 - 計算題模擬卷"
+description: "期末考是英文出題、五題計算題、可帶 A4 雙面小抄，範圍是期中考之後的 CH6 MOS、CH8 運算放大器、CH12 回授，以及 Lab 3 MOSFET、Lab 4 運放、Lab 5 加法減法三個實驗的理論。三套模擬卷共 15 題，每套五題各涵蓋元件、CS 級、運放組態、加法減法器與回授；題幹中英對照，答案與詳解收在可收合區塊（預設收起，先自己算），每題依答案／核心觀念／公式／常數／計算／檢查／總結／陷阱八段展開。"
+tags: ["電子學實作系列"]
+createdAt: "2026-11-21"
+updatedAt: "2026-11-21"
+---
+
+# 期末考：計算題模擬卷
+
+*Final Exam — Calculation Mock Papers*
+
+> **考試形式**：英文出題、**非選擇題**，比照期中考的五題計算題。**可帶 A4 雙面小抄。**
+>
+> **範圍**：撇除期中考考過的 CH2／CH3／CH4，主要是**期中考之後的實驗課相關理論**——CH6 MOS 電晶體與 CS 放大器、CH8 運算放大器、CH12 回授，對應 [Lab 3 MOSFET](/notes/電子學實作系列第9週-mosfet實驗)（11/7）、[Lab 4 運放](/notes/電子學實作系列第10週-lab4運放放大器實驗)（11/14）、[Lab 5 加法與減法放大器](/notes/電子學實作系列第11週-lab5加法與減法放大器實驗)（11/21）三個實驗。
+>
+> **怎麼用**：三套各五題，**每套當一張考卷計時寫完**，再展開詳解對答案。答案預設收起來，不會不小心瞄到。小抄請用[期末考 A4 雙面小抄](/notes/電子學實作系列-期末考題庫#四份產物)那一份——它就是照這個題型重寫的。
+>
+> 觀念有疑慮時回[選擇題題庫](/notes/電子學實作系列-期末考題庫)（100 題，判斷題型，拿來確認沒有誤解）；公式查[關鍵定義與公式總表](/notes/電子學實作系列-期末考題庫#四份產物)。
+
+## 三套卷的題型分布
+
+每套都照同一個骨架出，這樣三次練下來每個主題各碰三次：
+
+| 題 | 主題 | A 卷 | B 卷 | C 卷 |
+| --- | --- | --- | --- | --- |
+| 1 | MOS 元件本身 | 工作區判斷與 $R_{on}$ | 轉導三式與本質增益 | 通道長度調變對增益的影響 |
+| 2 | Lab 3 的量測 | CS 級工作點與增益 | 由轉移特性求 $V_{TH}$ | LED 開關的導通電阻 |
+| 3 | Lab 4 的運放組態 | 非反相增益與增益誤差 | 反相組態與源阻抗 | 輸出擺幅與削平門檻 |
+| 4 | Lab 5 的加法減法 | 反相加法器與權重設計 | 減法器的電阻失配與 CMRR | 同相加法器與兩路互相負載 |
+| 5 | CH12 回授 | 靈敏度與閉迴路頻寬 | 迴路增益與交越頻率 | 增益頻寬乘積與穩定條件 |
+
+**常用常數**（三套通用，題目沒給就用這組）：uA741 的 $A_0 \approx 200\ \text{V/mV}$（$106\ \text{dB}$）、增益頻寬積約 $1\ \text{MHz}$、迴轉率約 $0.5\ \text{V/μs}$、$R_L = 10\ \text{k}\Omega$ 時輸出擺幅典型 $\pm 14$ V、最小 $\pm 12$ V。電壓增益的分貝換算一律 $20\log_{10}A$。
+
+## 模擬卷 A
+
+| 題 | 主題 | 答案 |
+| --- | --- | --- |
+| A1 | NMOS 工作區、飽和電流、導通電阻 | $180\ \mu\text{A}$／$100\ \mu\text{A}$／$1.67\ \text{k}\Omega$ |
+| A2 | CS 放大器的工作點與小訊號增益 | $360\ \mu\text{A}$、$V_{DS}=1.06$ V、$A_v=-4.8$ |
+| A3 | 非反相放大器的增益誤差 | $3$／$2.991$／擺幅壓縮 |
+| A4 | 反相加法器與權重設計 | $-5$ V 峰值／$5\ \text{k}\Omega$ 與 $20\ \text{k}\Omega$ |
+| A5 | 回授的靈敏度與閉迴路頻寬 | $9.90$／$-0.11\%$／$101\ \text{kHz}$ |
+
+### A1　NMOS 的工作區、飽和電流與導通電阻
+
+> 一顆 NMOS 的 $\mu_n C_{ox} = 100\ \mu\text{A/V}^2$、$\frac{W}{L} = 10$、$V_{TH} = 0.4\ \text{V}$，忽略通道長度調變。(a) 在 $V_{GS} = 1.0\ \text{V}$、$V_{DS} = 1.2\ \text{V}$ 下判斷工作區並求 $I_D$。(b) 同樣的 $V_{GS}$ 但 $V_{DS}$ 降到 $0.2\ \text{V}$，重做一次。(c) 求這顆元件在 $V_{GS} = 1.0\ \text{V}$ 時的深三極管區導通電阻 $R_{on}$，並說明它和 (b) 算出的 $V_{DS}/I_D$ 為什麼不相等。（20 分）
+> :en[An NMOS device has $\mu_n C_{ox} = 100\ \mu\text{A/V}^2$, $\frac{W}{L} = 10$ and $V_{TH} = 0.4\ \text{V}$. Neglect channel-length modulation. (a) Determine the region of operation and calculate $I_D$ for $V_{GS} = 1.0\ \text{V}$ and $V_{DS} = 1.2\ \text{V}$. (b) Repeat for the same $V_{GS}$ with $V_{DS}$ reduced to $0.2\ \text{V}$. (c) Calculate the deep-triode on-resistance $R_{on}$ at $V_{GS} = 1.0\ \text{V}$ and explain why it differs from the ratio $V_{DS}/I_D$ obtained in (b). (20 points)]
+
+:::tip{collapsible title="答案與詳解"}
+**答案**：(a) 飽和區，$I_D = 180\ \mu\text{A}$；(b) 三極管區，$I_D = 100\ \mu\text{A}$；(c) $R_{on} = 1.67\ \text{k}\Omega$，而 (b) 的 $V_{DS}/I_D = 2\ \text{k}\Omega$——$V_{DS} = 0.2$ V 還不夠小，二次項還沒能忽略。
+
+**核心觀念**：工作區判斷永遠是兩步——先看 $V_{GS}$ 與 $V_{TH}$ 決定導不導通，再看 $V_{DS}$ 與過驅動電壓決定在哪一區。$R_{on}$ 是三極管區電流式**丟掉二次項之後**的極限值，所以只有在 $V_{DS} \ll 2(V_{GS}-V_{TH})$ 時才等於實際的 $V_{DS}/I_D$。
+
+**公式**：
+
+- $V_{GS} > V_{TH}$：導通；否則截止
+- $V_{DS} \ge V_{GS}-V_{TH}$：飽和區，$I_D = \frac{1}{2}\mu_nC_{ox}\frac{W}{L}(V_{GS}-V_{TH})^2$
+- $V_{DS} < V_{GS}-V_{TH}$：三極管區，$I_D = \frac{1}{2}\mu_nC_{ox}\frac{W}{L}\left[2(V_{GS}-V_{TH})V_{DS}-V_{DS}^2\right]$
+- $R_{on} = \dfrac{1}{\mu_nC_{ox}\frac{W}{L}(V_{GS}-V_{TH})}$：深三極管區，成立條件 $V_{DS} \ll 2(V_{GS}-V_{TH})$
+
+**常數**：
+
+- 題目給定：$\mu_nC_{ox} = 100\ \mu\text{A/V}^2$、$\frac{W}{L} = 10$、$V_{TH} = 0.4\ \text{V}$
+- 合併成一個常數比較好算：$\mu_nC_{ox}\frac{W}{L} = 1.0\ \text{mA/V}^2$
+- 物理常數：無
+
+**計算**：先算過驅動電壓，後面三小題都用它。
+
+$$
+V_{ov} = V_{GS}-V_{TH} = 1.0 - 0.4 = 0.6\ \text{V}
+$$
+
+(a) $V_{DS} = 1.2\ \text{V} \ge V_{ov} = 0.6\ \text{V}$，所以是飽和區：
+
+$$
+I_D = \tfrac{1}{2}(1.0\ \text{mA/V}^2)(0.6\ \text{V})^2 = 0.18\ \text{mA} = 180\ \mu\text{A}
+$$
+
+(b) $V_{DS} = 0.2\ \text{V} < V_{ov} = 0.6\ \text{V}$，改用三極管區的式子：
+
+$$
+\begin{aligned}
+I_D &= \tfrac{1}{2}(1.0\ \text{mA/V}^2)\left[2(0.6)(0.2)-(0.2)^2\right]\\
+&= \tfrac{1}{2}(1.0\ \text{mA/V}^2)(0.24-0.04)\ \text{V}^2 = 0.10\ \text{mA} = 100\ \mu\text{A}
+\end{aligned}
+$$
+
+(c) 導通電阻用深三極管區的式子：
+
+$$
+R_{on} = \frac{1}{(1.0\ \text{mA/V}^2)(0.6\ \text{V})} = 1.67\ \text{k}\Omega
+$$
+
+而 (b) 實際的比值是
+
+$$
+\frac{V_{DS}}{I_D} = \frac{0.2\ \text{V}}{0.10\ \text{mA}} = 2.0\ \text{k}\Omega
+$$
+
+兩者差 20%，因為 $R_{on}$ 的推導把 $-V_{DS}^2$ 丟掉了。這一題的 $V_{DS} = 0.2$ V 相對於 $2V_{ov} = 1.2$ V 只小六倍，二次項仍佔方括號裡的 $0.04/0.24 \approx 17\%$，所以實際電阻比理想的大。
+
+**檢查**：把 $V_{DS}$ 再降一個數量級到 $0.02$ V 重算，$I_D = \frac{1}{2}(1.0\text{m})(0.024-0.0004) = 11.8\ \mu\text{A}$，$V_{DS}/I_D = 1.70\ \text{k}\Omega$——確實往 $1.67\ \text{k}\Omega$ 收斂。這驗證了 $R_{on}$ 是 $V_{DS}\to 0$ 的極限值。
+
+**總結**：飽和區電流只看 $V_{GS}$，三極管區才由 $V_{DS}$ 決定；$R_{on}$ 是三極管區在原點附近的切線斜率倒數。
+
+**陷阱**：看到 $V_{DS} = 1.2 > V_{GS} = 1.0$ 就說飽和、看到 $V_{DS} = 0.2 < V_{TH} = 0.4$ 就說截止——兩個都錯。比的對象是**過驅動電壓**，不是 $V_{GS}$ 也不是 $V_{TH}$。
+:::
+
+### A2　CS 放大器的工作點與小訊號增益
+
+> 下列共源級放大器：$V_{DD} = 2.5\ \text{V}$、$R_D = 4\ \text{k}\Omega$，NMOS 的 $\mu_n C_{ox} = 100\ \mu\text{A/V}^2$、$\frac{W}{L} = 20$、$V_{TH} = 0.5\ \text{V}$，閘極直接接 $1.1\ \text{V}$ 的直流電壓源、源極接地，忽略通道長度調變。(a) 求偏壓電流 $I_D$ 與汲極電位 $V_{DS}$，並確認元件在飽和區。(b) 求 $g_m$ 與小訊號電壓增益。(c) 若閘極電壓升高 $10\ \text{mV}$，汲極電位變化多少？（20 分）
+> :en[Consider a common-source stage with $V_{DD} = 2.5\ \text{V}$ and $R_D = 4\ \text{k}\Omega$. The NMOS has $\mu_n C_{ox} = 100\ \mu\text{A/V}^2$, $\frac{W}{L} = 20$ and $V_{TH} = 0.5\ \text{V}$; its gate is tied to a $1.1\ \text{V}$ DC source and its source is grounded. Neglect channel-length modulation. (a) Calculate the bias current $I_D$ and the drain voltage $V_{DS}$, and verify that the device operates in saturation. (b) Determine $g_m$ and the small-signal voltage gain. (c) If the gate voltage increases by $10\ \text{mV}$, what is the change in the drain voltage? (20 points)]
+
+:::tip{collapsible title="答案與詳解"}
+**答案**：(a) $I_D = 360\ \mu\text{A}$、$V_{DS} = 1.06\ \text{V}$，$V_{DS} > V_{ov} = 0.6$ V 確實在飽和區；(b) $g_m = 1.2\ \text{mA/V}$、$A_v = -4.8$；(c) 汲極電位下降 $48\ \text{mV}$。
+
+**核心觀念**：這是 Lab 3 第二部分與投影片 Example 6-6 的標準流程——**先用大訊號式子定工作點，再在那個工作點上算小訊號參數**。兩步不能混：偏壓用平方律，增益用 $g_m$。
+
+**公式**：
+
+- 飽和區電流：$I_D = \frac{1}{2}\mu_nC_{ox}\frac{W}{L}(V_{GS}-V_{TH})^2$
+- 汲極電位（KVL）：$V_{DS} = V_{DD} - I_D R_D$
+- 飽和區檢查：$V_{DS} \ge V_{GS}-V_{TH}$
+- 轉導：$g_m = \mu_nC_{ox}\frac{W}{L}(V_{GS}-V_{TH}) = \dfrac{2I_D}{V_{GS}-V_{TH}}$
+- 電阻負載的 CS 增益（忽略 $r_o$）：$A_v = -g_m R_D$
+
+**常數**：
+
+- 題目給定：$V_{DD} = 2.5\ \text{V}$、$R_D = 4\ \text{k}\Omega$、$\frac{W}{L} = 20$、$V_{TH} = 0.5\ \text{V}$、$V_{GS} = 1.1\ \text{V}$
+- 合併：$\mu_nC_{ox}\frac{W}{L} = 2.0\ \text{mA/V}^2$
+- 物理常數：無
+
+**計算**：閘極接固定直流源、源極接地，所以 $V_{GS}$ 就是那 $1.1$ V，不必解迴路。
+
+$$
+\begin{aligned}
+V_{ov} &= 1.1 - 0.5 = 0.6\ \text{V}\\[4pt]
+I_D &= \tfrac{1}{2}(2.0\ \text{mA/V}^2)(0.6\ \text{V})^2 = 0.36\ \text{mA}\\[4pt]
+V_{DS} &= 2.5 - (0.36\ \text{mA})(4\ \text{k}\Omega) = 2.5 - 1.44 = 1.06\ \text{V}
+\end{aligned}
+$$
+
+飽和區檢查：$V_{DS} = 1.06\ \text{V} \ge V_{ov} = 0.6\ \text{V}$，成立——前面用平方律算出來的 $I_D$ 才有效。
+
+(b) 轉導與增益：
+
+$$
+\begin{aligned}
+g_m &= (2.0\ \text{mA/V}^2)(0.6\ \text{V}) = 1.2\ \text{mA/V}\\[4pt]
+A_v &= -g_m R_D = -(1.2\ \text{mA/V})(4\ \text{k}\Omega) = -4.8
+\end{aligned}
+$$
+
+(c) 小訊號增益就是「輸出變化除以輸入變化」：
+
+$$
+\Delta V_{DS} = A_v \cdot \Delta V_{GS} = (-4.8)(10\ \text{mV}) = -48\ \text{mV}
+$$
+
+**檢查**：用另一條轉導公式驗算，$g_m = \dfrac{2I_D}{V_{ov}} = \dfrac{2(0.36\ \text{mA})}{0.6\ \text{V}} = 1.2\ \text{mA/V}$，與上面相同。另外 $48$ mV 的擺動相對於 $V_{DS} = 1.06$ V 到飽和邊界 $0.6$ V 的 $0.46$ V 餘裕來說很小，線性近似站得住。
+
+**總結**：CS 級的增益就是「轉導乘上汲極看到的電阻」，而轉導由工作點決定——所以偏壓算錯，增益一定跟著錯。
+
+**陷阱**：算完 $I_D$ 就直接套 $A_v = -g_mR_D$ 而不檢查飽和區。若 $R_D$ 改成 $6\ \text{k}\Omega$，$V_{DS} = 2.5-2.16 = 0.34\ \text{V} < V_{ov}$，元件已掉進三極管區，平方律與 $g_m$ 都不再適用，整題要重做。
+:::
+
+### A3　非反相放大器的增益誤差
+
+> Lab 4 的實驗一是非反相放大器，$R_2 = 100\ \text{k}\Omega$ 從反相端接地、$R_1 = 200\ \text{k}\Omega$ 從輸出接回反相端。(a) 求理想閉迴路增益。(b) 若運放的開路增益只有 $A_0 = 1000$，求增益誤差與實際的閉迴路增益。(c) 實驗當天在 $\pm 15$ V 供電下量到輸入 $8.6\ \text{V}_{pp}$、輸出 $24.7\ \text{V}_{pp}$，實測增益 $2.87$，比 (b) 低約 $4\%$。說明這個差距為什麼不可能由有限的 $A_0$ 解釋，並提出一個更合理的原因。（20 分）
+> :en[Experiment 1 of Lab 4 is a noninverting amplifier with $R_2 = 100\ \text{k}\Omega$ from the inverting input to ground and $R_1 = 200\ \text{k}\Omega$ from the output back to the inverting input. (a) Calculate the ideal closed-loop gain. (b) If the op amp has a finite open-loop gain of $A_0 = 1000$, calculate the gain error and the actual closed-loop gain. (c) Measurements taken with $\pm 15$ V supplies gave an $8.6\ \text{V}_{pp}$ input and a $24.7\ \text{V}_{pp}$ output, i.e. a measured gain of $2.87$, about $4\%$ below the result of (b). Explain why finite $A_0$ cannot account for this discrepancy and propose a more plausible cause. (20 points)]
+
+:::tip{collapsible title="答案與詳解"}
+**答案**：(a) $A_v = 3$；(b) 增益誤差 $0.3\%$、實際增益 $2.991$；(c) 有限 $A_0$ 只能解釋 $0.3\%$，差了一個數量級。更合理的原因是**輸出已逼近擺幅上限**——$24.7\ \text{V}_{pp}$ 相當於 $\pm 12.35$ V，而 uA741 在 $R_L = 10\ \text{k}\Omega$ 下的輸出擺幅最小規格只有 $\pm 12$ V，接近上限時增益會先軟性壓縮，波形還看不出平頂。
+
+**核心觀念**：增益誤差 $\dfrac{G}{A_0}$ 衡量的是**有限開路增益**造成的偏差，它和閉迴路增益成正比。這一題真正在考的是量級判斷：算出 $0.3\%$ 之後要認得「實測差 $4\%$ 不是這一項造成的」，再去找別的機制。
+
+**公式**：
+
+- 理想非反相增益：$G = 1 + \dfrac{R_1}{R_2}$（$R_2$ 是接地那一顆）
+- 增益誤差：$\text{gain error} = \dfrac{G}{A_0}$
+- 有限 $A_0$ 的實際增益：$A_v = \dfrac{G}{1+G/A_0}$
+- 峰值與峰對峰值：$V_{peak} = \dfrac{V_{pp}}{2}$
+
+**常數**：
+
+- 題目給定：$R_1 = 200\ \text{k}\Omega$、$R_2 = 100\ \text{k}\Omega$、$A_0 = 1000$
+- 規格書：uA741 在 $R_L = 10\ \text{k}\Omega$ 下輸出擺幅典型 $\pm 14$ V、**最小 $\pm 12$ V**
+- 物理常數：無
+
+**計算**：
+
+$$
+\begin{aligned}
+G &= 1 + \frac{200\ \text{k}\Omega}{100\ \text{k}\Omega} = 3\\[4pt]
+\text{gain error} &= \frac{G}{A_0} = \frac{3}{1000} = 0.3\%\\[4pt]
+A_v &= \frac{3}{1+3/1000} = \frac{3}{1.003} = 2.991
+\end{aligned}
+$$
+
+(c) 先確認量級對不起來。實測 $2.87$ 相對於 $2.991$ 的偏差是
+
+$$
+\frac{2.87-2.991}{2.991} = -4.0\%
+$$
+
+要讓有限 $A_0$ 造成 $4\%$ 的誤差，需要 $\dfrac{G}{A_0} = 0.04$，也就是 $A_0 = 75$——uA741 的開路增益是 $200\ \text{V/mV}$，差了三個數量級，不可能。
+
+再看輸出振幅：
+
+$$
+V_{out,\,peak} = \frac{24.7\ \text{V}_{pp}}{2} = 12.35\ \text{V}
+$$
+
+這已經踩在規格書的最小擺幅 $\pm 12$ V 之上。運放接近擺幅上限時增益不是突然歸零，而是先軟性地被壓低，所以波形仍是乾淨的正弦波、但斜率變小。
+
+**檢查**：用同一天的反相組態交叉驗證。反相實測 $8.6 \to 16.7\ \text{V}_{pp}$，增益 $1.942$；由它反推電阻比 $\frac{R_1}{R_2} = 1.942$，則非反相「應該」量到 $1+1.942 = 2.942$ 而不是 $2.872$。**兩組讀值用同一對電阻解釋不通**，所以差額來自組態之間不同的東西——反相組態輸出只到 $\pm 8.35$ V，離擺幅上限還遠，誤差也確實小得多（$-2.9\%$ 對 $-4.3\%$）。方向一致。
+
+**總結**：增益誤差公式只負責有限開路增益那一項；量到的偏差比它大一個數量級時，要去看擺幅、源阻抗或電阻公差。
+
+**陷阱**：把所有實測偏差都歸給「運放不理想」而不分項。這一題若只寫「因為 $A_0$ 有限」就等於沒答——$0.3\%$ 與 $4\%$ 差十倍以上。順帶一提，電阻公差也解釋不了，因為 (c) 的檢查段已經把電阻比扣掉了。
+:::
+
+### A4　反相加法器與權重設計
+
+> Lab 5 的實驗一是反相加法器，兩路輸入各經一顆 $10\ \text{k}\Omega$ 進反相端，回授電阻 $R_f = 10\ \text{k}\Omega$，非反相端接地。兩路訊號同頻率同相位，$V_{in1}$ 為 $2\ \text{V}$ 峰值、$V_{in2}$ 為 $3\ \text{V}$ 峰值。(a) 求輸出的峰值與峰對峰值，並說明相位關係。(b) 現在要改成 $V_{out} = -(2V_{in1} + 0.5V_{in2})$，回授電阻仍固定 $10\ \text{k}\Omega$，求兩顆輸入電阻。(c) 以原本的輸入振幅檢查 (b) 的輸出會不會被 $\pm 15$ V 供電削平。（20 分）
+> :en[Experiment 1 of Lab 5 is an inverting summing amplifier in which each of two inputs drives the inverting node through a $10\ \text{k}\Omega$ resistor, with a feedback resistor $R_f = 10\ \text{k}\Omega$ and the noninverting input grounded. The two sources are at the same frequency and in phase, with $V_{in1} = 2\ \text{V}$ peak and $V_{in2} = 3\ \text{V}$ peak. (a) Calculate the peak and peak-to-peak output and state the phase relationship. (b) The circuit is to be redesigned for $V_{out} = -(2V_{in1} + 0.5V_{in2})$ while keeping the feedback resistor at $10\ \text{k}\Omega$. Determine the two input resistors. (c) Using the original input amplitudes, check whether the output of (b) would be clipped by the $\pm 15$ V supplies. (20 points)]
+
+:::tip{collapsible title="答案與詳解"}
+**答案**：(a) $-5$ V 峰值、$10\ \text{V}_{pp}$，與兩路輸入反相；(b) $R_1 = 5\ \text{k}\Omega$、$R_2 = 20\ \text{k}\Omega$；(c) 輸出峰值 $5.5$ V，遠低於擺幅上限，不會削平。
+
+**核心觀念**：反相加法器的「加法」發生在**虛接地點的電流相加**。每一路的電流只由自己那一路決定（因為另一端被釘在 0 V），所以權重彼此獨立，可以一路一路設計。
+
+**公式**：
+
+- 反相加法器：$V_{out} = -\displaystyle\sum_k \frac{R_f}{R_k}V_k$
+- 單路權重：$w_k = \dfrac{R_f}{R_k} \Longrightarrow R_k = \dfrac{R_f}{w_k}$
+- 擺幅限制：$|V_{out,\,peak}| < |V_{CC}| - $ 飽和壓降
+
+**常數**：
+
+- 題目給定：$R_f = 10\ \text{k}\Omega$、$R_1 = R_2 = 10\ \text{k}\Omega$（(a) 小題）、$V_{in1} = 2$ V 峰值、$V_{in2} = 3$ V 峰值
+- 規格書：uA741 在 $\pm 15$ V 下輸出擺幅典型 $\pm 14$ V、最小 $\pm 12$ V
+- 物理常數：無
+
+**計算**：(a) 三顆電阻相等，所有權重都是 1：
+
+$$
+V_{out} = -\left(\frac{10}{10}V_{in1} + \frac{10}{10}V_{in2}\right) = -(2+3) = -5\ \text{V 峰值}
+$$
+
+兩路同相位，所以峰值直接相加；峰對峰值是 $2 \times 5 = 10\ \text{V}_{pp}$。負號代表輸出與兩路輸入都反相。
+
+(b) 權重與輸入電阻成反比，逐路解：
+
+$$
+\begin{aligned}
+\frac{R_f}{R_1} = 2 &\Longrightarrow R_1 = \frac{10\ \text{k}\Omega}{2} = 5\ \text{k}\Omega\\[4pt]
+\frac{R_f}{R_2} = 0.5 &\Longrightarrow R_2 = \frac{10\ \text{k}\Omega}{0.5} = 20\ \text{k}\Omega
+\end{aligned}
+$$
+
+(c) 代回原本的振幅：
+
+$$
+|V_{out,\,peak}| = 2(2\ \text{V}) + 0.5(3\ \text{V}) = 5.5\ \text{V}
+$$
+
+$5.5\ \text{V} \ll 12\ \text{V}$，有很大的餘裕，不會削平。
+
+**檢查**：把 (b) 的電阻代回原始式子驗算權重——$\frac{10}{5} = 2$、$\frac{10}{20} = 0.5$，與題目要求相符。另外做個極端檢查：兩路若都設成 $5$ V 峰值，輸出會是 $2(5)+0.5(5) = 12.5$ V，就踩到最小擺幅了——所以這個設計的輸入上限不高。
+
+**總結**：權重由 $R_f/R_k$ 決定，要大權重就用小電阻；回授電阻固定時，一路的改動不影響另一路。
+
+**陷阱**：把「權重 2」理解成「電阻乘 2」。權重在分子、輸入電阻在分母，方向相反。另一個是 (a) 忘了兩路同相位這個前提——若兩路反相，輸出會是 $-(2-3) = +1$ V 峰值，差很多，所以 Lab 5 才要求先開 Channel Coupling 確認兩路過零點對齊。
+:::
+
+### A5　回授的靈敏度與閉迴路頻寬
+
+> 一個負回授系統的前饋增益 $A_1 = 1000$、回授因數 $K = 0.1$，前饋放大器的開迴路 $-3\ \text{dB}$ 頻寬為 $1\ \text{kHz}$。(a) 求閉迴路增益。(b) 若溫度變化使 $A_1$ 下降 $10\%$，閉迴路增益改變多少？與靈敏度公式的預測比較。(c) 求閉迴路頻寬，並用增益頻寬乘積檢查。（20 分）
+> :en[A negative-feedback system has a forward gain $A_1 = 1000$ and a feedback factor $K = 0.1$; the forward amplifier has an open-loop $-3\ \text{dB}$ bandwidth of $1\ \text{kHz}$. (a) Calculate the closed-loop gain. (b) If a temperature change reduces $A_1$ by $10\%$, by how much does the closed-loop gain change? Compare with the prediction of the sensitivity formula. (c) Calculate the closed-loop bandwidth and verify it using the gain-bandwidth product. (20 points)]
+
+:::tip{collapsible title="答案與詳解"}
+**答案**：(a) $H = 9.90$；(b) 閉迴路增益只下降 $0.11\%$，與靈敏度預測的 $0.099\%$ 吻合；(c) 閉迴路頻寬 $101\ \text{kHz}$，與 $A_0\omega_0 = 1\ \text{MHz}$ 守恆一致。
+
+**核心觀念**：整章只有 $H = \dfrac{A_1}{1+KA_1}$ 一條式子，$1+KA_1$ 是**所有好處與代價共用的同一個倍率**——增益被它除、頻寬被它乘、靈敏度是它的倒數。
+
+**公式**：
+
+- 閉迴路增益：$H = \dfrac{A_1}{1+KA_1}$
+- 靈敏度：$\dfrac{\mathrm{d}\ln H}{\mathrm{d}\ln A_1} = \dfrac{1}{1+KA_1}$
+- 閉迴路頻寬：$\omega_{-3\text{dB}} = (1+KA_0)\,\omega_0$
+- 增益頻寬乘積守恆：$H \times \omega_{-3\text{dB}} = A_0 \times \omega_0$
+
+**常數**：
+
+- 題目給定：$A_1 = 1000$、$K = 0.1$、$f_0 = 1\ \text{kHz}$
+- 迴路增益 $KA_1 = 100$，所以 $1+KA_1 = 101$
+- 物理常數：無
+
+**計算**：(a)
+
+$$
+H = \frac{1000}{1+(0.1)(1000)} = \frac{1000}{101} = 9.901
+$$
+
+(b) $A_1$ 降到 $900$，重算一次再比較：
+
+$$
+\begin{aligned}
+H' &= \frac{900}{1+(0.1)(900)} = \frac{900}{91} = 9.890\\[4pt]
+\frac{H'-H}{H} &= \frac{9.890-9.901}{9.901} = -0.11\%
+\end{aligned}
+$$
+
+靈敏度公式的預測是
+
+$$
+\frac{\Delta H}{H} \approx \frac{1}{1+KA_1}\cdot\frac{\Delta A_1}{A_1} = \frac{1}{101}(-10\%) = -0.099\%
+$$
+
+兩者吻合（$-0.11\%$ 對 $-0.099\%$），差異來自 $10\%$ 不算無窮小、$1+KA_1$ 本身也跟著變。
+
+(c) 頻寬被同一個因子放大：
+
+$$
+f_{-3\text{dB}} = (1+KA_1)\,f_0 = 101 \times 1\ \text{kHz} = 101\ \text{kHz}
+$$
+
+**檢查**：增益頻寬乘積兩邊算一次。開迴路 $1000 \times 1\ \text{kHz} = 1\ \text{MHz}$；閉迴路 $9.901 \times 101\ \text{kHz} = 1.00\ \text{MHz}$。相同，守恆成立。
+
+**總結**：回授把 $A_1$ 的變動壓縮 $1+KA_1$ 倍，同時把頻寬放大同樣倍數——**這是同一筆交易的兩面，不能只拿一邊**。
+
+**陷阱**：(b) 用「$A_1$ 掉 $10\%$，所以 $H$ 也掉 $10\%$」。那正是沒有回授時的行為；回授的價值就在於把這個 $10\%$ 壓成 $0.1\%$。另一個是把靈敏度當成精確等式——它是微分關係，變動大時只能當估計。
+:::
+
+## 模擬卷 B
+
+| 題 | 主題 | 答案 |
+| --- | --- | --- |
+| B1 | 轉導三式、輸出電阻與本質增益 | $4\ \text{mA/V}$、$40\ \text{k}\Omega$、$160$ |
+| B2 | 由轉移特性的兩點求 $V_{TH}$ | $V_{TH}=0.5$ V、$800\ \mu\text{A/V}^2$ |
+| B3 | 反相組態與源阻抗 | $4 \to 3.33$；非反相不受影響 |
+| B4 | 減法器的電阻失配與 CMRR | $25\ \text{mV}$、$46\ \text{dB}$ |
+| B5 | 迴路增益與增益交越頻率 | $1000$、$99.9$、$10\ \text{kHz}$ |
+
+### B1　轉導三式、輸出電阻與本質增益
+
+> 一顆工作在飽和區的 NMOS，偏壓電流 $I_D = 0.5\ \text{mA}$、過驅動電壓 $V_{GS}-V_{TH} = 0.25\ \text{V}$、通道長度調變係數 $\lambda = 0.05\ \text{V}^{-1}$。(a) 求 $g_m$ 與 $r_o$。(b) 求本質增益，並用另一條公式驗算。(c) 保持 $\frac{W}{L}$ 不變、把偏壓電流加倍到 $1\ \text{mA}$，重新計算 $g_m$、$r_o$ 與本質增益，並說明本質增益為什麼變小。（20 分）
+> :en[An NMOS transistor operating in saturation is biased at $I_D = 0.5\ \text{mA}$ with an overdrive voltage of $0.25\ \text{V}$ and a channel-length modulation coefficient $\lambda = 0.05\ \text{V}^{-1}$. (a) Calculate $g_m$ and $r_o$. (b) Determine the intrinsic gain and verify it with an alternative expression. (c) With $\frac{W}{L}$ held constant, the bias current is doubled to $1\ \text{mA}$. Recalculate $g_m$, $r_o$ and the intrinsic gain, and explain why the intrinsic gain decreases. (20 points)]
+
+:::tip{collapsible title="答案與詳解"}
+**答案**：(a) $g_m = 4\ \text{mA/V}$、$r_o = 40\ \text{k}\Omega$；(b) $g_mr_o = 160$；(c) $g_m = 5.66\ \text{mA/V}$、$r_o = 20\ \text{k}\Omega$、$g_mr_o = 113$——因為固定 $\frac{W}{L}$ 時 $g_m$ 只按 $\sqrt{I_D}$ 上升，$r_o$ 卻按 $1/I_D$ 下降，乘起來是 $1/\sqrt{I_D}$。
+
+**核心觀念**：轉導有三個等價寫法，**挑哪一個要看題目固定了什麼**。這一題 (a) 固定電流與過驅動電壓，用 $2I_D/V_{ov}$ 最快；(c) 固定幾何尺寸改電流，就得先算新的過驅動電壓。
+
+**公式**：
+
+- 轉導三式：$g_m = \mu_nC_{ox}\frac{W}{L}(V_{GS}-V_{TH}) = \sqrt{2\mu_nC_{ox}\frac{W}{L}I_D} = \dfrac{2I_D}{V_{GS}-V_{TH}}$
+- 輸出電阻：$r_o \approx \dfrac{1}{\lambda I_D}$
+- 本質增益：$g_mr_o = \dfrac{2}{\lambda(V_{GS}-V_{TH})}$
+- 固定 $\frac{W}{L}$ 時：$I_D \propto V_{ov}^2 \Longrightarrow V_{ov} \propto \sqrt{I_D}$
+
+**常數**：
+
+- 題目給定：$I_D = 0.5\ \text{mA}$、$V_{ov} = 0.25\ \text{V}$、$\lambda = 0.05\ \text{V}^{-1}$
+- 物理常數：無
+
+**計算**：(a)
+
+$$
+\begin{aligned}
+g_m &= \frac{2I_D}{V_{ov}} = \frac{2(0.5\ \text{mA})}{0.25\ \text{V}} = 4\ \text{mA/V}\\[4pt]
+r_o &\approx \frac{1}{\lambda I_D} = \frac{1}{(0.05\ \text{V}^{-1})(0.5\ \text{mA})} = 40\ \text{k}\Omega
+\end{aligned}
+$$
+
+(b)
+
+$$
+g_mr_o = (4\ \text{mA/V})(40\ \text{k}\Omega) = 160
+$$
+
+用另一條公式驗算：$\dfrac{2}{\lambda V_{ov}} = \dfrac{2}{(0.05)(0.25)} = 160$，相同。
+
+(c) 固定 $\frac{W}{L}$、電流加倍，過驅動電壓按平方根放大：
+
+$$
+\begin{aligned}
+V_{ov}' &= 0.25\sqrt{2} = 0.354\ \text{V}\\[4pt]
+g_m' &= \frac{2(1\ \text{mA})}{0.354\ \text{V}} = 5.66\ \text{mA/V} = 4\sqrt{2}\ \text{mA/V}\\[4pt]
+r_o' &= \frac{1}{(0.05)(1\ \text{mA})} = 20\ \text{k}\Omega\\[4pt]
+g_m'r_o' &= (5.66\ \text{mA/V})(20\ \text{k}\Omega) = 113
+\end{aligned}
+$$
+
+$g_m$ 上升 $\sqrt{2}$ 倍、$r_o$ 下降 2 倍，淨效果是本質增益變成原來的 $1/\sqrt{2}$：$160/\sqrt{2} = 113$。
+
+**檢查**：用本質增益的第二式直接算，$\dfrac{2}{(0.05)(0.354)} = 113$，與逐項相乘的結果一致。
+
+**總結**：多灌電流不會換到更高的單級增益——$g_m$ 的漲幅永遠追不上 $r_o$ 的跌幅。想提高本質增益只能降低過驅動電壓（把元件做寬）或改用 $\lambda$ 更小的長通道元件。
+
+**陷阱**：看到「本質增益 $=\frac{2}{\lambda V_{ov}}$ 與 $I_D$ 無關」就以為 (c) 的答案是 160。那條公式的「無關」是指**固定過驅動電壓**時；這一題固定的是 $\frac{W}{L}$，所以 $V_{ov}$ 跟著電流變了。**先問固定什麼，再挑公式。**
+:::
+
+### B2　由轉移特性的兩點求臨界電壓
+
+> Lab 3 的實驗二量測 NMOS 的 $I_D$–$V_{GS}$ 轉移特性，$V_{DS}$ 固定在足以維持飽和的值。量到兩點：$V_{GS} = 1.0\ \text{V}$ 時 $I_D = 0.10\ \text{mA}$，$V_{GS} = 1.5\ \text{V}$ 時 $I_D = 0.40\ \text{mA}$。忽略通道長度調變。(a) 求臨界電壓 $V_{TH}$。(b) 求 $\mu_n C_{ox}\frac{W}{L}$。(c) 預測 $V_{GS} = 1.25\ \text{V}$ 時的汲極電流。（20 分）
+> :en[Experiment 2 of Lab 3 measures the $I_D$–$V_{GS}$ transfer characteristic of an NMOS with $V_{DS}$ held high enough to keep the device in saturation. Two points are recorded: $I_D = 0.10\ \text{mA}$ at $V_{GS} = 1.0\ \text{V}$, and $I_D = 0.40\ \text{mA}$ at $V_{GS} = 1.5\ \text{V}$. Neglect channel-length modulation. (a) Determine the threshold voltage $V_{TH}$. (b) Determine $\mu_n C_{ox}\frac{W}{L}$. (c) Predict the drain current at $V_{GS} = 1.25\ \text{V}$. (20 points)]
+
+:::tip{collapsible title="答案與詳解"}
+**答案**：(a) $V_{TH} = 0.5\ \text{V}$；(b) $\mu_nC_{ox}\frac{W}{L} = 800\ \mu\text{A/V}^2$；(c) $I_D = 225\ \mu\text{A}$。
+
+**核心觀念**：飽和區是平方律，所以 **$\sqrt{I_D}$ 對 $V_{GS}$ 才是直線**，而那條直線與橫軸的交點就是 $V_{TH}$。這正是 Lab 3 要畫 $\sqrt{I_D}$–$V_{GS}$ 圖的理由——直接看 $I_D$–$V_{GS}$ 的彎曲曲線量不出臨界電壓。
+
+**公式**：
+
+- 飽和區電流：$I_D = \frac{1}{2}\mu_nC_{ox}\frac{W}{L}(V_{GS}-V_{TH})^2$
+- 開平方後線性化：$\sqrt{I_D} = \sqrt{\tfrac{1}{2}\mu_nC_{ox}\tfrac{W}{L}}\,(V_{GS}-V_{TH})$
+- 兩點比值消去未知的製程參數：$\dfrac{\sqrt{I_{D2}}}{\sqrt{I_{D1}}} = \dfrac{V_{GS2}-V_{TH}}{V_{GS1}-V_{TH}}$
+
+**常數**：
+
+- 題目給定：$(1.0\ \text{V},\ 0.10\ \text{mA})$ 與 $(1.5\ \text{V},\ 0.40\ \text{mA})$
+- 物理常數：無
+- 未知數兩個（$V_{TH}$ 與 $\mu_nC_{ox}\frac{W}{L}$），所以剛好需要兩點
+
+**計算**：(a) 先取比值把製程參數消掉。電流是 4 倍，開根號後是 2 倍：
+
+$$
+\frac{1.5-V_{TH}}{1.0-V_{TH}} = \sqrt{\frac{0.40}{0.10}} = 2
+$$
+
+解這條一次方程：
+
+$$
+\begin{aligned}
+1.5 - V_{TH} &= 2(1.0-V_{TH})\\
+1.5 - V_{TH} &= 2 - 2V_{TH}\\
+V_{TH} &= 0.5\ \text{V}
+\end{aligned}
+$$
+
+(b) 把 $V_{TH}$ 代回任一點。用第一點（$V_{ov} = 0.5$ V）：
+
+$$
+0.10\ \text{mA} = \tfrac{1}{2}\mu_nC_{ox}\tfrac{W}{L}(0.5\ \text{V})^2
+\Longrightarrow
+\mu_nC_{ox}\tfrac{W}{L} = \frac{2(0.10\ \text{mA})}{0.25\ \text{V}^2} = 0.8\ \text{mA/V}^2
+$$
+
+(c) 用求得的兩個參數外推，$V_{ov} = 1.25-0.5 = 0.75$ V：
+
+$$
+I_D = \tfrac{1}{2}(0.8\ \text{mA/V}^2)(0.75\ \text{V})^2 = 0.225\ \text{mA} = 225\ \mu\text{A}
+$$
+
+**檢查**：把 (b) 的參數代回第二點驗算——$\frac{1}{2}(0.8)(1.5-0.5)^2 = 0.40$ mA，與量到的相同，表示兩個參數同時滿足兩個點。另外 (c) 的 $V_{GS} = 1.25$ V 落在兩個量測點中間，電流 $225\ \mu\text{A}$ 也落在 $100$ 與 $400\ \mu\text{A}$ 之間但**偏下**——符合平方律往上凹的形狀（線性內插會給 $250\ \mu\text{A}$，偏高）。
+
+**總結**：兩個未知數、兩個量測點，取比值先消掉製程參數是最省事的解法。
+
+**陷阱**：對 $I_D$ 直接線性內插求 $V_{TH}$（會得到 $V_{TH} = 0.833$ V，錯）。平方律的圖是拋物線，只有開根號之後才能用直線外推。這也是 Lab 3 的記錄表要同時留 $I_D$ 與 $\sqrt{I_D}$ 兩欄的原因。
+:::
+
+### B3　反相組態與訊號源內阻
+
+> 一個反相放大器的輸入電阻 $R_2 = 10\ \text{k}\Omega$、回授電阻 $R_1 = 40\ \text{k}\Omega$，運放視為理想。(a) 求理想的增益大小。(b) 訊號源有 $2\ \text{k}\Omega$ 的輸出內阻，求實際量到的增益大小。(c) 同一個訊號源改接成增益大小相同的非反相組態，量到的增益會受內阻影響嗎？說明理由。（20 分）
+> :en[An inverting amplifier uses an input resistor $R_2 = 10\ \text{k}\Omega$ and a feedback resistor $R_1 = 40\ \text{k}\Omega$ with an ideal op amp. (a) Determine the ideal gain magnitude. (b) The source has an output resistance of $2\ \text{k}\Omega$; determine the gain magnitude actually measured. (c) The same source now drives a noninverting configuration. Is the measured gain affected by the source resistance? Justify your answer. (20 points)]
+
+:::tip{collapsible title="答案與詳解"}
+**答案**：(a) $|A_v| = 4$；(b) $|A_v| = 3.33$，低了 $17\%$；(c) 不受影響——非反相組態的訊號直接進運放的輸入腳，輸入阻抗極高，幾乎不從訊號源取電流，所以內阻上沒有壓降。
+
+**核心觀念**：**反相組態的輸入阻抗就是那顆 $R_2$**，不是運放的無限輸入阻抗——因為訊號是經 $R_2$ 打進虛接地點，從外面看進去只看得到 $R_2$。源內阻與它串聯分壓，增益就掉下來。
+
+**公式**：
+
+- 反相增益：$A_v = -\dfrac{R_1}{R_2}$，輸入阻抗 $R_{in} = R_2$
+- 含源內阻：$|A_v| = \dfrac{R_1}{R_s + R_2}$（$R_s$ 與 $R_2$ 串聯成新的輸入電阻）
+- 非反相增益：$A_v = 1 + \dfrac{R_1}{R_2}$，輸入阻抗為運放本身的 $R_{in}$（極高）
+
+**常數**：
+
+- 題目給定：$R_1 = 40\ \text{k}\Omega$、$R_2 = 10\ \text{k}\Omega$、$R_s = 2\ \text{k}\Omega$
+- 物理常數：無
+
+**計算**：(a)
+
+$$
+|A_v| = \frac{40\ \text{k}\Omega}{10\ \text{k}\Omega} = 4
+$$
+
+(b) 源內阻與 $R_2$ 串在同一條路徑上，等效輸入電阻變成 $12\ \text{k}\Omega$：
+
+$$
+|A_v| = \frac{R_1}{R_s+R_2} = \frac{40\ \text{k}\Omega}{2\ \text{k}\Omega+10\ \text{k}\Omega} = 3.33
+$$
+
+相對誤差
+
+$$
+\frac{3.33-4}{4} = -16.7\%
+$$
+
+(c) 非反相組態的訊號直接接到運放的非反相輸入腳。理想運放的輸入阻抗無限大、不吸電流，$R_s$ 上沒有壓降，所以到達輸入腳的電壓就是訊號源的開路電壓，增益仍是 $1+\frac{40}{10} = 5$，與 $R_s$ 無關。
+
+**檢查**：把 $R_s$ 加大到 $10\ \text{k}\Omega$ 看趨勢——反相組態變成 $\frac{40}{20} = 2$，掉了一半；非反相仍是 5。**分壓比 $\frac{R_2}{R_s+R_2}$ 正好等於增益的衰減比例**（$\frac{10}{12} = 0.833$，$4 \times 0.833 = 3.33$），兩種算法一致。
+
+**總結**：要接高阻抗訊號源就用非反相組態，或在反相組態前面加一個單位增益緩衝器。
+
+**陷阱**：答「運放的輸入阻抗無限大，所以 (b) 不受影響」。那條理想條件講的是**運放的兩隻輸入腳**，而反相組態的訊號根本沒有直接接到輸入腳——它先經過 $R_2$。這是 Lab 4 講義問題 2 的核心，也是這一題最常見的錯法。
+:::
+
+### B4　減法器的電阻失配與共模拒斥比
+
+> Lab 5 的實驗三是減法器，四顆電阻標稱都是 $10\ \text{k}\Omega$，理想時 $V_{out} = V_{in1}-V_{in2}$。(a) $V_{in1} = 5\ \text{V}$ 峰值、$V_{in2} = 2\ \text{V}$ 峰值且同相位時，求輸出。(b) 做共模測試：兩端接到同一個 $5\ \text{V}$ 峰值的訊號。若四顆電阻中有一顆偏高 $1\%$、其餘準確，共模增益約為失配量的一半，求共模輸出振幅與整體共模拒斥比（以 dB 表示）。(c) 若改用 $\pm 5\%$ 的碳膜電阻，共模拒斥比大約剩多少 dB？（20 分）
+> :en[Experiment 3 of Lab 5 is a difference amplifier whose four resistors are all nominally $10\ \text{k}\Omega$, giving $V_{out} = V_{in1}-V_{in2}$ in the ideal case. (a) Calculate the output for $V_{in1} = 5\ \text{V}$ peak and $V_{in2} = 2\ \text{V}$ peak, in phase. (b) For a common-mode test both inputs are tied to the same $5\ \text{V}$ peak source. If one of the four resistors is $1\%$ high while the others are exact, and the resulting common-mode gain is approximately half the mismatch, calculate the common-mode output amplitude and the overall CMRR in dB. (c) Estimate the CMRR if $\pm 5\%$ carbon-film resistors are used instead. (20 points)]
+
+:::tip{collapsible title="答案與詳解"}
+**答案**：(a) $3$ V 峰值（$6\ \text{V}_{pp}$），與 $V_{in1}$ 同相；(b) 共模輸出 $25\ \text{mV}$ 峰值、$\text{CMRR} = 200 = 46\ \text{dB}$；(c) 約 $32\ \text{dB}$。
+
+**核心觀念**：減法器的共模拒斥能力**幾乎完全由四顆電阻配得準不準決定，不是由運放決定**。uA741 自己的共模拒斥比規格是 $90\ \text{dB}$，但只要一顆電阻差 $1\%$，整體就掉到 $46\ \text{dB}$——差了四十幾個分貝。
+
+**公式**：
+
+- 理想減法器（四顆相等）：$V_{out} = V_{in1}-V_{in2}$，差模增益 $A_d = 1$
+- 單顆電阻失配 $\varepsilon$ 時的共模增益：$A_{cm} \approx \dfrac{\varepsilon}{2}$
+- 共模拒斥比：$\text{CMRR} = \dfrac{A_d}{A_{cm}} = \dfrac{2}{\varepsilon}$
+- 分貝換算：$\text{CMRR(dB)} = 20\log_{10}\dfrac{A_d}{A_{cm}}$
+
+**常數**：
+
+- 題目給定：四顆標稱 $10\ \text{k}\Omega$、$\varepsilon = 1\%$（(b)）與 $5\%$（(c)）、共模輸入 $5$ V 峰值
+- 規格書：uA741 的共模拒斥比典型 $90\ \text{dB}$，是整個電路的理論下限
+- 物理常數：無
+
+**計算**：(a) 四顆相等時直接相減：
+
+$$
+V_{out} = 5 - 2 = 3\ \text{V 峰值} = 6\ \text{V}_{pp}
+$$
+
+(b) 共模增益與共模輸出：
+
+$$
+\begin{aligned}
+A_{cm} &\approx \frac{\varepsilon}{2} = \frac{0.01}{2} = 0.005\\[4pt]
+V_{out,\,cm} &= A_{cm} \times 5\ \text{V} = 25\ \text{mV 峰值}
+\end{aligned}
+$$
+
+共模拒斥比：
+
+$$
+\text{CMRR} = \frac{A_d}{A_{cm}} = \frac{1}{0.005} = 200
+\quad\Longrightarrow\quad
+20\log_{10}200 = 46.0\ \text{dB}
+$$
+
+(c) 失配從 $1\%$ 放大到 $5\%$，是 5 倍：
+
+$$
+\text{CMRR} = \frac{2}{0.05} = 40
+\quad\Longrightarrow\quad
+20\log_{10}40 = 32.0\ \text{dB}
+$$
+
+**檢查**：失配變 5 倍、共模拒斥比應該掉 $20\log_{10}5 = 14\ \text{dB}$，而 $46-14 = 32\ \text{dB}$，與 (c) 相符。另外三個結果都遠低於運放自己的 $90\ \text{dB}$，確認「電阻才是瓶頸」這個結論。
+
+**總結**：差模增益由電阻比決定、共模抑制由電阻**配對**決定；拿 $\pm 5\%$ 的電阻做減法器，共模拒斥比只剩三十幾分貝。
+
+**陷阱**：把共模輸出的 $25\ \text{mV}$ 當成「運放壞了」。那是正常的——它量的就是電阻失配。要分辨共模測試裡的直流與交流成分：**兩路都接地量到的直流**來自輸入偏移電壓與偏壓電流，**兩路接同一交流訊號量到的交流**才是電阻失配。這也是 Lab 5 要多領幾顆電阻挑四顆最接近的原因。
+:::
+
+### B5　迴路增益、閉迴路增益與增益交越頻率
+
+> 一顆運放的開路增益 $A_0 = 10^5$、主極點在 $10\ \text{Hz}$，接成非反相放大器，回授因數 $K = 0.01$。(a) 求直流的迴路增益。(b) 求閉迴路增益。(c) 求閉迴路頻寬與增益交越頻率 $f_{GX}$，並說明兩者為什麼相等。（20 分）
+> :en[An op amp has an open-loop gain $A_0 = 10^5$ with a dominant pole at $10\ \text{Hz}$, and is connected as a noninverting amplifier with a feedback factor $K = 0.01$. (a) Calculate the DC loop gain. (b) Calculate the closed-loop gain. (c) Calculate the closed-loop bandwidth and the gain crossover frequency $f_{GX}$, and explain why they coincide. (20 points)]
+
+:::tip{collapsible title="答案與詳解"}
+**答案**：(a) $KA_0 = 1000$；(b) $H = 99.9$；(c) 兩者都是 $10\ \text{kHz}$——閉迴路頻寬的定義點正是迴路增益掉到 1 的地方，過了那裡回授就不再有壓制能力，閉迴路增益只好跟著開迴路一起下滑。
+
+**核心觀念**：$\omega_{GX}$ 不只是穩定性分析的參數，它同時就是**回授還有效的頻率上限**。低於它時增益由 $1/K$ 決定、高於它時由運放自己決定。
+
+**公式**：
+
+- 迴路增益（直流）：$KA_0$
+- 閉迴路增益：$H = \dfrac{A_0}{1+KA_0}$
+- 閉迴路頻寬：$f_{-3\text{dB}} = (1+KA_0)f_0$
+- 增益頻寬乘積：$\text{GBW} = A_0f_0$
+- 增益交越：$|KH| = 1$，對單極點系統 $f_{GX} = K\cdot\text{GBW}$
+
+**常數**：
+
+- 題目給定：$A_0 = 10^5$、$f_0 = 10\ \text{Hz}$、$K = 0.01$
+- 推得：$\text{GBW} = 10^5 \times 10\ \text{Hz} = 1\ \text{MHz}$
+- 物理常數：無
+
+**計算**：(a)
+
+$$
+KA_0 = (0.01)(10^5) = 1000
+$$
+
+(b)
+
+$$
+H = \frac{10^5}{1+1000} = \frac{10^5}{1001} = 99.9
+$$
+
+幾乎等於 $1/K = 100$，因為迴路增益夠大。
+
+(c) 閉迴路頻寬：
+
+$$
+f_{-3\text{dB}} = (1+KA_0)f_0 = 1001 \times 10\ \text{Hz} = 10.01\ \text{kHz}
+$$
+
+增益交越頻率：
+
+$$
+f_{GX} = K \cdot \text{GBW} = (0.01)(1\ \text{MHz}) = 10\ \text{kHz}
+$$
+
+兩者相同（差別只來自 $1+KA_0$ 與 $KA_0$ 的那個 1）。理由是：開迴路增益在 $f_0$ 之後以 $-20\ \text{dB/dec}$ 下滑，當它掉到 $1/K = 100$ 時，迴路增益 $K|A|$ 剛好等於 1、回授失去壓制能力，閉迴路增益從這一點開始跟著開迴路一起掉——那正是 $-3\ \text{dB}$ 的位置。
+
+**檢查**：增益頻寬乘積守恆：閉迴路 $99.9 \times 10.01\ \text{kHz} = 1.00\ \text{MHz}$，與開迴路的 $1\ \text{MHz}$ 相同。
+
+**總結**：單極點運放的三個量彼此綁死——知道 GBW 與 $K$，閉迴路增益、頻寬與增益交越頻率全都定了。
+
+**陷阱**：把迴路增益 $KA_0 = 1000$ 和閉迴路增益 $H = 99.9$ 搞混。兩者相差 $1/K$ 倍，意義也完全不同：$H$ 是使用者看到的增益，$KA_0$ 是決定精度、頻寬與穩定性的那個量。
+:::
+
+## 模擬卷 C
+
+| 題 | 主題 | 答案 |
+| --- | --- | --- |
+| C1 | 通道長度調變對 CS 增益的影響 | $r_o=50\ \text{k}\Omega$、$A_v=-8.33$、高估 $20\%$ |
+| C2 | MOS 開關的導通電阻與 LED 電流 | $116\ \Omega$、$8.92\ \text{mA}$、$R > 2.2\ \text{k}\Omega$ |
+| C3 | 輸出擺幅與削平門檻 | $8.67\ \text{V}_{pp}$／$13\ \text{V}_{pp}$ |
+| C4 | 同相加法器與兩路互相負載 | $5$ V 峰值；拔線變 $4$ V、轉 0 變 $2$ V |
+| C5 | 增益頻寬乘積與三級穩定條件 | $100/10\ \text{kHz}$、$5\ \text{MHz}$、$R_D < 2\ \text{k}\Omega$ |
+
+### C1　通道長度調變對 CS 放大器增益的影響
+
+> 一個電阻負載的共源級，偏壓電流 $I_D = 200\ \mu\text{A}$、過驅動電壓 $0.4\ \text{V}$、$\lambda = 0.1\ \text{V}^{-1}$、$R_D = 10\ \text{k}\Omega$、$V_{DD} = 3\ \text{V}$。(a) 求 $r_o$ 與 $g_m$。(b) 求考慮 $r_o$ 的電壓增益。(c) 若忽略通道長度調變，增益會被高估多少百分比？並確認元件確實在飽和區。（20 分）
+> :en[A resistively loaded common-source stage is biased at $I_D = 200\ \mu\text{A}$ with an overdrive of $0.4\ \text{V}$, $\lambda = 0.1\ \text{V}^{-1}$, $R_D = 10\ \text{k}\Omega$ and $V_{DD} = 3\ \text{V}$. (a) Calculate $r_o$ and $g_m$. (b) Calculate the voltage gain including $r_o$. (c) By what percentage would the gain be overestimated if channel-length modulation were neglected? Also verify that the device operates in saturation. (20 points)]
+
+:::tip{collapsible title="答案與詳解"}
+**答案**：(a) $r_o = 50\ \text{k}\Omega$、$g_m = 1\ \text{mA/V}$；(b) $A_v = -8.33$；(c) 忽略 $r_o$ 會算出 $-10$，高估 $20\%$；$V_{DS} = 1\ \text{V} > V_{ov} = 0.4\ \text{V}$，在飽和區。
+
+**核心觀念**：$r_o$ 與 $R_D$ **並聯**，所以真實增益永遠比 $-g_mR_D$ 小。$R_D$ 相對 $r_o$ 越大，這個差距越明顯——極限是 $R_D\to\infty$ 時增益趨近本質增益 $g_mr_o$，那是這顆元件的天花板。
+
+**公式**：
+
+- 輸出電阻：$r_o \approx \dfrac{1}{\lambda I_D}$
+- 轉導：$g_m = \dfrac{2I_D}{V_{ov}}$
+- 含 $r_o$ 的 CS 增益：$A_v = -g_m(R_D \parallel r_o)$
+- 並聯：$R_D \parallel r_o = \dfrac{R_Dr_o}{R_D+r_o}$
+- 飽和區檢查：$V_{DS} = V_{DD}-I_DR_D \ge V_{ov}$
+
+**常數**：
+
+- 題目給定：$I_D = 200\ \mu\text{A}$、$V_{ov} = 0.4\ \text{V}$、$\lambda = 0.1\ \text{V}^{-1}$、$R_D = 10\ \text{k}\Omega$、$V_{DD} = 3\ \text{V}$
+- 物理常數：無
+
+**計算**：(a)
+
+$$
+\begin{aligned}
+r_o &\approx \frac{1}{(0.1\ \text{V}^{-1})(200\ \mu\text{A})} = 50\ \text{k}\Omega\\[4pt]
+g_m &= \frac{2(200\ \mu\text{A})}{0.4\ \text{V}} = 1\ \text{mA/V}
+\end{aligned}
+$$
+
+(b) 先算並聯值，再乘轉導：
+
+$$
+\begin{aligned}
+R_D \parallel r_o &= \frac{(10)(50)}{10+50}\ \text{k}\Omega = 8.33\ \text{k}\Omega\\[4pt]
+A_v &= -(1\ \text{mA/V})(8.33\ \text{k}\Omega) = -8.33
+\end{aligned}
+$$
+
+(c) 忽略 $r_o$ 時 $A_v = -g_mR_D = -10$，高估的比例是
+
+$$
+\frac{10-8.33}{8.33} = 20\%
+$$
+
+飽和區檢查：
+
+$$
+V_{DS} = 3 - (200\ \mu\text{A})(10\ \text{k}\Omega) = 3 - 2 = 1\ \text{V} \ge V_{ov} = 0.4\ \text{V}
+$$
+
+成立。
+
+**檢查**：本質增益是 $g_mr_o = (1\ \text{mA/V})(50\ \text{k}\Omega) = 50$，也等於 $\frac{2}{\lambda V_{ov}} = \frac{2}{(0.1)(0.4)} = 50$。算出的 $8.33$ 遠低於這個天花板，合理——$R_D$ 只有 $r_o$ 的五分之一，增益主要被 $R_D$ 限制。
+
+**總結**：$R_D$ 遠小於 $r_o$ 時忽略通道長度調變還算可以；兩者同數量級時誤差就很可觀，而這一題的 $20\%$ 已經不能忽略。
+
+**陷阱**：把 $r_o$ 當成與 $R_D$ 串聯。它是從汲極看進元件的小訊號電阻，和 $R_D$ 都接在汲極與交流地之間（$V_{DD}$ 在小訊號上是地），所以是並聯。串聯會算出 $-60$，方向完全錯。
+:::
+
+### C2　MOS 開關的導通電阻與 LED 電流
+
+> Lab 3 的實驗四用 NMOS 當開關驅動 LED。元件的 $\mu_nC_{ox}\frac{W}{L} = 2\ \text{mA/V}^2$、$V_{TH} = 0.7\ \text{V}$，閘極加 $5\ \text{V}$ 使其進入深三極管區。LED 的順向壓降為 $2\ \text{V}$，與一顆 $220\ \Omega$ 的限流電阻串聯後接到 $5\ \text{V}$ 電源。(a) 求開關的導通電阻 $R_{on}$。(b) 求實際流過 LED 的電流，並與忽略 $R_{on}$ 的理想值比較。(c) 若要讓 $R_{on}$ 造成的誤差小於 $5\%$，限流電阻至少要多大？（20 分）
+> :en[Experiment 4 of Lab 3 uses an NMOS as a switch to drive an LED. The device has $\mu_nC_{ox}\frac{W}{L} = 2\ \text{mA/V}^2$ and $V_{TH} = 0.7\ \text{V}$, and its gate is driven to $5\ \text{V}$ so that it operates in deep triode. The LED has a forward drop of $2\ \text{V}$ and is in series with a $220\ \Omega$ current-limiting resistor across a $5\ \text{V}$ supply. (a) Calculate the on-resistance $R_{on}$. (b) Calculate the actual LED current and compare it with the ideal value obtained by neglecting $R_{on}$. (c) How large must the current-limiting resistor be so that the error introduced by $R_{on}$ is below $5\%$? (20 points)]
+
+:::tip{collapsible title="答案與詳解"}
+**答案**：(a) $R_{on} = 116\ \Omega$；(b) 實際 $8.92\ \text{mA}$，理想 $13.6\ \text{mA}$，少了 $35\%$；(c) 限流電阻要大於約 $2.2\ \text{k}\Omega$。
+
+**核心觀念**：MOS 開關不是理想短路，它是一顆**閘極電壓控制的電阻**，會和負載串聯分壓。判斷它影不影響，看的不是 $R_{on}$ 的絕對值，而是它**相對於負載**有多大。
+
+**公式**：
+
+- 深三極管區導通電阻：$R_{on} = \dfrac{1}{\mu_nC_{ox}\frac{W}{L}(V_{GS}-V_{TH})}$
+- 串聯迴路的電流：$I = \dfrac{V_{DD}-V_f}{R+R_{on}}$
+- 誤差佔比：$\dfrac{R_{on}}{R+R_{on}}$
+
+**常數**：
+
+- 題目給定：$\mu_nC_{ox}\frac{W}{L} = 2\ \text{mA/V}^2$、$V_{TH} = 0.7\ \text{V}$、$V_{GS} = 5\ \text{V}$、$V_f = 2\ \text{V}$、$R = 220\ \Omega$、$V_{DD} = 5\ \text{V}$
+- 物理常數：無
+- LED 以定電壓模型處理（順向壓降固定 $2$ V，不隨電流變）
+
+**計算**：(a) 過驅動電壓 $V_{ov} = 5-0.7 = 4.3\ \text{V}$：
+
+$$
+R_{on} = \frac{1}{(2\ \text{mA/V}^2)(4.3\ \text{V})} = \frac{1}{8.6\ \text{mA/V}} = 116\ \Omega
+$$
+
+(b) 迴路上有 LED 的 $2$ V 壓降，剩下的 $3$ V 分給兩顆電阻：
+
+$$
+\begin{aligned}
+I &= \frac{5-2}{220+116}\ \text{V/}\Omega = \frac{3\ \text{V}}{336\ \Omega} = 8.92\ \text{mA}\\[4pt]
+I_{ideal} &= \frac{3\ \text{V}}{220\ \Omega} = 13.6\ \text{mA}
+\end{aligned}
+$$
+
+少了
+
+$$
+1-\frac{8.92}{13.6} = 34.6\%
+$$
+
+(c) 誤差佔比就是 $R_{on}$ 在總電阻中的比重：
+
+$$
+\frac{R_{on}}{R+R_{on}} < 0.05
+\Longrightarrow
+R > 19R_{on} = 19(116\ \Omega) = 2.21\ \text{k}\Omega
+$$
+
+**檢查**：用 $R = 2.21\ \text{k}\Omega$ 回算，$I = \frac{3}{2210+116} = 1.29\ \text{mA}$，而理想值 $\frac{3}{2210} = 1.36\ \text{mA}$，誤差 $4.99\%$——剛好在門檻上，符合。但代價是 LED 電流從 $8.9$ mA 掉到 $1.3$ mA，會暗很多；實務上的解法是把開關做寬（降低 $R_{on}$）而不是加大限流電阻。
+
+**總結**：開關的 $R_{on}$ 要遠小於它串聯的負載，否則「通了」不等於「透明」。
+
+**陷阱**：算 $R_{on}$ 時忘了扣 $V_{TH}$，用 $V_{GS} = 5$ V 直接代，會得到 $100\ \Omega$。另一個是算電流時忘了扣 LED 的順向壓降，用 $5$ V 除以總電阻會得到 $14.9$ mA，高估六成。
+:::
+
+### C3　輸出擺幅與削平門檻
+
+> Lab 4 用 uA741 在 $\pm 15$ V 供電下工作，取輸出擺幅為 $\pm 13$ V。(a) 實驗一的非反相組態增益為 3，求輸入在多大的峰對峰值以內輸出才不會被削平。(b) 實驗二的反相組態增益大小為 2，同樣求輸入上限。(c) 講義指定輸入 $8\ \text{V}_{pp}$，說明兩個組態各自還剩多少餘裕，並指出哪一個比較危險。（20 分）
+> :en[Lab 4 operates a uA741 from $\pm 15$ V supplies; take the output swing to be $\pm 13$ V. (a) Experiment 1 uses a noninverting configuration with a gain of 3. Determine the largest peak-to-peak input for which the output is not clipped. (b) Experiment 2 uses an inverting configuration with a gain magnitude of 2; determine the corresponding input limit. (c) The lab manual specifies an $8\ \text{V}_{pp}$ input. State the remaining margin in each configuration and identify which one is closer to clipping. (20 points)]
+
+:::tip{collapsible title="答案與詳解"}
+**答案**：(a) $8.67\ \text{V}_{pp}$；(b) $13\ \text{V}_{pp}$；(c) 非反相只剩 $0.67\ \text{V}_{pp}$ 的餘裕（輸出 $24$ 對上限 $26\ \text{V}_{pp}$），反相還剩 $5\ \text{V}_{pp}$——**非反相危險得多**。
+
+**核心觀念**：削平由**輸出**決定，而輸出是輸入乘上增益。所以同一顆運放、同樣的輸入振幅，增益越大的組態越早撞到電源軌。
+
+**公式**：
+
+- 輸出擺幅上限（峰對峰值）：$V_{out,pp,\max} = 2|V_{swing}|$
+- 輸入上限：$V_{in,pp,\max} = \dfrac{V_{out,pp,\max}}{|A_v|}$
+- 非反相增益 $1+\frac{R_1}{R_2}$；反相增益 $-\frac{R_1}{R_2}$
+
+**常數**：
+
+- 題目給定：擺幅 $\pm 13$ V、非反相增益 3、反相增益大小 2、指定輸入 $8\ \text{V}_{pp}$
+- 推得：$V_{out,pp,\max} = 26\ \text{V}_{pp}$
+- 物理常數：無
+
+**計算**：(a)
+
+$$
+V_{in,pp,\max} = \frac{26\ \text{V}_{pp}}{3} = 8.67\ \text{V}_{pp}
+$$
+
+(b)
+
+$$
+V_{in,pp,\max} = \frac{26\ \text{V}_{pp}}{2} = 13\ \text{V}_{pp}
+$$
+
+(c) 代入指定的 $8\ \text{V}_{pp}$：
+
+$$
+\begin{aligned}
+\text{非反相：}\ V_{out} &= 3 \times 8 = 24\ \text{V}_{pp}\quad(\text{餘裕 }26-24 = 2\ \text{V}_{pp})\\[4pt]
+\text{反相：}\ V_{out} &= 2 \times 8 = 16\ \text{V}_{pp}\quad(\text{餘裕 }26-16 = 10\ \text{V}_{pp})
+\end{aligned}
+$$
+
+換算成輸入端的餘裕分別是 $8.67-8 = 0.67\ \text{V}_{pp}$ 與 $13-8 = 5\ \text{V}_{pp}$。非反相組態只要輸入多了 $8\%$ 就會開始平頂，反相還可以再加六成。
+
+**檢查**：用實驗當天的實際讀值驗證。輸入其實是 $8.6\ \text{V}_{pp}$（面板設 $8.00$，示波器量到 $8.6$），非反相的輸出應為 $8.6\times3 = 25.8\ \text{V}_{pp}$，已經非常貼近 $26\ \text{V}_{pp}$ 的上限——而實測只有 $24.7\ \text{V}_{pp}$，正好是接近上限時軟性壓縮的表現，與結論一致。
+
+**總結**：增益高的組態先撞軌。設計時要先用「最大輸出 ÷ 增益」反推輸入上限，而不是等看到平頂才調。
+
+**陷阱**：把 $\pm 13$ V 當成 $13\ \text{V}_{pp}$。擺幅規格給的是**峰值**，峰對峰值要乘 2。少乘這個 2，(a) 會算成 $4.33\ \text{V}_{pp}$，結論變成「講義指定的 $8\ \text{V}_{pp}$ 一定削平」，與實際完全相反。
+:::
+
+### C4　同相加法器與兩路互相負載
+
+> Lab 5 的實驗二是同相加法器：兩路各經一顆 $10\ \text{k}\Omega$ 接到非反相端，反相端則是一顆 $10\ \text{k}\Omega$ 對地、一顆 $10\ \text{k}\Omega$ 回授。$V_{in1} = 2\ \text{V}$ 峰值、$V_{in2} = 3\ \text{V}$ 峰值，同相位。(a) 求非反相端的電位與輸出，並說明相位關係。(b) 把 $V_{in2}$ 的產生器振幅轉到 0（蕊線仍接著），求輸出。(c) 改成把 $V_{in2}$ 的蕊線整條拔掉，求輸出，並解釋為什麼和 (b) 不同。（20 分）
+> :en[Experiment 2 of Lab 5 is a noninverting summing amplifier: two sources each drive the noninverting node through a $10\ \text{k}\Omega$ resistor, while the inverting node has a $10\ \text{k}\Omega$ resistor to ground and a $10\ \text{k}\Omega$ feedback resistor. Let $V_{in1} = 2\ \text{V}$ peak and $V_{in2} = 3\ \text{V}$ peak, in phase. (a) Calculate the noninverting-node voltage and the output, and state the phase relationship. (b) The amplitude of source 2 is turned down to zero with its lead still connected; calculate the output. (c) Instead, the lead of source 2 is removed entirely; calculate the output and explain why it differs from (b). (20 points)]
+
+:::tip{collapsible title="答案與詳解"}
+**答案**：(a) 非反相端 $2.5$ V 峰值、輸出 $5$ V 峰值（$10\ \text{V}_{pp}$），與兩路輸入同相；(b) 輸出 $2$ V 峰值；(c) 輸出 $4$ V 峰值——**拔掉是開路，不是接地**，分壓的分母從兩路變成一路。
+
+**核心觀念**：同相加法器是**兩步**——先在非反相端用兩顆電阻分壓成平均值，再被 $1+\frac{R_3}{R_4}$ 放大回來。分壓比 $\frac{1}{2}$ 與增益 $2$ 互為倒數，加法關係才剛好成立。也因為兩路直接接在同一個分壓節點上，**它們會互相負載**——這是它和反相加法器最大的差別。
+
+**公式**：
+
+- 非反相端（兩路等值電阻）：$V_+ = \dfrac{V_{in1}+V_{in2}}{2}$
+- 閉迴路增益：$A_v = 1+\dfrac{R_3}{R_4} = 2$
+- 輸出：$V_{out} = A_v V_+ = V_{in1}+V_{in2}$
+- 只剩一路（另一路開路）：$V_+ = V_{in1}$，無分壓
+
+**常數**：
+
+- 題目給定：四顆電阻皆 $10\ \text{k}\Omega$、$V_{in1} = 2$ V 峰值、$V_{in2} = 3$ V 峰值
+- 物理常數：無
+
+**計算**：(a) 兩顆輸入電阻相等，非反相端是兩路的平均：
+
+$$
+V_+ = \frac{2+3}{2} = 2.5\ \text{V 峰值}
+$$
+
+再被反相端那組電阻決定的增益放大：
+
+$$
+V_{out} = \left(1+\frac{10}{10}\right)(2.5) = 2 \times 2.5 = 5\ \text{V 峰值} = 10\ \text{V}_{pp}
+$$
+
+輸出與兩路輸入同相（沒有負號）。
+
+(b) 振幅轉到 0 但蕊線還在：那一路變成 $0$ V 的訊號源，仍然把它那顆 $10\ \text{k}\Omega$ 拉到地電位，分壓照常：
+
+$$
+V_+ = \frac{2+0}{2} = 1\ \text{V}\quad\Longrightarrow\quad V_{out} = 2\ \text{V 峰值}
+$$
+
+(c) 蕊線拔掉：那一路是**開路**，沒有電流路徑，整條支路不參與分壓。非反相端直接等於 $V_{in1}$：
+
+$$
+V_+ = 2\ \text{V}\quad\Longrightarrow\quad V_{out} = 4\ \text{V 峰值}
+$$
+
+**檢查**：用重疊定理核對 (a)。只看 $V_{in1}$（$V_{in2}$ 接地）：$V_+ = 2 \times \frac{10}{10+10} = 1$ V，輸出 $2$ V；只看 $V_{in2}$：$V_+ = 1.5$ V，輸出 $3$ V。兩者相加 $5$ V，與 (a) 相同。
+
+**總結**：同相加法器的兩路**會互相影響**，所以「把一路關掉」和「把一路拆掉」結果差兩倍；反相加法器因為有虛接地隔開，這兩種做法結果相同。
+
+**陷阱**：實驗時想省事直接把一路的蕊線拔掉來做「單路測試」。在反相加法器上可以（虛接地讓開路與接地等效），在同相加法器上會得到兩倍的輸出而誤判電路接錯。Lab 5 的記錄簿對這兩張表的註記不同，就是為了這件事。
+:::
+
+### C5　增益頻寬乘積與多級放大器的穩定條件
+
+> (a) 一顆增益頻寬乘積為 $1\ \text{MHz}$ 的運放，分別接成閉迴路增益 10 與 100，求兩者的 $-3\ \text{dB}$ 頻寬。(b) 某應用需要在 $50\ \text{kHz}$ 仍有增益 100，至少要選增益頻寬乘積多大的運放？(c) 三級相同的共源級串接後以 $K=1$ 加上負回授，穩定條件是 $g_mR_D < 2$。若 $g_m = 1\ \text{mA/V}$，求 $R_D$ 的上限與此時三級的總增益，並說明這個結果為什麼使補償成為必需。（20 分）
+> :en[(a) An op amp with a gain-bandwidth product of $1\ \text{MHz}$ is configured for closed-loop gains of 10 and 100; determine the $-3\ \text{dB}$ bandwidth in each case. (b) An application requires a gain of 100 at $50\ \text{kHz}$; what is the minimum gain-bandwidth product required? (c) Three identical common-source stages are cascaded and placed in negative feedback with $K=1$, for which the stability condition is $g_mR_D < 2$. For $g_m = 1\ \text{mA/V}$, determine the upper limit on $R_D$ and the resulting total three-stage gain, and explain why this result makes compensation necessary. (20 points)]
+
+:::tip{collapsible title="答案與詳解"}
+**答案**：(a) $100\ \text{kHz}$ 與 $10\ \text{kHz}$；(b) 至少 $5\ \text{MHz}$；(c) $R_D < 2\ \text{k}\Omega$，三級總增益上限 $2^3 = 8$——低到沒有實用價值，所以多級放大器非補償不可。
+
+**核心觀念**：增益頻寬乘積是**前饋系統本身的性質**，回授只能在增益與頻寬之間重新分配，不能增加總量。要同時要高增益與高頻寬，只能換更好的元件。
+
+**公式**：
+
+- 增益頻寬乘積守恆：$\text{GBW} = A_{cl} \times f_{-3\text{dB}}$
+- 多級總增益：$A_{total} = (g_mR_D)^n$
+- 三級相同共源、$K=1$ 的穩定條件：$g_mR_D < 2$
+
+**常數**：
+
+- 題目給定：$\text{GBW} = 1\ \text{MHz}$、閉迴路增益 10 與 100、$50\ \text{kHz}$、$g_m = 1\ \text{mA/V}$、$n = 3$
+- 物理常數：無
+
+**計算**：(a) 用守恆關係反解頻寬：
+
+$$
+f_{-3\text{dB}} = \frac{\text{GBW}}{A_{cl}}
+\quad\Longrightarrow\quad
+\frac{1\ \text{MHz}}{10} = 100\ \text{kHz},\qquad
+\frac{1\ \text{MHz}}{100} = 10\ \text{kHz}
+$$
+
+(b) 把需求倒過來乘：
+
+$$
+\text{GBW} \ge A_{cl}\times f = 100 \times 50\ \text{kHz} = 5\ \text{MHz}
+$$
+
+(c) 由穩定條件解 $R_D$：
+
+$$
+g_mR_D < 2
+\Longrightarrow
+R_D < \frac{2}{1\ \text{mA/V}} = 2\ \text{k}\Omega
+$$
+
+每一級的增益上限因此是 2，三級串起來：
+
+$$
+A_{total} < 2^3 = 8
+$$
+
+三顆電晶體只換到 8 倍增益。三個相同的極點各貢獻最多 $-90°$、合計 $-270°$，所以 $-180°$ 一定會出現；要穩定就只能把增益壓到「相位轉到 $-180°$ 之前迴路增益已經掉到 1 以下」。不補償的話，能用的增益低到這個電路沒有存在價值——**所以實務上一定是先補償、再談增益**。
+
+**檢查**：(a) 的兩個結果乘回去，$10\times100\ \text{kHz} = 1\ \text{MHz}$、$100\times10\ \text{kHz} = 1\ \text{MHz}$，守恆成立。(b) 的 $5\ \text{MHz}$ 也可以反向驗證：$5\ \text{MHz}/100 = 50\ \text{kHz}$，剛好滿足需求。
+
+**總結**：增益與頻寬的乘積是固定預算，級數越多相位累積越快、可用的增益上限越低——這兩件事合起來就是補償電容存在的理由。
+
+**陷阱**：(c) 看到 $g_mR_D < 2$ 就答「總增益小於 2」。那是**單級**的上限，三級要取三次方。另一個是以為「串更多級就能補回增益」——級數越多，穩定條件越嚴格，每級能拿的增益反而更少。
+:::
+
+## 出處與誠實說明
+
+- **三套 15 題全部是自創練習題**，不是教授公布的考古題，也不是投影片上的原題。
+- 題目的**結構**刻意沿用投影片與實驗講義的題型：A2 比照投影片 Example 6-6（CS 級的偏壓與小訊號增益，換了數字）、A5 與 B5 比照 Example 12-4／12-5（靈敏度與增益頻寬乘積）、C5 (c) 用的是 Example 12-38 的結論 $g_mR_D<2$。
+- **A3 (c) 與 C3 的檢查段用的是 Lab 4 當天的真實讀值**（輸入 $8.6\ \text{V}_{pp}$、非反相輸出 $24.7\ \text{V}_{pp}$、反相輸出 $16.7\ \text{V}_{pp}$），那是同學的實測數據，不是我自己量的——來源與完整分析見 [Lab 4 筆記](/notes/電子學實作系列第10週-lab4運放放大器實驗#同學當天的實測結果補做前的參考)。
+- **B4 的共模增益模型**（單顆電阻失配 $\varepsilon$ → $A_{cm}\approx\varepsilon/2$）取自 [Lab 5 筆記](/notes/電子學實作系列第11週-lab5加法與減法放大器實驗#問題-1共模輸出為什麼不是-0) 的 LTspice 掃描表，算出的 $46\ \text{dB}$ 與該表一致。
+- 所有數值都用 Python 重算過，答案、計算、檢查三段彼此一致。
