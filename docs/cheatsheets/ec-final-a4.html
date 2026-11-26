@@ -13,6 +13,10 @@
   2026-11-25 改版：作者要求小抄只放「講義 Example 計算題會用到的公式」與「各種常數」。
   每條公式後的灰色標籤（6-6、12-4…）是用到它的講義例題；Lab 典型數值與易錯對照拿掉，
   只留一小塊解題程序。符號一律照 Razavi 講義：運放電路的 R1 是回授電阻（輸出→負端）、R2 是接地／接輸入那顆。
+  2026-11-26 改版：比照期中考筆記的「題目總覽＋常數由來」整理法——開頭加題型→核心公式索引（§0），
+  常數分成物理常數（附由來）與 uA741 規格書兩類；照講義章末 Summary 補 BJT／MOS 對照（§5′）；
+  補模擬卷用到的 Lab 理論公式（本質增益、兩點求 V_TH、源內阻、擺幅、同相加法、CMRR、f_GX）。
+  為騰位置刪了：電流式推導、6-6 數值表（縮成一行）、CH8 例題數字段、CG 輸入極點段。
 -->
 <html lang="zh-Hant">
 <head>
@@ -84,6 +88,18 @@
 
   <div class="col">
   <section>
+    <h2><span class="n">0</span>題型 → 核心公式</h2>
+    <table>
+      <tr><th>題型</th><th>核心公式</th><th>§</th></tr>
+      <tr><td>MOS 元件</td><td>工作區判準、$I_D$ 平方律、$R_{on}$、$g_m$ 三式、$r_o$</td><td>2 3 5</td></tr>
+      <tr><td>CS 級（Lab 3）</td><td>$V_{DS}=V_{DD}-I_DR_D$、$-g_m(R_D\parallel r_o)$、兩點求 $V_{TH}$</td><td>3 5 6</td></tr>
+      <tr><td>運放組態（Lab 4）</td><td>$1+\frac{R_1}{R_2}$、$-\frac{R_1}{R_2}$、增益誤差、源內阻、擺幅</td><td>8</td></tr>
+      <tr><td>加減法（Lab 5）</td><td>加權和、減法、同相加法、CMRR</td><td>10</td></tr>
+      <tr><td>回授（CH12）</td><td>$\frac{A}{1+KA}$；增益 ÷、頻寬 ×、阻抗依拓撲；PM</td><td>12–24</td></tr>
+    </table>
+  </section>
+
+  <section>
     <h2><span class="n">1</span>解題程序（精簡）</h2>
     <div class="step"><b>MOS</b>：假設飽和 → 算 $I_D$ → $V_{DS}=V_{DD}-I_DR_D$ → 驗 $V_{GD}\lt V_{TH}$；不成立改用三極管式重算。<br>
     <b>運放</b>：虛短路 $V_+=V_-$＋輸入不吃電流 → 負端 KCL。<br>
@@ -109,14 +125,10 @@
       <li>含通道長度調變：$\times(1+\lambda V_{DS})$</li>
       <li>峰值：$V_{DS}=V_{GS}-V_{TH}$ 時 $I_{D,max}=\frac12\mu_nC_{ox}\frac WL(V_{GS}-V_{TH})^2$</li>
       <li><b>導通電阻</b>（$V_{DS}\ll2(V_{GS}-V_{TH})$）：<br>$R_{on}=\dfrac{1}{\mu_nC_{ox}\frac WL(V_{GS}-V_{TH})}$</li>
-      <li><b>PMOS</b>：全換絕對值、$\mu_n\to\mu_p$<br>$I_D=\frac12\mu_pC_{ox}\frac WL(|V_{GS}|-|V_{TH}|)^2(1+\lambda|V_{DS}|)$</li>
+      <li><b>PMOS</b>（講義 p.34）有號：$\frac12\mu_pC_{ox}\frac WL(V_{GS}-V_{TH})^2(1-\lambda V_{DS})$<br>絕對值：$\frac12\mu_pC_{ox}\frac WL(|V_{GS}|-|V_{TH}|)^2(1+\lambda|V_{DS}|)$</li>
       <li><b>體效應</b>（$V_{SB}=V_S-V_B\gt0$）：<br>$V_{TH}=V_{TH0}+\gamma\left(\sqrt{2\phi_F+V_{SB}}-\sqrt{2\phi_F}\right)$</li>
-    </ul>
-    <h3>電流式的來源（電荷 × 速度）</h3>
-    <ul>
-      <li>$C_{ox}=\dfrac{\varepsilon_{ox}}{t_{ox}}$；$Q=CV=WC_{ox}(V_{GS}-V_{TH})$</li>
-      <li>$Q(x)=WC_{ox}\left[V_{GS}-V(x)-V_{TH}\right]$（C/m）</li>
-      <li>$I=Q\cdot v$，$v=\mu_n\dfrac{dV}{dx}$ → 從 $0$ 積到 $L$ 得三極管式</li>
+      <li>$C_{ox}=\dfrac{\varepsilon_{ox}}{t_{ox}}$</li>
+      <li><b>兩點求 $V_{TH}$</b>（Lab 3）：$\sqrt{I_D}$ 對 $V_{GS}$ 是直線<br>$\dfrac{\sqrt{I_{D2}}}{\sqrt{I_{D1}}}=\dfrac{V_{GS2}-V_{TH}}{V_{GS1}-V_{TH}}$，再回代求 $\mu_nC_{ox}\frac WL$</li>
     </ul>
   </section>
 
@@ -132,42 +144,34 @@
 
   <div class="col">
   <section>
-    <h2><span class="n">4</span>Example 6-6 的算法</h2>
-    <p>$\mu_nC_{ox}=100\ \mu\text{A/V}^2$、$V_{TH}=0.4$、$\frac WL=\frac{2}{0.18}$、$V_{DD}=1.8$、$R_D=5\ \text{k}\Omega$</p>
-    <table>
-      <tr><th>$V_{GS}$</th><th>$I_D$</th><th>$V_{DS}$</th><th>$V_{GD}$</th></tr>
-      <tr><td>$1.00$</td><td>$200\ \mu$A</td><td>$0.800$</td><td>$0.20\lt0.4$ ✓</td></tr>
-      <tr><td>$1.01$</td><td>$207\ \mu$A</td><td>$0.765$</td><td>$0.245\lt0.4$ ✓</td></tr>
-    </table>
-    <ul>
-      <li>$\Delta V_{GS}=10$ mV → $|\Delta V_{DS}|\approx35$ mV（講義取整數；精算 $33.6$）</li>
-      <li>對照小訊號：$g_m=\mu_nC_{ox}\frac WL(V_{GS}-V_{TH})=0.667$ mS，$g_mR_D=3.33$ → $33.3$ mV</li>
-      <li>$\frac12\mu_nC_{ox}\frac WL=556\ \mu\text{A/V}^2$ 先算好再代</li>
-    </ul>
+    <h2><span class="n">4</span>Example 6-6</h2>
+    <p>$\mu_nC_{ox}=100\ \mu$、$V_{TH}=0.4$、$\frac WL=\frac{2}{0.18}$、$V_{DD}=1.8$、$R_D=5$ k：$V_{GS}$ $1.00\to1.01$ → $I_D$ $200\to207\ \mu$A、$V_{DS}$ $0.800\to0.765$（$V_{GD}\lt V_{TH}$ ✓）；$|\Delta V_{DS}|\approx35$ mV，小訊號 $g_mR_D=3.33$ → $33$ mV</p>
   </section>
 
   <section>
     <h2><span class="n">5</span>小訊號參數</h2>
     <ul>
       <li><b>轉導三式</b>：<br>$g_m=\mu_nC_{ox}\frac WL(V_{GS}-V_{TH})=\sqrt{2\mu_nC_{ox}\frac WLI_D}=\dfrac{2I_D}{V_{GS}-V_{TH}}$</li>
-      <li>輸出電阻 $r_o\approx\dfrac{1}{\lambda I_D}$；本質增益 $g_mr_o$</li>
+      <li>輸出電阻 $r_o\approx\dfrac{1}{\lambda I_D}$</li>
+      <li><b>本質增益</b> $g_mr_o=\dfrac{2}{\lambda V_{ov}}$（$V_{ov}=V_{GS}-V_{TH}$）</li>
+      <li>固定 $\frac WL$、改 $I_D$：$V_{ov}\propto\sqrt{I_D}$、$g_m\propto\sqrt{I_D}$、$r_o\propto\frac{1}{I_D}$ → $g_mr_o\propto\frac{1}{\sqrt{I_D}}$<br><span class="muted">先問固定什麼：固定 $V_{ov}$ 時 $g_mr_o$ 才與 $I_D$ 無關</span></li>
       <li>模型：閘極開路、$i_d=g_mv_{gs}$、$r_o$ 接在 D–S</li>
-      <li>對照 BJT：$g_m=\dfrac{I_C}{V_T}$、$r_\pi=\dfrac{\beta}{g_m}$、$r_o=\dfrac{V_A}{I_C}$</li>
     </ul>
   </section>
 
   <section>
-    <h2><span class="n">6</span>單級放大器（CH12 例題的零件）</h2>
+    <h2><span class="n">5′</span>BJT vs MOS（講義章末 Summary）</h2>
     <table>
-      <tr><th>組態</th><th>$A_v$</th><th>$R_{in}$</th><th>$R_{out}$</th></tr>
-      <tr><td>CS</td><td>$-g_m(R_D\parallel r_o)$</td><td>$\infty$</td><td>$R_D\parallel r_o$</td></tr>
-      <tr><td>CS 電流源負載</td><td>$-g_m(r_{oN}\parallel r_{oP})$</td><td>$\infty$</td><td>$r_{oN}\parallel r_{oP}$</td></tr>
-      <tr><td>CG（$\lambda=0$）</td><td>$+g_mR_D$</td><td>$\dfrac{1}{g_m}$</td><td>$R_D$</td></tr>
-      <tr><td>SF</td><td>$\dfrac{R_L}{R_L+1/g_m}$</td><td>$\infty$</td><td>$\dfrac{1}{g_m}$</td></tr>
-      <tr><td>二極體接法</td><td colspan="3">等效電阻 $\frac{1}{g_m}\parallel r_o\approx\frac{1}{g_m}$</td></tr>
+      <tr><th></th><th>BJT</th><th>MOS</th></tr>
+      <tr><td>大訊號</td><td>$I_C=I_S\exp\frac{V_{BE}}{V_T}$<br>$I_B=\frac{I_C}{\beta}$、$I_E=I_C+I_B$</td><td>$I_D=\frac12\mu_nC_{ox}\frac WLV_{ov}^2$<br>$I_G=0$</td></tr>
+      <tr><td>放大區</td><td>主動 $V_{CB}\gt0$</td><td>飽和 $V_{DS}\gt V_{ov}$</td></tr>
+      <tr><td>修正</td><td>爾利 $\times(1+\frac{V_{CE}}{V_A})$</td><td>$\times(1+\lambda V_{DS})$</td></tr>
+      <tr><td>$g_m$</td><td>$\frac{I_C}{V_T}$</td><td>$\frac{2I_D}{V_{ov}}$</td></tr>
+      <tr><td>$r_{in}$／$r_o$</td><td>$r_\pi=\frac{\beta}{g_m}$／$\frac{V_A}{I_C}$</td><td>$\infty$／$\frac{1}{\lambda I_D}$</td></tr>
     </table>
-    <p class="muted">小訊號下 $V_{DD}$ 是地，所以 $R_D$ 與 $r_o$ 並聯。</p>
+    <p class="muted">同電流下 BJT 的 $g_m$ 較大（指數律）；擴散電流 vs 漂移電流。</p>
   </section>
+
 
   <section>
     <h2><span class="n">7</span>理想運放</h2>
@@ -176,6 +180,17 @@
       <li>虛短路：$V_{in1}-V_{in2}=\dfrac{V_{out}}{A_0}\to0$（要有負回授）</li>
       <li>單位增益緩衝：$\dfrac{A_0}{1+A_0}\approx1$</li>
     </ul>
+  </section>
+
+  <section>
+    <h2><span class="n">11′</span>uA741 規格書（題目沒給就用）</h2>
+    <table>
+      <tr><td>$A_0$</td><td>$200$ V/mV $=2\times10^5$（106 dB）</td></tr>
+      <tr><td>GBW；迴轉率</td><td>≈1 MHz；0.5 V/µs</td></tr>
+      <tr><td>擺幅（±15 V、$R_L$=10k）</td><td>典型 ±14 V、最小 ±12 V</td></tr>
+      <tr><td>CMRR</td><td>典型 90 dB</td></tr>
+    </table>
+    <p class="muted">例題值：$A_0=1000$（8-3、12-4）、$200$（12-5）</p>
   </section>
   </div>
 
@@ -194,48 +209,33 @@
       <li><b>增益誤差</b> $=\left(1+\dfrac{R_1}{R_2}\right)\dfrac{1}{A_0}$ <span class="ex">8-3</span><span class="ex">8-4</span></li>
       <li>近似來自 $(1+\varepsilon)^{-1}\approx1-\varepsilon$（$\varepsilon\ll1$）</li>
       <li>極端：$R_2=0$ → $A_v=A_0$；$R_2=\infty$ → $A_v=1$</li>
+      <li><b>源內阻 $R_s$</b>（反相）：$|A_v|=\dfrac{R_1}{R_s+R_2}$；非反相不受影響</li>
+      <li><b>擺幅</b>：$V_{in,pp,max}=\dfrac{2|V_{sw}|}{|A_v|}$，超過就削平</li>
     </ul>
-    <div class="trap"><b>反相組態的增益誤差也是 $1+\frac{R_1}{R_2}$</b>，不是 $\frac{R_1}{R_2}$。</div>
-  </section>
-
-  <section>
-    <h2><span class="n">9</span>CH8 例題的數字</h2>
-    <ul>
-      <li><b>8-3</b> 非反相、$A_0=1000$：<br>增益 5 → $\frac{5}{1000}=0.5\%$；增益 50 → $5\%$</li>
-      <li><b>8-4</b> 反相、增益 4、誤差 $0.1\%$、$R_{in}\ge10$ k：<br>$(1+4)\frac{1}{A_0}=0.1\%$ → $A_0=5000$；<br>$R_2=10$ k、$R_1=4R_2=40$ k</li>
-    </ul>
+    <div class="trap"><b>反相組態的增益誤差也是 $1+\frac{R_1}{R_2}$</b>，不是 $\frac{R_1}{R_2}$。8-4：$(1+4)\frac{1}{A_0}=0.1\%$ → $A_0=5000$。</div>
   </section>
 
   <section>
     <h2><span class="n">10</span>加法與減法（Lab 5）</h2>
     <ul>
-      <li>反相加法（$R_3$ 回授）：$V_{out}=-\left(\dfrac{R_3}{R_1}V_{in1}+\dfrac{R_3}{R_2}V_{in2}\right)$</li>
+      <li>反相加法（$R_3$ 回授）：$V_{out}=-\left(\dfrac{R_3}{R_1}V_{in1}+\dfrac{R_3}{R_2}V_{in2}\right)$；權重 $R_k=\frac{R_f}{w_k}$</li>
+      <li>同相加法（兩顆等值進 ＋端）：$V_+=\dfrac{V_{in1}+V_{in2}}{2}$，$V_{out}=\left(1+\dfrac{R_f}{R_g}\right)V_+$；一路開路 → $V_+=V_{in1}$</li>
       <li>減法（講義 p.23：$R_1$/$R_3$ ＋側分壓、$R_2$ −側輸入、$R_4$ 回授）：<br>$V_{out}=\dfrac{R_3}{R_1+R_3}\left(1+\dfrac{R_4}{R_2}\right)V_{in1}-\dfrac{R_4}{R_2}V_{in2}$；四顆相等 → $V_{in1}-V_{in2}$</li>
+      <li>$\text{CMRR}=\dfrac{A_d}{A_{cm}}$；單顆失配 $\varepsilon$：$A_{cm}\approx\frac{\varepsilon}{2}$ → $\text{CMRR}\approx\frac{2}{\varepsilon}$，dB $=20\log$</li>
     </ul>
   </section>
 
   <section>
     <h2><span class="n">11</span>常數</h2>
     <table>
-      <tr><th>常數</th><th>值</th></tr>
-      <tr><td>$q$</td><td>$1.6\times10^{-19}$ C</td></tr>
-      <tr><td>$k$</td><td>$1.38\times10^{-23}$ J/K</td></tr>
-      <tr><td>$V_T=kT/q$</td><td>$26$ mV（300 K）</td></tr>
-      <tr><td>$\varepsilon_0$</td><td>$8.85\times10^{-14}$ F/cm $=8.85\times10^{-12}$ F/m</td></tr>
-      <tr><td>$\varepsilon_{ox}=3.9\varepsilon_0$</td><td>$3.45\times10^{-13}$ F/cm</td></tr>
-      <tr><td>$\varepsilon_{si}=11.7\varepsilon_0$</td><td>$1.04\times10^{-12}$ F/cm</td></tr>
-      <tr><td>$n_i$（Si, 300 K）</td><td>$1.08\times10^{10}\ \text{cm}^{-3}$</td></tr>
+      <tr><th>常數</th><th>值／由來</th></tr>
+      <tr><td>$q$；$k$</td><td>$1.6\times10^{-19}$ C；$1.38\times10^{-23}$ J/K</td></tr>
+      <tr><td>$\frac kq$</td><td>$8.625\times10^{-5}$ V/K（$k\div q$）</td></tr>
+      <tr><td>$V_T=\frac{kT}{q}$</td><td>$8.625\times10^{-5}\,T$；300 K → $25.9\approx26$ mV</td></tr>
+      <tr><td>$\varepsilon_0$</td><td>$8.85\times10^{-14}$ F/cm</td></tr>
+      <tr><td>$\varepsilon_{ox}$；$\varepsilon_{si}$</td><td>$3.9\varepsilon_0=3.45\times10^{-13}$；$11.7\varepsilon_0=1.04\times10^{-12}$ F/cm</td></tr>
+      <tr><td>$n_i$；$E_g$（Si）</td><td>$1.08\times10^{10}\ \text{cm}^{-3}$（300 K）；$1.12$ eV</td></tr>
       <tr><td>$\mu_n$／$\mu_p$</td><td>$1350$／$480\ \text{cm}^2/\text{V·s}$</td></tr>
-    </table>
-  </section>
-  <section>
-    <h2><span class="n">11′</span>例題給的元件值與換算</h2>
-    <table>
-      <tr><th>量</th><th>值（例題）</th></tr>
-      <tr><td>$\mu_nC_{ox}$、$V_{TH}$</td><td>$100\ \mu\text{A/V}^2$、$0.4$ V（6-6）</td></tr>
-      <tr><td>$V_{DD}$、$\frac WL$</td><td>$1.8$ V、$\frac{2}{0.18}$（6-6）</td></tr>
-      <tr><td>$A_0$</td><td>$1000$（8-3、12-4）、$200$（12-5）</td></tr>
-      <tr><td>uA741</td><td>$A_0=2\times10^5$（106 dB）、GBW≈1 MHz</td></tr>
     </table>
   </section>
   </div>
@@ -277,7 +277,8 @@
     <ul>
       <li>開迴路 $A_1(s)=\dfrac{A_0}{1+s/\omega_0}$</li>
       <li>閉迴路 $\dfrac YX=\dfrac{\frac{A_0}{1+KA_0}}{1+\frac{s}{(1+KA_0)\omega_0}}$</li>
-      <li>增益 $\div(1+KA_0)$、頻寬 $\times(1+KA_0)$，<b>增益×頻寬不變</b></li>
+      <li>增益 $\div(1+KA_0)$、頻寬 $\times(1+KA_0)$，<b>增益×頻寬不變</b>：$\text{GBW}=A_0f_0=A_{cl}f_{-3\text{dB}}$</li>
+      <li>單極點的增益交越：$f_{GX}=K\cdot\text{GBW}$</li>
     </ul>
     <table>
       <tr><th>$K$（$A_0=200$）</th><th>$1+KA_0$</th><th>增益</th><th>頻寬</th></tr>
@@ -303,6 +304,18 @@
     </table>
   </section>
 
+  <section>
+    <h2><span class="n">6</span>單級放大器（CH12 例題的零件）</h2>
+    <table>
+      <tr><th>組態</th><th>$A_v$</th><th>$R_{in}$</th><th>$R_{out}$</th></tr>
+      <tr><td>CS</td><td>$-g_m(R_D\parallel r_o)$</td><td>$\infty$</td><td>$R_D\parallel r_o$</td></tr>
+      <tr><td>CS 電流源負載</td><td>$-g_m(r_{oN}\parallel r_{oP})$</td><td>$\infty$</td><td>$r_{oN}\parallel r_{oP}$</td></tr>
+      <tr><td>CG（$\lambda=0$）</td><td>$+g_mR_D$</td><td>$\dfrac{1}{g_m}$</td><td>$R_D$</td></tr>
+      <tr><td>SF</td><td>$\dfrac{R_L}{R_L+1/g_m}$</td><td>$\infty$</td><td>$\dfrac{1}{g_m}$</td></tr>
+      <tr><td>二極體接法</td><td colspan="3">$\frac{1}{g_m}\parallel r_o\approx\frac{1}{g_m}$；小訊號 $V_{DD}$＝地 → $R_D\parallel r_o$</td></tr>
+    </table>
+  </section>
+
   </div>
 
   <div class="col">
@@ -319,11 +332,6 @@
     無回授 $g_m(R_D\parallel\frac{R_D}2)=\frac{g_mR_D}{3}$，掉成 $\frac13$<br>
     有回授 $\dfrac{g_mR_D/3}{1+Kg_mR_D/3}=\dfrac{g_mR_D}{3+Kg_mR_D}$<br>
     $Kg_mR_D=10$：$\frac{10}{11}$ vs $\frac{10}{13}$（×$\frac1K$），只差約 $18\%$</div>
-  </section>
-
-  <section>
-    <h2><span class="n">18</span>CG 的輸入極點 <span class="ex" style="color:#fff;border-color:#fff">12-9</span></h2>
-    <p>輸入電流源帶寄生 $C_p$：直接進 $R_D$ → $\omega_{p,a}=\dfrac{1}{R_DC_p}$；先進 CG → $\omega_{p,b}=\dfrac{g_m}{C_p}$。$\frac{1}{g_m}\lt R_D$ 所以極點往高頻移。</p>
   </section>
 
   <section>
