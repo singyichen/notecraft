@@ -102,9 +102,16 @@ prompt: |
   取出的位置，所以看電路要先問「訊號從哪裡進、從哪裡出、哪隻腳交流接地」。
   視覺要求：用 Tailwind 的 table，不要做成 SVG；增益欄用正負兩色 badge；
   窄畫面可橫向捲動。
-status: pending
+status: generated
 caption: MOS 三種組態：拓撲可以一模一樣，決定行為的是訊號從哪一隻腳進出。
 */}
+
+import GeneratedFrame from '@/components/GeneratedFrame.astro'
+import EcWeek10MosTopologies from '@/components/generated/ec-week10-mos-topologies'
+
+<GeneratedFrame id="ec-week10-mos-topologies" type="table" prompt={"用一張比較表整理 MOS 的三種單級組態。\n三個橫列：共源級 CS、共閘級 CG、源極隨耦器。\n六個直欄：\n1. 訊號從哪一隻腳進\n2. 訊號從哪一隻腳出\n3. 哪一隻腳交流接地\n4. 增益（負且大 / 正且大 / 正但小於一），用色塊區分正負\n5. 輸入阻抗（高 / 低 / 極高）\n6. 典型用途（一般電壓放大 / 射頻低阻抗匹配 / 緩衝器）\n表格下方放一行提示：三者的直流工作點可以完全相同，差別只在訊號注入與取出的位置，所以看電路要先問「訊號從哪裡進、從哪裡出、哪隻腳交流接地」。\n視覺要求：用 Tailwind 的 table，不要做成 SVG；增益欄用正負兩色 badge；窄畫面可橫向捲動。"} caption="MOS 三種組態：拓撲可以一模一樣，決定行為的是訊號從哪一隻腳進出。">
+  <EcWeek10MosTopologies />
+</GeneratedFrame>
 
 {/* @ai-visualize
 id: ec-week10-summing
@@ -124,9 +131,15 @@ prompt: |
      完全不互相影響
   視覺要求：長條圖用 SVG（viewBox 寬度不超過 640）；三路各一色，總和用
   深色；讀數與滑桿用 DOM；拖動時即時更新不要有動畫延遲。
-status: pending
+status: generated
 caption: 加法器：虛接地把各路輸入完全隔離，於是「相加」變成一件精確而互不干擾的事。
 */}
+
+import EcWeek10Summing from '@/components/generated/ec-week10-summing'
+
+<GeneratedFrame id="ec-week10-summing" type="chart" prompt={"互動示範加法器：多路輸入如何各自獨立地加權求和。\n互動元素（四個旋鈕）：\n- 三條水平滑桿，分別控制三路輸入電壓（可正可負）\n- 一條水平滑桿，控制回授電阻的大小（決定共同的增益倍率）\n即時顯示的內容：\n1. 一組水平長條圖：三路各自的貢獻（輸入電壓乘上各自的權重）用三種顏色堆疊，最下方一條是輸出總和\n2. 四個讀數卡片：三路各自的權重、以及目前的輸出電壓\n3. 電源軌以兩條虛線畫在圖上；輸出超出電源軌時，超出的部分變成警示色，並顯示一行「輸出被削平」的提示\n4. 一行固定說明：因為虛接地，每一路的電流只由自己那一路決定，三路之間完全不互相影響\n視覺要求：長條圖用 SVG（viewBox 寬度不超過 640）；三路各一色，總和用深色；讀數與滑桿用 DOM；拖動時即時更新不要有動畫延遲。"} caption="加法器：虛接地把各路輸入完全隔離，於是「相加」變成一件精確而互不干擾的事。">
+  <EcWeek10Summing client:visible />
+</GeneratedFrame>
 
 {/* @ai-visualize
 id: ec-week10-inverting-pitfalls
@@ -143,9 +156,15 @@ prompt: |
   視覺要求：用 DOM 卡片呈現說明；狀態 3 與 4 各附一張小 SVG 波形對照
   （viewBox 寬度不超過 640），把正常正弦波與異常波形疊在一起；
   切換 200-400ms ease-out；尊重 prefers-reduced-motion。
-status: pending
+status: generated
 caption: 量到的增益不對時的四種嫌疑犯：源阻抗、有限增益、頻寬、迴轉率——症狀各不相同。
 */}
+
+import EcWeek10InvertingPitfalls from '@/components/generated/ec-week10-inverting-pitfalls'
+
+<GeneratedFrame id="ec-week10-inverting-pitfalls" type="motion" prompt={"用可切換的四態，呈現反相放大器實驗中四種量到「不對的增益」的原因。\n四個狀態（四顆切換鈕）：\n1. 訊號源內阻不可忽略：它與輸入電阻串聯一起分壓，量到的增益比計算值小\n2. 有限開路增益：閉迴路增益設得越大，誤差越明顯，量到的值略低於理論值\n3. 撞到頻寬：頻率拉高後增益隨頻率下滑，波形仍是正弦但振幅變小\n4. 撞到迴轉率：大訊號高頻時輸出斜率被鎖死，正弦波輸出變成三角波\n每態顯示三個欄位：成因、示波器上看得到的症狀、怎麼驗證（例如降低振幅看波形是否恢復正弦，就能區分是頻寬還是迴轉率）。\n視覺要求：用 DOM 卡片呈現說明；狀態 3 與 4 各附一張小 SVG 波形對照（viewBox 寬度不超過 640），把正常正弦波與異常波形疊在一起；切換 200-400ms ease-out；尊重 prefers-reduced-motion。"} caption="量到的增益不對時的四種嫌疑犯：源阻抗、有限增益、頻寬、迴轉率——症狀各不相同。">
+  <EcWeek10InvertingPitfalls client:visible />
+</GeneratedFrame>
 
 ## 教材預習重點
 
